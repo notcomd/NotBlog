@@ -1,0 +1,5 @@
+C:\Users\29617\source\repos\MyService\Notcomd.Evenbus\obj\Debug\net6.0\Notcomd.Evenbus.csproj.AssemblyReference.cache
+C:\Users\29617\source\repos\MyService\Notcomd.Evenbus\obj\Debug\net6.0\Notcomd.Evenbus.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\29617\source\repos\MyService\Notcomd.Evenbus\obj\Debug\net6.0\Notcomd.Evenbus.AssemblyInfoInputs.cache
+C:\Users\29617\source\repos\MyService\Notcomd.Evenbus\obj\Debug\net6.0\Notcomd.Evenbus.AssemblyInfo.cs
+C:\Users\29617\source\repos\MyService\Notcomd.Evenbus\obj\Debug\net6.0\Notcomd.Evenbus.csproj.CoreCompileInputs.cache

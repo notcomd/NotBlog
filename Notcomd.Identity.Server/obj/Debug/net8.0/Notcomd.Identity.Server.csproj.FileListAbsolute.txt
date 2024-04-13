@@ -1,0 +1,14 @@
+C:\Users\29617\source\repos\MyService\Notcomd.Identity.Server\bin\Debug\net8.0\Notcomd.Identity.Server.deps.json
+C:\Users\29617\source\repos\MyService\Notcomd.Identity.Server\bin\Debug\net8.0\Notcomd.Identity.Server.dll
+C:\Users\29617\source\repos\MyService\Notcomd.Identity.Server\bin\Debug\net8.0\Notcomd.Identity.Server.pdb
+C:\Users\29617\source\repos\MyService\Notcomd.Identity.Server\obj\Debug\net8.0\Notcomd.Identity.Server.csproj.AssemblyReference.cache
+C:\Users\29617\source\repos\MyService\Notcomd.Identity.Server\obj\Debug\net8.0\Notcomd.Identity.Server.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\29617\source\repos\MyService\Notcomd.Identity.Server\obj\Debug\net8.0\Notcomd.Identity.Server.AssemblyInfoInputs.cache
+C:\Users\29617\source\repos\MyService\Notcomd.Identity.Server\obj\Debug\net8.0\Notcomd.Identity.Server.AssemblyInfo.cs
+C:\Users\29617\source\repos\MyService\Notcomd.Identity.Server\obj\Debug\net8.0\Notcomd.Identity.Server.csproj.CoreCompileInputs.cache
+C:\Users\29617\source\repos\MyService\Notcomd.Identity.Server\obj\Debug\net8.0\Notcomd.Identity.Server.dll
+C:\Users\29617\source\repos\MyService\Notcomd.Identity.Server\obj\Debug\net8.0\refint\Notcomd.Identity.Server.dll
+C:\Users\29617\source\repos\MyService\Notcomd.Identity.Server\obj\Debug\net8.0\Notcomd.Identity.Server.pdb
+C:\Users\29617\source\repos\MyService\Notcomd.Identity.Server\obj\Debug\net8.0\ref\Notcomd.Identity.Server.dll
+C:\Users\29617\source\repos\MyService\Notcomd.Identity.Server\bin\Debug\net8.0\Notcomd.Identity.Server.runtimeconfig.json
+C:\Users\29617\source\repos\MyService\Notcomd.Identity.Server\obj\Debug\net8.0\Notcomd.Identity.Server.genruntimeconfig.cache

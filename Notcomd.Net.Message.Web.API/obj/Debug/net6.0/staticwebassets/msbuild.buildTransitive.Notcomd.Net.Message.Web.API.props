@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\buildMultiTargeting\Notcomd.Net.Message.Web.API.props" />
+</Project>
