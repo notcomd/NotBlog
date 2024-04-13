@@ -11,7 +11,7 @@ namespace Notcomd.Identity.Server.Module
     public class Notcomd_User_Image_Module:IDisposable
     {
         public string Identity_UserName { get; set; }
-        public string? Identity_ImageUrl { get; set; }
+        public List<string>? Identity_ImageUrl { get; set; }
 
         public void Dispose() { this.Dispose(); }
 
