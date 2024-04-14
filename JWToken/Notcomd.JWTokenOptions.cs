@@ -1,4 +1,5 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -6,14 +7,17 @@ using System.Text;
 
 namespace Notcomd.Token.JWT
 {
-    public class JWTokenOptions : IJWToken
+    public class Notcommd_JWTokenOptions : INotcomd_JwtTokenServer
     {
-        string IJWToken.BuilderTokenAsync(IEnumerable<Claim> claims, JwtokenModule jwtokenModule)
+        public string BuilderTokenAsync(IEnumerable<Claim> claims, IConfiguration configuration)
         {
-            var Securitykey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtokenModule.Key));
+            var ConfigValue = configuration.Get<Notcomd_JwtToken_Configural>();
+            var Securitykey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(ConfigValue.PrivateKey));
             _ = new SigningCredentials(Securitykey, SecurityAlgorithms.HmacSha256);   //加密
-            var TokenDescript = new JwtSecurityToken(jwtokenModule.Selerboot, jwtokenModule.Rootboot, claims);
+            var TokenDescript = new JwtSecurityToken(ConfigValue.Selerboot, ConfigValue.Rootboot, claims);
             return new JwtSecurityTokenHandler().WriteToken(TokenDescript);
         }
+
+   
     }
 }

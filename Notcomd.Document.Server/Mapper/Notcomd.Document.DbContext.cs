@@ -28,6 +28,7 @@ namespace Notcomd.Document.Server.Mapper
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            
         }
     }
 }

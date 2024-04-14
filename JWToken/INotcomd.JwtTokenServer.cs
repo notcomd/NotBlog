@@ -1,8 +1,10 @@
-﻿using System.Security.Claims;
+﻿using Microsoft.Extensions.Configuration;
+
+using System.Security.Claims;
 
 namespace Notcomd.Token.JWT
 {
-    public interface IJWToken
+    public interface INotcomd_JwtTokenServer
     {
         /// <summary>
         /// 构建token 
@@ -10,6 +12,6 @@ namespace Notcomd.Token.JWT
         /// <typeparam name="T">需要声明Claim数据</typeparam>
         /// <param name="Redname"></param>
         /// <returns></returns>
-        string BuilderTokenAsync(IEnumerable<Claim> claims, JwtokenModule jwtokenModule);
+        string BuilderTokenAsync(IEnumerable<Claim> claims, IConfiguration configuration);
     }
 }

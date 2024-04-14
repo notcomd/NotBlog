@@ -8,5 +8,6 @@ namespace Notcomd.Identity.Server.IServer
 {
     internal class INotcomd_JwtToken
     {
+        
     }
 }
