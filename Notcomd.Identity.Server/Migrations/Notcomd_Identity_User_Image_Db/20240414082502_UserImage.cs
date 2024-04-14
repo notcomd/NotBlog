@@ -1,34 +1,32 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Notcomd.Identity.Server.Migrations
+namespace Notcomd.Identity.Server.Migrations.Notcomd_Identity_User_Image_Db
 {
     /// <inheritdoc />
-    public partial class IentityUserTable : Migration
+    public partial class UserImage : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "notcomd_Role_Modules",
+                name: "UserImageTable",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "text", nullable: true),
-                    NormalizedName = table.Column<string>(type: "text", nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true)
+                    Identity_UserName = table.Column<string>(type: "text", nullable: false),
+                    Identity_ImageUrl = table.Column<List<string>>(type: "text[]", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_notcomd_Role_Modules", x => x.Id);
+                    table.PrimaryKey("PK_UserImageTable", x => x.Identity_UserName);
                 });
 
             migrationBuilder.CreateTable(
-                name: "notcomd_User_Modules",
+                name: "Notcomd_User_Module",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
@@ -38,7 +36,7 @@ namespace Notcomd.Identity.Server.Migrations
                     Ponit = table.Column<string>(type: "text", nullable: false),
                     UserName = table.Column<string>(type: "text", nullable: true),
                     NormalizedUserName = table.Column<string>(type: "text", nullable: true),
-                    Email = table.Column<string>(type: "text", nullable: true),
+                    Email = table.Column<string>(type: "text", nullable: false),
                     NormalizedEmail = table.Column<string>(type: "text", nullable: true),
                     EmailConfirmed = table.Column<bool>(type: "boolean", nullable: false),
                     PasswordHash = table.Column<string>(type: "text", nullable: true),
@@ -53,18 +51,30 @@ namespace Notcomd.Identity.Server.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_notcomd_User_Modules", x => x.Id);
+                    table.PrimaryKey("PK_Notcomd_User_Module", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Notcomd_User_Module_UserImageTable_Email",
+                        column: x => x.Email,
+                        principalTable: "UserImageTable",
+                        principalColumn: "Identity_UserName",
+                        onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Notcomd_User_Module_Email",
+                table: "Notcomd_User_Module",
+                column: "Email",
+                unique: true);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "notcomd_Role_Modules");
+                name: "Notcomd_User_Module");
 
             migrationBuilder.DropTable(
-                name: "notcomd_User_Modules");
+                name: "UserImageTable");
         }
     }
 }

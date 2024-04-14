@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Notcomd.Net.Message.Web.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8211031446808068606fd7a1bd275c15697f65b8")]
 [assembly: System.Reflection.AssemblyProductAttribute("Notcomd.Net.Message.Web.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Notcomd.Net.Message.Web.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
