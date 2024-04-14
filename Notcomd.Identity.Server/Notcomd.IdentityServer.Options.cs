@@ -13,6 +13,7 @@ namespace Notcomd.Identity.Server
     {
         public static IServiceCollection IdentityServerConfig(this IServiceCollection services)
         {
+
             services.AddIdentityCore<Notcomd_User_Module>(opt =>
             {
                 opt.Password.RequiredLength = 8;
