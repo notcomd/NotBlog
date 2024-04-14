@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Notcomd.Identity.Server.Mapper
 {
-    public  class Notcomd_Identity_DbContext:DbContext
+    public class Notcomd_Identity_DbContext : DbContext
     {
         public DbSet<Notcomd_Role_Module> notcomd_Role_Modules { get; set; }
         public DbSet<Notcomd_User_Module> notcomd_User_Modules { get; set; }
@@ -24,6 +24,7 @@ namespace Notcomd.Identity.Server.Mapper
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-           
+
+        }
     }
 }
