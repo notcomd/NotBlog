@@ -13,11 +13,11 @@ namespace Notcomd.Image.Server.Module
         public List<string> ImageTage { get; set; }
         public string Image_Name { get; set; }
         public string Image_Url { get; set; }
-       
-
         [Column(TypeName ="Text")]
         public string Image_Remake { get; set; }
         public DateTime Image_CreateTime { get; set; }=DateTime.UtcNow;
+        public Notcomd_Image_Evaluate_Module notcomd_Image_Evaluate_Module { get; set; }
+        public Notcomd_Image_Ownership_Module notcomd_Image_Ownership_Module { get; set; }
         
     }
 }

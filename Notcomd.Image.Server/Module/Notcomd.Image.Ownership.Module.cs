@@ -11,7 +11,7 @@ namespace Notcomd.Image.Server.Module
         public string Image_Ownership_UserName { get; set; } = null!;
         public string Image_User_HeadPort { get; set; } = null!;
         public bool Image_Privati { get; set; } = true;
-
+        public ICollection<Notcomd_Image_Module> notcomd_Image_Modules { get; set; }
         public Notcomd_Image_Ownership_Module() { }
         public Notcomd_Image_Ownership_Module(string image_Ownership_UserName, string image_User_HeadPort)
         {
