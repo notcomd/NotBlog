@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
+using Notcomd.Image.Server.Module;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,8 +10,9 @@ using System.Threading.Tasks;
 
 namespace Notcomd.Image.Server.Mapper
 {
-    public class Notcomd_Image_Module_Context:DbContext
+    public class Notcomd_Image_Module_DCbontext:DbContext
     {
+        public DbSet<Notcomd_Image_Module> DbSet { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

@@ -7,16 +7,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Remove="Mapper\Notcomd.Image.Evaluate.Module.Context.cs" />
-	</ItemGroup>
-
-	<ItemGroup>
 	  <Folder Include="IServer\" />
 	  <Folder Include="Server\" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <None Include="Mapper\Notcomd.Image.Evaluate.Module.Context.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
