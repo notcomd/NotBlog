@@ -16,14 +16,12 @@ namespace Notcomd.Image.Server.Mapper
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);
+            optionsBuilder.UseNpgsql("Host=localhost;Database=identityuser;Username=notcomd;Password=makefile");
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            modelBuilder.Entity<Notcomd_Image_Evaluate_Module>(opt =>
-            {
-                opt.HasKey(opt => new { opt.Image_Type });
-            });
+            modelBuilder.Entity<Notcomd_Image_Evaluate_Module>().HasKey(p => new { p.Image_Ownership });
         }
     }
 }

@@ -16,15 +16,14 @@ namespace Notcomd.Identity.Server
     {
         public static IServiceCollection AddIdentityServerConfig(this IServiceCollection services)
         {
-<<<<<<< HEAD
+
             services.AddScoped<INotcomd_Mapper_Server,Notcomd_Mapper_Server>();
             services.AddScoped<INotcomd_Original_User,Notcomd_Original_User>();
             services.AddHostedService<Notcomd_HostServer>();
             //services.Configure<Notcomd_JwtToken_Configural>(opt=>opt.)
             services.AddDbContext<Notcomd_Identity_DbContext>().AddDbContext<Notcomd_Identity_User_Image_DbContext>();
-=======
 
->>>>>>> bccaca89654aca6da0dbe56b62631453606c2e2c
+
             services.AddIdentityCore<Notcomd_User_Module>(opt =>
             {
                 opt.Password.RequiredLength = 8;

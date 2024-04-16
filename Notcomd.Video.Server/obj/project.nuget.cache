@@ -1,8 +1,13 @@
 {
   "version": 2,
-  "dgSpecHash": "72n6nzpxNfqCrK71ft1QTAH4J8T2H6WHRJUaNY7FflXj+vqICVbH4HobiFXOAtqmxwjHL9/fm0nYPNAg3DcQ9A==",
+  "dgSpecHash": "trLoJCJkqvYAn68IaRAdIw11ZxR3hoYyABFHcEPdb9P1I42FdVIQDHUxe8jLLM5SUoqOITVG+RhifZcizqllYA==",
   "success": true,
   "projectFilePath": "C:\\Users\\29617\\source\\repos\\MyService\\Notcomd.Video.Server\\Notcomd.Video.Server.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\29617\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\8.0.0\\microsoft.extensions.configuration.abstractions.8.0.0.nupkg.sha512",
+    "C:\\Users\\29617\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\8.0.1\\microsoft.extensions.dependencyinjection.abstractions.8.0.1.nupkg.sha512",
+    "C:\\Users\\29617\\.nuget\\packages\\microsoft.extensions.primitives\\8.0.0\\microsoft.extensions.primitives.8.0.0.nupkg.sha512",
+    "C:\\Users\\29617\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\6.0.0\\system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512"
+  ],
   "logs": []
 }

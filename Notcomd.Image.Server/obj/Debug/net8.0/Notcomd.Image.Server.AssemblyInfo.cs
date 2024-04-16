@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Notcomd.Image.Server")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b19685f4c611ce807e54c6ae4caab467fcae6384")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+987f7f52714e006832722e87bc07262066a23be4")]
 [assembly: System.Reflection.AssemblyProductAttribute("Notcomd.Image.Server")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Notcomd.Image.Server")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
