@@ -31,6 +31,7 @@ namespace Notcomd.Image.Server.Mapper
             modelBuilder.Entity<Notcomd_Image_Module>(options =>
             {
                 options.HasKey(options => new { options.Image_Url });
+
                 options.HasOne(po => po.Notcomd_Image_Ownership_Module)
                 .WithMany(p => p.Notcomd_Image_Module)
                 .HasForeignKey(sc => sc.Image_Url)
@@ -40,6 +41,14 @@ namespace Notcomd.Image.Server.Mapper
                 .WithMany(p => p.Notcomd_Image_Module)
                 .HasForeignKey(sc => sc.Image_Url)
                 .HasPrincipalKey(sc => sc.Image_Ownership);
+
+                //options.HasOne(po => po.Notcomd_Image_Ownership_Module)
+                //.WithMany(p => p.Notcomd_Image_Module)
+                //.HasForeignKey(sc => sc.Notcomd_Image_Ownership_Module);
+                
+                //options.HasOne(po => po.Notcomd_Image_Evaluate_Module)
+                //.WithMany(p => p.Notcomd_Image_Module)
+                //.HasForeignKey(sc => sc.Notcomd_Image_Evaluate_Module);
 
             });
         }

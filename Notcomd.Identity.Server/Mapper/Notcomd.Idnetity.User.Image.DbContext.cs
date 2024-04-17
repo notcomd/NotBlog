@@ -17,11 +17,12 @@ public class Notcomd_Identity_User_Image_DbContext:DbContext{
         {
             entity.HasKey(p => p.Identity_UserName);
         });
+
         builder.Entity<Notcomd_User_Image_Module>()
-            .HasOne(p => p.notcomd_User_Modules)
-            .WithOne(p => p.notcomd_User_Image_Module)
-            .HasForeignKey<Notcomd_User_Module>(p => p.Email)
-            .IsRequired();
+            .HasMany(p => p.Notcomd_User_Modules)
+            .WithOne(p => p.Notcomd_User_Image_Module)
+            .HasForeignKey(p => p.Email)
+            .HasPrincipalKey(p => p.Identity_UserName);
 
     }
 }

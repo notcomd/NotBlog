@@ -13,8 +13,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Notcomd.Identity.Server.Migrations.Notcomd_Identity_User_Image_Db
 {
     [DbContext(typeof(Notcomd_Identity_User_Image_DbContext))]
-    [Migration("20240414082502_UserImage")]
-    partial class UserImage
+    [Migration("20240423145656_RmakeUserImage")]
+    partial class RmakeUserImage
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -54,7 +54,6 @@ namespace Notcomd.Identity.Server.Migrations.Notcomd_Identity_User_Image_Db
                         .HasColumnType("text");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<bool>("EmailConfirmed")
@@ -72,6 +71,9 @@ namespace Notcomd.Identity.Server.Migrations.Notcomd_Identity_User_Image_Db
                     b.Property<string>("NormalizedUserName")
                         .HasColumnType("text");
 
+                    b.Property<string>("Notcomd_User_Supplement_ModuleWeChat_Numble")
+                        .HasColumnType("text");
+
                     b.Property<string>("PasswordHash")
                         .HasColumnType("text");
 
@@ -81,15 +83,8 @@ namespace Notcomd.Identity.Server.Migrations.Notcomd_Identity_User_Image_Db
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("Ponit")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
-
-                    b.Property<bool>("Status")
-                        .HasColumnType("boolean");
 
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("boolean");
@@ -97,33 +92,58 @@ namespace Notcomd.Identity.Server.Migrations.Notcomd_Identity_User_Image_Db
                     b.Property<string>("UserName")
                         .HasColumnType("text");
 
-                    b.Property<string>("WeChat_Numble")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("Email")
-                        .IsUnique();
+                    b.HasIndex("Email");
+
+                    b.HasIndex("Notcomd_User_Supplement_ModuleWeChat_Numble");
 
                     b.ToTable("Notcomd_User_Module");
                 });
 
+            modelBuilder.Entity("Notcomd.Identity.Server.Module.Notcomd_User_Supplement_Module", b =>
+                {
+                    b.Property<string>("WeChat_Numble")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("UserLin_Status")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("UserRemake")
+                        .HasColumnType("text");
+
+                    b.Property<List<string>>("UserTag")
+                        .IsRequired()
+                        .HasColumnType("text[]");
+
+                    b.HasKey("WeChat_Numble");
+
+                    b.ToTable("Notcomd_User_Supplement_Module");
+                });
+
             modelBuilder.Entity("Notcomd.Identity.Server.Module.Notcomd_User_Module", b =>
                 {
-                    b.HasOne("Notcomd.Identity.Server.Module.Notcomd_User_Image_Module", "notcomd_User_Image_Module")
-                        .WithOne("notcomd_User_Modules")
-                        .HasForeignKey("Notcomd.Identity.Server.Module.Notcomd_User_Module", "Email")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasOne("Notcomd.Identity.Server.Module.Notcomd_User_Image_Module", "Notcomd_User_Image_Module")
+                        .WithMany("Notcomd_User_Modules")
+                        .HasForeignKey("Email");
 
-                    b.Navigation("notcomd_User_Image_Module");
+                    b.HasOne("Notcomd.Identity.Server.Module.Notcomd_User_Supplement_Module", "Notcomd_User_Supplement_Module")
+                        .WithMany("Notcomd_User_Modules")
+                        .HasForeignKey("Notcomd_User_Supplement_ModuleWeChat_Numble");
+
+                    b.Navigation("Notcomd_User_Image_Module");
+
+                    b.Navigation("Notcomd_User_Supplement_Module");
                 });
 
             modelBuilder.Entity("Notcomd.Identity.Server.Module.Notcomd_User_Image_Module", b =>
                 {
-                    b.Navigation("notcomd_User_Modules")
-                        .IsRequired();
+                    b.Navigation("Notcomd_User_Modules");
+                });
+
+            modelBuilder.Entity("Notcomd.Identity.Server.Module.Notcomd_User_Supplement_Module", b =>
+                {
+                    b.Navigation("Notcomd_User_Modules");
                 });
 #pragma warning restore 612, 618
         }

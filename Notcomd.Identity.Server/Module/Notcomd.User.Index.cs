@@ -13,7 +13,7 @@ namespace Notcomd.Identity.Server.Module
 
         public void Dispose()
         {
-            this.Dispose();
+            GC.SuppressFinalize(this);
         }
 
        

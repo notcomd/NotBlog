@@ -22,8 +22,14 @@ namespace Notcomd.Image.Server.Mapper
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
             modelBuilder.Entity<Notcomd_Image_Ownership_Module>().HasKey(p => new { p.Image_Ownership_UserName });
-           
+
+            modelBuilder.Entity<Notcomd_Image_Ownership_Module>(opt =>
+            {
+                opt.HasKey(opt => new { opt.Image_Ownership_UserName});
+               // opt.HasMany<Notcomd_Image_Ownership_Module>(opt=>opt.Image_Ownership_UserName)
+            });         
         }
     }
 }

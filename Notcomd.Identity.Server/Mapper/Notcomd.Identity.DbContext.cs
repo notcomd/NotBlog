@@ -27,10 +27,16 @@ namespace Notcomd.Identity.Server.Mapper
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<Notcomd_User_Module>()
-                .HasOne(p => p.notcomd_User_Image_Module)
-                .WithOne(p => p.notcomd_User_Modules)
-                .HasForeignKey<Notcomd_User_Module>(p=>p.Email)
-                .IsRequired();
+                .HasOne(p => p.Notcomd_User_Image_Module)
+                .WithMany(ps => ps.Notcomd_User_Modules)
+                .HasForeignKey(p => p.Email)
+                .HasPrincipalKey(p=>p.Identity_UserName);
+            modelBuilder.Entity<Notcomd_User_Module>()
+                .HasOne(po => po.Notcomd_User_Supplement_Module)
+                .WithMany(p => p.Notcomd_User_Modules)
+                .HasForeignKey(p=>p.Email)
+                .HasPrincipalKey(p=>p.WeChat_Numble);
+                
         }
     }
 }

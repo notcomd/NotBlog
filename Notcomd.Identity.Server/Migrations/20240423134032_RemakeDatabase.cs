@@ -8,7 +8,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Notcomd.Identity.Server.Migrations
 {
     /// <inheritdoc />
-    public partial class IdentityUser : Migration
+    public partial class RemakeDatabase : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -26,6 +26,20 @@ namespace Notcomd.Identity.Server.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetRoles", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Notcomd_User_Supplement_Module",
+                columns: table => new
+                {
+                    WeChat_Numble = table.Column<string>(type: "text", nullable: false),
+                    UserLin_Status = table.Column<bool>(type: "boolean", nullable: false),
+                    UserTag = table.Column<List<string>>(type: "text[]", nullable: false),
+                    UserRemake = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Notcomd_User_Supplement_Module", x => x.WeChat_Numble);
                 });
 
             migrationBuilder.CreateTable(
@@ -67,12 +81,9 @@ namespace Notcomd.Identity.Server.Migrations
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    WeChat_Numble = table.Column<string>(type: "text", nullable: false),
-                    Status = table.Column<bool>(type: "boolean", nullable: false),
-                    Ponit = table.Column<string>(type: "text", nullable: false),
                     UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
+                    Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     NormalizedEmail = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     EmailConfirmed = table.Column<bool>(type: "boolean", nullable: false),
                     PasswordHash = table.Column<string>(type: "text", nullable: true),
@@ -89,11 +100,15 @@ namespace Notcomd.Identity.Server.Migrations
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
                     table.ForeignKey(
+                        name: "FK_AspNetUsers_Notcomd_User_Supplement_Module_Email",
+                        column: x => x.Email,
+                        principalTable: "Notcomd_User_Supplement_Module",
+                        principalColumn: "WeChat_Numble");
+                    table.ForeignKey(
                         name: "FK_AspNetUsers_UserImageTable_Email",
                         column: x => x.Email,
                         principalTable: "UserImageTable",
-                        principalColumn: "Identity_UserName",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Identity_UserName");
                 });
 
             migrationBuilder.CreateTable(
@@ -215,8 +230,7 @@ namespace Notcomd.Identity.Server.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetUsers_Email",
                 table: "AspNetUsers",
-                column: "Email",
-                unique: true);
+                column: "Email");
 
             migrationBuilder.CreateIndex(
                 name: "UserNameIndex",
@@ -248,6 +262,9 @@ namespace Notcomd.Identity.Server.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "Notcomd_User_Supplement_Module");
 
             migrationBuilder.DropTable(
                 name: "UserImageTable");

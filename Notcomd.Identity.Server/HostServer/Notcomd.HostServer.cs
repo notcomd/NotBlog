@@ -14,13 +14,13 @@ namespace Notcomd.Identity.Server.HostServer
 {
     public class Notcomd_HostServer:BackgroundService
     {
-        private readonly ILogger<INotcomd_Original_User> _logger;
+        private readonly ILogger _logger;
         private readonly IServiceScope _serviceScope;
 
-        public Notcomd_HostServer(ILogger<INotcomd_Original_User> logger, IServiceScope serviceScope)
+        public Notcomd_HostServer(ILogger<INotcomd_Original_User> logger, IServiceScopeFactory serviceScope)
         {
             _logger = logger;
-            _serviceScope = serviceScope;
+            _serviceScope = serviceScope.CreateAsyncScope();
         }
         public override void Dispose()
         {

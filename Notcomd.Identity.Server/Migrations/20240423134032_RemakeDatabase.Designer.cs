@@ -13,8 +13,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Notcomd.Identity.Server.Migrations
 {
     [DbContext(typeof(Notcomd_Identity_DbContext))]
-    [Migration("20240414082446_IdentityUser")]
-    partial class IdentityUser
+    [Migration("20240423134032_RemakeDatabase")]
+    partial class RemakeDatabase
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -187,7 +187,6 @@ namespace Notcomd.Identity.Server.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
 
@@ -217,15 +216,8 @@ namespace Notcomd.Identity.Server.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("Ponit")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
-
-                    b.Property<bool>("Status")
-                        .HasColumnType("boolean");
 
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("boolean");
@@ -234,14 +226,9 @@ namespace Notcomd.Identity.Server.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
 
-                    b.Property<string>("WeChat_Numble")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("Email")
-                        .IsUnique();
+                    b.HasIndex("Email");
 
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
@@ -251,6 +238,26 @@ namespace Notcomd.Identity.Server.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("Notcomd.Identity.Server.Module.Notcomd_User_Supplement_Module", b =>
+                {
+                    b.Property<string>("WeChat_Numble")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("UserLin_Status")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("UserRemake")
+                        .HasColumnType("text");
+
+                    b.Property<List<string>>("UserTag")
+                        .IsRequired()
+                        .HasColumnType("text[]");
+
+                    b.HasKey("WeChat_Numble");
+
+                    b.ToTable("Notcomd_User_Supplement_Module");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<long>", b =>
@@ -306,19 +313,27 @@ namespace Notcomd.Identity.Server.Migrations
 
             modelBuilder.Entity("Notcomd.Identity.Server.Module.Notcomd_User_Module", b =>
                 {
-                    b.HasOne("Notcomd.Identity.Server.Module.Notcomd_User_Image_Module", "notcomd_User_Image_Module")
-                        .WithOne("notcomd_User_Modules")
-                        .HasForeignKey("Notcomd.Identity.Server.Module.Notcomd_User_Module", "Email")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasOne("Notcomd.Identity.Server.Module.Notcomd_User_Image_Module", "Notcomd_User_Image_Module")
+                        .WithMany("Notcomd_User_Modules")
+                        .HasForeignKey("Email");
 
-                    b.Navigation("notcomd_User_Image_Module");
+                    b.HasOne("Notcomd.Identity.Server.Module.Notcomd_User_Supplement_Module", "Notcomd_User_Supplement_Module")
+                        .WithMany("Notcomd_User_Modules")
+                        .HasForeignKey("Email");
+
+                    b.Navigation("Notcomd_User_Image_Module");
+
+                    b.Navigation("Notcomd_User_Supplement_Module");
                 });
 
             modelBuilder.Entity("Notcomd.Identity.Server.Module.Notcomd_User_Image_Module", b =>
                 {
-                    b.Navigation("notcomd_User_Modules")
-                        .IsRequired();
+                    b.Navigation("Notcomd_User_Modules");
+                });
+
+            modelBuilder.Entity("Notcomd.Identity.Server.Module.Notcomd_User_Supplement_Module", b =>
+                {
+                    b.Navigation("Notcomd_User_Modules");
                 });
 #pragma warning restore 612, 618
         }

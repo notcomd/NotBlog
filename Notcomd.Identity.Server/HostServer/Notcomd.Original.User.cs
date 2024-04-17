@@ -12,7 +12,7 @@ namespace Notcomd.Identity.Server.HostServer
         private readonly ILogger _Iloggers;
         private bool Running = true;
 
-        public Notcomd_Original_User(UserManager<Notcomd_User_Module> userManager, RoleManager<Notcomd_Role_Module> roleManager, ILogger iloggers)
+        public Notcomd_Original_User(UserManager<Notcomd_User_Module> userManager, RoleManager<Notcomd_Role_Module> roleManager, ILogger<INotcomd_Original_User> iloggers)
         {
             _userManager = userManager;
             _roleManager = roleManager;
