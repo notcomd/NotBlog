@@ -18,8 +18,13 @@ namespace Notcomd.Image.Server.Module
         [Column(TypeName ="Text")]
         public string Image_Remake { get; set; }
         public DateTime Image_CreateTime { get; set; }=DateTime.UtcNow;
+<<<<<<< HEAD
         public Notcomd_Image_Evaluate_Module Notcomd_Image_Evaluate_Module { get; set; }
         public Notcomd_Image_Ownership_Module Notcomd_Image_Ownership_Module { get; set; }
+=======
+        public Notcomd_Image_Evaluate_Module notcomd_Image_Evaluate_Module { get; set; }
+        public Notcomd_Image_Ownership_Module notcomd_Image_Ownership_Module { get; set; }
+>>>>>>> 5e06be5c8a45237ed4ab9101f8316484780ae68c
         
     }
 }
