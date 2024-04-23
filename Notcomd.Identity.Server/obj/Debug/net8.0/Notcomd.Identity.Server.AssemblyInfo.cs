@@ -14,7 +14,23 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Notcomd.Identity.Server")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
+<<<<<<< HEAD
 [assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1bc8c836d3b77d793591b5ce2d586d5d7e18079f")]
+=======
+<<<<<<< HEAD
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+987f7f52714e006832722e87bc07262066a23be4")]
+=======
+<<<<<<< HEAD
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b19685f4c611ce807e54c6ae4caab467fcae6384")]
+=======
+<<<<<<< HEAD
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bccaca89654aca6da0dbe56b62631453606c2e2c")]
+=======
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+51ab2fdae6cdca62f5c45e4c46816b8bc28bfb69")]
+>>>>>>> bccaca89654aca6da0dbe56b62631453606c2e2c
+>>>>>>> b19685f4c611ce807e54c6ae4caab467fcae6384
+>>>>>>> 5e06be5c8a45237ed4ab9101f8316484780ae68c
+>>>>>>> 1bc8c836d3b77d793591b5ce2d586d5d7e18079f
 [assembly: System.Reflection.AssemblyProductAttribute("Notcomd.Identity.Server")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Notcomd.Identity.Server")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

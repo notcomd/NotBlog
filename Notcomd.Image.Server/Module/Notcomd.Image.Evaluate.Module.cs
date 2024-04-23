@@ -17,11 +17,19 @@ namespace Notcomd.Image.Server.Module
         public string Image_Size { get; set; }
         [Key]
         public string Image_Ownership { get; set; }
+<<<<<<< HEAD
 
         public ICollection<Notcomd_Image_Module> Notcomd_Image_Module { get; set; }
 
         public ICollection<Notcomd_Image_Module> notcomd_Image_Modules { get; set; }
 
+=======
+<<<<<<< HEAD
+        public ICollection<Notcomd_Image_Module> Notcomd_Image_Module { get; set; }
+=======
+        public ICollection<Notcomd_Image_Module> notcomd_Image_Modules { get; set; }
+>>>>>>> 5e06be5c8a45237ed4ab9101f8316484780ae68c
+>>>>>>> 1bc8c836d3b77d793591b5ce2d586d5d7e18079f
         public Notcomd_Image_Evaluate_Module(long image_Level, string image_Type, string image_Size, string image_Ownership)
         {
             Image_Level = image_Level;
