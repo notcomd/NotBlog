@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "KkN2BVLRiKtYLjNSJadypM2JWpcS74lK4AvDGi7Ckziwd21dxOsjS1quB0OHTvZGXFiI6euzkwGLzw5ma9+S1A==",
+  "dgSpecHash": "Lq3ZJ1Moe2OsYyaVjK3jl21TXUUuhFk+Ut32OkzD+OVt1MK0bvKn9NcJUdYZf41WxSF21XCyMjJbG/Vi0f+Vew==",
   "success": true,
-  "projectFilePath": "C:\\Users\\29617\\source\\repos\\MyService\\Notcomd.Document.Server\\Notcomd.Document.Server.csproj",
+  "projectFilePath": "C:\\Users\\29617\\source\\repos\\MyService\\Notcomd.Document.Server\\Markdown.Domain.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\29617\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\6.0.0\\microsoft.bcl.asyncinterfaces.6.0.0.nupkg.sha512",
@@ -27,8 +27,8 @@
     "C:\\Users\\29617\\.nuget\\packages\\microsoft.extensions.options\\8.0.0\\microsoft.extensions.options.8.0.0.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\microsoft.extensions.primitives\\8.0.0\\microsoft.extensions.primitives.8.0.0.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\mono.texttemplating\\2.2.1\\mono.texttemplating.2.2.1.nupkg.sha512",
-    "C:\\Users\\29617\\.nuget\\packages\\npgsql\\8.0.2\\npgsql.8.0.2.nupkg.sha512",
-    "C:\\Users\\29617\\.nuget\\packages\\npgsql.entityframeworkcore.postgresql\\8.0.2\\npgsql.entityframeworkcore.postgresql.8.0.2.nupkg.sha512",
+    "C:\\Users\\29617\\.nuget\\packages\\npgsql\\8.0.3\\npgsql.8.0.3.nupkg.sha512",
+    "C:\\Users\\29617\\.nuget\\packages\\npgsql.entityframeworkcore.postgresql\\8.0.4\\npgsql.entityframeworkcore.postgresql.8.0.4.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\system.codedom\\4.4.0\\system.codedom.4.4.0.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\system.collections.immutable\\6.0.0\\system.collections.immutable.6.0.0.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\system.composition\\6.0.0\\system.composition.6.0.0.nupkg.sha512",

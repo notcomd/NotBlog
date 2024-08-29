@@ -22,7 +22,7 @@
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
-          "net6.0"
+          "net8.0"
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
@@ -30,8 +30,8 @@
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "net6.0": {
-            "targetAlias": "net6.0",
+          "net8.0": {
+            "targetAlias": "net8.0",
             "projectReferences": {}
           }
         },
@@ -39,60 +39,27 @@
           "warnAsError": [
             "NU1605"
           ]
-        },
-        "restoreAuditProperties": {
-          "enableAudit": "true",
-          "auditLevel": "low",
-          "auditMode": "direct"
         }
       },
       "frameworks": {
-        "net6.0": {
-          "targetAlias": "net6.0",
+        "net8.0": {
+          "targetAlias": "net8.0",
           "dependencies": {
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
-              "version": "[6.0.21, )"
+              "version": "[8.0.6, )"
             },
-            "Microsoft.AspNetCore.Http.Abstractions": {
+            "Microsoft.AspNetCore.Authentication.MicrosoftAccount": {
               "target": "Package",
-              "version": "[2.2.0, )"
-            },
-            "Microsoft.AspNetCore.Mvc.Abstractions": {
-              "target": "Package",
-              "version": "[2.2.0, )"
+              "version": "[8.0.6, )"
             },
             "Microsoft.AspNetCore.SignalR.Client": {
               "target": "Package",
-              "version": "[6.0.20, )"
-            },
-            "Microsoft.AspNetCore.SignalR.Client.Core": {
-              "target": "Package",
-              "version": "[6.0.20, )"
-            },
-            "Microsoft.Extensions.Options": {
-              "target": "Package",
-              "version": "[8.0.2, )"
-            },
-            "MongoDB.Bson": {
-              "target": "Package",
-              "version": "[2.24.0, )"
-            },
-            "MongoDB.Driver": {
-              "target": "Package",
-              "version": "[2.20.0, )"
-            },
-            "MongoDB.Driver.Core": {
-              "target": "Package",
-              "version": "[2.20.0, )"
-            },
-            "MongoDB.Driver.GridFS": {
-              "target": "Package",
-              "version": "[2.20.0, )"
+              "version": "[8.0.6, )"
             },
             "System.IdentityModel.Tokens.Jwt": {
               "target": "Package",
-              "version": "[7.5.1, )"
+              "version": "[7.6.0, )"
             }
           },
           "imports": [
@@ -111,7 +78,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.204\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.304/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

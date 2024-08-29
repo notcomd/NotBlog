@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\build\Notcomd.Net.Message.Web.API.props" />
-</Project>

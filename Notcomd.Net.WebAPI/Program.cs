@@ -1,34 +1,55 @@
-
-
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.OpenApi.Models;
 
 using Notcomd.Identity.Server;
-using Notcomd.Identity.Server.HostServer;
+using Notcomd.Identity.Server.Config;
 using Notcomd.Token.JWT;
 
 
+
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(opt =>
+{
+    var scheme = new OpenApiSecurityScheme()
+    {
+        Description = "Authorization header Example",
+        Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Authorization" },
+        Scheme = "oauth2",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+    };
+    opt.AddSecurityDefinition("Authorization", scheme);
+    var requirment = new OpenApiSecurityRequirement();
+    requirment[scheme] = new List<string>();
+    opt.AddSecurityRequirement(requirment);
+});
+builder.Services.AddCors(opt =>
+{
+    opt.AddPolicy("MyServer", poli =>
+    {
+        poli.WithOrigins("https://localhost:7097").AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod();
+    });
+});
+builder.Services.Configure<Notcomd_JwtOptions>(builder.Configuration.GetSection(nameof(Notcomd_JwtOptions)));
+builder.Services.Configure<IdentitySQLSetting>(builder.Configuration.GetSection(nameof(IdentitySQLSetting)));
+builder.Services.Configure<StatUserSetting>(builder.Configuration.GetSection(nameof(StatUserSetting)));
+builder.Services.AddDbContextOptions(builder.Configuration.GetSection(nameof(IdentitySQLSetting)));
+builder.Services.AddIdentityServerConfig(builder.Configuration.GetSection(nameof(Notcomd_JwtOptions)));
 
-
-builder.Services.Configure<Notcomd_JwtToken_Configural>(builder.Configuration.GetSection("Notcomd_JwtToken_Configural"));
-builder.Services.AddIdentityServerConfig(builder.Configuration.GetSection("Notcomd_JwtToken_Configural"));
-
-builder.Services.AddSwaggerGen();
 var app = builder.Build();
-
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(Path.Combine(builder.Environment.ContentRootPath, "Static")),
+    RequestPath = "/Static"
+});
 app.UseHttpsRedirection();
 
 app.UseAuthentication();

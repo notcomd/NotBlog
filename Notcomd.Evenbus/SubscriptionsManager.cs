@@ -2,11 +2,19 @@
 {
     public class SubscriptionsManager
     {
+
+
         private readonly Dictionary<string, List<Type>> _handlers = new Dictionary<string, List<Type>>();
+
+
         public event EventHandler<string> OnEventRemoved;
 
+
         public bool IsEmpty => !_handlers.Keys.Any();
+
+
         public void Clear() => _handlers.Clear();
+
 
         public void AddSubscription(string eventName, Type eventHandlerType)
         {
@@ -21,6 +29,7 @@
             _handlers[eventName].Add(eventHandlerType);
         }
 
+
         public void RemoveSubscription(string eventName, Type eventHandlerType)
         {
             _handlers[eventName].Remove(eventHandlerType);
@@ -31,8 +40,11 @@
             }
         }
 
+
         public IEnumerable<Type> GetHandlersForEvent(string eventName) => _handlers[eventName];
 
+
         public bool HasSubscriptionForEvent(string eventName) => _handlers.ContainsKey(eventName);
+
     }
 }

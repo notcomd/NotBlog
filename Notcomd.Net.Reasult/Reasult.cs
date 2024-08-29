@@ -16,8 +16,8 @@
             var Rt = new Reasults
             {
                 Souress = true,
-                Message = IStatuCode.GetOk,
-                StatusCode = IStatuCode.ReasultOK
+                Message = IHttpStatuCode.GetOk,
+                StatusCode = IHttpStatuCode.ReasultOK
             };
             return Rt;
         }
@@ -27,8 +27,8 @@
             var Rt = new Reasults
             {
                 Souress = false,
-                Message = IStatuCode.GetError,
-                StatusCode = IStatuCode.ReasultError
+                Message = IHttpStatuCode.GetError,
+                StatusCode = IHttpStatuCode.ReasultError
             };
             return Task.FromResult(Rt);
         }

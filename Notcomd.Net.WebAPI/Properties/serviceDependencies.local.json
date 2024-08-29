@@ -11,6 +11,10 @@
       "type": "postgresql.container",
       "connectionId": "notcomd",
       "dynamicId": null
+    },
+    "appInsights1": {
+      "type": "appInsights.sdk",
+      "dynamicId": null
     }
   }
 }

@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Notcomd.DomainCommand")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8211031446808068606fd7a1bd275c15697f65b8")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9d67448fdd0927e6fc71f40b44ecb86fafdd9d5b")]
 [assembly: System.Reflection.AssemblyProductAttribute("Notcomd.DomainCommand")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Notcomd.DomainCommand")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
