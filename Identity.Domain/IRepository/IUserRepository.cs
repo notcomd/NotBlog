@@ -7,11 +7,11 @@ namespace Identity.Domain.IRepository;
 public interface IUserRepository
 {
     
-    ValueTask<User> FindOneByUserAsync(Guid guid);
+    ValueTask<User?> FindOneByUserAsync(Guid guid);
     
-    ValueTask<User> FindOneByUserAsync(PhoneNumber phoneNumber);
+    ValueTask<User?> FindOneByUserAsync(PhoneNumber phoneNumber);
     
-    ValueTask<User> FindOneByUserAsync(string email);
+    ValueTask<User?> FindOneByUserAsync(string email);
 
     ValueTask AddByLoginHistoryAsync(PhoneNumber phoneNumber, string message);
 
@@ -21,4 +21,5 @@ public interface IUserRepository
 
     ValueTask<string> FindPhoneNumberAsync(PhoneNumber phoneNumber);
 
+    ValueTask SaveByEmailNumberAsync(string email, string code);
 }

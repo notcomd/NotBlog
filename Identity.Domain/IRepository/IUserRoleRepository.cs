@@ -9,10 +9,11 @@ public interface IUserRoleRepository
 
     ValueTask<UserRole?> FindByUserRoleAsync(Guid guid);
 
-    ValueTask<UserRole> FindByUserRoleAsync(string roleName);
+    ValueTask<UserRole?> FindByUserRoleAsync(string roleName);
 
     ValueTask<bool> IsUserRoleAsync(Guid guid);
     
     ValueTask<bool> IsUserRoleAsync(string roleName);
     
+    ValueTask<bool> UpByUserRoleAsync(UserRole userRole);
 }

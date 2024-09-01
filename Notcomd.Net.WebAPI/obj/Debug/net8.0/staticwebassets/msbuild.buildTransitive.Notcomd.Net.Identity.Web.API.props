@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\buildMultiTargeting\Notcomd.Net.Identity.Web.API.props" />
-</Project>

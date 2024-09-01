@@ -2,7 +2,12 @@
 
 public class UserOAuth
 {
+    
+    public string? UserCline { get; set; }
+    
     public string? OAuthTarget { get; set; }
     
     public string? OpenAuData { get; set; }
+    
+    public string? Reseturl { get; set; }
 }

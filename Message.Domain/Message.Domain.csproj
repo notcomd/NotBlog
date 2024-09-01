@@ -13,10 +13,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Module\" />
-    <Folder Include="IServer\" />
+    <Folder Include="Entities\" />
+    <Folder Include="IRepository\" />
     <Folder Include="Server\" />
-    <Folder Include="Mapper\" />
   </ItemGroup>
 
 </Project>
