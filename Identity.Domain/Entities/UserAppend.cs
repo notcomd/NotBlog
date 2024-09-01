@@ -1,4 +1,6 @@
-﻿namespace Identity.Domain.Entities;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Identity.Domain.Entities;
 
 
 /// <summary>
@@ -9,6 +11,7 @@ public class UserAppend
     
     public Uri? ThereCover { get; set; }
     
+    [StringLength(maximumLength:100,ErrorMessage = "string length is long！")]
     public string? BriefingNote { get; private set; }
     
     public string? Title { get; private set; }
@@ -58,7 +61,23 @@ public class UserAppend
         }
         return new ValueTask<UserAppend>(this);
     }
-    
-    
+
+    public ValueTask<UserAppend> ChangeByCoverValueTask(Uri cover)
+    {
+        this.ThereCover = cover;
+        return new ValueTask<UserAppend>(this);
+    }
+
+    public ValueTask<UserAppend> ChangeByTitleValueTask(string title)
+    {
+        this.Title = title;
+        return new ValueTask<UserAppend>(this);
+    }
+
+    public ValueTask<UserAppend> ChangeByBriefingNoteValueTask(string briefingNote)
+    {
+        this.BriefingNote = briefingNote;
+        return new ValueTask<UserAppend>(this);
+    }
     
 }
