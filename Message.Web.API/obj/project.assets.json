@@ -88,16 +88,6 @@
         "frameworkReferences": [
           "Microsoft.AspNetCore.App"
         ]
-      },
-      "Notcomd.Net.Reasult/1.0.0": {
-        "type": "project",
-        "framework": ".NETCoreApp,Version=v6.0",
-        "compile": {
-          "bin/placeholder/Notcomd.Net.Reasult.dll": {}
-        },
-        "runtime": {
-          "bin/placeholder/Notcomd.Net.Reasult.dll": {}
-        }
       }
     }
   },
@@ -439,16 +429,10 @@
         "swashbuckle.aspnetcore.swaggerui.6.5.0.nupkg.sha512",
         "swashbuckle.aspnetcore.swaggerui.nuspec"
       ]
-    },
-    "Notcomd.Net.Reasult/1.0.0": {
-      "type": "project",
-      "path": "../Notcomd.Net.Reasult/Notcomd.Net.Reasult.csproj",
-      "msbuildProject": "../Notcomd.Net.Reasult/Notcomd.Net.Reasult.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net6.0": [
-      "Notcomd.Net.Reasult >= 1.0.0",
       "Swashbuckle.AspNetCore >= 6.5.0"
     ]
   },
@@ -484,11 +468,7 @@
       "frameworks": {
         "net6.0": {
           "targetAlias": "net6.0",
-          "projectReferences": {
-            "C:\\Users\\29617\\source\\repos\\MyService\\Notcomd.Net.Reasult\\Notcomd.Net.Reasult.csproj": {
-              "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\Notcomd.Net.Reasult\\Notcomd.Net.Reasult.csproj"
-            }
-          }
+          "projectReferences": {}
         }
       },
       "warningProperties": {
@@ -525,7 +505,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.304\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.400\\RuntimeIdentifierGraph.json"
       }
     }
   }

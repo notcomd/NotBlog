@@ -11,7 +11,6 @@
     <ProjectReference Include="..\DomainCommand\Notcomd.DomainCommand.csproj" />
     <ProjectReference Include="..\Notcomd.Evenbus\Notcomd.Evenbus.csproj" />
     <ProjectReference Include="..\Notcomd.Identity.Server\Notcomd.Identity.Server.csproj" />
-    <ProjectReference Include="..\Notcomd.Net.Reasult\Notcomd.Net.Reasult.csproj" />
   </ItemGroup>
 
   <ItemGroup>

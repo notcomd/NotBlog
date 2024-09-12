@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Markdown.Domain;
 
 namespace Identity.Domain.Entities;
 
@@ -17,16 +16,18 @@ public class User:IAggregateRoot
     
     public DateTime CreateDatetime { get; init; }
     
+    public UserAppend UserAppend { get; private set; }
     
     private User(){}
 
-    public User(ref string userEmail, PhoneNumber phoneNumber,string userName,Guid userRoleGuid)
+    public User(ref string userEmail, PhoneNumber phoneNumber,string userName,Guid userRoleGuid,UserAppend userAppend)
     {
         UserGuid = new Guid();
         UserName = userName;
         UserEmail = userEmail;
         UserPhone = phoneNumber;
         UserRoleGuid = userRoleGuid;
+        UserAppend = userAppend;
     }
 
     public ValueTask<User> ChangeByAddressAsync(ref string userAddress)

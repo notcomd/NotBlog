@@ -890,16 +890,6 @@
           "bin/placeholder/Notcomd.Identity.Server.dll": {}
         }
       },
-      "Notcomd.Net.Reasult/1.0.0": {
-        "type": "project",
-        "framework": ".NETCoreApp,Version=v6.0",
-        "compile": {
-          "bin/placeholder/Notcomd.Net.Reasult.dll": {}
-        },
-        "runtime": {
-          "bin/placeholder/Notcomd.Net.Reasult.dll": {}
-        }
-      },
       "Notcomd.Token.JWT/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
@@ -2159,11 +2149,6 @@
       "path": "../Notcomd.Identity.Server/Notcomd.Identity.Server.csproj",
       "msbuildProject": "../Notcomd.Identity.Server/Notcomd.Identity.Server.csproj"
     },
-    "Notcomd.Net.Reasult/1.0.0": {
-      "type": "project",
-      "path": "../Notcomd.Net.Reasult/Notcomd.Net.Reasult.csproj",
-      "msbuildProject": "../Notcomd.Net.Reasult/Notcomd.Net.Reasult.csproj"
-    },
     "Notcomd.Token.JWT/1.0.0": {
       "type": "project",
       "path": "../JWToken/Notcomd.Token.JWT.csproj",
@@ -2176,7 +2161,6 @@
       "Notcomd.DomainCommand >= 1.0.0",
       "Notcomd.Evenbus >= 1.0.0",
       "Notcomd.Identity.Server >= 1.0.0",
-      "Notcomd.Net.Reasult >= 1.0.0",
       "Swashbuckle.AspNetCore >= 6.6.2",
       "Swashbuckle.AspNetCore.Swagger >= 6.6.2"
     ]
@@ -2222,9 +2206,6 @@
             },
             "C:\\Users\\29617\\source\\repos\\MyService\\Notcomd.Identity.Server\\Notcomd.Identity.Server.csproj": {
               "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\Notcomd.Identity.Server\\Notcomd.Identity.Server.csproj"
-            },
-            "C:\\Users\\29617\\source\\repos\\MyService\\Notcomd.Net.Reasult\\Notcomd.Net.Reasult.csproj": {
-              "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\Notcomd.Net.Reasult\\Notcomd.Net.Reasult.csproj"
             }
           }
         }
@@ -2273,7 +2254,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.304/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.400/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

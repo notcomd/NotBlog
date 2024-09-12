@@ -1,6 +1,6 @@
 @Identity.Web.API_HostAddress = http://localhost:5150
 
-GET {{Identity.Web.API_HostAddress}}/weatherforecast/
+GET {{Identity.Web.API_HostAddress}}/LogIn/UserLogin/UNRandom
 Accept: application/json
 
 ###

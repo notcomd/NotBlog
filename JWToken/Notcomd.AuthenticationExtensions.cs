@@ -33,7 +33,7 @@ namespace Notcomd.Token.JWT
 
         public static AuthenticationBuilder AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddSingleton<INotcomd_JwtTokenServer, Notcommd_JWTokenOptions>();
+            services.AddScoped<INotcomd_JwtTokenServer, Notcommd_JWTokenOptions>();
             var ConfigString = configuration.Get<Notcomd_JwtOptions>();
             if (ConfigString is null)
             {

@@ -5,7 +5,7 @@ namespace Markdown.Infrastructures.EntityConfig;
 
 public class MarkdownQuoteDbContext: DbContext
 {
-    public DbSet<MarkdownQuoteModel> MarkdownQuoteModels { get; set; }
+    public DbSet<MarkdownQuote> MarkdownQuoteModels { get; set; }
 
     public MarkdownQuoteDbContext(DbContextOptions<MarkdownQuoteDbContext> options) : base(options)
     {

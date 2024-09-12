@@ -11,7 +11,7 @@ public class MarkdownDataDbContext:DbContext
 
    // private readonly OptionsManager<DbContextConfiguration> _optionsManager;
     
-    public DbSet<MarkdownDataModel> MarkdownDataModels { get; set; }
+    public DbSet<MarkdownData> MarkdownDataModels { get; set; }
 
     public MarkdownDataDbContext(DbContextOptions<MarkdownDataDbContext> options) : base(options)
     {

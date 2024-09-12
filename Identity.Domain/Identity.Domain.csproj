@@ -6,4 +6,8 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\JWToken\Notcomd.Token.JWT.csproj" />
+    </ItemGroup>
+
 </Project>

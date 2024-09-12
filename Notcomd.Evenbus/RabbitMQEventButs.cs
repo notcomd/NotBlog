@@ -33,7 +33,7 @@ namespace Notcomd.Evenbus
             _serviceScope = serviceScopeFactory.CreateScope();
             _serviceProvider = _serviceScope.ServiceProvider;
             _consumerChannel = CreateConsumerChannel();
-            _subscriptionsManager.OnEventRemoved += SubsManager_OnEventRemoved; ;
+            _subscriptionsManager.OnEventRemoved += SubsManager_OnEventRemoved; 
         }
 
         private void SubsManager_OnEventRemoved(object? sender, string e)
