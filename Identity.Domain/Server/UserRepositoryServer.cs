@@ -27,34 +27,53 @@ public class UserRepositoryServer
 
     public async ValueTask<string> LogInByCheckPasswordAsync(PhoneNumber phoneNumber,string password,long codeing)
     {
+        
         var us = await _userRepository.FindOneByUserAsync(phoneNumber);
-        var role = await _userRoleRepository.FindByUserRoleAsync(us.UserGuid);
-        if (us is null)
+        var role = await _userRoleRepository.FindByUserRoleAsync(us.UserRoleGuid);
+        if (us is null && role is null)
         {
             _logger.LogError($" {DateTime.UtcNow}  find {phoneNumber} is null return null ");
-            throw new ArgumentNullException("find phone is null!");
+            throw new ArgumentNullException($"find phone is null!{nameof(phoneNumber)}");
         }
-        var hash = HashH256Tool.CreateHash256Async($"{password}+{us.UserEmail}").GetAwaiter().GetResult();
-        if (await us.CheckByPasswordAsync(ref hash))
+        if (await us.CheckByPasswordAsync(HashH256Tool.CreateHash256Async(password).GetAwaiter().GetResult())&& await us.UserAccessFail.CloseLockAsync())
         {
             var listClaims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name,us.UserName),
-                new Claim(ClaimTypes.Email,us.UserEmail),
-                new Claim(ClaimTypes.Role,role.RoleName)
+                new Claim(ClaimTypes.Name, us.UserName),
+                new Claim(ClaimTypes.Email, us!.UserEmail),
+                new Claim(ClaimTypes.Role, role!.RoleName),
+                new Claim(ClaimTypes.MobilePhone,us.UserPhone.PhoneCode)
             };
-            
             return _jwtTokenServer.BuilderTokenAsync(listClaims,_optionsSnapshot.Value);
         }
+        await us.UserAccessFail.FailAsync();
         return "密码错误";
     }
 
-    public ValueTask<string> LogInByCheckPasswordAsync(string email, string password, long codeing)
+    public async ValueTask<string> LogInByCheckPasswordAsync(string email, string password, long codeing)
     {
-
-        return new ValueTask<string>();
+        var us = await _userRepository.FindOneByUserAsync(email);
+        var role = await _userRoleRepository.FindByUserRoleAsync(us.UserRoleGuid);
+        
+        if (us is null && role is null)
+        {
+            _logger.LogError($" {DateTime.UtcNow}  find {email} is null return null ");
+            throw new ArgumentNullException("find phone is null!");
+        }
+        if (await us.CheckByPasswordAsync(HashH256Tool.CreateHash256Async(password).GetAwaiter().GetResult()) && await us.UserAccessFail.CloseLockAsync())
+        {
+            var listClaims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, us.UserName),
+                new Claim(ClaimTypes.Email, us!.UserEmail),
+                new Claim(ClaimTypes.Role, role!.RoleName)
+            };
+            return _jwtTokenServer.BuilderTokenAsync(listClaims,_optionsSnapshot.Value);
+        }
+        await  us.UserAccessFail.FailAsync();
+        return "凭证错误";
     }
-
+    
     public ValueTask SigInByCreateUserAsync(string email, string password, long codeing)
     {
 

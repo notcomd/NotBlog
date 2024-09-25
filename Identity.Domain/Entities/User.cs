@@ -4,30 +4,29 @@ namespace Identity.Domain.Entities;
 
 public class User:IAggregateRoot
 {
-    
     public Guid UserGuid { get; init; }
     public Guid UserRoleGuid { get; init; }
     public string UserName { get; private set; }
-    public Uri HeadImage { get; private set; }
     public string? UserEmail { get; private set; }
     public PhoneNumber? UserPhone { get; private set; }
     public string? UserAddress { get; private set; }
     public string PasswordHash { get; private set; } = null!;
-    
     public DateTime CreateDatetime { get; init; }
+    public UserAccessFail UserAccessFail { get; init; }
     
-    public UserAppend UserAppend { get; private set; }
     
     private User(){}
 
-    public User(ref string userEmail, PhoneNumber phoneNumber,string userName,Guid userRoleGuid,UserAppend userAppend)
+    public User(ref string userEmail, PhoneNumber phoneNumber,string userName,Guid userRoleGuid)
     {
         UserGuid = new Guid();
         UserName = userName;
         UserEmail = userEmail;
         UserPhone = phoneNumber;
         UserRoleGuid = userRoleGuid;
-        UserAppend = userAppend;
+        //UserAppend = userAppend;
+        CreateDatetime=DateTime.Now;
+        UserAccessFail = new UserAccessFail(this);
     }
 
     public ValueTask<User> ChangeByAddressAsync(ref string userAddress)
@@ -36,39 +35,72 @@ public class User:IAggregateRoot
         return new ValueTask<User>(this);
     } 
     
-    public ValueTask ChangeByPasswordAsync(ref string hashPassword)
+    /// <summary>
+    /// 验证并设置密码
+    /// </summary>
+    /// <param name="hashPassword">密码</param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    public ValueTask ChangeByPasswordAsync(ref string password)
     {
-        if (hashPassword.Length <= 8)
+        if (password.Length <= 8)
         {
             throw new ArgumentOutOfRangeException($"your are set password is short!");
         }
         else
         {
-            PasswordHash = hashPassword;
+            var hash256Async = HashH256Tool.CreateHash256Async(password);
+            PasswordHash = hash256Async.GetAwaiter().GetResult();
         }
         return ValueTask.CompletedTask;
     }
-
+    
+    
+    /// <summary>
+    /// 设置信邮箱
+    /// </summary>
+    /// <param name="newEmail"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
     public ValueTask ChangeByEmailAsync([EmailAddress(ErrorMessage = "your set email is error ,pleas set again your email address!")]ref string newEmail)
     {
+        if (UserEmail == newEmail)
+        {
+            throw new ArgumentException("需要不同的邮箱");
+        }
         UserEmail = newEmail;
         return ValueTask.CompletedTask;
     }
 
+    /// <summary>
+    /// 设置新密码
+    /// </summary>
+    /// <param name="phoneNumber"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
     public ValueTask ChangeByPhoneAsync(PhoneNumber phoneNumber)
     {
+        if (phoneNumber.PhoneCode == UserPhone.PhoneCode)
+        {
+            throw new ArgumentException("需要不要一样的号码");
+        }
         UserPhone = phoneNumber;
         return ValueTask.CompletedTask;
     }
 
-    public ValueTask<bool> CheckByPasswordAsync(ref string hashPassword)
+    /// <summary>
+    /// 验证密码
+    /// </summary>
+    /// <param name="hashPassword">密码哈希值</param>
+    /// <returns></returns>
+    public ValueTask<bool> CheckByPasswordAsync( string hashPassword)
     {
         return new ValueTask<bool>(PasswordHash == HashH256Tool.CreateHash256Async(hashPassword).Result);
     }
 
-    public ValueTask ChangeByHeadImageAsync(ref Uri imageUri)
-    {
-        HeadImage = imageUri;
-        return ValueTask.CompletedTask;
-    }
+    // public ValueTask ChangeByHeadImageAsync(ref Uri imageUri)
+    // {
+    //     HeadImage = imageUri;
+    //     return ValueTask.CompletedTask;
+    // }
 }

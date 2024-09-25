@@ -2,13 +2,16 @@
 
 
 using EmailSendServer;
+using Notcomd.Token.JWT;
 
 var builder = WebApplication.CreateBuilder(args);
 
 
 builder.Services.Configure<EmailAddress>(builder.Configuration.GetSection(nameof(EmailAddress)));
+builder.Services.Configure<Notcomd_JwtOptions>(builder.Configuration.GetSection(nameof(Notcomd_JwtOptions)));
 builder.Services.AddEmailServer(builder.Configuration.GetSection(nameof(EmailAddress)));
 builder.Services.AddOptions();
+builder.Services.AddJwtAuthentication(builder.Configuration.GetSection(nameof(Notcomd_JwtOptions)));
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddControllers();

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Notcomd.Evenbus")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+07056f5ff568ffdca49a74d0ebaa0d5f205d56d7")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9055c6813459ab8e5d7a9f56c037eb54c6f7fb39")]
 [assembly: System.Reflection.AssemblyProductAttribute("Notcomd.Evenbus")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Notcomd.Evenbus")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

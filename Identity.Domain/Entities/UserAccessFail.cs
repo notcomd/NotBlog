@@ -5,15 +5,10 @@ public class UserAccessFail
     public Guid UserAccessFailGuid { get; init; }
     
     public object? Message { get; set; }
-    
-    public Guid UserGuid { get; set; }
-    
     public User User { get; init; }
-
+    
     private bool LockOut;
-    
     public DateTime? LockOutEnd { get; private set; }
-    
     public int AccessFaildCount { get; private set; }
     
     private UserAccessFail(){}
@@ -25,6 +20,10 @@ public class UserAccessFail
         User = user;
     }
 
+    /// <summary>
+    /// 密码验证失败添加次数
+    /// </summary>
+    /// <returns></returns>
     public ValueTask FailAsync()
     {
         AccessFaildCount++;
@@ -36,6 +35,10 @@ public class UserAccessFail
         return new ValueTask();
     }
 
+    /// <summary>
+    /// 重置
+    /// </summary>
+    /// <returns></returns>
     private ValueTask ResetFailAsync()
     {
         LockOut = false;
@@ -44,6 +47,11 @@ public class UserAccessFail
         return new ValueTask();
     }
     
+    
+    /// <summary>
+    /// 重置
+    /// </summary>
+    /// <returns></returns>
     public ValueTask<bool> CloseLockAsync()
     {
         if (!LockOut) return new ValueTask<bool>(false);
