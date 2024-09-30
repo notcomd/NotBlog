@@ -3,7 +3,7 @@ using Identity.Domain.IRepository;
 
 namespace Identity.Infrastructure.Repository;
 
-public class SmsCodeSend:ISmsCodeSend
+public class SmsCodeSend : ISmsCodeSend
 {
     public ValueTask SendPhoneCodeAsync(PhoneNumber phoneNumber, string code)
     {

@@ -4,26 +4,29 @@ using Identity.Domain.Option;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
-namespace Identity.Infrastructure.EntityConfig;
+namespace Identity.Infrastructure.EntityFramework;
 
-public class UserDdContext: DbContext
+public class UserRoleDbContext : DbContext
 {
-    public DbSet<User> Users { get; set; }
-
     private readonly OptionsManager<DbContextOption> _optionsManager;
-    public UserDdContext(DbContextOptions<UserDdContext> options, OptionsManager<DbContextOption> optionsManager) :
-        base(options)
+    
+    public UserRoleDbContext(DbContextOptions<UserRoleDbContext> options,
+        OptionsManager<DbContextOption> optionsManager) : base(options)
     {
         _optionsManager = optionsManager;
     }
-     
-    public UserDdContext(DbContextOptions<UserDdContext> options):base(options){}
-    
+
+    public UserRoleDbContext(DbContextOptions<UserRoleDbContext> options) : base(options)
+    {
+    }
+
+    public DbSet<UserRole> UserRoles { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        modelBuilder.Entity<User>().HasKey(en => en.UserGuid);
+        modelBuilder.Entity<UserRole>().HasKey(en => en.UserRoleGuid);
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
     }
+    
 }

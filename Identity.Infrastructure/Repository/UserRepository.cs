@@ -1,34 +1,35 @@
 ﻿using Identity.Domain.Entities;
 using Identity.Domain.IRepository;
-using Identity.Infrastructure.EntityConfig;
+using Identity.Infrastructure.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace Identity.Infrastructure.Repository;
 
-public class UserRepository:IUserRepository
+public class UserRepository : IUserRepository
 {
-
-    private readonly UserDdContext _userDdContext;
     private readonly IDistributedCache _distributedCache;
-    public UserRepository(UserDdContext userDdContext,IDistributedCache distributedCache)
+
+    private readonly UserDbContext _userDbContext;
+
+    public UserRepository(UserDbContext userDbContext, IDistributedCache distributedCache)
     {
         _distributedCache = distributedCache;
-        _userDdContext = userDdContext;
+        _userDbContext = userDbContext;
     }
-    
+
     public ValueTask<User?> FindOneByUserAsync(Guid guid)
     {
-        var data = _userDdContext.FindAsync<User>(guid).GetAwaiter().GetResult();
+        var data = _userDbContext.FindAsync<User>(guid).GetAwaiter().GetResult();
         return new ValueTask<User?>(data);
     }
 
     public ValueTask<User?> FindOneByUserAsync(PhoneNumber phoneNumber)
     {
         if (phoneNumber is null)
-            throw new ArgumentNullException($"数据为空");
-        //var data = _userDdContext.FindAsync<User>(phoneNumber).GetAwaiter().GetResult();
-        var data = _userDdContext.Users.SingleOrDefaultAsync(en =>
+            throw new ArgumentNullException("数据为空");
+        //var data = _userDbContext.FindAsync<User>(phoneNumber).GetAwaiter().GetResult();
+        var data = _userDbContext.Users.SingleOrDefaultAsync(en =>
                 en.UserPhone!.PhoneCode == phoneNumber.PhoneCode &&
                 en.UserPhone!.AddressRegion == phoneNumber.AddressRegion)
             .GetAwaiter().GetResult();
@@ -38,7 +39,7 @@ public class UserRepository:IUserRepository
 
     public ValueTask<User?> FindOneByUserAsync(string email)
     {
-        var data = _userDdContext.FindAsync<User>(email).GetAwaiter().GetResult();
+        var data = _userDbContext.FindAsync<User>(email).GetAwaiter().GetResult();
         return new ValueTask<User?>(data);
     }
 
@@ -48,41 +49,44 @@ public class UserRepository:IUserRepository
         if (find is not null)
         {
             var userid = find.UserGuid;
-            _userDdContext.FindAsync<User>(new UserLoginHistory(userid,phoneNumber,message));
+            _userDbContext.FindAsync<User>(new UserLoginHistory(userid, phoneNumber, message, find.UserEmail));
         }
+
         return ValueTask.CompletedTask;
     }
 
     /// <summary>
-    /// 保存验证马
+    ///     保存验证马
     /// </summary>
     /// <param name="phoneNumber"></param>
     /// <param name="code"></param>
     /// <returns></returns>
     public ValueTask SaveByPhoneNumberAsync(PhoneNumber phoneNumber, string code)
     {
-        string key = $"PhoneCode{phoneNumber.PhoneCode}_{phoneNumber.AddressRegion}";
-        _distributedCache.SetStringAsync(key, code, new DistributedCacheEntryOptions {AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)});
+        var key = $"PhoneCode{phoneNumber.PhoneCode}_{phoneNumber.AddressRegion}";
+        _distributedCache.SetStringAsync(key, code,
+            new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) });
         return ValueTask.CompletedTask;
     }
 
     public ValueTask SaveByEmailNumberAsync(string email, string code)
     {
-        var data=_userDdContext.Users.SingleOrDefaultAsync(en => en.UserEmail == email).GetAwaiter().GetResult();
+        var data = _userDbContext.Users.SingleOrDefaultAsync(en => en.UserEmail == email).GetAwaiter().GetResult();
         if (data is null) return ValueTask.CompletedTask;
-        string key = $"emailAddress:{data.UserEmail}_{code}";
-        _distributedCache.SetStringAsync(key,code,new DistributedCacheEntryOptions{AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)});
+        var key = $"emailAddress:{data.UserEmail}_{code}";
+        _distributedCache.SetStringAsync(key, code,
+            new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) });
         //string key = $"emailAddress:{data.UserEmail}_{code}";
         return ValueTask.CompletedTask;
     }
- 
+
     public ValueTask<string> RetirievePhoneCodeAsync(PhoneNumber phoneNumber)
     {
         throw new NotImplementedException();
     }
-    
+
     /// <summary>
-    /// 验证过后直接删除
+    ///     验证过后直接删除
     /// </summary>
     /// <param name="phoneNumber"></param>
     /// <returns></returns>

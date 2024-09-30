@@ -1,13 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "38ur/aE7PIu8+VlFOAZOVCmJEZ3FEvIlfk2x9YCmTDDLnNvA2FqpYK7U0UlT9YNfCOWp+YF4Z7U5THu/vwIDgA==",
+  "dgSpecHash": "BQbjrAL3FYCeeSp+WbQ6yFzwmpsgXE7E7wx8bDUZHFgK7zTO8a9+Kh7ATzjY/2qhZo9TNa+VjPxMeqf/yNBcGg==",
   "success": true,
   "projectFilePath": "C:\\Users\\29617\\source\\repos\\MyService\\FileDev.Domain\\FileDev.Domain.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\29617\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\8.0.0\\microsoft.extensions.configuration.abstractions.8.0.0.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\8.0.1\\microsoft.extensions.dependencyinjection.abstractions.8.0.1.nupkg.sha512",
-    "C:\\Users\\29617\\.nuget\\packages\\microsoft.extensions.primitives\\8.0.0\\microsoft.extensions.primitives.8.0.0.nupkg.sha512",
-    "C:\\Users\\29617\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\6.0.0\\system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512"
+    "C:\\Users\\29617\\.nuget\\packages\\microsoft.extensions.primitives\\8.0.0\\microsoft.extensions.primitives.8.0.0.nupkg.sha512"
   ],
   "logs": []
 }

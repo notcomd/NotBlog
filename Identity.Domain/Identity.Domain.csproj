@@ -7,7 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\JWToken\Notcomd.Token.JWT.csproj" />
+        <ProjectReference Include="..\JWToken\Notcomd.Token.JWT.csproj"/>
     </ItemGroup>
 
 </Project>

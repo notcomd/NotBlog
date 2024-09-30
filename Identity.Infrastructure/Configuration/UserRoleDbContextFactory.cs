@@ -1,10 +1,10 @@
-﻿using Identity.Infrastructure.EntityConfig;
+﻿using Identity.Infrastructure.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
 namespace Identity.Infrastructure.Configuration;
 
-public class UserRoleDbContextFactory: IDesignTimeDbContextFactory<UserRoleDbContext>
+public class UserRoleDbContextFactory : IDesignTimeDbContextFactory<UserRoleDbContext>
 {
     public UserRoleDbContext CreateDbContext(string[] args)
     {

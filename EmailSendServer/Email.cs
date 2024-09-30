@@ -7,7 +7,6 @@ namespace EmailSendServer;
 
 public class Email:IEmail
 {
-    
     private readonly IOptionsSnapshot<EmailAddress> _optionsManager;
     
     public Email(IOptionsSnapshot<EmailAddress> optionsManager)

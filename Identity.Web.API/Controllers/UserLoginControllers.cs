@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using EmailSendServer;
 using MailKit.Security;
 using Microsoft.AspNetCore.Mvc;
 using MimeKit;
-using EmailSendServer;
 using Notcomd.Token.JWT;
 
 namespace Identity.Web.API.Controllers;
@@ -37,7 +37,7 @@ public class UserLoginController : ControllerBase
             Body = new BodyBuilder
             {
                 HtmlBody =
-                    $"<dir style=\"background-color: deepskyblue; width: auto; height: 60px;\">\n    <span style=\"text-align: left;\"><h1>Notcomd Studio</h1></span>\n</dir>\n<dir style=\" width: auto; height: max-content;\">\n    <span style=\"text-align: center;\"><h1>验证码</h1></span>\n    <span style=\"text-align:center;\"><h2>345345</h2></span>\n</dir>"
+                    "<dir style=\"background-color: deepskyblue; width: auto; height: 60px;\">\n    <span style=\"text-align: left;\"><h1>Notcomd Studio</h1></span>\n</dir>\n<dir style=\" width: auto; height: max-content;\">\n    <span style=\"text-align: center;\"><h1>验证码</h1></span>\n    <span style=\"text-align:center;\"><h2>345345</h2></span>\n</dir>"
             }.ToMessageBody()
         };
         await _email.SendEmailValueTask(message, mailpush, SecureSocketOptions.StartTls);

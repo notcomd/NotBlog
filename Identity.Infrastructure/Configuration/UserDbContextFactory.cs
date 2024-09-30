@@ -1,15 +1,15 @@
-﻿using Identity.Infrastructure.EntityConfig;
+﻿using Identity.Infrastructure.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
 namespace Identity.Infrastructure.Configuration;
 
-public class UserDbContextFactory: IDesignTimeDbContextFactory<UserDdContext>
+public class UserDbContextFactory : IDesignTimeDbContextFactory<UserDbContext>
 {
-    public UserDdContext CreateDbContext(string[] args)
+    public UserDbContext CreateDbContext(string[] args)
     {
-        var options = new DbContextOptionsBuilder<UserDdContext>();
+        var options = new DbContextOptionsBuilder<UserDbContext>();
         options.UseNpgsql("Host=localhost;Database=identityuser;Username=notcomd;Password=makefile");
-        return new UserDdContext(options.Options);
+        return new UserDbContext(options.Options);
     }
 }

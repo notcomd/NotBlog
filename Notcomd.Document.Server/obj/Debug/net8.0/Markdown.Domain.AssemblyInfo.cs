@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Markdown.Domain")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9055c6813459ab8e5d7a9f56c037eb54c6f7fb39")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5b878c8d6fa742986ac0011ff080105666433145")]
 [assembly: System.Reflection.AssemblyProductAttribute("Markdown.Domain")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Markdown.Domain")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -5,5 +5,5 @@ public enum UserAccess
     Ok,
     Error,
     TimeOut,
-    Reset,
+    Reset
 }
