@@ -1,5 +1,7 @@
+using System.Reflection;
 using EmailSendServer;
 using Identity.Infrastructure;
+using MediatR;
 using Notcomd.Token.JWT;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +11,9 @@ builder.Services.Configure<EmailAddress>(builder.Configuration.GetSection(nameof
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(nameof(JwtOptions)));
 builder.Services.AddEmailServer(builder.Configuration.GetSection(nameof(EmailAddress)));
 builder.Services.AddOptions();
+builder.Services.AddIdentityService(builder.Configuration.GetSection(nameof(JwtOptions)));
+builder.Services.AddMediatR(Assembly.GetExecutingAssembly());
+//builder.Services.AddMetrics(Assembly.GetExecutingAssembly());
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

@@ -19,6 +19,7 @@ public static class AddIdentityServer
         serviceCollection.AddDistributedMemoryCache();
         serviceCollection.AddScoped<ISmsCodeSend, SmsCodeSend>();
         serviceCollection.AddEmailServer();
+
         serviceCollection.AddDbContext<UserRoleDbContext>();
         serviceCollection.AddDbContext<UserDbContext>();
         serviceCollection.AddJwtAuthentication(configuration);

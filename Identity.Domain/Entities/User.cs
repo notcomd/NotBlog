@@ -6,7 +6,6 @@ public class User : IAggregateRoot
 {
     private string PasswordHash = null!;
 
-
     private User()
     {
     }

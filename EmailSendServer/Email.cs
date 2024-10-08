@@ -5,47 +5,48 @@ using MimeKit;
 
 namespace EmailSendServer;
 
-public class Email:IEmail
+public class Email : IEmail
 {
     private readonly IOptionsSnapshot<EmailAddress> _optionsManager;
-    
+
     public Email(IOptionsSnapshot<EmailAddress> optionsManager)
     {
         _optionsManager = optionsManager;
     }
-    
-    
+
+
     /// <summary>
     /// 
     /// </summary>
     /// <param name="message"></param>
     /// <param name="mailPush">配置信息</param>
-    public async ValueTask SendEmailValueTask(MimeMessage message,MailPush mailPush)
+    public async ValueTask SendEmailValueTask(MimeMessage message, MailPush mailPush)
     {
-        message.From.Add(new MailboxAddress(mailPush.FromName,mailPush.FromEmailAddress));
+        message.From.Add(new MailboxAddress(mailPush.FromName, mailPush.FromEmailAddress));
         message.To.AddRange(mailPush.SendEmailAddresses);
 
         using var mailClient = new SmtpClient
         {
-            ServerCertificateValidationCallback = (s,c,h,e)=>true
+            ServerCertificateValidationCallback = (s, c, h, e) => true
         };
         mailClient.AuthenticationMechanisms.Remove("XOAUTH2");
         //return ValueTask.CompletedTask;
-       await mailClient.ConnectAsync(_optionsManager.Value.AddressHost, _optionsManager.Value.Port,
-           SecureSocketOptions.StartTls);
-       await mailClient.AuthenticateAsync(_optionsManager.Value.EmailUser, _optionsManager.Value.Password);
-       await mailClient.SendAsync(message);
-       await mailClient.DisconnectAsync(true);
+        await mailClient.ConnectAsync(_optionsManager.Value.AddressHost, _optionsManager.Value.Port,
+            SecureSocketOptions.StartTls);
+        await mailClient.AuthenticateAsync(_optionsManager.Value.EmailUser, _optionsManager.Value.Password);
+        await mailClient.SendAsync(message);
+        await mailClient.DisconnectAsync(true);
     }
 
-    public async ValueTask SendEmailValueTask(MimeMessage message, MailPush mailPush,SecureSocketOptions secureSocketOptions)
+    public async ValueTask SendEmailValueTask(MimeMessage message, MailPush mailPush,
+        SecureSocketOptions secureSocketOptions)
     {
-        if (_optionsManager.Value != null)
+        if (_optionsManager.Value is null)
         {
-            var data = _optionsManager.Value;
-            // throw new ArgumentNullException(nameof(_optionsManager.Value.EmailUser));
+            throw new ArgumentNullException(nameof(_optionsManager.Value.EmailUser));
         }
-        message.From.Add(new MailboxAddress(mailPush.FromName,mailPush.FromEmailAddress));
+
+        message.From.Add(new MailboxAddress(_optionsManager.Value.EmailUser, _optionsManager.Value.EmailUser));
         message.To.AddRange(mailPush.SendEmailAddresses);
 
         using var mailclient = new SmtpClient
