@@ -10,7 +10,7 @@ namespace Notcomd.Token.JWT
     public class Notcommd_JWTokenOptions : INotcomd_JwtTokenServer
     {
 
-        public string BuilderTokenAsync(IEnumerable<Claim> claims, Notcomd_JwtOptions configuration)
+        public string BuilderTokenAsync(IEnumerable<Claim> claims, JwtOptions configuration)
         {
             //var expiry = TimeSpan.FromSeconds(configuration.ExpirSeconds);
             var Securitykey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration.PrivateKey));

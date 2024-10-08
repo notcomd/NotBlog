@@ -135,3 +135,6 @@ C:\Users\29617\source\repos\MyService\identity.web.api\obj\Debug\net8.0\refint\I
 C:\Users\29617\source\repos\MyService\identity.web.api\obj\Debug\net8.0\Identity.Web.API.pdb
 C:\Users\29617\source\repos\MyService\identity.web.api\obj\Debug\net8.0\Identity.Web.API.genruntimeconfig.cache
 C:\Users\29617\source\repos\MyService\identity.web.api\obj\Debug\net8.0\ref\Identity.Web.API.dll
+C:\Users\29617\source\repos\MyService\Identity.Web.API\bin\Debug\net8.0\MediatR.dll
+C:\Users\29617\source\repos\MyService\Identity.Web.API\bin\Debug\net8.0\MediatR.Contracts.dll
+C:\Users\29617\source\repos\MyService\Identity.Web.API\bin\Debug\net8.0\MediatR.Extensions.Microsoft.DependencyInjection.dll

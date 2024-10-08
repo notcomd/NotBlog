@@ -13,7 +13,7 @@ namespace Notcomd.Token.JWT
 
         //#
         //这是jwtoken配置类,加载配置信息
-        public static AuthenticationBuilder AddJwtAuthentication(this IServiceCollection serviceDescriptors, Notcomd_JwtOptions wToke)
+        public static AuthenticationBuilder AddJwtAuthentication(this IServiceCollection serviceDescriptors, JwtOptions wToke)
         {
             serviceDescriptors.AddScoped<INotcomd_JwtTokenServer, Notcommd_JWTokenOptions>();
             return serviceDescriptors.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(x =>
@@ -34,7 +34,7 @@ namespace Notcomd.Token.JWT
         public static AuthenticationBuilder AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddScoped<INotcomd_JwtTokenServer, Notcommd_JWTokenOptions>();
-            var ConfigString = configuration.Get<Notcomd_JwtOptions>();
+            var ConfigString = configuration.Get<JwtOptions>();
             if (ConfigString is null)
             {
                 throw new ArgumentNullException("没有配置相关数据,请检查配置文件问题");

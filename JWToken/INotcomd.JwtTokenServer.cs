@@ -13,7 +13,7 @@ namespace Notcomd.Token.JWT
         /// <typeparam name="T">需要声明Claim数据</typeparam>
         /// <param name="Redname"></param>
         /// <returns></returns>
-        string BuilderTokenAsync(IEnumerable<Claim> claims, Notcomd_JwtOptions configuration);
+        string BuilderTokenAsync(IEnumerable<Claim> claims,JwtOptions configuration);
 
 
         /// <summary>

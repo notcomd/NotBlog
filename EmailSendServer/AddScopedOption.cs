@@ -21,20 +21,6 @@ public static class AddScopedOption
         var data = configuration.GetSection(nameof(EmailAddress));
         
         serviceCollection.AddScoped<IEmail, Email>();
-        serviceCollection.Configure<EmailAddress>(e =>
-        {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                
-            }else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                
-            }else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                
-            }
-            //e.AddressHost=  
-        });
         serviceCollection.AddOptions();
         return serviceCollection;
     }

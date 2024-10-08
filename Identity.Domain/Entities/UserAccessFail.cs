@@ -21,7 +21,6 @@ public class UserAccessFail
     [Key] public Guid UserAccessFailGuid { get; init; }
 
     public User User { get; init; }
-
     
     public Guid UserGuid { get; init; }
     public DateTime? LockOutEnd { get; private set; }

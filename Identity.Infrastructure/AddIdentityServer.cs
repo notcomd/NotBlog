@@ -1,4 +1,5 @@
-﻿using Identity.Domain.IRepository;
+﻿using EmailSendServer;
+using Identity.Domain.IRepository;
 using Identity.Infrastructure.EntityFramework;
 using Identity.Infrastructure.Repository;
 using Microsoft.Extensions.Configuration;
@@ -17,6 +18,7 @@ public static class AddIdentityServer
         serviceCollection.AddScoped<IEmailCodeSend, EmailCodeSend>();
         serviceCollection.AddDistributedMemoryCache();
         serviceCollection.AddScoped<ISmsCodeSend, SmsCodeSend>();
+        serviceCollection.AddEmailServer();
         serviceCollection.AddDbContext<UserRoleDbContext>();
         serviceCollection.AddDbContext<UserDbContext>();
         serviceCollection.AddJwtAuthentication(configuration);

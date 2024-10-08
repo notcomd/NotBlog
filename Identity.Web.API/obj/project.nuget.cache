@@ -1,12 +1,15 @@
 {
   "version": 2,
-  "dgSpecHash": "dlLrh7WNSneXSSPJggIzoVRPQG6tsTYuF1L7qqppYrXY/QsM2M1U+a8YR+yhgujIdq1I9zG35u/vVUm2IwGqpw==",
+  "dgSpecHash": "tcpHr19s8gxN1G9c/Wf+S5zTJwQoKmpZjRQajBZt1JTBVjj5a4PZAsNccNpKz0hplBWO6OgFKNLDBSz60LkjBQ==",
   "success": true,
   "projectFilePath": "C:\\Users\\29617\\source\\repos\\MyService\\Identity.Web.API\\Identity.Web.API.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\29617\\.nuget\\packages\\bouncycastle.cryptography\\2.4.0\\bouncycastle.cryptography.2.4.0.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\mailkit\\4.7.1.1\\mailkit.4.7.1.1.nupkg.sha512",
+    "C:\\Users\\29617\\.nuget\\packages\\mediatr\\11.0.0\\mediatr.11.0.0.nupkg.sha512",
+    "C:\\Users\\29617\\.nuget\\packages\\mediatr.contracts\\1.0.1\\mediatr.contracts.1.0.1.nupkg.sha512",
+    "C:\\Users\\29617\\.nuget\\packages\\mediatr.extensions.microsoft.dependencyinjection\\11.1.0\\mediatr.extensions.microsoft.dependencyinjection.11.1.0.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\8.0.6\\microsoft.aspnetcore.authentication.jwtbearer.8.0.6.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\microsoft.aspnetcore.authentication.microsoftaccount\\8.0.6\\microsoft.aspnetcore.authentication.microsoftaccount.8.0.6.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\microsoft.aspnetcore.connections.abstractions\\8.0.6\\microsoft.aspnetcore.connections.abstractions.8.0.6.nupkg.sha512",

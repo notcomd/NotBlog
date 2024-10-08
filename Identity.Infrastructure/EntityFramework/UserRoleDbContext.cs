@@ -9,7 +9,7 @@ namespace Identity.Infrastructure.EntityFramework;
 public class UserRoleDbContext : DbContext
 {
     private readonly OptionsManager<DbContextOption> _optionsManager;
-    
+
     public UserRoleDbContext(DbContextOptions<UserRoleDbContext> options,
         OptionsManager<DbContextOption> optionsManager) : base(options)
     {
@@ -28,5 +28,12 @@ public class UserRoleDbContext : DbContext
         modelBuilder.Entity<UserRole>().HasKey(en => en.UserRoleGuid);
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
     }
-    
+#if (!DEBUG)
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        base.OnConfiguring(optionsBuilder);
+        optionsBuilder.UseNpgsql(_optionsSnapshot.Value.ToString());
+    }
+
+#endif
 }

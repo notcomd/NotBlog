@@ -21,7 +21,6 @@ public class UserLoginController : ControllerBase
     }
 
     [HttpGet("TestSendEmail")]
-    [SuppressMessage("ReSharper.DPA", "DPA0010: ASP issues")]
     public async Task<ActionResult<string>> SendEmailAsync()
     {
         var mailpush = new MailPush("hello", "notcomd@outlook.com", "notcomd@outlook.com");

@@ -11,7 +11,7 @@ public class UserLoginAsyncActionAttribute : ActionFilterAttribute
 {
     private readonly INotcomd_JwtTokenServer _jwtTokenServer;
     private readonly ILogger _logger;
-    private readonly IOptionsSnapshot<Notcomd_JwtOptions> _optionsSnapshot;
+    private readonly IOptionsSnapshot<JwtOptions> _optionsSnapshot;
 
     private readonly string _passwordHash;
     private readonly string _role;
@@ -20,7 +20,7 @@ public class UserLoginAsyncActionAttribute : ActionFilterAttribute
 
     public UserLoginAsyncActionAttribute(string passwordHash, string role, string userEmail, ILogger logger,
         INotcomd_JwtTokenServer notcomdJwtTokenServer
-        , IOptionsSnapshot<Notcomd_JwtOptions> optionsSnapshot, IUserRepository userRepository)
+        , IOptionsSnapshot<JwtOptions> optionsSnapshot, IUserRepository userRepository)
     {
         (_passwordHash, _role, _userEmail, _logger, _jwtTokenServer, _optionsSnapshot, _userRepository) =
             (passwordHash, role, userEmail, logger, notcomdJwtTokenServer, optionsSnapshot, userRepository);

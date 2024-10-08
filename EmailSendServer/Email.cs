@@ -40,6 +40,11 @@ public class Email:IEmail
 
     public async ValueTask SendEmailValueTask(MimeMessage message, MailPush mailPush,SecureSocketOptions secureSocketOptions)
     {
+        if (_optionsManager.Value != null)
+        {
+            var data = _optionsManager.Value;
+            // throw new ArgumentNullException(nameof(_optionsManager.Value.EmailUser));
+        }
         message.From.Add(new MailboxAddress(mailPush.FromName,mailPush.FromEmailAddress));
         message.To.AddRange(mailPush.SendEmailAddresses);
 

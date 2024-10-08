@@ -11,12 +11,12 @@ public class UserRepositoryServer
 {
     private readonly INotcomd_JwtTokenServer _jwtTokenServer;
     private readonly ILogger _logger;
-    private readonly IOptionsSnapshot<Notcomd_JwtOptions> _optionsSnapshot;
+    private readonly IOptionsSnapshot<JwtOptions> _optionsSnapshot;
 
     private readonly IUserRepository _userRepository;
     private readonly IUserRoleRepository _userRoleRepository;
 
-    public UserRepositoryServer(IOptionsSnapshot<Notcomd_JwtOptions> optionsSnapshot, ILogger logger,
+    public UserRepositoryServer(IOptionsSnapshot<JwtOptions> optionsSnapshot, ILogger logger,
         IUserRepository userRepository, IUserRoleRepository userRoleRepository, INotcomd_JwtTokenServer jwtTokenServer)
     {
         _jwtTokenServer = jwtTokenServer;

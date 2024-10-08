@@ -7,3 +7,7 @@ C:\Users\29617\source\repos\MyService\JWToken\obj\Debug\net8.0\Notcomd.Token.JWT
 C:\Users\29617\source\repos\MyService\JWToken\obj\Debug\net8.0\Notcomd.Token.JWT.dll
 C:\Users\29617\source\repos\MyService\JWToken\obj\Debug\net8.0\refint\Notcomd.Token.JWT.dll
 C:\Users\29617\source\repos\MyService\JWToken\obj\Debug\net8.0\Notcomd.Token.JWT.pdb
+C:\Users\29617\source\repos\MyService\JWToken\bin\Debug\net8.0\Notcomd.Token.JWT.deps.json
+C:\Users\29617\source\repos\MyService\JWToken\bin\Debug\net8.0\Notcomd.Token.JWT.dll
+C:\Users\29617\source\repos\MyService\JWToken\bin\Debug\net8.0\Notcomd.Token.JWT.pdb
+C:\Users\29617\source\repos\MyService\JWToken\obj\Debug\net8.0\ref\Notcomd.Token.JWT.dll
