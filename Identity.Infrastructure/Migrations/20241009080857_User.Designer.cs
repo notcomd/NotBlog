@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Identity.Infrastructure.Migrations
 {
     [DbContext(typeof(UserDbContext))]
-    [Migration("20241008053854_User")]
+    [Migration("20241009080857_User")]
     partial class User
     {
         /// <inheritdoc />
@@ -51,6 +51,10 @@ namespace Identity.Infrastructure.Migrations
                     b.Property<DateTime>("CreateDatetime")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("UserAddress")
                         .HasColumnType("text");
 
@@ -58,7 +62,6 @@ namespace Identity.Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("UserName")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("UserPhonePhoneCode")

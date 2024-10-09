@@ -29,8 +29,9 @@ namespace Identity.Infrastructure.Migrations
                 {
                     UserGuid = table.Column<Guid>(type: "uuid", nullable: false),
                     UserRoleGuid = table.Column<Guid>(type: "uuid", nullable: false),
-                    UserName = table.Column<string>(type: "text", nullable: false),
+                    UserName = table.Column<string>(type: "text", nullable: true),
                     UserEmail = table.Column<string>(type: "text", nullable: true),
+                    PasswordHash = table.Column<string>(type: "text", nullable: false),
                     UserPhonePhoneCode = table.Column<string>(type: "character varying(11)", nullable: true),
                     UserAddress = table.Column<string>(type: "text", nullable: true),
                     CreateDatetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),

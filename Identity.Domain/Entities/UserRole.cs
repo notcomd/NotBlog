@@ -40,6 +40,7 @@ public class UserRole : IAggregateRoot
     /// <summary>
     /// 角色过期时间
     /// </summary>
+    [Column(TypeName = "timestamp with time zone")]
     public DateTime? RoleEndTime { get; private set; }
 
 

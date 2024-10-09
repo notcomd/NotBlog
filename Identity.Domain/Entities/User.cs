@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Identity.Domain.Entities;
+﻿namespace Identity.Domain.Entities;
 
 public class User : IAggregateRoot
 {
@@ -36,7 +34,7 @@ public class User : IAggregateRoot
         UserRoleGuid = userRoleGuid;
         this.UserPhone = phoneNumber;
         this.PasswordHash = passwordHash;
-        CreateDatetime = DateTime.Now;
+        CreateDatetime = DateTime.Now.ToUniversalTime();
         UserAccessFail = new UserAccessFail(this);
     }
 
@@ -48,7 +46,10 @@ public class User : IAggregateRoot
     public string PasswordHash { get; private set; }
     public PhoneNumber? UserPhone { get; private set; }
     public string? UserAddress { get; private set; }
+
+    [Column(TypeName = "timestamp with time zone")]
     public DateTime CreateDatetime { get; init; }
+
     public UserAccessFail UserAccessFail { get; init; }
 
     public BlackOrWhite? BlackOrWhite { get; private set; }
@@ -101,7 +102,7 @@ public class User : IAggregateRoot
     /// <exception cref="ArgumentException"></exception>
     public ValueTask ChangeByPhoneAsync(PhoneNumber phoneNumber)
     {
-        if (phoneNumber.PhoneCode == UserPhone.PhoneCode) throw new ArgumentException("需要不要一样的号码");
+        if (phoneNumber.PhoneCode == UserPhone!.PhoneCode) throw new ArgumentException("需要不要一样的号码");
         UserPhone = phoneNumber;
         return ValueTask.CompletedTask;
     }

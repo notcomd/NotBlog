@@ -1,13 +1,8 @@
-﻿using EmailSendServer;
-using Identity.Domain.IRepository;
+﻿using Identity.Domain.IRepository;
 using Identity.Domain.Option;
 using Identity.Domain.Server;
 using Identity.Infrastructure.EntityFramework;
 using Identity.Infrastructure.Repository;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Notcomd.Token.JWT;
 
 namespace Identity.Infrastructure;
 
@@ -40,6 +35,7 @@ public static class AddIdentityServer
         {
             var data = configuration.Get<DbContextOption>() ??
                        throw new ArgumentNullException($"选项未配置", nameof(configuration));
+            opt.UseNpgsql(data.DbContextConnect);
         });
         return serviceCollection;
     }

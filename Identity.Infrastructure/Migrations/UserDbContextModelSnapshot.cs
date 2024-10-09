@@ -33,7 +33,7 @@ namespace Identity.Infrastructure.Migrations
 
                     b.HasKey("PhoneCode");
 
-                    b.ToTable("PhoneNumber", (string)null);
+                    b.ToTable("PhoneNumber");
                 });
 
             modelBuilder.Entity("Identity.Domain.Entities.User", b =>
@@ -48,6 +48,10 @@ namespace Identity.Infrastructure.Migrations
                     b.Property<DateTime>("CreateDatetime")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("UserAddress")
                         .HasColumnType("text");
 
@@ -55,7 +59,6 @@ namespace Identity.Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("UserName")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("UserPhonePhoneCode")
@@ -68,7 +71,7 @@ namespace Identity.Infrastructure.Migrations
 
                     b.HasIndex("UserPhonePhoneCode");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("Identity.Domain.Entities.UserAccessFail", b =>
@@ -91,7 +94,7 @@ namespace Identity.Infrastructure.Migrations
                     b.HasIndex("UserGuid")
                         .IsUnique();
 
-                    b.ToTable("UserAccessFail", (string)null);
+                    b.ToTable("UserAccessFail");
                 });
 
             modelBuilder.Entity("Identity.Domain.Entities.User", b =>

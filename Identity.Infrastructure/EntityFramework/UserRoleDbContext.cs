@@ -1,21 +1,10 @@
-﻿using System.Reflection;
-using Identity.Domain.Entities;
-using Identity.Domain.Option;
+﻿using Identity.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 
 namespace Identity.Infrastructure.EntityFramework;
 
 public class UserRoleDbContext : DbContext
 {
-    private readonly OptionsManager<DbContextOption> _optionsManager;
-
-    public UserRoleDbContext(DbContextOptions<UserRoleDbContext> options,
-        OptionsManager<DbContextOption> optionsManager) : base(options)
-    {
-        _optionsManager = optionsManager;
-    }
-
     public UserRoleDbContext(DbContextOptions<UserRoleDbContext> options) : base(options)
     {
     }
@@ -27,13 +16,8 @@ public class UserRoleDbContext : DbContext
         base.OnModelCreating(modelBuilder);
         modelBuilder.Entity<UserRole>().HasKey(en => en.UserRoleGuid);
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+        modelBuilder.Entity<UserRole>(
+            en => en.Property(ens => ens.RoleEndTime)
+                .HasColumnType("timestamp with time zone"));
     }
-#if (!DEBUG)
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        base.OnConfiguring(optionsBuilder);
-        optionsBuilder.UseNpgsql(_optionsSnapshot.Value.ToString());
-    }
-
-#endif
 }

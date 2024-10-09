@@ -1,8 +1,6 @@
 ﻿using Identity.Domain.Entities;
 using Identity.Domain.IRepository;
 using Identity.Infrastructure.EntityFramework;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Distributed;
 
 namespace Identity.Infrastructure.Repository;
 
@@ -20,7 +18,9 @@ public class UserRepository : IUserRepository
 
     public ValueTask<User?> FindOneByUserAsync(Guid guid)
     {
-        var data = _userDbContext.FindAsync<User>(guid).GetAwaiter().GetResult();
+        var data = _userDbContext.Users.Where(en => en.UserGuid == guid)
+            .SingleOrDefaultAsync().GetAwaiter()
+            .GetResult();
         return new ValueTask<User?>(data);
     }
 
@@ -28,12 +28,10 @@ public class UserRepository : IUserRepository
     {
         if (phoneNumber is null)
             throw new ArgumentNullException("数据为空");
-        //var data = _userDbContext.FindAsync<User>(phoneNumber).GetAwaiter().GetResult();
-        var data = _userDbContext.Users.SingleOrDefaultAsync(en =>
-                en.UserPhone!.PhoneCode == phoneNumber.PhoneCode &&
-                en.UserPhone!.AddressRegion == phoneNumber.AddressRegion)
-            .GetAwaiter().GetResult();
-        //throw new NotImplementedException();
+        var data = _userDbContext.Users
+            .Where(en => en.UserPhone.AddressRegion == phoneNumber.AddressRegion &&
+                         en.UserPhone.PhoneCode == phoneNumber.PhoneCode)
+            .SingleOrDefaultAsync().GetAwaiter().GetResult();
         return new ValueTask<User?>(data);
     }
 
@@ -45,7 +43,8 @@ public class UserRepository : IUserRepository
 
     public ValueTask<User?> FindOneByUserAsync(string email)
     {
-        var data = _userDbContext.FindAsync<User>(email).GetAwaiter().GetResult();
+        var data = _userDbContext.Users.Where(en => en.UserEmail == email).SingleOrDefaultAsync().GetAwaiter()
+            .GetResult();
         return new ValueTask<User?>(data);
     }
 
@@ -55,7 +54,7 @@ public class UserRepository : IUserRepository
         if (find is not null)
         {
             var userid = find.UserGuid;
-            _userDbContext.FindAsync<User>(new UserLoginHistory(userid, phoneNumber, message, find.UserEmail));
+            //_userDbContext.FindAsync<User>(new UserLoginHistory(userid, phoneNumber, message, find.UserEmail));
         }
 
         return ValueTask.CompletedTask;

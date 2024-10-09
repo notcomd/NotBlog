@@ -3,7 +3,6 @@ using Identity.Domain.Server;
 using Identity.Infrastructure.EntityFramework;
 using Identity.Web.API.ResponseEntites;
 using MailKit.Security;
-using Microsoft.AspNetCore.Mvc;
 using MimeKit;
 using Notcomd.Token.JWT;
 
@@ -53,7 +52,7 @@ public class UserLoginController : ControllerBase
         return new ActionResult<string>("这个接口不作任何事同时也没有任何业务逻辑");
     }
 
-    [SeverDbContext([typeof(UserDbContext), typeof(UserRoleDbContext)])]
+    [SeverDbContext(DbContextTypes = [typeof(UserDbContext), typeof(UserRoleDbContext)])]
     [HttpPost("SignUp")]
     public async Task<ActionResult<string>> SignUpAsync(ResponseSignUpRecord signUpRecord)
     {
