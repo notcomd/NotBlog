@@ -37,6 +37,12 @@ public class UserRepository : IUserRepository
         return new ValueTask<User?>(data);
     }
 
+    public ValueTask AddOneByUserAsync(User user)
+    {
+        _userDbContext.Users.AddAsync(user).GetAwaiter();
+        return ValueTask.CompletedTask;
+    }
+
     public ValueTask<User?> FindOneByUserAsync(string email)
     {
         var data = _userDbContext.FindAsync<User>(email).GetAwaiter().GetResult();

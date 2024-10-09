@@ -4,31 +4,54 @@ namespace Identity.Domain.Entities;
 
 public class User : IAggregateRoot
 {
-    private string PasswordHash = null!;
-
     private User()
     {
     }
 
-    public User(ref string userEmail, PhoneNumber phoneNumber, string userName, Guid userRoleGuid)
+    public User(string userEmail, PhoneNumber phoneNumber, string userName, Guid userRoleGuid, string passwordHash)
     {
         UserGuid = new Guid();
         UserName = userName;
         UserEmail = userEmail;
         UserPhone = phoneNumber;
         UserRoleGuid = userRoleGuid;
+        PasswordHash = passwordHash;
         CreateDatetime = DateTime.Now;
         UserAccessFail = new UserAccessFail(this);
     }
 
+    public User(Guid userRoleGuid, string userEmail, string passwordHash)
+    {
+        UserGuid = new Guid();
+        UserEmail = userEmail;
+        UserRoleGuid = userRoleGuid;
+        PasswordHash = passwordHash;
+        CreateDatetime = DateTime.Now;
+        UserAccessFail = new UserAccessFail(this);
+    }
+
+    public User(Guid userRoleGuid, PhoneNumber phoneNumber, string passwordHash)
+    {
+        UserGuid = new Guid();
+        UserRoleGuid = userRoleGuid;
+        this.UserPhone = phoneNumber;
+        this.PasswordHash = passwordHash;
+        CreateDatetime = DateTime.Now;
+        UserAccessFail = new UserAccessFail(this);
+    }
+
+
     public Guid UserGuid { get; init; }
     public Guid UserRoleGuid { get; init; }
-    public string UserName { get; private set; }
+    public string? UserName { get; private set; }
     public string? UserEmail { get; private set; }
+    public string PasswordHash { get; private set; }
     public PhoneNumber? UserPhone { get; private set; }
     public string? UserAddress { get; private set; }
     public DateTime CreateDatetime { get; init; }
     public UserAccessFail UserAccessFail { get; init; }
+
+    public BlackOrWhite? BlackOrWhite { get; private set; }
 
     public ValueTask<User> ChangeByAddressAsync(ref string userAddress)
     {
@@ -93,9 +116,9 @@ public class User : IAggregateRoot
         return new ValueTask<bool>(PasswordHash == HashH256Tool.CreateHash256Async(hashPassword).Result);
     }
 
-    // public ValueTask ChangeByHeadImageAsync(ref Uri imageUri)
-    // {
-    //     HeadImage = imageUri;
-    //     return ValueTask.CompletedTask;
-    // }
+    public ValueTask AddBlackOrWhiteValueTask(BlackOrWhite blackOrWhite)
+    {
+        BlackOrWhite = blackOrWhite;
+        return ValueTask.CompletedTask;
+    }
 }

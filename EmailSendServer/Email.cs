@@ -22,7 +22,7 @@ public class Email : IEmail
     /// <param name="mailPush">配置信息</param>
     public async ValueTask SendEmailValueTask(MimeMessage message, MailPush mailPush)
     {
-        message.From.Add(new MailboxAddress(mailPush.FromName, mailPush.FromEmailAddress));
+        message.From.Add(new MailboxAddress(_optionsManager.Value.EmailUser, _optionsManager.Value.EmailUser));
         message.To.AddRange(mailPush.SendEmailAddresses);
 
         using var mailClient = new SmtpClient
@@ -33,7 +33,7 @@ public class Email : IEmail
         //return ValueTask.CompletedTask;
         await mailClient.ConnectAsync(_optionsManager.Value.AddressHost, _optionsManager.Value.Port,
             SecureSocketOptions.StartTls);
-        await mailClient.AuthenticateAsync(_optionsManager.Value.EmailUser, _optionsManager.Value.Password);
+        await mailClient.AuthenticateAsync(_optionsManager.Value.AddressHost, _optionsManager.Value.Password);
         await mailClient.SendAsync(message);
         await mailClient.DisconnectAsync(true);
     }
@@ -49,14 +49,13 @@ public class Email : IEmail
         message.From.Add(new MailboxAddress(_optionsManager.Value.EmailUser, _optionsManager.Value.EmailUser));
         message.To.AddRange(mailPush.SendEmailAddresses);
 
-        using var mailclient = new SmtpClient
-        {
-            ServerCertificateValidationCallback = (o, c, h, e) => true
-        };
+        using var mailclient = new SmtpClient();
+
         mailclient.AuthenticationMechanisms.Remove("XOAUTH2");
         await mailclient.ConnectAsync(_optionsManager.Value.AddressHost, _optionsManager.Value.Port,
             secureSocketOptions);
         await mailclient.AuthenticateAsync(_optionsManager.Value.EmailUser, _optionsManager.Value.Password);
+        var oauth2 = new SaslMechanismOAuth2(_optionsManager.Value.EmailUser, _optionsManager.Value.Password);
         await mailclient.SendAsync(message);
         await mailclient.DisconnectAsync(true);
     }

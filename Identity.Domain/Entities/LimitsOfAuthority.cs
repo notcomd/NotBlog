@@ -20,8 +20,6 @@ public enum LimitsOfAuthority
     /// </summary>
     AuthorityUser,
 
-    /// <summary>
-    /// 黑名单
-    /// </summary>
-    AuthorityBlack,
+
+    //AuthorityBlack,
 }

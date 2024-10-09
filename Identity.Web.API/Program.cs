@@ -1,6 +1,8 @@
 using System.Reflection;
 using EmailSendServer;
+using Identity.Domain.Option;
 using Identity.Infrastructure;
+using Identity.Web.API;
 using MediatR;
 using Notcomd.Token.JWT;
 
@@ -12,7 +14,9 @@ builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(nameof(J
 builder.Services.AddEmailServer(builder.Configuration.GetSection(nameof(EmailAddress)));
 builder.Services.AddOptions();
 builder.Services.AddIdentityService(builder.Configuration.GetSection(nameof(JwtOptions)));
+builder.Services.AddIdentityDbContext(builder.Configuration.GetSection(nameof(DbContextOption)));
 builder.Services.AddMediatR(Assembly.GetExecutingAssembly());
+builder.Services.AddControllers(opt => { opt.Filters.Add(new SeverDbContextAttribute()); });
 //builder.Services.AddMetrics(Assembly.GetExecutingAssembly());
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

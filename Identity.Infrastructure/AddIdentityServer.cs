@@ -1,7 +1,10 @@
 ﻿using EmailSendServer;
 using Identity.Domain.IRepository;
+using Identity.Domain.Option;
+using Identity.Domain.Server;
 using Identity.Infrastructure.EntityFramework;
 using Identity.Infrastructure.Repository;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Notcomd.Token.JWT;
@@ -18,11 +21,26 @@ public static class AddIdentityServer
         serviceCollection.AddScoped<IEmailCodeSend, EmailCodeSend>();
         serviceCollection.AddDistributedMemoryCache();
         serviceCollection.AddScoped<ISmsCodeSend, SmsCodeSend>();
+        serviceCollection.AddScoped<UserRepositoryServer>();
         serviceCollection.AddEmailServer();
-
-        serviceCollection.AddDbContext<UserRoleDbContext>();
-        serviceCollection.AddDbContext<UserDbContext>();
         serviceCollection.AddJwtAuthentication(configuration);
+        return serviceCollection;
+    }
+
+    public static IServiceCollection AddIdentityDbContext(this IServiceCollection serviceCollection,
+        IConfiguration configuration)
+    {
+        serviceCollection.AddDbContext<UserDbContext>(opt =>
+        {
+            var data = configuration.Get<DbContextOption>() ??
+                       throw new ArgumentNullException($"配置项为空", nameof(configuration));
+            opt.UseNpgsql(data.DbContextConnect);
+        });
+        serviceCollection.AddDbContext<UserRoleDbContext>(opt =>
+        {
+            var data = configuration.Get<DbContextOption>() ??
+                       throw new ArgumentNullException($"选项未配置", nameof(configuration));
+        });
         return serviceCollection;
     }
 }

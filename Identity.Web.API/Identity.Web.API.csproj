@@ -24,8 +24,4 @@
         <ProjectReference Include="..\JWToken\Notcomd.Token.JWT.csproj"/>
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="ResponseEmail\" />
-    </ItemGroup>
-
 </Project>

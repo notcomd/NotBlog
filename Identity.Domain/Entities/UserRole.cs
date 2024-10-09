@@ -2,6 +2,11 @@
 
 public class UserRole : IAggregateRoot
 {
+    /// <summary>
+    /// 角色权限
+    /// </summary>
+    private LimitsOfAuthority LimitsOfAuthority;
+
     private UserRole()
     {
     }
@@ -11,27 +16,32 @@ public class UserRole : IAggregateRoot
         UserRoleGuid = new Guid();
         RoleName = roleName;
         this.LimitsOfAuthority = Entities.LimitsOfAuthority.AuthorityUser;
+        if (LimitsOfAuthority == LimitsOfAuthority.AuthorityUser)
+        {
+            RoleEndTime = DateTime.Now.AddYears(999);
+        }
+        else if (LimitsOfAuthority == LimitsOfAuthority.AuthorityMember)
+        {
+            RoleEndTime = DateTime.Now.AddYears(1);
+        }
+        else if (LimitsOfAuthority == LimitsOfAuthority.AuthorityRoot)
+        {
+            RoleEndTime = DateTime.Now.AddYears(999);
+        }
     }
 
     public Guid UserRoleGuid { get; init; }
 
-    private LimitsOfAuthority LimitsOfAuthority;
+    /// <summary>
+    /// 角色名
+    /// </summary>
     public string RoleName { get; private set; } = null!;
 
     /// <summary>
-    ///     应用该角色人数
-    /// </summary>
-    public long Roles { get; private set; }
-
-    /// <summary>
-    ///     角色过期时间
+    /// 角色过期时间
     /// </summary>
     public DateTime? RoleEndTime { get; private set; }
 
-    private void AddByRolesAsync()
-    {
-        Roles++;
-    }
 
     public ValueTask<bool> IsRoleAsync(string roleName)
     {
@@ -53,6 +63,14 @@ public class UserRole : IAggregateRoot
         }
 
         return false;
+    }
+
+    public void ResetLimitOfAuthorize()
+    {
+        if (RoleEndTime < DateTime.Now && LimitsOfAuthority == LimitsOfAuthority.AuthorityMember)
+        {
+            ChangeByLimitOfAuthorize(LimitsOfAuthority.AuthorityUser);
+        }
     }
 
     private void ChangeByLimitOfAuthorize(LimitsOfAuthority limitsOfAuthority)

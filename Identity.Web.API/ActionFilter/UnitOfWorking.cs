@@ -13,7 +13,7 @@ public class UnitOfWorking : IAsyncActionFilter
         if (result is null) return;
         var action = context.ActionDescriptor as ControllerActionDescriptor;
         if (action is null) return;
-        var meth = action.MethodInfo.GetCustomAttributes<DBContextAttribute>();
+        var meth = action.MethodInfo.GetCustomAttributes<SeverDbContextAttribute>();
         if (meth is null) return;
         foreach (var itm in meth.GetType().GetGenericArguments())
         {
