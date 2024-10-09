@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "+6KVAjtx7ZY=",
+  "dgSpecHash": "wuX91dqmpS/272TW8VuVskwUJbq5PM+9vB8jAUGLV3oap4OHxJLvLQzWZOD22fEFvMTd+VidL3d0h7D56aCkgg==",
   "success": true,
   "projectFilePath": "C:\\Users\\29617\\source\\repos\\MyService\\Identity.Infrastructure\\Identity.Infrastructure.csproj",
   "expectedPackageFiles": [
@@ -68,12 +68,5 @@
     "C:\\Users\\29617\\.nuget\\packages\\system.text.json\\8.0.0\\system.text.json.8.0.0.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\system.threading.channels\\8.0.0\\system.threading.channels.8.0.0.nupkg.sha512"
   ],
-  "logs": [
-    {
-      "code": "NU1900",
-      "level": "Warning",
-      "warningLevel": 1,
-      "message": "获取包漏洞数据时出错: 无法加载源 https://api.nuget.org/v3/index.json 的服务索引。"
-    }
-  ]
+  "logs": []
 }

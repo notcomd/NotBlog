@@ -1,4 +1,7 @@
 ﻿using EmailSendServer;
+using Identity.Domain.Server;
+using Identity.Infrastructure.EntityFramework;
+using Identity.Web.API.ResponseEntites;
 using MailKit.Security;
 using Microsoft.AspNetCore.Mvc;
 using MimeKit;
@@ -12,11 +15,13 @@ public class UserLoginController : ControllerBase
 {
     private readonly IEmail _email;
     private readonly ILogger<IEmail> _logger;
+    private readonly UserRepositoryServer _repositoryServer;
 
-    public UserLoginController(IEmail email, ILogger<IEmail> logger)
+    public UserLoginController(IEmail email, ILogger<IEmail> logger, UserRepositoryServer userRepositoryServer)
     {
         _email = email;
         _logger = logger;
+        _repositoryServer = userRepositoryServer;
     }
 
     [HttpGet("TestSendEmail")]
@@ -46,6 +51,14 @@ public class UserLoginController : ControllerBase
     public ActionResult<string> PushTest()
     {
         return new ActionResult<string>("这个接口不作任何事同时也没有任何业务逻辑");
+    }
+
+    [SeverDbContext([typeof(UserDbContext), typeof(UserRoleDbContext)])]
+    [HttpPost("SignUp")]
+    public async Task<ActionResult<string>> SignUpAsync(ResponseSignUpRecord signUpRecord)
+    {
+        await _repositoryServer.SigInByCreateUserAsync(signUpRecord.Email, signUpRecord.Email, 111);
+        return new ActionResult<string>("ok");
     }
 
     [HttpGet("UNRandom")]
