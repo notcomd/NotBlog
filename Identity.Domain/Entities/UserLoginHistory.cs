@@ -1,4 +1,6 @@
-﻿namespace Identity.Domain.Entities;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Identity.Domain.Entities;
 
 public class UserLoginHistory
 {

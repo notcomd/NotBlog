@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "wITlzCEkiIP1z2AsB3mJ1WEqXVKhHTzlE0E0nVEyphWHb8anTtktv2OE8qgVwzgyDLc51c7PWpisLhUJEOcU0A==",
+  "dgSpecHash": "KoYLHlc2m4kBJSxGFq5vl3bYrKYrUE2ZBNJXon7l94erzOk7c3H9DYTJSwPmgSwKT5q/wyfysBWhVDmU5AQ2gQ==",
   "success": true,
   "projectFilePath": "C:\\Users\\29617\\source\\repos\\MyService\\EmailSendServer\\EmailSendServer.csproj",
   "expectedPackageFiles": [

@@ -3,6 +3,7 @@ using Identity.Domain.Server;
 using Identity.Infrastructure.EntityFramework;
 using Identity.Web.API.ResponseEntites;
 using MailKit.Security;
+using Microsoft.AspNetCore.Mvc;
 using MimeKit;
 using Notcomd.Token.JWT;
 

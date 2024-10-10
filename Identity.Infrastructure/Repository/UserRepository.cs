@@ -1,6 +1,8 @@
 ﻿using Identity.Domain.Entities;
 using Identity.Domain.IRepository;
 using Identity.Infrastructure.EntityFramework;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace Identity.Infrastructure.Repository;
 

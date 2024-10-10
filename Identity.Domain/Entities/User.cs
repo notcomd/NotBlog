@@ -1,4 +1,7 @@
-﻿namespace Identity.Domain.Entities;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Identity.Domain.Entities;
 
 public class User : IAggregateRoot
 {

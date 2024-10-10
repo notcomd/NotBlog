@@ -1,6 +1,9 @@
+using System.Reflection;
 using EmailSendServer;
 using Identity.Domain.Option;
+using Identity.Infrastructure;
 using Identity.Web.API;
+using MediatR;
 using Notcomd.Token.JWT;
 
 var builder = WebApplication.CreateBuilder(args);
