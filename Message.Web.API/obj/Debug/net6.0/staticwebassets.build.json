@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "GUu5Ud5DKTOrEwD0cg9lGAmzQGUWTDcP2HYB4LO0rzQ=",
+  "Source": "Message.Web.API",
+  "BasePath": "_content/Message.Web.API",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

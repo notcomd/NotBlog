@@ -8,6 +8,7 @@ public class UserRoleDbContext : DbContext
 {
     public UserRoleDbContext(DbContextOptions<UserRoleDbContext> options) : base(options)
     {
+
     }
 
     public DbSet<UserRole> UserRoles { get; set; }
@@ -16,9 +17,6 @@ public class UserRoleDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.Entity<UserRole>().HasKey(en => en.UserRoleGuid);
-        modelBuilder.Entity<UserRole>(
-            en => en.Property(ens => ens.RoleEndTime)
-                .HasColumnType("timestamp with time zone"));
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
     }
 }

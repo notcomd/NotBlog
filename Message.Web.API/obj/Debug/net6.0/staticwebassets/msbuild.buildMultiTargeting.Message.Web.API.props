@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\Message.Web.API.props" />
+</Project>

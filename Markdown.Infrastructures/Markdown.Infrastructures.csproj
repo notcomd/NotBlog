@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+      <ProjectReference Include="..\Markdown.Domain\Markdown.Domain.csproj"/>
     <ProjectReference Include="..\Notcomd.Document.Server\Markdown.Domain.csproj" />
   </ItemGroup>
 

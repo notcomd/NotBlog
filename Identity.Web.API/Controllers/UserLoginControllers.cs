@@ -1,11 +1,12 @@
 ﻿using EmailSendServer;
+using Identity.Domain.Entities;
 using Identity.Domain.Server;
 using Identity.Infrastructure.EntityFramework;
+using Identity.Web.API.ActionFilter;
 using Identity.Web.API.ResponseEntites;
 using MailKit.Security;
 using Microsoft.AspNetCore.Mvc;
 using MimeKit;
-using Notcomd.Token.JWT;
 
 namespace Identity.Web.API.Controllers;
 
@@ -47,12 +48,18 @@ public class UserLoginController : ControllerBase
         return new ActionResult<string>("ok");
     }
 
+    [UserLimitsOfAuthority(LimitsOfAuthority.AuthorityRoot)]
     [HttpGet("NuFection")]
     public ActionResult<string> PushTest()
     {
         return new ActionResult<string>("这个接口不作任何事同时也没有任何业务逻辑");
     }
 
+    /// <summary>
+    /// 注册接口
+    /// </summary>
+    /// <param name="signUpRecord"></param>
+    /// <returns></returns>
     [SeverDbContext(DbContextTypes = [typeof(UserDbContext), typeof(UserRoleDbContext)])]
     [HttpPost("SignUp")]
     public async Task<ActionResult<string>> SignUpAsync(ResponseSignUpRecord signUpRecord)
@@ -61,9 +68,13 @@ public class UserLoginController : ControllerBase
         return new ActionResult<string>("ok");
     }
 
-    [HttpGet("UNRandom")]
-    public async Task<ActionResult<long>> GetRandom()
+    [HttpPost("Login")]
+    public async Task<ActionResult<string>> LoginAsync(LoginResponse loginRequest)
     {
-        return new ActionResult<long>(await JwtRandom.CreateRandomValueTask());
+
+        return await _repositoryServer.LogInByCheckPasswordAsync(loginRequest.UserAccount,
+            loginRequest.PasswordHash,
+            loginRequest.Code);
+
     }
 }

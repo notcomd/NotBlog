@@ -1,0 +1,12 @@
+C:\Users\29617\source\repos\MyService\FileDev.Infrastructures\bin\Debug\net8.0\FileDev.Infrastructures.deps.json
+C:\Users\29617\source\repos\MyService\FileDev.Infrastructures\bin\Debug\net8.0\FileDev.Infrastructures.dll
+C:\Users\29617\source\repos\MyService\FileDev.Infrastructures\bin\Debug\net8.0\FileDev.Infrastructures.pdb
+C:\Users\29617\source\repos\MyService\FileDev.Infrastructures\obj\Debug\net8.0\FileDev.Infrastructures.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\29617\source\repos\MyService\FileDev.Infrastructures\obj\Debug\net8.0\FileDev.Infrastructures.AssemblyInfoInputs.cache
+C:\Users\29617\source\repos\MyService\FileDev.Infrastructures\obj\Debug\net8.0\FileDev.Infrastructures.AssemblyInfo.cs
+C:\Users\29617\source\repos\MyService\FileDev.Infrastructures\obj\Debug\net8.0\FileDev.Infrastructures.csproj.CoreCompileInputs.cache
+C:\Users\29617\source\repos\MyService\FileDev.Infrastructures\obj\Debug\net8.0\FileDev.Infrastructures.sourcelink.json
+C:\Users\29617\source\repos\MyService\FileDev.Infrastructures\obj\Debug\net8.0\FileDev.Infrastructures.dll
+C:\Users\29617\source\repos\MyService\FileDev.Infrastructures\obj\Debug\net8.0\refint\FileDev.Infrastructures.dll
+C:\Users\29617\source\repos\MyService\FileDev.Infrastructures\obj\Debug\net8.0\FileDev.Infrastructures.pdb
+C:\Users\29617\source\repos\MyService\FileDev.Infrastructures\obj\Debug\net8.0\ref\FileDev.Infrastructures.dll

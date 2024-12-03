@@ -18,7 +18,8 @@ public class UnitOfWorkFilter : IAsyncActionFilter
         foreach (var itm in meth.DbContextTypes)
         {
             var dbser = context.HttpContext.RequestServices.GetService(itm) as DbContext;
-            if (dbser is not null) await dbser.SaveChangesAsync();
+            if (dbser is not null)
+                await dbser.SaveChangesAsync();
         }
     }
 }

@@ -9,8 +9,8 @@ public class UserAccessFail
 
     private UserAccessFail()
     {
-    }
 
+    }
 
     public UserAccessFail(User user)
     {
@@ -19,14 +19,13 @@ public class UserAccessFail
         UserGuid = user.UserGuid;
     }
 
-    [Key] public Guid UserAccessFailGuid { get; init; }
-
+    [Key]
+    public Guid UserAccessFailGuid { get; init; }
     public User User { get; init; }
     public Guid UserGuid { get; init; }
 
     [Column(TypeName = "timestamp with time zone")]
     public DateTime? LockOutEnd { get; private set; }
-
     public int AccessFaildCount { get; private set; }
 
     /// <summary>
@@ -39,7 +38,7 @@ public class UserAccessFail
         if (AccessFaildCount > 5)
         {
             LockOut = true;
-            LockOutEnd = DateTime.Now.AddMinutes(5).ToUniversalTime();
+            LockOutEnd = DateTime.UtcNow.AddMinutes(5).ToUniversalTime();
         }
 
         return new ValueTask();
@@ -65,7 +64,7 @@ public class UserAccessFail
     public ValueTask<bool> CloseLockAsync()
     {
         if (!LockOut) return new ValueTask<bool>(false);
-        if (LockOutEnd >= DateTime.Now) return new ValueTask<bool>(true);
+        if (LockOutEnd >= DateTime.UtcNow) return new ValueTask<bool>(true);
         ResetFailAsync();
         return new ValueTask<bool>(false);
     }

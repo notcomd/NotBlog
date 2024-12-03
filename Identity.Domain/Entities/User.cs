@@ -17,7 +17,7 @@ public class User : IAggregateRoot
         UserPhone = phoneNumber;
         UserRoleGuid = userRoleGuid;
         PasswordHash = passwordHash;
-        CreateDatetime = DateTime.Now;
+        CreateDatetime = DateTime.Now.ToUniversalTime();
         UserAccessFail = new UserAccessFail(this);
     }
 
@@ -37,7 +37,7 @@ public class User : IAggregateRoot
         UserRoleGuid = userRoleGuid;
         this.UserPhone = phoneNumber;
         this.PasswordHash = passwordHash;
-        CreateDatetime = DateTime.Now.ToUniversalTime();
+        CreateDatetime = DateTime.UtcNow.ToUniversalTime();
         UserAccessFail = new UserAccessFail(this);
     }
 
@@ -51,12 +51,13 @@ public class User : IAggregateRoot
     public string? UserAddress { get; private set; }
 
     [Column(TypeName = "timestamp with time zone")]
-    public DateTime CreateDatetime { get; init; }
+    public DateTimeOffset CreateDatetime { get; init; }
 
     public UserAccessFail UserAccessFail { get; init; }
 
     public BlackOrWhite? BlackOrWhite { get; private set; }
 
+    public Roles Roles { get; private set; }
     public ValueTask<User> ChangeByAddressAsync(ref string userAddress)
     {
         UserAddress = userAddress;
@@ -117,7 +118,7 @@ public class User : IAggregateRoot
     /// <returns></returns>
     public ValueTask<bool> CheckByPasswordAsync(string hashPassword)
     {
-        return new ValueTask<bool>(PasswordHash == HashH256Tool.CreateHash256Async(hashPassword).Result);
+        return new ValueTask<bool>(PasswordHash == hashPassword);
     }
 
     public ValueTask AddBlackOrWhiteValueTask(BlackOrWhite blackOrWhite)

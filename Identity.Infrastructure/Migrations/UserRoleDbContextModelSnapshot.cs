@@ -28,6 +28,9 @@ namespace Identity.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<int>("LimitsOfAuthority")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime?>("RoleEndTime")
                         .HasColumnType("timestamp with time zone");
 

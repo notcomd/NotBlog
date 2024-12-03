@@ -6,4 +6,10 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+        <Folder Include="IRepository\"/>
+        <Folder Include="Option\"/>
+        <Folder Include="Server\"/>
+    </ItemGroup>
+
 </Project>

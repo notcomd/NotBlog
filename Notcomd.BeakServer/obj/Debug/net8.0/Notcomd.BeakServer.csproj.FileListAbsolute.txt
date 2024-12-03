@@ -1,0 +1,12 @@
+C:\Users\29617\source\repos\MyService\Notcomd.BeakServer\bin\Debug\net8.0\Notcomd.BeakServer.deps.json
+C:\Users\29617\source\repos\MyService\Notcomd.BeakServer\bin\Debug\net8.0\Notcomd.BeakServer.dll
+C:\Users\29617\source\repos\MyService\Notcomd.BeakServer\bin\Debug\net8.0\Notcomd.BeakServer.pdb
+C:\Users\29617\source\repos\MyService\Notcomd.BeakServer\obj\Debug\net8.0\Notcomd.BeakServer.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\29617\source\repos\MyService\Notcomd.BeakServer\obj\Debug\net8.0\Notcomd.BeakServer.AssemblyInfoInputs.cache
+C:\Users\29617\source\repos\MyService\Notcomd.BeakServer\obj\Debug\net8.0\Notcomd.BeakServer.AssemblyInfo.cs
+C:\Users\29617\source\repos\MyService\Notcomd.BeakServer\obj\Debug\net8.0\Notcomd.BeakServer.csproj.CoreCompileInputs.cache
+C:\Users\29617\source\repos\MyService\Notcomd.BeakServer\obj\Debug\net8.0\Notcomd.BeakServer.sourcelink.json
+C:\Users\29617\source\repos\MyService\Notcomd.BeakServer\obj\Debug\net8.0\Notcomd.BeakServer.dll
+C:\Users\29617\source\repos\MyService\Notcomd.BeakServer\obj\Debug\net8.0\refint\Notcomd.BeakServer.dll
+C:\Users\29617\source\repos\MyService\Notcomd.BeakServer\obj\Debug\net8.0\Notcomd.BeakServer.pdb
+C:\Users\29617\source\repos\MyService\Notcomd.BeakServer\obj\Debug\net8.0\ref\Notcomd.BeakServer.dll

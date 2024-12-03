@@ -1,5 +1,4 @@
 ﻿using System.Text;
-
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
@@ -15,7 +14,7 @@ namespace Notcomd.Token.JWT
         //这是jwtoken配置类,加载配置信息
         public static AuthenticationBuilder AddJwtAuthentication(this IServiceCollection serviceDescriptors, JwtOptions wToke)
         {
-            serviceDescriptors.AddScoped<INotcomd_JwtTokenServer, Notcommd_JWTokenOptions>();
+            serviceDescriptors.AddScoped<IJwtTokenOptions, JwtTokenOptions>();
             return serviceDescriptors.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(x =>
             {
                 x.TokenValidationParameters = new()
@@ -33,7 +32,7 @@ namespace Notcomd.Token.JWT
 
         public static AuthenticationBuilder AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddScoped<INotcomd_JwtTokenServer, Notcommd_JWTokenOptions>();
+            services.AddScoped<IJwtTokenOptions, JwtTokenOptions>();
             var ConfigString = configuration.Get<JwtOptions>();
             if (ConfigString is null)
             {
@@ -41,18 +40,18 @@ namespace Notcomd.Token.JWT
             }
             return services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(opt =>
-            {
-                opt.TokenValidationParameters = new TokenValidationParameters
                 {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = ConfigString.Issuer,
-                    ValidAudience = ConfigString.Audiencs,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(ConfigString.PrivateKey))
-                };
-            });
+                    opt.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = ConfigString.Issuer,
+                        ValidAudience = ConfigString.Audiencs,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(ConfigString.PrivateKey))
+                    };
+                });
         }
     }
 }

@@ -1,0 +1,12 @@
+C:\Users\29617\source\repos\MyService\Video.Infrastructure\bin\Debug\net8.0\Video.Infrastructure.deps.json
+C:\Users\29617\source\repos\MyService\Video.Infrastructure\bin\Debug\net8.0\Video.Infrastructure.dll
+C:\Users\29617\source\repos\MyService\Video.Infrastructure\bin\Debug\net8.0\Video.Infrastructure.pdb
+C:\Users\29617\source\repos\MyService\Video.Infrastructure\obj\Debug\net8.0\Video.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\29617\source\repos\MyService\Video.Infrastructure\obj\Debug\net8.0\Video.Infrastructure.AssemblyInfoInputs.cache
+C:\Users\29617\source\repos\MyService\Video.Infrastructure\obj\Debug\net8.0\Video.Infrastructure.AssemblyInfo.cs
+C:\Users\29617\source\repos\MyService\Video.Infrastructure\obj\Debug\net8.0\Video.Infrastructure.csproj.CoreCompileInputs.cache
+C:\Users\29617\source\repos\MyService\Video.Infrastructure\obj\Debug\net8.0\Video.Infrastructure.sourcelink.json
+C:\Users\29617\source\repos\MyService\Video.Infrastructure\obj\Debug\net8.0\Video.Infrastructure.dll
+C:\Users\29617\source\repos\MyService\Video.Infrastructure\obj\Debug\net8.0\refint\Video.Infrastructure.dll
+C:\Users\29617\source\repos\MyService\Video.Infrastructure\obj\Debug\net8.0\Video.Infrastructure.pdb
+C:\Users\29617\source\repos\MyService\Video.Infrastructure\obj\Debug\net8.0\ref\Video.Infrastructure.dll

@@ -13,7 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Entities\" />
     <Folder Include="IRepository\" />
     <Folder Include="Server\" />
   </ItemGroup>

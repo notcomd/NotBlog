@@ -3,14 +3,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Markdown.Infrastructures.EntityConfig;
 
-
-
-public class MarkdownDbContext:DbContext
+public class MarkdownDbContext : DbContext
 {
-    
-    public DbSet<MarkdownModel> MarkdownModels { get; set; }
-    
-    public MarkdownDbContext(DbContextOptions<MarkdownDbContext> options):base(options){}
+
+    public MarkdownDbContext(DbContextOptions<MarkdownDbContext> options) : base(options) {}
+
+    public DbSet<MarkDown> MarkdownModels { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -20,7 +18,6 @@ public class MarkdownDbContext:DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        modelBuilder.Entity<MarkdownModel>().HasKey(en => en.MarkdownGuid);
+        modelBuilder.Entity<MarkDown>().HasKey(en => en.MarkDownGuid);
     }
-    
 }

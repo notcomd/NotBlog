@@ -1,0 +1,16 @@
+C:\Users\29617\source\repos\MyService\Message.Infrastructure\bin\Debug\net8.0\Message.Infrastructure.deps.json
+C:\Users\29617\source\repos\MyService\Message.Infrastructure\bin\Debug\net8.0\Message.Infrastructure.dll
+C:\Users\29617\source\repos\MyService\Message.Infrastructure\bin\Debug\net8.0\Message.Infrastructure.pdb
+C:\Users\29617\source\repos\MyService\Message.Infrastructure\bin\Debug\net8.0\Message.Domain.dll
+C:\Users\29617\source\repos\MyService\Message.Infrastructure\bin\Debug\net8.0\Message.Domain.pdb
+C:\Users\29617\source\repos\MyService\Message.Infrastructure\obj\Debug\net8.0\Message.Infrastructure.csproj.AssemblyReference.cache
+C:\Users\29617\source\repos\MyService\Message.Infrastructure\obj\Debug\net8.0\Message.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\29617\source\repos\MyService\Message.Infrastructure\obj\Debug\net8.0\Message.Infrastructure.AssemblyInfoInputs.cache
+C:\Users\29617\source\repos\MyService\Message.Infrastructure\obj\Debug\net8.0\Message.Infrastructure.AssemblyInfo.cs
+C:\Users\29617\source\repos\MyService\Message.Infrastructure\obj\Debug\net8.0\Message.Infrastructure.csproj.CoreCompileInputs.cache
+C:\Users\29617\source\repos\MyService\Message.Infrastructure\obj\Debug\net8.0\Message.Infrastructure.sourcelink.json
+C:\Users\29617\source\repos\MyService\Message.Infrastructure\obj\Debug\net8.0\Message..BB933CB9.Up2Date
+C:\Users\29617\source\repos\MyService\Message.Infrastructure\obj\Debug\net8.0\Message.Infrastructure.dll
+C:\Users\29617\source\repos\MyService\Message.Infrastructure\obj\Debug\net8.0\refint\Message.Infrastructure.dll
+C:\Users\29617\source\repos\MyService\Message.Infrastructure\obj\Debug\net8.0\Message.Infrastructure.pdb
+C:\Users\29617\source\repos\MyService\Message.Infrastructure\obj\Debug\net8.0\ref\Message.Infrastructure.dll
