@@ -138,3 +138,6 @@ C:\Users\29617\source\repos\MyService\identity.web.api\obj\Debug\net8.0\ref\Iden
 C:\Users\29617\source\repos\MyService\Identity.Web.API\bin\Debug\net8.0\MediatR.dll
 C:\Users\29617\source\repos\MyService\Identity.Web.API\bin\Debug\net8.0\MediatR.Contracts.dll
 C:\Users\29617\source\repos\MyService\Identity.Web.API\bin\Debug\net8.0\MediatR.Extensions.Microsoft.DependencyInjection.dll
+C:\Users\29617\source\repos\MyService\Identity.Web.API\bin\Debug\net8.0\Identity.Web.API.staticwebassets.endpoints.json
+C:\Users\29617\source\repos\MyService\Identity.Web.API\obj\Debug\net8.0\staticwebassets.build.endpoints.json
+C:\Users\29617\source\repos\MyService\Identity.Web.API\obj\Debug\net8.0\staticwebassets\msbuild.Identity.Web.API.Microsoft.AspNetCore.StaticWebAssetEndpoints.props

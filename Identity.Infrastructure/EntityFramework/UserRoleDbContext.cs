@@ -18,5 +18,6 @@ public class UserRoleDbContext : DbContext
         base.OnModelCreating(modelBuilder);
         modelBuilder.Entity<UserRole>().HasKey(en => en.UserRoleGuid);
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+        modelBuilder.Entity<UserRole>().HasOne(en => en.Roles);
     }
 }

@@ -7,7 +7,6 @@
 		<LangVersion>12</LangVersion>
 </PropertyGroup>
 <ItemGroup>
-  <Folder Include="Entities\" />
   <Folder Include="IRepository\" />
 </ItemGroup>
 <ItemGroup>

@@ -14,7 +14,7 @@ public class UserAccessFail
 
     public UserAccessFail(User user)
     {
-        UserAccessFailGuid = new Guid();
+        UserAccessFailGuid = Guid.NewGuid();
         User = user;
         UserGuid = user.UserGuid;
     }

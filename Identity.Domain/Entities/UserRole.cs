@@ -9,22 +9,13 @@ public class UserRole : IAggregateRoot
 
     public UserRole(string roleName)
     {
-        UserRoleGuid = new Guid();
+        UserRoleGuid = Guid.NewGuid();
         RoleName = roleName;
         this.LimitsOfAuthority = LimitsOfAuthority.AuthorityUser;
-        if (LimitsOfAuthority == LimitsOfAuthority.AuthorityUser)
-        {
-            RoleEndTime = DateTimeOffset.UtcNow.AddYears(999);
-        }
-        else if (LimitsOfAuthority == LimitsOfAuthority.AuthorityMember)
-        {
-            RoleEndTime = DateTime.UtcNow.AddYears(1);
-        }
-        else if (LimitsOfAuthority == LimitsOfAuthority.AuthorityRoot)
-        {
-            RoleEndTime = DateTime.UtcNow.AddYears(999);
-        }
+        Roles = new Roles();
     }
+
+
     public Guid UserRoleGuid { get; init; }
     /// <summary>
     /// 角色名
@@ -40,9 +31,7 @@ public class UserRole : IAggregateRoot
     /// </summary>
     public LimitsOfAuthority LimitsOfAuthority { get; set; }
 
-    public Roles Roles { get; init; }
-
-
+    public Roles Roles { get; private set; }
 
 
     public ValueTask<bool> IsRoleAsync(string roleName)
@@ -75,8 +64,5 @@ public class UserRole : IAggregateRoot
         }
     }
 
-    private void ChangeByLimitOfAuthorize(LimitsOfAuthority limitsOfAuthority)
-    {
-        this.LimitsOfAuthority = limitsOfAuthority;
-    }
+    private LimitsOfAuthority ChangeByLimitOfAuthorize(LimitsOfAuthority limitsOfAuthority) => this.LimitsOfAuthority = limitsOfAuthority;
 }

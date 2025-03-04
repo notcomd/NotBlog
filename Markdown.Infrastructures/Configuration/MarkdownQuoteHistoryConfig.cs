@@ -1,10 +1,10 @@
-﻿using Markdown.Infrastructures.EntityConfig;
+﻿using Markdown.Infrastructures.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
 namespace Markdown.Infrastructures.Configuration;
 
-public class MarkdownQuoteHistoryConfig: IDesignTimeDbContextFactory<MarkdownQuoteDbContext>
+public class MarkdownQuoteHistoryConfig : IDesignTimeDbContextFactory<MarkdownQuoteDbContext>
 
 {
     public MarkdownQuoteDbContext CreateDbContext(string[] args)

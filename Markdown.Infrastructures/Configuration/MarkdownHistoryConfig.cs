@@ -1,17 +1,16 @@
-﻿using Markdown.Domain.Entities;
-using Markdown.Infrastructures.EntityConfig;
+﻿using Markdown.Infrastructures.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
 namespace Markdown.Infrastructures.Configuration;
 
-public class MarkdownHistoryConfig:IDesignTimeDbContextFactory<MarkdownDbContext>
+public class MarkdownHistoryConfig : IDesignTimeDbContextFactory<MarkDownDbContext>
 {
-    public MarkdownDbContext CreateDbContext(string[] args)
+    public MarkDownDbContext CreateDbContext(string[] args)
     {
-        var build = new DbContextOptionsBuilder<MarkdownDbContext>();
+        var build = new DbContextOptionsBuilder<MarkDownDbContext>();
         build.UseNpgsql("");
         //throw new NotImplementedException();
-        return new MarkdownDbContext(build.Options);
+        return new MarkDownDbContext(build.Options);
     }
 }
