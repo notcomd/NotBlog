@@ -1,5 +1,3 @@
-
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -9,7 +7,10 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSignalR();
-string[] urls = new[] { "http://localhost:4000", "http://localhost:8080" };
+string[] urls =
+{
+    "http://localhost:4000", "http://localhost:8080"
+};
 builder.Services.AddCors(Options => Options.AddDefaultPolicy(builder => builder.WithOrigins(urls).AllowAnyMethod().AllowAnyHeader().AllowCredentials()));
 var app = builder.Build();
 

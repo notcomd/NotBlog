@@ -16,10 +16,13 @@ public class UserDbContext : DbContext
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<User>().HasKey(en => en.UserGuid);
-        modelBuilder.Entity<User>().HasOne(en => en.UserAccessFail).WithOne(en => en.User)
+        modelBuilder.Entity<User>().HasOne(en => en.UserAccessFail)
+            .WithOne(en => en.User)
             .HasForeignKey<UserAccessFail>(en => en.UserGuid);
         modelBuilder.Entity<UserAccessFail>().Property(en => en.LockOutEnd)
-            .HasConversion(v => v.GetValueOrDefault().ToUniversalTime(), v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
-        modelBuilder.Entity<Roles>().HasOne(en => en.User).WithOne().HasForeignKey<Roles>(fr => fr.UserGuid);
+            .HasConversion(v => v.GetValueOrDefault()
+                .ToUniversalTime(), v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+        modelBuilder.Entity<Roles>().HasOne(en => en.User).WithOne()
+            .HasForeignKey<Roles>(fr => fr.UserGuid);
     }
 }

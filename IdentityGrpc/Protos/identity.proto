@@ -1,0 +1,18 @@
+syntax = "proto3";
+option csharp_namespace = "IdentityGrpc";
+
+package identity;
+
+service Identity{
+  rpc IdentityAuthority(IdentityRequest) returns (IdentityResponse);
+}
+
+message IdentityRequest{
+  string IdentityAuthority = 1;
+  string IdentityRole = 2;
+  string IdentityUser = 3;
+}
+
+message IdentityResponse{
+  bool IsSuccess = 1;
+}

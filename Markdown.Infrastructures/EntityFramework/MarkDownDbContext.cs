@@ -15,7 +15,7 @@ public class MarkDownDbContext(DbContextOptions<MarkDownDbContext> options) : Db
         modelBuilder.Entity<MarkDown>().Property(x => x.MarkDownName).HasColumnName("MarkDownName");
         modelBuilder.Entity<MarkDown>().Property(x => x.MarkDownTagboard).HasColumnName("MarkDownTagboard");
 
-        modelBuilder.Entity<MarkDown>().HasMany<MarkReview>(en => en.MarkReview)
+        modelBuilder.Entity<MarkDown>().HasMany(en => en.MarkReview)
             .WithOne(be => be.MarkDown)
             .HasForeignKey(fr => fr.MarkDownGuid);
     }

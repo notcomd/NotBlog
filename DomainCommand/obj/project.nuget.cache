@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "JqcbSYl901g=",
+  "dgSpecHash": "oJSHQeY3n8c=",
   "success": true,
-  "projectFilePath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommand\\Notcomd.DomainCommand.csproj",
+  "projectFilePath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommand\\DomainCommand.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\29617\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\6.0.21\\microsoft.aspnetcore.authentication.jwtbearer.6.0.21.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\microsoft.csharp\\4.5.0\\microsoft.csharp.4.5.0.nupkg.sha512",

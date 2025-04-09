@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "t2duI0QYDY2uPv2+FXX9jIqxyPPZamd/wd7rxiwudAE=",
+  "Source": "FileGrpcService",
+  "BasePath": "_content/FileGrpcService",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}

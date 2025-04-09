@@ -104,7 +104,7 @@ public class UserRepositoryServer
                         new(ClaimTypes.Email, userData.UserEmail),
                         new(ClaimTypes.Role, role!.RoleName),
                         new(ClaimTypes.MobilePhone, userData.UserPhone!.PhoneCode),
-                        new(type: ClaimTypes.Authentication, role!.LimitsOfAuthority.ToString())
+                        new(ClaimTypes.Authentication, role!.LimitsOfAuthority.ToString())
                     };
                     _loggerUser.LogInformation($"date:[{userData.UserEmail}] 通验证，Token");
                     return _jwtTokenServer.BuilderTokenAsync(listClaims, _optionsSnapshot.Value);

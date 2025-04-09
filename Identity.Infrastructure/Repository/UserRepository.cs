@@ -72,7 +72,10 @@ public class UserRepository : IUserRepository
     {
         var key = $"PhoneCode{phoneNumber.PhoneCode}_{phoneNumber.AddressRegion}";
         _distributedCache.SetStringAsync(key, code,
-            new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) });
+            new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+            });
         return ValueTask.CompletedTask;
     }
 
@@ -82,7 +85,10 @@ public class UserRepository : IUserRepository
         if (data is null) return ValueTask.CompletedTask;
         var key = $"emailAddress:{data.UserEmail}_{code}";
         _distributedCache.SetStringAsync(key, code,
-            new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) });
+            new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+            });
         //string key = $"emailAddress:{data.UserEmail}_{code}";
         return ValueTask.CompletedTask;
     }

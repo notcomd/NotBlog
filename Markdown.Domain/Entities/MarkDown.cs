@@ -1,7 +1,7 @@
 namespace Markdown.Domain.Entities;
 
 /// <summary>
-/// 文档
+///     文档
 /// </summary>
 public class MarkDown : IAggregateRoot
 {
@@ -10,8 +10,8 @@ public class MarkDown : IAggregateRoot
 
     public MarkDown(MarkDown markDown)
     {
-        this.MarkDownGuid = markDown.MarkDownGuid;
-        this.MarkReview = new HashSet<MarkReview>();
+        MarkDownGuid = markDown.MarkDownGuid;
+        MarkReview = new HashSet<MarkReview>();
     }
     public Guid MarkDownGuid { get; init; }
 
@@ -29,10 +29,10 @@ public class MarkDown : IAggregateRoot
 
     public DateTime UplaodAt { get; private set; }
     ///关系外键
-    public ICollection<MarkReview> MarkReview { get; private set; }
+    public ICollection<MarkReview> MarkReview { get; }
     public Task<MarkDown> AddByMarkReviewAsync(MarkReview markReview)
     {
-        this.MarkReview.Add(markReview);
+        MarkReview.Add(markReview);
         return Task.FromResult(this);
     }
 }

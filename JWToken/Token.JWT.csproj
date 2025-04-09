@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>Notcomd.Token.JWT</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Remove="Module\**"/>
+        <EmbeddedResource Remove="Module\**"/>
+        <None Remove="Module\**"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.6"/>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="8.0.6">
+            <TreatAsUsed>true</TreatAsUsed>
+        </PackageReference>
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.6"/>
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.6.0"/>
+    </ItemGroup>
+
+    <ProjectExtensions>
+        <VisualStudio>
+            <UserProperties/>
+        </VisualStudio>
+    </ProjectExtensions>
+
+</Project>

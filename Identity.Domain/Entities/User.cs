@@ -1,26 +1,31 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
+using Notcomd.Token.JWT;
 
 namespace Identity.Domain.Entities;
 
 public class User : IAggregateRoot
 {
+
+
     private User()
     {
     }
 
-    public User(string userEmail, PhoneNumber phoneNumber, string userName, Guid userRoleGuid, string passwordHash)
+    public User(string userEmail, string userName, Guid userRoleGuid, string passwordHash)
     {
         UserGuid = Guid.NewGuid();
         UserName = userName;
         UserEmail = userEmail;
-        UserPhone = phoneNumber;
         UserRoleGuid = userRoleGuid;
         PasswordHash = passwordHash;
         CreateDatetime = DateTime.Now.ToUniversalTime();
         UserAccessFail = new UserAccessFail(this);
     }
+
+
+
 
     public User(Guid userRoleGuid, string userEmail, string passwordHash, string salt)
     {
@@ -37,12 +42,13 @@ public class User : IAggregateRoot
     {
         UserGuid = Guid.NewGuid();
         UserRoleGuid = userRoleGuid;
-        this.UserPhone = phoneNumber;
-        this.PasswordHash = passwordHash;
+        UserPhone = phoneNumber;
+        PasswordHash = passwordHash;
         Salt = salt;
         CreateDatetime = DateTime.UtcNow.ToUniversalTime();
         UserAccessFail = new UserAccessFail(this);
     }
+
 
 
     public Guid UserGuid { get; init; }
@@ -50,13 +56,14 @@ public class User : IAggregateRoot
     public string? UserName { get; private set; }
     public string? UserEmail { get; private set; }
     public string PasswordHash { get; private set; }
-    public string Salt { get; private set; }
+    public string Salt { get; }
     public PhoneNumber? UserPhone { get; private set; }
     public string? UserAddress { get; private set; }
     [Column(TypeName = "timestamp with time zone")]
     public DateTimeOffset CreateDatetime { get; init; }
     public UserAccessFail UserAccessFail { get; init; }
     public BlackOrWhite? BlackOrWhite { get; private set; }
+
 
 
     public ValueTask<User> ChangeByAddressAsync(ref string userAddress)
@@ -66,7 +73,6 @@ public class User : IAggregateRoot
     }
 
     /// <summary>
-    /// 
     /// </summary>
     /// <param name="password"></param>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
@@ -76,7 +82,22 @@ public class User : IAggregateRoot
         {
             throw new ArgumentOutOfRangeException("your are set password is short!");
         }
-        PasswordHash = await HashH256Tool.CreateHash256Async(password, Encoding.UTF8.GetBytes(this.Salt));
+        PasswordHash = await HashH256Tool.CreateHash256Async(password, Encoding.UTF8.GetBytes(Salt));
+    }
+
+    /// <summary>
+    ///     绑定手机号
+    /// </summary>
+    /// <param name="region"></param>
+    /// <param name="phoneNumber"></param>
+    /// <returns></returns>
+    public static Task<PhoneNumber> BandingByPhoneAsync(long region, string phoneNumber)
+    {
+        return Task.FromResult(new PhoneNumber
+        {
+            PhoneCode = phoneNumber,
+            AddressRegion = region
+        });
     }
 
 
@@ -96,7 +117,7 @@ public class User : IAggregateRoot
     }
 
     /// <summary>
-    ///    设置新密码
+    ///     设置新密码
     /// </summary>
     /// <param name="phoneNumber"></param>
     /// <returns></returns>
@@ -110,7 +131,7 @@ public class User : IAggregateRoot
 
     public ValueTask ChangeByEmailAsync(string emailAddress)
     {
-        if (this.UserEmail == emailAddress)
+        if (UserEmail == emailAddress)
         {
             return ValueTask.CompletedTask;
         }
@@ -119,13 +140,16 @@ public class User : IAggregateRoot
     }
 
     /// <summary>
-    /// 验证密码是否正确
+    ///     验证密码是否正确
     /// </summary>
     /// <param name="hashPassword">hash密码</param>
     /// <param name="password">密码</param>
     /// <param name="salt">加盐</param>
     /// <returns></returns>
-    public ValueTask<bool> CheckByPasswordAsync(string hashPassword, string password, byte[] salt) => HashH256Tool.VerifyPasswordValueTask(password: password, hash: hashPassword, sart: salt);
+    public ValueTask<bool> CheckByPasswordAsync(string hashPassword, string password, byte[] salt)
+    {
+        return HashH256Tool.VerifyPasswordValueTask(password, hashPassword, salt);
+    }
 
 
     public ValueTask AddBlackOrWhiteValueTask(BlackOrWhite blackOrWhite)
@@ -137,9 +161,9 @@ public class User : IAggregateRoot
 
     public async ValueTask<User> ChangeByPasswordValueTask(string password, byte[] salt)
     {
-        if (!HashH256Tool.VerifyPasswordValueTask(password, this.PasswordHash, salt).GetAwaiter().GetResult())
+        if (!HashH256Tool.VerifyPasswordValueTask(password, PasswordHash, salt).GetAwaiter().GetResult())
         {
-            this.PasswordHash = await HashH256Tool.CreateHash256Async(password, salt);
+            PasswordHash = await HashH256Tool.CreateHash256Async(password, salt);
         }
         return this;
     }

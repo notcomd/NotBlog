@@ -56,9 +56,5 @@ public class UserLimitsOfAuthorityFilter : IAsyncActionFilter
                 }
             }
         }
-        else
-        {
-            return;
-        }
     }
 }

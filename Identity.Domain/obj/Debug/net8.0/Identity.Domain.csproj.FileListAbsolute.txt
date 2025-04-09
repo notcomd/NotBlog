@@ -1,8 +1,6 @@
 C:\Users\29617\source\repos\MyService\Identity.Domain\bin\Debug\net8.0\Identity.Domain.deps.json
 C:\Users\29617\source\repos\MyService\Identity.Domain\bin\Debug\net8.0\Identity.Domain.dll
 C:\Users\29617\source\repos\MyService\Identity.Domain\bin\Debug\net8.0\Identity.Domain.pdb
-C:\Users\29617\source\repos\MyService\Identity.Domain\bin\Debug\net8.0\Notcomd.Token.JWT.dll
-C:\Users\29617\source\repos\MyService\Identity.Domain\bin\Debug\net8.0\Notcomd.Token.JWT.pdb
 C:\Users\29617\source\repos\MyService\Identity.Domain\obj\Debug\net8.0\Identity.Domain.csproj.AssemblyReference.cache
 C:\Users\29617\source\repos\MyService\Identity.Domain\obj\Debug\net8.0\Identity.Domain.GeneratedMSBuildEditorConfig.editorconfig
 C:\Users\29617\source\repos\MyService\Identity.Domain\obj\Debug\net8.0\Identity.Domain.AssemblyInfoInputs.cache
@@ -14,3 +12,5 @@ C:\Users\29617\source\repos\MyService\Identity.Domain\obj\Debug\net8.0\Identity.
 C:\Users\29617\source\repos\MyService\Identity.Domain\obj\Debug\net8.0\refint\Identity.Domain.dll
 C:\Users\29617\source\repos\MyService\Identity.Domain\obj\Debug\net8.0\Identity.Domain.pdb
 C:\Users\29617\source\repos\MyService\Identity.Domain\obj\Debug\net8.0\ref\Identity.Domain.dll
+C:\Users\29617\source\repos\MyService\Identity.Domain\bin\Debug\net8.0\Token.JWT.dll
+C:\Users\29617\source\repos\MyService\Identity.Domain\bin\Debug\net8.0\Token.JWT.pdb

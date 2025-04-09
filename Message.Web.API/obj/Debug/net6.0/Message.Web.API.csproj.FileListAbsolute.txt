@@ -31,3 +31,6 @@ C:\Users\29617\source\repos\MyService\Message.Web.API\obj\Debug\net6.0\refint\Me
 C:\Users\29617\source\repos\MyService\Message.Web.API\obj\Debug\net6.0\Message.Web.API.pdb
 C:\Users\29617\source\repos\MyService\Message.Web.API\obj\Debug\net6.0\Message.Web.API.genruntimeconfig.cache
 C:\Users\29617\source\repos\MyService\Message.Web.API\obj\Debug\net6.0\ref\Message.Web.API.dll
+C:\Users\29617\source\repos\MyService\Message.Web.API\bin\Debug\net6.0\Message.Web.API.staticwebassets.endpoints.json
+C:\Users\29617\source\repos\MyService\Message.Web.API\obj\Debug\net6.0\staticwebassets.build.endpoints.json
+C:\Users\29617\source\repos\MyService\Message.Web.API\obj\Debug\net6.0\staticwebassets\msbuild.Message.Web.API.Microsoft.AspNetCore.StaticWebAssetEndpoints.props

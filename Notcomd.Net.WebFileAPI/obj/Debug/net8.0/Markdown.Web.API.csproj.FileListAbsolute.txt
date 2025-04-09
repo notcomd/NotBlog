@@ -41,3 +41,6 @@ C:\Users\29617\source\repos\MyService\Notcomd.Net.WebFileAPI\obj\Debug\net8.0\re
 C:\Users\29617\source\repos\MyService\Notcomd.Net.WebFileAPI\obj\Debug\net8.0\Markdown.Web.API.pdb
 C:\Users\29617\source\repos\MyService\Notcomd.Net.WebFileAPI\obj\Debug\net8.0\Markdown.Web.API.genruntimeconfig.cache
 C:\Users\29617\source\repos\MyService\Notcomd.Net.WebFileAPI\obj\Debug\net8.0\ref\Markdown.Web.API.dll
+C:\Users\29617\source\repos\MyService\Notcomd.Net.WebFileAPI\bin\Debug\net8.0\Markdown.Web.API.staticwebassets.endpoints.json
+C:\Users\29617\source\repos\MyService\Notcomd.Net.WebFileAPI\obj\Debug\net8.0\staticwebassets.build.endpoints.json
+C:\Users\29617\source\repos\MyService\Notcomd.Net.WebFileAPI\obj\Debug\net8.0\staticwebassets\msbuild.Markdown.Web.API.Microsoft.AspNetCore.StaticWebAssetEndpoints.props

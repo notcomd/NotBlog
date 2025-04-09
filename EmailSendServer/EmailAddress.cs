@@ -1,16 +1,13 @@
-﻿using System.Net.Mail;
-
-namespace EmailSendServer;
+﻿namespace EmailSendServer;
 
 public class EmailAddress
 {
-    public string AddressHost { get; set; } = null!;
-    
+    public string SmtpHost { get; set; } = null!;
     public int Port { get; set; }
-    
+
     public bool OptionSsL { get; set; }
 
-    public string EmailUser { get; set; } = null!;
-    
-    public string Password { get; set; } = null!;
+    public string FromEmail { get; set; } = null!;
+
+    public string SmtpPassword { get; set; } = null!;
 }

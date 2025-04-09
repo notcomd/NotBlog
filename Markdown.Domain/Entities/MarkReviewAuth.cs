@@ -7,6 +7,6 @@ public enum MarkReviewAuth
 
     ReviewAuthPrivate,
 
-    ReviewAuthProtected,
+    ReviewAuthProtected
 
 }

@@ -6,5 +6,4 @@ public interface IWorkAsyncFilter
     {
         return ValueTask.CompletedTask;
     }
-
 }

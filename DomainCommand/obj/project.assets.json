@@ -421,9 +421,9 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommand\\Notcomd.DomainCommand.csproj",
-      "projectName": "Notcomd.DomainCommand",
-      "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommand\\Notcomd.DomainCommand.csproj",
+      "projectUniqueName": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommand\\DomainCommand.csproj",
+      "projectName": "DomainCommand",
+      "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommand\\DomainCommand.csproj",
       "packagesPath": "C:\\Users\\29617\\.nuget\\packages\\",
       "outputPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommand\\obj\\",
       "projectStyle": "PackageReference",
@@ -459,7 +459,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "9.0.100"
+      "SdkAnalysisLevel": "9.0.200"
     },
     "frameworks": {
       "net6.0": {
@@ -486,7 +486,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.103\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.201\\RuntimeIdentifierGraph.json"
       }
     }
   }

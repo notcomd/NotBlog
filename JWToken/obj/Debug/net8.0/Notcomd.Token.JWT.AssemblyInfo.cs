@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Notcomd.Token.JWT")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+500ffcd5419c6e068da11ff637705ce967d0e7d7")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e6fe112bc813bb94d83f3a9aac89623b26f51823")]
 [assembly: System.Reflection.AssemblyProductAttribute("Notcomd.Token.JWT")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Notcomd.Token.JWT")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

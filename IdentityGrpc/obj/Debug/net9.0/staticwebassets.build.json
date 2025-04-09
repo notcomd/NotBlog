@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "1tXG+tkQ0X/YOygUyRAbIb9EWYmlcj7W8gaMp5LCgyY=",
+  "Source": "IdentityGrpc",
+  "BasePath": "_content/IdentityGrpc",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}

@@ -11,23 +11,23 @@ public class UserRole : IAggregateRoot
     {
         UserRoleGuid = Guid.NewGuid();
         RoleName = roleName;
-        this.LimitsOfAuthority = LimitsOfAuthority.AuthorityUser;
+        LimitsOfAuthority = LimitsOfAuthority.AuthorityUser;
         Roles = new Roles();
     }
 
 
     public Guid UserRoleGuid { get; init; }
     /// <summary>
-    /// 角色名
+    ///     角色名
     /// </summary>
     public string RoleName { get; private set; } = null!;
     /// <summary>
-    /// 角色过期时间
+    ///     角色过期时间
     /// </summary>
     public DateTimeOffset? RoleEndTime { get; private set; }
 
     /// <summary>
-    /// 角色权限
+    ///     角色权限
     /// </summary>
     public LimitsOfAuthority LimitsOfAuthority { get; set; }
 
@@ -64,5 +64,8 @@ public class UserRole : IAggregateRoot
         }
     }
 
-    private LimitsOfAuthority ChangeByLimitOfAuthorize(LimitsOfAuthority limitsOfAuthority) => this.LimitsOfAuthority = limitsOfAuthority;
+    private LimitsOfAuthority ChangeByLimitOfAuthorize(LimitsOfAuthority limitsOfAuthority)
+    {
+        return LimitsOfAuthority = limitsOfAuthority;
+    }
 }

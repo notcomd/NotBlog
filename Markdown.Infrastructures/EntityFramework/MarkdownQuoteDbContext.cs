@@ -9,7 +9,6 @@ public class MarkdownQuoteDbContext(DbContextOptions<MarkdownQuoteDbContext> opt
 
 
     /// <summary>
-    /// 
     /// </summary>
     /// <param name="modelBuilder"></param>
     protected override void OnModelCreating(ModelBuilder modelBuilder)

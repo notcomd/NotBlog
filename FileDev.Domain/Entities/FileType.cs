@@ -3,27 +3,29 @@ namespace FileDev.Domain.Entities;
 public enum FileType
 {
     /// <summary>
-    /// 视频
+    ///     视频
     /// </summary>
-    Video,
+    FileVideo,
+
+    FileAudio,
 
     /// <summary>
-    /// 图片
+    ///     图片
     /// </summary>
-    Image,
+    FileImage,
 
     /// <summary>
-    /// 文件
+    ///     文件
     /// </summary>
-    File,
+    FileFile,
 
     /// <summary>
-    /// 压缩文件
+    ///     压缩文件
     /// </summary>
     CompressFiles,
 
     /// <summary>
-    /// 表情
+    ///     表情
     /// </summary>
     Expression
 }

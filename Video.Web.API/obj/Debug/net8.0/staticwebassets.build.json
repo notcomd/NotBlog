@@ -1,11 +1,12 @@
 {
   "Version": 1,
-  "Hash": "Z+dzqKP0QI/Ww5eughHozKQ/fGHpivekim5TV8d0P5w=",
+  "Hash": "y6gpY5vA8k8jSXAMtgXReXe4RD16S1EHB/j4vm5dtc4=",
   "Source": "Video.Web.API",
   "BasePath": "_content/Video.Web.API",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],
   "DiscoveryPatterns": [],
-  "Assets": []
+  "Assets": [],
+  "Endpoints": []
 }

@@ -13,7 +13,7 @@ public class FileDbContext : DbContext
     public DbSet<File> Files { get; set; }
 
     /// <summary>
-    /// 配置dbcontext 内容
+    ///     配置dbcontext 内容
     /// </summary>
     /// <param name="configurationBuilder"></param>
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)

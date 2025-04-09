@@ -1,11 +1,12 @@
 {
   "Version": 1,
-  "Hash": "uQGDBX7Rz4LeJNz9rs5TN6hP0DD8kNl1Wvyv/6mQNQQ=",
+  "Hash": "NUiymTlnAvFn8WyJw2OCAvg5zrF5rWjQ+QPri9EklLc=",
   "Source": "Markdown.Web.API",
   "BasePath": "_content/Markdown.Web.API",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],
   "DiscoveryPatterns": [],
-  "Assets": []
+  "Assets": [],
+  "Endpoints": []
 }

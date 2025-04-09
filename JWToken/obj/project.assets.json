@@ -1111,9 +1111,9 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\29617\\source\\repos\\MyService\\JWToken\\Notcomd.Token.JWT.csproj",
-      "projectName": "Notcomd.Token.JWT",
-      "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\JWToken\\Notcomd.Token.JWT.csproj",
+      "projectUniqueName": "C:\\Users\\29617\\source\\repos\\MyService\\JWToken\\Token.JWT.csproj",
+      "projectName": "Token.JWT",
+      "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\JWToken\\Token.JWT.csproj",
       "packagesPath": "C:\\Users\\29617\\.nuget\\packages\\",
       "outputPath": "C:\\Users\\29617\\source\\repos\\MyService\\JWToken\\obj\\",
       "projectStyle": "PackageReference",
@@ -1149,7 +1149,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "9.0.100"
+      "SdkAnalysisLevel": "9.0.200"
     },
     "frameworks": {
       "net8.0": {
@@ -1188,7 +1188,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.103/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.201/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

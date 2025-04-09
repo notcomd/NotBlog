@@ -1,5 +1,10 @@
 namespace Notcomd.Meaage.Server.Entities;
 
-public class Message
+public record Message
 {
+    public MessageType MessageType { get; set; }
+
+    public object? MessageBody { get; set; }
+
+    public DateTimeOffset MessagePushTime { get; init; } = DateTimeOffset.UtcNow;
 }

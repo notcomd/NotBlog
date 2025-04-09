@@ -12,9 +12,9 @@
           "Identity.Domain": "1.0.0",
           "Microsoft.EntityFrameworkCore": "8.0.4",
           "Microsoft.EntityFrameworkCore.Tools": "8.0.4",
-          "Notcomd.Token.JWT": "1.0.0",
           "Npgsql": "8.0.3",
-          "Npgsql.EntityFrameworkCore.PostgreSQL": "8.0.4"
+          "Npgsql.EntityFrameworkCore.PostgreSQL": "8.0.4",
+          "Token.JWT": "1.0.0"
         },
         "runtime": {
           "Identity.Infrastructure.dll": {}
@@ -759,7 +759,7 @@
       },
       "Identity.Domain/1.0.0": {
         "dependencies": {
-          "Notcomd.Token.JWT": "1.0.0"
+          "Token.JWT": "1.0.0"
         },
         "runtime": {
           "Identity.Domain.dll": {
@@ -768,7 +768,7 @@
           }
         }
       },
-      "Notcomd.Token.JWT/1.0.0": {
+      "Token.JWT/1.0.0": {
         "dependencies": {
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.6",
           "Microsoft.AspNetCore.Authentication.MicrosoftAccount": "8.0.6",
@@ -776,7 +776,7 @@
           "System.IdentityModel.Tokens.Jwt": "7.6.0"
         },
         "runtime": {
-          "Notcomd.Token.JWT.dll": {
+          "Token.JWT.dll": {
             "assemblyVersion": "1.0.0",
             "fileVersion": "1.0.0.0"
           }
@@ -1241,7 +1241,7 @@
       "serviceable": false,
       "sha512": ""
     },
-    "Notcomd.Token.JWT/1.0.0": {
+    "Token.JWT/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

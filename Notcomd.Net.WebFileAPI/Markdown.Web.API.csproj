@@ -1,19 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Notcomd.Document.Server\Markdown.Domain.csproj" />
-    <ProjectReference Include="..\FileDev.Domain\FileDev.Domain.csproj" />
-    <ProjectReference Include="..\Video.Domain\Video.Domain.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Markdown.Domain\Markdown.Domain.csproj"/>
+        <ProjectReference Include="..\Markdown.Infrastructures\Markdown.Infrastructures.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="Protos\"/>
+    </ItemGroup>
 
 </Project>

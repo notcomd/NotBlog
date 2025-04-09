@@ -4,24 +4,22 @@ namespace EmailSendServer;
 
 public class MailPush
 {
-    public MailPush(string title, string fromEmailAddress)
-    {
-        Title = title;
-        this.ToEmailAddress = fromEmailAddress;
-    }
 
+    /// <summary>
+    ///     邮件主题
+    /// </summary>
     public string Title { get; init; }
-
-    //public string FromName { get; set; }
-
+    /// <summary>
+    ///     邮件接收地址
+    /// </summary>
     public string ToEmailAddress { get; set; }
 
-    public List<MailboxAddress> SendEmailAddresses { get; private set; } = new List<MailboxAddress>();
+    public List<MailboxAddress> ToEmailList { get; } = new();
 
 
     public ValueTask AddPushValueTask(MailboxAddress mailboxAddress)
     {
-        SendEmailAddresses.Add(mailboxAddress);
+        ToEmailList.Add(mailboxAddress);
         return ValueTask.CompletedTask;
     }
 }

@@ -10,3 +10,7 @@ C:\Users\29617\source\repos\MyService\FileDev.Infrastructures\obj\Debug\net8.0\F
 C:\Users\29617\source\repos\MyService\FileDev.Infrastructures\obj\Debug\net8.0\refint\FileDev.Infrastructures.dll
 C:\Users\29617\source\repos\MyService\FileDev.Infrastructures\obj\Debug\net8.0\FileDev.Infrastructures.pdb
 C:\Users\29617\source\repos\MyService\FileDev.Infrastructures\obj\Debug\net8.0\ref\FileDev.Infrastructures.dll
+C:\Users\29617\source\repos\MyService\FileDev.Infrastructures\bin\Debug\net8.0\FileDev.Domain.dll
+C:\Users\29617\source\repos\MyService\FileDev.Infrastructures\bin\Debug\net8.0\FileDev.Domain.pdb
+C:\Users\29617\source\repos\MyService\FileDev.Infrastructures\obj\Debug\net8.0\FileDev.Infrastructures.csproj.AssemblyReference.cache
+C:\Users\29617\source\repos\MyService\FileDev.Infrastructures\obj\Debug\net8.0\FileDev..37F77327.Up2Date

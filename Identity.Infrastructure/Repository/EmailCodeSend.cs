@@ -19,12 +19,11 @@ public class EmailCodeSend : IEmailCodeSend
 
     public async ValueTask SendEmailCodeAsync(string toEmail, string code)
     {
-        var mailpush = new MailPush("验证码", "Notcomd@outlook.com");
-        mailpush.SendEmailAddresses.Add(new MailboxAddress
-        (
-            "1111", toEmail
-        ));
-        await ValueTask.CompletedTask;
+        var mailpush = new MailPush
+        {
+            Title = "EmailCodeSend",
+            ToEmailAddress = toEmail
+        };
         var message = new MimeMessage
         {
             Subject = "hello",

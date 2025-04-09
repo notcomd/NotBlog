@@ -16,47 +16,61 @@ public class Email : IEmail
 
 
     /// <summary>
-    /// 
     /// </summary>
     /// <param name="message"></param>
     /// <param name="mailPush">配置信息</param>
     public async ValueTask SendEmailValueTask(MimeMessage message, MailPush mailPush)
     {
-        message.From.Add(new MailboxAddress(_optionsManager.Value.EmailUser, _optionsManager.Value.EmailUser));
-        message.To.AddRange(mailPush.SendEmailAddresses);
-
-        using var mailClient = new SmtpClient
+        try
         {
-            ServerCertificateValidationCallback = (s, c, h, e) => true
-        };
-        mailClient.AuthenticationMechanisms.Remove("XOAUTH2");
-        //return ValueTask.CompletedTask;
-        await mailClient.ConnectAsync(_optionsManager.Value.AddressHost, _optionsManager.Value.Port,
-            SecureSocketOptions.StartTls);
-        await mailClient.AuthenticateAsync(_optionsManager.Value.AddressHost, _optionsManager.Value.Password);
-        await mailClient.SendAsync(message);
-        await mailClient.DisconnectAsync(true);
+            message.From.Add(new MailboxAddress(_optionsManager.Value.FromEmail, _optionsManager.Value.FromEmail));
+            message.To.AddRange(mailPush.ToEmailList);
+
+            using (var mailClient = new SmtpClient())
+            {
+                mailClient.AuthenticationMechanisms.Remove("XOAUTH2");
+                //return ValueTask.CompletedTask;
+                await mailClient.ConnectAsync(_optionsManager.Value.SmtpHost, _optionsManager.Value.Port,
+                    SecureSocketOptions.StartTls);
+                await mailClient.AuthenticateAsync(_optionsManager.Value.SmtpHost, _optionsManager.Value.SmtpPassword);
+                await mailClient.SendAsync(message);
+                await mailClient.DisconnectAsync(true);
+            }
+
+        }
+        catch (SmtpCommandException e)
+        {
+            Console.WriteLine(e.Message);
+        }
+
     }
 
     public async ValueTask SendEmailValueTask(MimeMessage message, MailPush mailPush,
         SecureSocketOptions secureSocketOptions)
     {
-        if (_optionsManager.Value is null)
+        try
         {
-            throw new ArgumentNullException(nameof(_optionsManager.Value.EmailUser));
+            if (_optionsManager.Value is null)
+            {
+                throw new ArgumentNullException(nameof(_optionsManager.Value.FromEmail));
+            }
+            message.From.Add(new MailboxAddress("", _optionsManager.Value.FromEmail));
+            message.To.Add(new MailboxAddress("", mailPush.ToEmailAddress));
+
+            using (var mailclient = new SmtpClient())
+            {
+                await mailclient.ConnectAsync(_optionsManager.Value.SmtpHost, _optionsManager.Value.Port,
+                    secureSocketOptions);
+                await mailclient.AuthenticateAsync(_optionsManager.Value.FromEmail,
+                    _optionsManager.Value.SmtpPassword);
+                await mailclient.SendAsync(message);
+                await mailclient.DisconnectAsync(true);
+            }
+        }
+        catch (SmtpCommandException e)
+        {
+            Console.WriteLine($"Error>{e.ErrorCode}-{e.Message}");
         }
 
-        message.From.Add(new MailboxAddress(_optionsManager.Value.EmailUser, _optionsManager.Value.EmailUser));
-        message.To.AddRange(mailPush.SendEmailAddresses);
-
-        using var mailclient = new SmtpClient();
-
-        mailclient.AuthenticationMechanisms.Remove("XOAUTH2");
-        await mailclient.ConnectAsync(_optionsManager.Value.AddressHost, _optionsManager.Value.Port,
-            secureSocketOptions);
-        await mailclient.AuthenticateAsync(_optionsManager.Value.EmailUser, _optionsManager.Value.Password);
-        var oauth2 = new SaslMechanismOAuth2(_optionsManager.Value.EmailUser, _optionsManager.Value.Password);
-        await mailclient.SendAsync(message);
-        await mailclient.DisconnectAsync(true);
     }
 }

@@ -9,7 +9,7 @@ public class File : IAggregateRoot
 
     public string FileName { get; set; } = null!;
 
-    public List<string>? FileTitels { get; set; } = new List<string>();
+    public List<string>? FileTitels { get; set; } = new();
 
     public string FileDescription { get; set; } = null!;
 

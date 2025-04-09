@@ -4,10 +4,8 @@ C:\Users\29617\source\repos\MyService\Identity.Infrastructure\bin\Debug\net8.0\I
 C:\Users\29617\source\repos\MyService\Identity.Infrastructure\bin\Debug\net8.0\Identity.Infrastructure.pdb
 C:\Users\29617\source\repos\MyService\Identity.Infrastructure\bin\Debug\net8.0\EmailSendServer.dll
 C:\Users\29617\source\repos\MyService\Identity.Infrastructure\bin\Debug\net8.0\Identity.Domain.dll
-C:\Users\29617\source\repos\MyService\Identity.Infrastructure\bin\Debug\net8.0\Notcomd.Token.JWT.dll
 C:\Users\29617\source\repos\MyService\Identity.Infrastructure\bin\Debug\net8.0\EmailSendServer.pdb
 C:\Users\29617\source\repos\MyService\Identity.Infrastructure\bin\Debug\net8.0\Identity.Domain.pdb
-C:\Users\29617\source\repos\MyService\Identity.Infrastructure\bin\Debug\net8.0\Notcomd.Token.JWT.pdb
 C:\Users\29617\source\repos\MyService\Identity.Infrastructure\obj\Debug\net8.0\Identity.Infrastructure.csproj.AssemblyReference.cache
 C:\Users\29617\source\repos\MyService\Identity.Infrastructure\obj\Debug\net8.0\Identity.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
 C:\Users\29617\source\repos\MyService\Identity.Infrastructure\obj\Debug\net8.0\Identity.Infrastructure.AssemblyInfoInputs.cache
@@ -20,3 +18,5 @@ C:\Users\29617\source\repos\MyService\Identity.Infrastructure\obj\Debug\net8.0\r
 C:\Users\29617\source\repos\MyService\Identity.Infrastructure\obj\Debug\net8.0\Identity.Infrastructure.pdb
 C:\Users\29617\source\repos\MyService\Identity.Infrastructure\obj\Debug\net8.0\Identity.Infrastructure.genruntimeconfig.cache
 C:\Users\29617\source\repos\MyService\Identity.Infrastructure\obj\Debug\net8.0\ref\Identity.Infrastructure.dll
+C:\Users\29617\source\repos\MyService\Identity.Infrastructure\bin\Debug\net8.0\Token.JWT.dll
+C:\Users\29617\source\repos\MyService\Identity.Infrastructure\bin\Debug\net8.0\Token.JWT.pdb

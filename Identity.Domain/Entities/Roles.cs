@@ -21,11 +21,11 @@ public class Roles
 
     public Task<Roles> ChangeByRolesAsync(Guid userRole)
     {
-        if (this.UserGuid == userRole)
+        if (UserGuid == userRole)
         {
-            throw new AggregateException($"");
+            throw new AggregateException("");
         }
-        this.UserGuid = userRole;
+        UserGuid = userRole;
         return Task.FromResult(this);
     }
 }
