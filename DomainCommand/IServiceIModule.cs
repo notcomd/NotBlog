@@ -4,5 +4,5 @@ namespace Notcomd.DomainCommand;
 
 public interface INotcomdServiceIModule
 {
-    public void Notcomd_Server_Initialize(IServiceCollection service);
+    public void NotcomdServiceModel(IServiceCollection service);
 }

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "yfQ5UxySAVs=",
+  "dgSpecHash": "28zWrz7Boek=",
   "success": true,
   "projectFilePath": "C:\\Users\\29617\\source\\repos\\MyService\\IdentityGrpc\\IdentityGrpc.csproj",
   "expectedPackageFiles": [
@@ -23,5 +23,12 @@
     "C:\\Users\\29617\\.nuget\\packages\\system.diagnostics.diagnosticsource\\6.0.0\\system.diagnostics.diagnosticsource.6.0.0.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\6.0.0\\system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512"
   ],
-  "logs": []
+  "logs": [
+    {
+      "code": "NU1900",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Error occurred while getting package vulnerability data: Unable to load the service index for source https://nuget.telerik.com/v3/index.json."
+    }
+  ]
 }
