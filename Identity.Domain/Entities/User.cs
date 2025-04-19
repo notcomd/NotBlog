@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
+using DomainCommonst;
 using Notcomd.Token.JWT;
 
 namespace Identity.Domain.Entities;

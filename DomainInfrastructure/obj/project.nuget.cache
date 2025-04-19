@@ -1,9 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "of9P5fAOGQs=",
-  "success": true,
-  "projectFilePath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommand\\DomainCommand.csproj",
+  "dgSpecHash": "CJ4Q4UUlcNA=",
+  "success": false,
+  "projectFilePath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainInfrastructure\\DomainInfrastructure.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\29617\\.nuget\\packages\\mediatr\\11.0.0\\mediatr.11.0.0.nupkg.sha512",
+    "C:\\Users\\29617\\.nuget\\packages\\mediatr.contracts\\1.0.1\\mediatr.contracts.1.0.1.nupkg.sha512",
+    "C:\\Users\\29617\\.nuget\\packages\\mediatr.extensions.microsoft.dependencyinjection\\11.1.0\\mediatr.extensions.microsoft.dependencyinjection.11.1.0.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\6.0.21\\microsoft.aspnetcore.authentication.jwtbearer.6.0.21.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\microsoft.csharp\\4.5.0\\microsoft.csharp.4.5.0.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\microsoft.entityframeworkcore\\9.0.4\\microsoft.entityframeworkcore.9.0.4.nupkg.sha512",
@@ -31,6 +34,15 @@
       "level": "Warning",
       "warningLevel": 1,
       "message": "Error occurred while getting package vulnerability data: Unable to load the service index for source https://nuget.telerik.com/v3/index.json."
+    },
+    {
+      "code": "NU1605",
+      "level": "Error",
+      "message": "Warning As Error: Detected package downgrade: MediatR from 12.5.0 to 11.0.0. Reference the package directly from the project to select a different version. \r\n DomainInfrastructure -> DomainCommonst -> MediatR (>= 12.5.0) \r\n DomainInfrastructure -> MediatR (>= 11.0.0)",
+      "libraryId": "MediatR",
+      "targetGraphs": [
+        "net9.0"
+      ]
     }
   ]
 }

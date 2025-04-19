@@ -1,25 +1,26 @@
 using System.Reflection;
+using DomainCommonst;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Notcomd.DomainCommand;
 
-public static class NotcomdServiceIModel
+public static class ModuleInitializer
 {
-    public static IServiceCollection AutoCreateInstance(this IServiceCollection service, IEnumerable<Assembly> assemblies)
+    public static IServiceCollection AutoAddInstance(this IServiceCollection service, IEnumerable<Assembly> assemblies)
     {
         foreach (var itemAss in assemblies)
         {
             var typeAss = itemAss.GetTypes();
             var notcomdIModel = typeAss
-                .Where(en => !en.IsAbstract && typeof(INotcomdServiceIModule).IsInstanceOfType(en));
+                .Where(en => !en.IsAbstract && typeof(IModuleInitializer).IsInstanceOfType(en));
             foreach (var itemModel in notcomdIModel)
             {
-                var initializer = (INotcomdServiceIModule?)Activator.CreateInstance(itemModel);
+                var initializer = (IModuleInitializer?)Activator.CreateInstance(itemModel);
                 if (initializer == null)
                 {
                     throw new ArgumentNullException($"{itemModel.Name} is null!");
                 }
-                initializer.NotcomdServiceModel(service);
+                initializer.Initialize(service);
             }
         }
         return service;
