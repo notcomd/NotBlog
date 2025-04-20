@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="9.0.4"/>
+        <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.4"/>
+        <PackageReference Include="Npgsql" Version="9.0.3"/>
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\DomainCommonst\DomainCommonst.csproj"/>
+        <ProjectReference Include="..\DomainInfrastructure\DomainInfrastructure.csproj"/>
+        <ProjectReference Include="..\EmailSendServer\EmailSendServer.csproj"/>
+        <ProjectReference Include="..\Evenbus\Evenbus.csproj"/>
+        <ProjectReference Include="..\JWToken\Token.JWT.csproj"/>
+    </ItemGroup>
+
+</Project>

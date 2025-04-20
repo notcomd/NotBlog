@@ -1,7 +1,7 @@
 {
   "version": 3,
   "targets": {
-    "net8.0": {
+    "net9.0": {
       "Microsoft.EntityFrameworkCore/8.0.5": {
         "type": "package",
         "dependencies": {
@@ -374,7 +374,7 @@
       },
       "Markdown.Infrastructures/1.0.0": {
         "type": "project",
-        "framework": ".NETCoreApp,Version=v8.0",
+        "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
           "Markdown.Domain": "1.0.0",
           "Microsoft.EntityFrameworkCore": "8.0.5"
@@ -1184,7 +1184,7 @@
     }
   },
   "projectFileDependencyGroups": {
-    "net8.0": [
+    "net9.0": [
       "Markdown.Domain >= 1.0.0",
       "Markdown.Infrastructures >= 1.0.0",
       "Swashbuckle.AspNetCore >= 6.6.2"
@@ -1212,7 +1212,7 @@
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
-        "net8.0"
+        "net9.0"
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
@@ -1221,8 +1221,8 @@
         "https://nuget.telerik.com/v3/index.json": {}
       },
       "frameworks": {
-        "net8.0": {
-          "targetAlias": "net8.0",
+        "net9.0": {
+          "targetAlias": "net9.0",
           "projectReferences": {
             "C:\\Users\\29617\\source\\repos\\MyService\\Markdown.Domain\\Markdown.Domain.csproj": {
               "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\Markdown.Domain\\Markdown.Domain.csproj"
@@ -1246,8 +1246,8 @@
       "SdkAnalysisLevel": "9.0.200"
     },
     "frameworks": {
-      "net8.0": {
-        "targetAlias": "net8.0",
+      "net9.0": {
+        "targetAlias": "net9.0",
         "dependencies": {
           "Swashbuckle.AspNetCore": {
             "target": "Package",
