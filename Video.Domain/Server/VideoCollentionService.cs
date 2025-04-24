@@ -13,5 +13,7 @@ public class VideoCollectionService
     }
 
     public async Task<VideoCollection> GetByVideoCollectionAsync(Guid videoCollectionGuid)
-        => await _videoCollectionRepository.FindByVideoCollectionAsync(videoCollectionGuid);
+    {
+        return await _videoCollectionRepository.FindByVideoCollectionAsync(videoCollectionGuid);
+    }
 }

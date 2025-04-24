@@ -10,7 +10,7 @@ public static class ReflectionHelper
 {
 
     /// <summary>
-    /// 据产品名称获取程序集
+    ///     据产品名称获取程序集
     /// </summary>
     /// <param name="productName"></param>
     /// <returns></returns>
@@ -34,7 +34,7 @@ public static class ReflectionHelper
         {
             return false;
         }
-        string companyName = asmCompanyAttr.Company;
+        var companyName = asmCompanyAttr.Company;
         return companyName.Contains("Microsoft");
     }
 
@@ -42,8 +42,8 @@ public static class ReflectionHelper
     {
         try
         {
-            AssemblyName asmName = AssemblyName.GetAssemblyName(asmPath);
-            Assembly? asm = Assembly.Load(asmName);
+            var asmName = AssemblyName.GetAssemblyName(asmPath);
+            var asm = Assembly.Load(asmName);
             if (asm == null)
             {
                 return false;
@@ -53,7 +53,7 @@ public static class ReflectionHelper
             {
                 return false;
             }
-            string companyName = asmCompanyAttr.Company;
+            var companyName = asmCompanyAttr.Company;
             return companyName.Contains("Microsoft");
         }
         catch (Exception ex)
@@ -64,20 +64,20 @@ public static class ReflectionHelper
     }
 
     /// <summary>
-    /// 判断file这个文件是否是程序集
+    ///     判断file这个文件是否是程序集
     /// </summary>
     /// <param name="file"></param>
     /// <returns></returns>
     private static bool IsManagedAssembly(string file)
     {
         using var fs = File.OpenRead(file);
-        using PEReader peReader = new PEReader(fs);
+        using var peReader = new PEReader(fs);
         return peReader.HasMetadata && peReader.GetMetadataReader().IsAssembly;
     }
 
     private static Assembly? TryLoadAssembly(string asmPath)
     {
-        AssemblyName asmName = AssemblyName.GetAssemblyName(asmPath);
+        var asmName = AssemblyName.GetAssemblyName(asmPath);
         Assembly? asm = null;
         try
         {
@@ -111,12 +111,12 @@ public static class ReflectionHelper
     }
 
     /// <summary>
-    /// loop through all assemblies
+    ///     loop through all assemblies
     /// </summary>
     /// <returns></returns>
     public static IEnumerable<Assembly> GetAllReferencedAssemblies(bool skipSystemAssemblies = true)
     {
-        Assembly? rootAssembly = Assembly.GetEntryAssembly();
+        var rootAssembly = Assembly.GetEntryAssembly();
         if (rootAssembly == null)
         {
             rootAssembly = Assembly.GetCallingAssembly();
@@ -167,7 +167,7 @@ public static class ReflectionHelper
             {
                 continue;
             }
-            AssemblyName asmName = AssemblyName.GetAssemblyName(asmPath);
+            var asmName = AssemblyName.GetAssemblyName(asmPath);
             if (returnAssemblies.Any(x => AssemblyName.ReferenceMatchesDefinition(x.GetName(), asmName)))
             {
                 continue;
@@ -176,7 +176,7 @@ public static class ReflectionHelper
             {
                 continue;
             }
-            Assembly? asm = TryLoadAssembly(asmPath);
+            var asm = TryLoadAssembly(asmPath);
             if (asm == null)
             {
                 continue;
@@ -208,7 +208,7 @@ public static class ReflectionHelper
         }
     }
 
-    class AssemblyEquality : EqualityComparer<Assembly>
+    private class AssemblyEquality : EqualityComparer<Assembly>
     {
         public override bool Equals(Assembly? x, Assembly? y)
         {

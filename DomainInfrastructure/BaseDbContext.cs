@@ -6,7 +6,7 @@ namespace Notcomd.DomainCommand;
 public abstract class BaseDbContext : DbContext
 {
 
-    private IMediator? _mediator;
+    private readonly IMediator? _mediator;
 
     public BaseDbContext(DbContextOptions options, IMediator mediator) : base(options)
     {
@@ -25,9 +25,7 @@ public abstract class BaseDbContext : DbContext
             await _mediator.DispatchDomainEventsAsync(this);
         }
 
-
         var result = await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
-
         return result;
     }
 }

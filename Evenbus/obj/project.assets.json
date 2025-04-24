@@ -2,6 +2,15 @@
   "version": 3,
   "targets": {
     "net6.0": {
+      "Dynamic.Json/1.4.1": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/Dynamic.Json.dll": {}
+        },
+        "runtime": {
+          "lib/net6.0/Dynamic.Json.dll": {}
+        }
+      },
       "Microsoft.AspNetCore.Connections.Abstractions/8.0.4": {
         "type": "package",
         "dependencies": {
@@ -224,6 +233,22 @@
     }
   },
   "libraries": {
+    "Dynamic.Json/1.4.1": {
+      "sha512": "74hR3DqQYHW3CbfxarjAeBzGgTUr/wWr7ZeBE2UaATzrOy4/eSn3orFJGpiYrb9mck8Zauh+Hf4cljXFLe4vnQ==",
+      "type": "package",
+      "path": "dynamic.json/1.4.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "dynamic.json.1.4.1.nupkg.sha512",
+        "dynamic.json.nuspec",
+        "lib/net6.0/Dynamic.Json.dll",
+        "lib/net7.0/Dynamic.Json.dll",
+        "lib/net8.0/Dynamic.Json.dll",
+        "lib/netcoreapp3.1/Dynamic.Json.dll",
+        "lib/netstandard2.0/Dynamic.Json.dll"
+      ]
+    },
     "Microsoft.AspNetCore.Connections.Abstractions/8.0.4": {
       "sha512": "pvO0JgjrNOas+WzmHxqawTv64lwTy1zbGm4WQY7OOd/OfKMw8LaoNEtn9jsAfiKUkt3lYK8kOL8Uy9XyyTCUwg==",
       "type": "package",
@@ -568,6 +593,7 @@
   },
   "projectFileDependencyGroups": {
     "net6.0": [
+      "Dynamic.Json >= 1.4.1",
       "Microsoft.AspNetCore.Connections.Abstractions >= 8.0.4",
       "Microsoft.AspNetCore.Http.Abstractions >= 2.2.0",
       "Microsoft.Extensions.DependencyInjection.Abstractions >= 8.0.1",
@@ -627,6 +653,10 @@
       "net6.0": {
         "targetAlias": "net6.0",
         "dependencies": {
+          "Dynamic.Json": {
+            "target": "Package",
+            "version": "[1.4.1, )"
+          },
           "Microsoft.AspNetCore.Connections.Abstractions": {
             "target": "Package",
             "version": "[8.0.4, )"

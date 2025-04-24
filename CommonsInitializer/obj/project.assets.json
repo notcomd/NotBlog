@@ -15,6 +15,15 @@
           }
         }
       },
+      "Dynamic.Json/1.4.1": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/Dynamic.Json.dll": {}
+        },
+        "runtime": {
+          "lib/net8.0/Dynamic.Json.dll": {}
+        }
+      },
       "MailKit/4.7.1.1": {
         "type": "package",
         "dependencies": {
@@ -824,6 +833,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v6.0",
         "dependencies": {
+          "Dynamic.Json": "1.4.1",
           "Microsoft.AspNetCore.Connections.Abstractions": "8.0.4",
           "Microsoft.AspNetCore.Http.Abstractions": "2.2.0",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.1",
@@ -841,6 +851,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
+          "DomainCommonst": "1.0.0",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.6",
           "Microsoft.AspNetCore.Authentication.MicrosoftAccount": "8.0.6",
           "Microsoft.AspNetCore.SignalR.Client": "8.0.6",
@@ -874,6 +885,22 @@
         "lib/netstandard2.0/BouncyCastle.Cryptography.dll",
         "lib/netstandard2.0/BouncyCastle.Cryptography.xml",
         "packageIcon.png"
+      ]
+    },
+    "Dynamic.Json/1.4.1": {
+      "sha512": "74hR3DqQYHW3CbfxarjAeBzGgTUr/wWr7ZeBE2UaATzrOy4/eSn3orFJGpiYrb9mck8Zauh+Hf4cljXFLe4vnQ==",
+      "type": "package",
+      "path": "dynamic.json/1.4.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "dynamic.json.1.4.1.nupkg.sha512",
+        "dynamic.json.nuspec",
+        "lib/net6.0/Dynamic.Json.dll",
+        "lib/net7.0/Dynamic.Json.dll",
+        "lib/net8.0/Dynamic.Json.dll",
+        "lib/netcoreapp3.1/Dynamic.Json.dll",
+        "lib/netstandard2.0/Dynamic.Json.dll"
       ]
     },
     "MailKit/4.7.1.1": {

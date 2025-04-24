@@ -22,9 +22,15 @@ public record VideoProtectedTime
     public DateTimeOffset EndTime { get; private set; }
 
 
-    public void SetStartTime(DateTimeOffset startTime) => StartTime = startTime;
+    public void SetStartTime(DateTimeOffset startTime)
+    {
+        StartTime = startTime;
+    }
 
-    public void SetEndTime(DateTimeOffset endTime) => EndTime = endTime;
+    public void SetEndTime(DateTimeOffset endTime)
+    {
+        EndTime = endTime;
+    }
 
     public static VideoProtectedTime Crate(DateTimeOffset startTime, DateTimeOffset endTime)
     {

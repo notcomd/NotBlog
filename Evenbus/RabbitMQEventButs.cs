@@ -165,7 +165,7 @@ public class RabbitMQEventButs : IEventBus, IDisposable
                 {
                     throw new ApplicationException($"无法创建{subint}类型的服务");
                 }
-                await handler.Eventhander(eventName, message);
+                await handler.Handler(eventName, message);
             }
         }
         else

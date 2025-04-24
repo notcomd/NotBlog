@@ -26,22 +26,22 @@ public class Videos : IAggregateRoot
     public Guid VideoGuid { get; init; } = Guid.CreateVersion7();
 
     /// <summary>
-    /// 所属用户
+    ///     所属用户
     /// </summary>
     public List<Affiliated> Affiliated { get; } = new();
 
     /// <summary>
-    /// 封面的uri
+    ///     封面的uri
     /// </summary>
     public Uri VideoCover { get; private set; } = null!;
 
     /// <summary>
-    /// 标题
+    ///     标题
     /// </summary>
     public string VideoName { get; private set; } = null!;
 
     /// <summary>
-    ///  简介
+    ///     简介
     /// </summary>
     public string BriefIntroduction { get; private set; }
 
@@ -56,7 +56,7 @@ public class Videos : IAggregateRoot
     public Uri VideoFileUri { get; private set; } = null!;
 
     /// <summary>
-    ///  视频的nvid
+    ///     视频的nvid
     /// </summary>
     public string VideoNvid { get; init; } = NVIDGenerator.GenerateNvStyleIdWithUuid();
 

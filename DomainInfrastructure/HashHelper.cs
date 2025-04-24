@@ -8,7 +8,7 @@ public static class HashHelper
 
     private static Task<string> ToHashStringAsync(byte[] hash)
     {
-        StringBuilder hashString = new StringBuilder();
+        var hashString = new StringBuilder();
         foreach (var itm in hash)
         {
             hashString.Append(itm.ToString("x2"));
@@ -17,7 +17,7 @@ public static class HashHelper
     }
 
     /// <summary>
-    /// 计算字符串的SHA256哈希值
+    ///     计算字符串的SHA256哈希值
     /// </summary>
     /// <param name="str"></param>
     /// <returns></returns>
@@ -29,7 +29,7 @@ public static class HashHelper
     }
 
     /// <summary>
-    /// 计算流的MD5哈希值
+    ///     计算流的MD5哈希值
     /// </summary>
     /// <param name="stream"></param>
     /// <returns></returns>
@@ -42,7 +42,7 @@ public static class HashHelper
 
 
     /// <summary>
-    /// 计算字符串的MD5哈希值
+    ///     计算字符串的MD5哈希值
     /// </summary>
     /// <param name="str"></param>
     /// <returns></returns>
@@ -54,7 +54,7 @@ public static class HashHelper
     }
 
     /// <summary>
-    /// 计算流的MD5哈希值
+    ///     计算流的MD5哈希值
     /// </summary>
     /// <param name="stream"></param>
     /// <returns></returns>

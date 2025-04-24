@@ -61,7 +61,7 @@ public class VideoService
     {
         var videoModel = await _videoRepository.FindByVideoAsync(videos.VideoGuid);
         if (videoModel is null)
-            throw new ArgumentNullException($"没有数据！");
+            throw new ArgumentNullException("没有数据！");
         await _videoRepository.UpdateByVideoAsync(videos);
         _logger.LogInformation($"{videoModel.VideoName}更新了视频信息");
     }

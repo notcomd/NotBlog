@@ -1,9 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "K4bYOo5U+nE=",
+  "dgSpecHash": "8ikXdet2kQE=",
   "success": true,
   "projectFilePath": "C:\\Users\\29617\\source\\repos\\MyService\\Video.Domain\\Video.Domain.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\29617\\.nuget\\packages\\mediatr\\12.5.0\\mediatr.12.5.0.nupkg.sha512",
+    "C:\\Users\\29617\\.nuget\\packages\\mediatr.contracts\\2.0.1\\mediatr.contracts.2.0.1.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\8.0.6\\microsoft.aspnetcore.authentication.jwtbearer.8.0.6.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\microsoft.aspnetcore.authentication.microsoftaccount\\8.0.6\\microsoft.aspnetcore.authentication.microsoftaccount.8.0.6.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\microsoft.aspnetcore.connections.abstractions\\8.0.6\\microsoft.aspnetcore.connections.abstractions.8.0.6.nupkg.sha512",

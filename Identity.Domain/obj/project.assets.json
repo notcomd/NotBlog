@@ -474,6 +474,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
+          "DomainCommonst": "1.0.0",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.6",
           "Microsoft.AspNetCore.Authentication.MicrosoftAccount": "8.0.6",
           "Microsoft.AspNetCore.SignalR.Client": "8.0.6",

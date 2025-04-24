@@ -13,7 +13,7 @@ public static class MediatorExtensions
         return service.AddMediatR(assemblies.ToArray());
     }
 
-    public static async Task DispatchDomainEventsAsync(this IMediator mediator, DbContext dbContext)
+    public async static Task DispatchDomainEventsAsync(this IMediator mediator, DbContext dbContext)
     {
         var domainEntities = dbContext.ChangeTracker
             .Entries<IDomainEvents>()

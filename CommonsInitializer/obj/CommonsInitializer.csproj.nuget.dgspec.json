@@ -404,6 +404,10 @@
         "net6.0": {
           "targetAlias": "net6.0",
           "dependencies": {
+            "Dynamic.Json": {
+              "target": "Package",
+              "version": "[1.4.1, )"
+            },
             "Microsoft.AspNetCore.Connections.Abstractions": {
               "target": "Package",
               "version": "[8.0.4, )"
@@ -474,7 +478,11 @@
         "frameworks": {
           "net9.0": {
             "targetAlias": "net9.0",
-            "projectReferences": {}
+            "projectReferences": {
+              "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj": {
+                "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj"
+              }
+            }
           }
         },
         "warningProperties": {

@@ -8,6 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Dynamic.Json" Version="1.4.1"/>
         <PackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="8.0.4"/>
         <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0"/>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1"/>

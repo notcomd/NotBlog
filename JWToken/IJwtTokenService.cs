@@ -4,7 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Notcomd.Token.JWT;
 
-public interface IJwtTokenOptions
+public interface IJwtTokenService
 {
     /// <summary>
     ///     构建token

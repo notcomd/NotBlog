@@ -7,7 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Notcomd.Token.JWT;
 
-public class JwtTokenOptions : IJwtTokenOptions
+public class JwtTokenService : IJwtTokenService
 {
 
     /// <summary>
@@ -15,7 +15,7 @@ public class JwtTokenOptions : IJwtTokenOptions
     /// </summary>
     private readonly IOptionsSnapshot<JwtOptions> _optionsSnapshot;
 
-    public JwtTokenOptions(IOptionsSnapshot<JwtOptions> optionsSnapshot)
+    public JwtTokenService(IOptionsSnapshot<JwtOptions> optionsSnapshot)
     {
         _optionsSnapshot = optionsSnapshot;
     }

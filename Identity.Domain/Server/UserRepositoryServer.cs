@@ -12,7 +12,7 @@ namespace Identity.Domain.Server;
 
 public class UserRepositoryServer
 {
-    private readonly IJwtTokenOptions _jwtTokenServer;
+    private readonly IJwtTokenService _jwtTokenServer;
     private readonly ILogger<IUserRepository> _loggerUser;
     private readonly ILogger<IUserRoleRepository> _loggerUserRole;
     private readonly IOptionsSnapshot<JwtOptions> _optionsSnapshot;
@@ -21,7 +21,7 @@ public class UserRepositoryServer
 
     public UserRepositoryServer(IOptionsSnapshot<JwtOptions> optionsSnapshot, ILogger<IUserRepository> loggerUser,
         IUserRepository userRepository, IUserRoleRepository userRoleRepository,
-        IJwtTokenOptions jwtTokenServer, ILogger<IUserRoleRepository> loggerUserRole)
+        IJwtTokenService jwtTokenServer, ILogger<IUserRoleRepository> loggerUserRole)
     {
         _jwtTokenServer = jwtTokenServer;
         _userRoleRepository = userRoleRepository;

@@ -362,7 +362,11 @@
         "frameworks": {
           "net9.0": {
             "targetAlias": "net9.0",
-            "projectReferences": {}
+            "projectReferences": {
+              "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj": {
+                "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj"
+              }
+            }
           }
         },
         "warningProperties": {

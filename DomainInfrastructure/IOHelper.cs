@@ -3,7 +3,7 @@ namespace Notcomd.DomainCommand;
 public static class IOHelper
 {
     /// <summary>
-    /// 将流转换为字节数组
+    ///     将流转换为字节数组
     /// </summary>
     /// <param name="stream"></param>
     /// <returns></returns>
@@ -16,7 +16,7 @@ public static class IOHelper
     }
 
     /// <summary>
-    /// 将流转换为字节数组
+    ///     将流转换为字节数组
     /// </summary>
     /// <param name="stream"></param>
     /// <returns></returns>
@@ -29,7 +29,7 @@ public static class IOHelper
     }
 
     /// <summary>
-    /// 创建文件夹
+    ///     创建文件夹
     /// </summary>
     /// <param name="fileInfo"></param>
     public static void CreateDir(FileInfo fileInfo)

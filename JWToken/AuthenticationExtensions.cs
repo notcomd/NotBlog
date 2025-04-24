@@ -14,7 +14,7 @@ public static class AuthenticationExtensions
     //这是jwtoken配置类,加载配置信息
     public static AuthenticationBuilder AddJwtAuthentication(this IServiceCollection serviceDescriptors, JwtOptions wToke)
     {
-        serviceDescriptors.AddScoped<IJwtTokenOptions, JwtTokenOptions>();
+        serviceDescriptors.AddScoped<IJwtTokenService, JwtTokenService>();
         return serviceDescriptors.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(x =>
         {
             x.TokenValidationParameters = new TokenValidationParameters
@@ -32,7 +32,7 @@ public static class AuthenticationExtensions
 
     public static AuthenticationBuilder AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddScoped<IJwtTokenOptions, JwtTokenOptions>();
+        services.AddScoped<IJwtTokenService, JwtTokenService>();
         var configString = configuration.Get<JwtOptions>();
         if (configString is null)
         {

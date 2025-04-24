@@ -24,19 +24,34 @@ public record VideoControl
         {
             VideoDelete = false,
             VideoDisplay = true,
-            AuthorVideo = AuthorVideo.VideoPublic,
+            AuthorVideo = AuthorVideo.VideoPublic
         };
     }
 
-    public void Barrage(BarrageControl barrageControl) => BarrageControl = barrageControl;
+    public void Barrage(BarrageControl barrageControl)
+    {
+        BarrageControl = barrageControl;
+    }
 
-    public void Delete(bool delete) => VideoDelete = delete;
+    public void Delete(bool delete)
+    {
+        VideoDelete = delete;
+    }
 
-    public void Display(bool display) => VideoDisplay = display;
+    public void Display(bool display)
+    {
+        VideoDisplay = display;
+    }
 
-    public void Author(AuthorVideo author) => AuthorVideo = author;
+    public void Author(AuthorVideo author)
+    {
+        AuthorVideo = author;
+    }
 
-    public void SetProtectedTime(DateTimeOffset startTime, DateTimeOffset endTime) => VideoProtectedTime = VideoProtectedTime.Crate(startTime, endTime);
+    public void SetProtectedTime(DateTimeOffset startTime, DateTimeOffset endTime)
+    {
+        VideoProtectedTime = VideoProtectedTime.Crate(startTime, endTime);
+    }
 
 
     public bool IsVideoDelete()

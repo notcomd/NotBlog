@@ -52,6 +52,10 @@
         "net6.0": {
           "targetAlias": "net6.0",
           "dependencies": {
+            "Dynamic.Json": {
+              "target": "Package",
+              "version": "[1.4.1, )"
+            },
             "Microsoft.AspNetCore.Connections.Abstractions": {
               "target": "Package",
               "version": "[8.0.4, )"

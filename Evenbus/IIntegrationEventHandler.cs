@@ -2,5 +2,5 @@
 
 public interface IIntegrationEventHandler
 {
-    Task Eventhander(string EventName, string EventData);
+    Task Handler(string eventName, string eventData);
 }

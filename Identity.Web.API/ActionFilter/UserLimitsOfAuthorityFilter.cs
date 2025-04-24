@@ -36,7 +36,7 @@ public class UserLimitsOfAuthorityFilter : IAsyncActionFilter
                 };
                 return;
             }
-            var toKenMethod = context.HttpContext.RequestServices.GetService<IJwtTokenOptions>() ??
+            var toKenMethod = context.HttpContext.RequestServices.GetService<IJwtTokenService>() ??
                               throw new ArgumentNullException($"date[{DateTime.UtcNow}:token解析异常]");
             var token = await toKenMethod.JwtSecurityTokenHandlerAsync(authorizationData);
             foreach (var item in method)
