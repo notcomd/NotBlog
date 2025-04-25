@@ -1,4 +1,5 @@
 using CommonsInitializer;
+using EmailSendServer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -70,6 +71,7 @@ public static class WebApplicationBuilderExtension
             }
         );
 
+        services.AddEmailServer();
         //services.AddLogging(builder =>
         //{
         //    Log.Logger = new LoggerConfiguration()

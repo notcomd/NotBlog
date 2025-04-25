@@ -816,8 +816,10 @@
       },
       "EmailSendServer/1.0.0": {
         "type": "project",
-        "framework": ".NETCoreApp,Version=v8.0",
+        "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
+          "DomainCommonst": "1.0.0",
+          "Evenbus": "1.0.0",
           "MailKit": "4.7.1.1",
           "Microsoft.Extensions.Configuration.Abstractions": "8.0.0",
           "Microsoft.Extensions.Options": "8.0.0"
@@ -2166,6 +2168,12 @@
       "level": "Warning",
       "warningLevel": 1,
       "message": "Error occurred while getting package vulnerability data: Unable to load the service index for source https://nuget.telerik.com/v3/index.json."
+    },
+    {
+      "code": "NU1900",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json."
     }
   ]
 }

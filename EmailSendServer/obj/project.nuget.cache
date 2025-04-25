@@ -1,18 +1,30 @@
 {
   "version": 2,
-  "dgSpecHash": "5FgBM6dTQSc=",
-  "success": true,
+  "dgSpecHash": "ApiJqtTs5r8=",
+  "success": false,
   "projectFilePath": "C:\\Users\\29617\\source\\repos\\MyService\\EmailSendServer\\EmailSendServer.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\29617\\.nuget\\packages\\bouncycastle.cryptography\\2.4.0\\bouncycastle.cryptography.2.4.0.nupkg.sha512",
+    "C:\\Users\\29617\\.nuget\\packages\\dynamic.json\\1.4.1\\dynamic.json.1.4.1.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\mailkit\\4.7.1.1\\mailkit.4.7.1.1.nupkg.sha512",
+    "C:\\Users\\29617\\.nuget\\packages\\mediatr\\12.5.0\\mediatr.12.5.0.nupkg.sha512",
+    "C:\\Users\\29617\\.nuget\\packages\\mediatr.contracts\\2.0.1\\mediatr.contracts.2.0.1.nupkg.sha512",
+    "C:\\Users\\29617\\.nuget\\packages\\microsoft.aspnetcore.connections.abstractions\\8.0.4\\microsoft.aspnetcore.connections.abstractions.8.0.4.nupkg.sha512",
+    "C:\\Users\\29617\\.nuget\\packages\\microsoft.aspnetcore.http.abstractions\\2.2.0\\microsoft.aspnetcore.http.abstractions.2.2.0.nupkg.sha512",
+    "C:\\Users\\29617\\.nuget\\packages\\microsoft.aspnetcore.http.features\\2.2.0\\microsoft.aspnetcore.http.features.2.2.0.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\8.0.0\\microsoft.extensions.configuration.abstractions.8.0.0.nupkg.sha512",
-    "C:\\Users\\29617\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\8.0.0\\microsoft.extensions.dependencyinjection.abstractions.8.0.0.nupkg.sha512",
+    "C:\\Users\\29617\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\8.0.1\\microsoft.extensions.dependencyinjection.abstractions.8.0.1.nupkg.sha512",
+    "C:\\Users\\29617\\.nuget\\packages\\microsoft.extensions.features\\8.0.4\\microsoft.extensions.features.8.0.4.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\microsoft.extensions.options\\8.0.0\\microsoft.extensions.options.8.0.0.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\microsoft.extensions.primitives\\8.0.0\\microsoft.extensions.primitives.8.0.0.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\mimekit\\4.7.1\\mimekit.4.7.1.nupkg.sha512",
+    "C:\\Users\\29617\\.nuget\\packages\\rabbitmq.client\\6.8.1\\rabbitmq.client.6.8.1.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\system.formats.asn1\\8.0.1\\system.formats.asn1.8.0.1.nupkg.sha512",
-    "C:\\Users\\29617\\.nuget\\packages\\system.security.cryptography.pkcs\\8.0.0\\system.security.cryptography.pkcs.8.0.0.nupkg.sha512"
+    "C:\\Users\\29617\\.nuget\\packages\\system.io.pipelines\\8.0.0\\system.io.pipelines.8.0.0.nupkg.sha512",
+    "C:\\Users\\29617\\.nuget\\packages\\system.memory\\4.5.5\\system.memory.4.5.5.nupkg.sha512",
+    "C:\\Users\\29617\\.nuget\\packages\\system.security.cryptography.pkcs\\8.0.0\\system.security.cryptography.pkcs.8.0.0.nupkg.sha512",
+    "C:\\Users\\29617\\.nuget\\packages\\system.text.encodings.web\\4.5.0\\system.text.encodings.web.4.5.0.nupkg.sha512",
+    "C:\\Users\\29617\\.nuget\\packages\\system.threading.channels\\7.0.0\\system.threading.channels.7.0.0.nupkg.sha512"
   ],
   "logs": [
     {
@@ -20,6 +32,21 @@
       "level": "Warning",
       "warningLevel": 1,
       "message": "Error occurred while getting package vulnerability data: Unable to load the service index for source https://nuget.telerik.com/v3/index.json."
+    },
+    {
+      "code": "NU1900",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json."
+    },
+    {
+      "code": "NU1605",
+      "level": "Error",
+      "message": "Warning As Error: Detected package downgrade: Microsoft.Extensions.Options from 8.0.2 to 8.0.0. Reference the package directly from the project to select a different version. \r\n EmailSendServer -> Evenbus -> Microsoft.Extensions.Options (>= 8.0.2) \r\n EmailSendServer -> Microsoft.Extensions.Options (>= 8.0.0)",
+      "libraryId": "Microsoft.Extensions.Options",
+      "targetGraphs": [
+        "net9.0"
+      ]
     }
   ]
 }
