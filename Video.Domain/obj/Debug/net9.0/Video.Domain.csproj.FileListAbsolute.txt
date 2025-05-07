@@ -1,8 +1,10 @@
 C:\Users\29617\source\repos\MyService\Video.Domain\bin\Debug\net9.0\Video.Domain.deps.json
 C:\Users\29617\source\repos\MyService\Video.Domain\bin\Debug\net9.0\Video.Domain.dll
 C:\Users\29617\source\repos\MyService\Video.Domain\bin\Debug\net9.0\Video.Domain.pdb
+C:\Users\29617\source\repos\MyService\Video.Domain\bin\Debug\net9.0\DomainCommonst.dll
 C:\Users\29617\source\repos\MyService\Video.Domain\bin\Debug\net9.0\Token.JWT.dll
 C:\Users\29617\source\repos\MyService\Video.Domain\bin\Debug\net9.0\Token.JWT.pdb
+C:\Users\29617\source\repos\MyService\Video.Domain\bin\Debug\net9.0\DomainCommonst.pdb
 C:\Users\29617\source\repos\MyService\Video.Domain\obj\Debug\net9.0\Video.Domain.csproj.AssemblyReference.cache
 C:\Users\29617\source\repos\MyService\Video.Domain\obj\Debug\net9.0\Video.Domain.GeneratedMSBuildEditorConfig.editorconfig
 C:\Users\29617\source\repos\MyService\Video.Domain\obj\Debug\net9.0\Video.Domain.AssemblyInfoInputs.cache

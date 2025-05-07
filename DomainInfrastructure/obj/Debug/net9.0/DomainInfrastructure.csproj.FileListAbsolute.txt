@@ -1,0 +1,16 @@
+C:\Users\29617\source\repos\MyService\DomainInfrastructure\bin\Debug\net9.0\DomainInfrastructure.deps.json
+C:\Users\29617\source\repos\MyService\DomainInfrastructure\bin\Debug\net9.0\DomainInfrastructure.dll
+C:\Users\29617\source\repos\MyService\DomainInfrastructure\bin\Debug\net9.0\DomainInfrastructure.pdb
+C:\Users\29617\source\repos\MyService\DomainInfrastructure\bin\Debug\net9.0\DomainCommonst.dll
+C:\Users\29617\source\repos\MyService\DomainInfrastructure\bin\Debug\net9.0\DomainCommonst.pdb
+C:\Users\29617\source\repos\MyService\DomainInfrastructure\obj\Debug\net9.0\DomainInfrastructure.csproj.AssemblyReference.cache
+C:\Users\29617\source\repos\MyService\DomainInfrastructure\obj\Debug\net9.0\DomainInfrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\29617\source\repos\MyService\DomainInfrastructure\obj\Debug\net9.0\DomainInfrastructure.AssemblyInfoInputs.cache
+C:\Users\29617\source\repos\MyService\DomainInfrastructure\obj\Debug\net9.0\DomainInfrastructure.AssemblyInfo.cs
+C:\Users\29617\source\repos\MyService\DomainInfrastructure\obj\Debug\net9.0\DomainInfrastructure.csproj.CoreCompileInputs.cache
+C:\Users\29617\source\repos\MyService\DomainInfrastructure\obj\Debug\net9.0\DomainInfrastructure.sourcelink.json
+C:\Users\29617\source\repos\MyService\DomainInfrastructure\obj\Debug\net9.0\DomainIn.0D125D05.Up2Date
+C:\Users\29617\source\repos\MyService\DomainInfrastructure\obj\Debug\net9.0\DomainInfrastructure.dll
+C:\Users\29617\source\repos\MyService\DomainInfrastructure\obj\Debug\net9.0\refint\DomainInfrastructure.dll
+C:\Users\29617\source\repos\MyService\DomainInfrastructure\obj\Debug\net9.0\DomainInfrastructure.pdb
+C:\Users\29617\source\repos\MyService\DomainInfrastructure\obj\Debug\net9.0\ref\DomainInfrastructure.dll

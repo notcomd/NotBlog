@@ -16,7 +16,7 @@ public static class AddScopedOption
     public static IServiceCollection AddEmailServer(this IServiceCollection serviceCollection,
         IConfiguration configuration)
     {
-        var data = configuration.GetSection(nameof(EmailAddress));
+        var data = configuration.GetSection(nameof(EmailSetting));
 
         serviceCollection.AddScoped<IEmail, Email>();
         serviceCollection.AddOptions();

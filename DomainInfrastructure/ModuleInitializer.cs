@@ -6,7 +6,7 @@ namespace Notcomd.DomainCommand;
 
 public static class ModuleInitializer
 {
-    public static IServiceCollection AutoAddInstance(this IServiceCollection service, IEnumerable<Assembly> assemblies)
+    public static IServiceCollection AddAutoAddInstance(this IServiceCollection service, IEnumerable<Assembly> assemblies)
     {
         foreach (var itemAss in assemblies)
         {

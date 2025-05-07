@@ -5,15 +5,15 @@ VisualStudioVersion = 17.6.33717.318
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Token.JWT", "JWToken\Token.JWT.csproj", "{923A2B78-B6EF-46BC-B288-BA76F8A44345}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Notcomd_Mark", "Notcomd_Mark", "{25E79912-68DF-4C96-83C8-760DAC7B618D}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NotBlog_Mark", "NotBlog_Mark", "{25E79912-68DF-4C96-83C8-760DAC7B618D}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Notcomd_Commonst", "Notcomd_Commonst", "{57FA7F6A-CE2E-4CB0-84B8-7424CCF75DD8}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NotBlog_Commonst", "NotBlog_Commonst", "{57FA7F6A-CE2E-4CB0-84B8-7424CCF75DD8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DomainInfrastructure", "DomainInfrastructure\DomainInfrastructure.csproj", "{26E2E047-3F71-43FB-96E8-EA37B656EF75}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Markdown.Web.API", "Notcomd.Net.WebFileAPI\Markdown.Web.API.csproj", "{C626A48B-42DB-4956-A07B-A5FCD192F84E}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Notcomd_Massage", "Notcomd_Massage", "{CACD58C8-DCF5-4EAB-AE19-663DF616C3FA}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NotBlog_Massage", "NotBlog_Massage", "{CACD58C8-DCF5-4EAB-AE19-663DF616C3FA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Message.Web.API", "Message.Web.API\Message.Web.API.csproj", "{3CBDF164-6BA9-4314-B68D-FA06F2E2A16F}"
 EndProject
@@ -29,11 +29,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Message.Domain", "Message.D
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Markdown.Infrastructures", "Markdown.Infrastructures\Markdown.Infrastructures.csproj", "{25CE147A-4352-45F6-A761-0EBD4240DEB6}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Notcomd_File", "Notcomd_File", "{751E7496-ED15-4C87-8256-E0F273CEB282}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NotBlog_File", "NotBlog_File", "{751E7496-ED15-4C87-8256-E0F273CEB282}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileDev.Infrastructures", "FileDev.Infrastructures\FileDev.Infrastructures.csproj", "{C9193867-0E86-4A0A-9608-0401C8937881}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Notcomd_Video", "Notcomd_Video", "{77F5CE30-BDC6-4CEE-9422-4E51E896A8E0}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NotBlog_Video", "NotBlog_Video", "{77F5CE30-BDC6-4CEE-9422-4E51E896A8E0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Identity.Domain", "Identity.Domain\Identity.Domain.csproj", "{B26DD4F5-E99A-4351-939C-35D158CB61C5}"
 EndProject
@@ -41,7 +41,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Video.Infrastructure", "Vid
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Video.Web.API", "Video.Web.API\Video.Web.API.csproj", "{8F75E0E7-8BB8-40C4-A382-76236B2A97EB}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Notcomd_Identity", "Notcomd_Identity", "{BC95D609-3242-49DB-854A-D01B79CD1628}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NotBlog_Identity", "NotBlog_Identity", "{BC95D609-3242-49DB-854A-D01B79CD1628}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Identity.Infrastructure", "Identity.Infrastructure\Identity.Infrastructure.csproj", "{A4C736AE-BD68-41EC-A1C7-FEC476521409}"
 EndProject

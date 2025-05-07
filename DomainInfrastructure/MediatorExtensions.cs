@@ -10,7 +10,7 @@ public static class MediatorExtensions
 {
     public static IServiceCollection AddMediator(this IServiceCollection service, IEnumerable<Assembly> assemblies)
     {
-        return service.AddMediatR(assemblies.ToArray());
+        return service.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(assemblies.ToArray()));
     }
 
     public async static Task DispatchDomainEventsAsync(this IMediator mediator, DbContext dbContext)

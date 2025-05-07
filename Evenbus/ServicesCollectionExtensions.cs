@@ -22,7 +22,7 @@ public static class ServicesCollectionExtensions
             var types = asm.GetTypes().Where(T => T.IsAbstract == false && T.IsAssignableTo(typeof(IIntegrationEventHandler)));
             eventHandlers.AddRange(types);
         }
-        return AddEventBus(service, queueName, (IEnumerable<Assembly>)eventHandlers);
+        return AddEventBus(service, queueName, eventHandlers);
     }
 
     public static IServiceCollection AddEventBus(this IServiceCollection services, string queueName, IEnumerable<Type> eventHandler)

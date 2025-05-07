@@ -1,24 +1,27 @@
-using System.Reflection;
-using EmailSendServer;
-using Identity.Domain.Option;
-using Identity.Infrastructure;
-using Identity.Web.API;
+using CommonsInitializer;
+using DomainCommonst;
 using Identity.Web.API.ActionFilter;
-using MediatR;
-using Notcomd.Token.JWT;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//builder.Services.AddIdentityService(builder.Configuration.GetSection(nameof(Notcomd_JwtOptions)));
-builder.Services.Configure<EmailAddress>(builder.Configuration.GetSection(nameof(EmailAddress)));
-builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(nameof(JwtOptions)));
-builder.Services.Configure<DbContextOption>(builder.Configuration.GetSection(nameof(DbContextOption)));
-builder.Services.AddOptions();
+builder.NotBlogConfigureExtraServices(new InitializerOptions
+{
+    LogFilePath = builder.Configuration!.GetValue<string>("LogFilePath"),
 
-builder.Services.AddEmailServer(builder.Configuration.GetSection(nameof(EmailAddress)));
-builder.Services.AddIdentityService(builder.Configuration.GetSection(nameof(JwtOptions)));
-builder.Services.AddIdentityDbContext(builder.Configuration.GetSection(nameof(DbContextOption)));
-builder.Services.AddMediatR(Assembly.GetExecutingAssembly());
+    EventBusQueueName = builder.Configuration!.GetValue<string>("User.Web.Api")
+});
+
+//builder.Services.AddIdentityService(builder.Configuration.GetSection(nameof(Notcomd_JwtOptions)));
+// builder.Services.Configure<EmailSetting>(builder.Configuration.GetSection(nameof(EmailSetting)));
+// builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(nameof(JwtOptions)));
+// builder.Services.Configure<DbContextOption>(builder.Configuration.GetSection(nameof(DbContextOption)));
+// builder.Services.AddOptions();
+
+
+// builder.Services.AddEmailServer(builder.Configuration.GetSection(nameof(EmailSetting)));
+// builder.Services.AddIdentityService(builder.Configuration.GetSection(nameof(JwtOptions)));
+// builder.Services.AddIdentityDbContext(builder.Configuration.GetSection(nameof(DbContextOption)));
+// builder.Services.AddMediatR(Assembly.GetExecutingAssembly());
 builder.Services.AddControllers(opt =>
 {
     opt.Filters.Add(new UnitOfWorkFilter());
@@ -37,7 +40,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.NotBlogUseServer();
 app.UseHttpsRedirection();
 app.MapControllers();
 app.Run();

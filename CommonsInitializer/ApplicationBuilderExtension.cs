@@ -6,7 +6,7 @@ namespace CommonsInitializer;
 public static class ApplicationBuilderExtension
 {
 
-    public static IApplicationBuilder NotServerAdd(this IApplicationBuilder app)
+    public static IApplicationBuilder NotBlogUseServer(this IApplicationBuilder app)
     {
         app.UseEventBus();
         app.UseCors(); //启用Cors

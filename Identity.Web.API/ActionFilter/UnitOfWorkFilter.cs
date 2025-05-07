@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
 
-namespace Identity.Web.API;
+namespace Identity.Web.API.ActionFilter;
 
 public class UnitOfWorkFilter : IAsyncActionFilter
 {

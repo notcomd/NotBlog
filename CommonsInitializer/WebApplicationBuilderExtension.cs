@@ -15,12 +15,12 @@ public static class WebApplicationBuilderExtension
 {
 
 
-    public static void ConfigureExtraServices(this WebApplicationBuilder builder, InitializerOptions initOptions)
+    public static void NotBlogConfigureExtraServices(this WebApplicationBuilder builder, InitializerOptions initOptions)
     {
         var services = builder.Services;
         IConfiguration configuration = builder.Configuration;
         var assemblies = ReflectionHelper.GetAllReferencedAssemblies();
-        services.AutoAddInstance(assemblies);
+        services.AddAutoAddInstance(assemblies);
         services.AutoAddDbContextBuilder(ctx =>
         {
             //连接字符串如果放到appsettings.json中，会有泄密的风险
@@ -35,7 +35,7 @@ public static class WebApplicationBuilderExtension
         //IdentityService项目还需要启用AddIdentityCore
         builder.Services.AddAuthorization();
         builder.Services.AddAuthentication();
-        var jwtOpt = configuration.GetSection("JWT").Get<JwtOptions>();
+        var jwtOpt = configuration.GetSection("privateKey").Get<JwtOptions>();
         builder.Services.AddJwtAuthentication(jwtOpt);
 
         //启用Swagger中的【Authorize】按钮。这样就不用每个项目的AddSwaggerGen中单独配置了
@@ -86,7 +86,7 @@ public static class WebApplicationBuilderExtension
         // fv.RegisterValidatorsFromAssemblies(assemblies);
         // });
 
-        services.Configure<JwtOptions>(configuration.GetSection("JWT"));
+        services.Configure<JwtOptions>(configuration.GetSection("PrivateKey"));
         services.Configure<IntegrationEventRabbitMQOptions>(configuration.GetSection("RabbitMQ"));
         services.AddEventBus(initOptions.EventBusQueueName, assemblies);
 

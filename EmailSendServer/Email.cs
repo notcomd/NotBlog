@@ -7,9 +7,9 @@ namespace EmailSendServer;
 
 public class Email : IEmail
 {
-    private readonly IOptionsSnapshot<EmailAddress> _optionsManager;
+    private readonly IOptionsSnapshot<EmailSetting> _optionsManager;
 
-    public Email(IOptionsSnapshot<EmailAddress> optionsManager)
+    public Email(IOptionsSnapshot<EmailSetting> optionsManager)
     {
         _optionsManager = optionsManager;
     }
