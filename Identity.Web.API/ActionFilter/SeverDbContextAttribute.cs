@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc.Filters;
-
-namespace Identity.Web.API;
+﻿namespace Identity.Web.API;
 
 [AttributeUsage(AttributeTargets.Method)]
 public class SeverDbContextAttribute : Attribute, IFilterMetadata

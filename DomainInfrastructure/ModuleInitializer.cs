@@ -12,7 +12,7 @@ public static class ModuleInitializer
         {
             var typeAss = itemAss.GetTypes();
             var notcomdIModel = typeAss
-                .Where(en => !en.IsAbstract && typeof(IModuleInitializer).IsInstanceOfType(en));
+                .Where(en => !en.IsAbstract && typeof(IModuleInitializer).IsAssignableFrom(en));
             foreach (var itemModel in notcomdIModel)
             {
                 var initializer = (IModuleInitializer?)Activator.CreateInstance(itemModel);

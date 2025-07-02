@@ -19,6 +19,7 @@
             <TreatAsUsed>true</TreatAsUsed>
         </PackageReference>
         <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.6"/>
+        <PackageReference Include="Scalar.AspNetCore" Version="2.5.3"/>
         <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.6.0"/>
     </ItemGroup>
 

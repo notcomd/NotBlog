@@ -10,7 +10,6 @@
         "dependencies": {
           "DomainCommonst": "1.0.0",
           "MediatR": "12.5.0",
-          "MediatR.Extensions.Microsoft.DependencyInjection": "11.1.0",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "6.0.21",
           "Microsoft.EntityFrameworkCore": "9.0.4"
         },
@@ -35,18 +34,6 @@
           "lib/netstandard2.0/MediatR.Contracts.dll": {
             "assemblyVersion": "2.0.1.0",
             "fileVersion": "2.0.1.0"
-          }
-        }
-      },
-      "MediatR.Extensions.Microsoft.DependencyInjection/11.1.0": {
-        "dependencies": {
-          "MediatR": "12.5.0",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.4"
-        },
-        "runtime": {
-          "lib/netstandard2.1/MediatR.Extensions.Microsoft.DependencyInjection.dll": {
-            "assemblyVersion": "11.0.0.0",
-            "fileVersion": "11.1.0.0"
           }
         }
       },
@@ -230,6 +217,14 @@
           }
         }
       },
+      "Scalar.AspNetCore/2.5.3": {
+        "runtime": {
+          "lib/net9.0/Scalar.AspNetCore.dll": {
+            "assemblyVersion": "2.5.3.0",
+            "fileVersion": "2.5.3.0"
+          }
+        }
+      },
       "System.IdentityModel.Tokens.Jwt/6.10.0": {
         "dependencies": {
           "Microsoft.IdentityModel.JsonWebTokens": "6.10.0",
@@ -246,7 +241,8 @@
       "DomainCommonst/1.0.0": {
         "dependencies": {
           "MediatR": "12.5.0",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.4"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.4",
+          "Scalar.AspNetCore": "2.5.3"
         },
         "runtime": {
           "DomainCommonst.dll": {
@@ -276,13 +272,6 @@
       "sha512": "sha512-FYv95bNT4UwcNA+G/J1oX5OpRiSUxteXaUt2BJbRSdRNiIUNbggJF69wy6mnk2wYToaanpdXZdCwVylt96MpwQ==",
       "path": "mediatr.contracts/2.0.1",
       "hashPath": "mediatr.contracts.2.0.1.nupkg.sha512"
-    },
-    "MediatR.Extensions.Microsoft.DependencyInjection/11.1.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-RW3etRuy6Xp63cgqfC0r/ITOtUT0f9ymJl1+1XZdzsYUsfv7WBPC2kXGOP8IYpY/6c4Q6805vbIW/88DopUs3w==",
-      "path": "mediatr.extensions.microsoft.dependencyinjection/11.1.0",
-      "hashPath": "mediatr.extensions.microsoft.dependencyinjection.11.1.0.nupkg.sha512"
     },
     "Microsoft.AspNetCore.Authentication.JwtBearer/6.0.21": {
       "type": "package",
@@ -409,6 +398,13 @@
       "sha512": "sha512-qbf1NslutDB4oLrriYTJpy7oB1pbh2ej2lEHd2IPDQH9C74ysOdhU5wAC7KoXblldbo7YsNR2QYFOqQM/b0Rsg==",
       "path": "microsoft.identitymodel.tokens/6.10.0",
       "hashPath": "microsoft.identitymodel.tokens.6.10.0.nupkg.sha512"
+    },
+    "Scalar.AspNetCore/2.5.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-GhMaITeqvKVDLH/RyAH93n1uSkrP/JNI7cRIPUr5bsHjSiVSmhM68Ni+0x1IORnU5O68YiZJX2DcdGbLuEe9aQ==",
+      "path": "scalar.aspnetcore/2.5.3",
+      "hashPath": "scalar.aspnetcore.2.5.3.nupkg.sha512"
     },
     "System.IdentityModel.Tokens.Jwt/6.10.0": {
       "type": "package",

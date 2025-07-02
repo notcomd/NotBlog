@@ -36,17 +36,6 @@ public static class AddIdentityServer
                        throw new ArgumentNullException("配置项为空", nameof(configuration));
             opt.UseNpgsql(data.DbContextConnect);
         });
-        serviceCollection.AddDbContext<UserRoleDbContext>(opt =>
-        {
-            var data = configuration.Get<DbContextOption>() ??
-                       throw new ArgumentNullException("选项未配置", nameof(configuration));
-            opt.UseNpgsql(data.DbContextConnect);
-        });
-        /* serviceCollection.AddDbContext<RolesDbContext>(opt =>
-         {
-             var data = configuration.Get<DbContextOption>() ?? throw new ArgumentNullException($"配置错误");
-             opt.UseNpgsql(data.DbContextConnect);
-         });*/
         return serviceCollection;
     }
 }

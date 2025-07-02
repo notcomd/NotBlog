@@ -1,5 +1,3 @@
-using Identity.Domain.Entities;
-
 namespace Identity.Web.API.ActionFilter;
 
 [AttributeUsage(AttributeTargets.Method)]

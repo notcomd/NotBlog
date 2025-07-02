@@ -1,12 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "Du5QOCQ5KJM=",
+  "dgSpecHash": "OWn1mT6OPJE=",
   "success": true,
   "projectFilePath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainInfrastructure\\DomainInfrastructure.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\29617\\.nuget\\packages\\mediatr\\12.5.0\\mediatr.12.5.0.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\mediatr.contracts\\2.0.1\\mediatr.contracts.2.0.1.nupkg.sha512",
-    "C:\\Users\\29617\\.nuget\\packages\\mediatr.extensions.microsoft.dependencyinjection\\11.1.0\\mediatr.extensions.microsoft.dependencyinjection.11.1.0.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\6.0.21\\microsoft.aspnetcore.authentication.jwtbearer.6.0.21.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\microsoft.csharp\\4.5.0\\microsoft.csharp.4.5.0.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\microsoft.entityframeworkcore\\9.0.4\\microsoft.entityframeworkcore.9.0.4.nupkg.sha512",
@@ -25,19 +24,9 @@
     "C:\\Users\\29617\\.nuget\\packages\\microsoft.identitymodel.protocols\\6.10.0\\microsoft.identitymodel.protocols.6.10.0.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\microsoft.identitymodel.protocols.openidconnect\\6.10.0\\microsoft.identitymodel.protocols.openidconnect.6.10.0.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\microsoft.identitymodel.tokens\\6.10.0\\microsoft.identitymodel.tokens.6.10.0.nupkg.sha512",
+    "C:\\Users\\29617\\.nuget\\packages\\scalar.aspnetcore\\2.5.3\\scalar.aspnetcore.2.5.3.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\system.identitymodel.tokens.jwt\\6.10.0\\system.identitymodel.tokens.jwt.6.10.0.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\system.security.cryptography.cng\\4.5.0\\system.security.cryptography.cng.4.5.0.nupkg.sha512"
   ],
-  "logs": [
-    {
-      "code": "NU1608",
-      "level": "Warning",
-      "warningLevel": 1,
-      "message": "Detected package version outside of dependency constraint: MediatR.Extensions.Microsoft.DependencyInjection 11.1.0 requires MediatR (>= 11.0.0 && < 12.0.0) but version MediatR 12.5.0 was resolved.",
-      "libraryId": "MediatR",
-      "targetGraphs": [
-        "net9.0"
-      ]
-    }
-  ]
+  "logs": []
 }

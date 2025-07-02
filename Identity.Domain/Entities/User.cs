@@ -10,62 +10,121 @@ public class User : IAggregateRoot
 {
 
 
-    private User()
+    /// <summary>
+    /// 邮箱创建
+    /// </summary>
+    /// <param name="userRoleGuid">角色的guid</param>
+    /// <param name="userEmail">注册的邮箱</param>
+    /// <param name="passwordHash">密码哈希值</param>
+    /// <param name="salt">加盐</param>
+    /// <param name="imageCover">头像</param>
+    public User(Guid userRoleGuid, string userEmail, string passwordHash, string salt, Uri imageCover)
     {
-    }
-
-    public User(string userEmail, string userName, Guid userRoleGuid, string passwordHash)
-    {
-        UserGuid = Guid.NewGuid();
-        UserName = userName;
-        UserEmail = userEmail;
         UserRoleGuid = userRoleGuid;
-        PasswordHash = passwordHash;
-        CreateDatetime = DateTime.Now.ToUniversalTime();
-        UserAccessFail = new UserAccessFail(this);
-    }
-
-
-
-
-    public User(Guid userRoleGuid, string userEmail, string passwordHash, string salt)
-    {
-        UserGuid = Guid.NewGuid();
-        UserEmail = userEmail;
-        UserRoleGuid = userRoleGuid;
+        UserName = userEmail;
         PasswordHash = passwordHash;
         Salt = salt;
-        CreateDatetime = DateTime.Now;
+        ImageCover = imageCover;
         UserAccessFail = new UserAccessFail(this);
     }
 
-    public User(Guid userRoleGuid, PhoneNumber phoneNumber, string passwordHash, string salt)
+    /// <summary>
+    /// 创建用户(手机创建）
+    /// </summary>
+    /// <param name="userRoleGuid"></param>
+    /// <param name="phoneNumber"></param>
+    /// <param name="passwordHash"></param>
+    /// <param name="salt"></param>
+    /// <param name="imageCover"></param>
+    public User(Guid userRoleGuid, PhoneNumber phoneNumber, string passwordHash, string salt,
+        Uri imageCover)
     {
-        UserGuid = Guid.NewGuid();
         UserRoleGuid = userRoleGuid;
+        UserName = phoneNumber.PhoneCode;
         UserPhone = phoneNumber;
         PasswordHash = passwordHash;
         Salt = salt;
-        CreateDatetime = DateTime.UtcNow.ToUniversalTime();
+        ImageCover = imageCover;
         UserAccessFail = new UserAccessFail(this);
     }
 
-
-
-    public Guid UserGuid { get; init; }
+    /// <summary>
+    /// 用户唯一GUID
+    /// </summary>
+    public Guid UserGuid { get; init; } = Guid.CreateVersion7();
+    /// <summary>
+    /// 角色
+    /// </summary>
     public Guid UserRoleGuid { get; init; }
+    /// <summary>
+    /// 用户名
+    /// </summary>
     public string? UserName { get; private set; }
+    /// <summary>
+    /// 邮箱
+    /// </summary>
     public string? UserEmail { get; private set; }
+    /// <summary>
+    /// 哈希密码
+    /// </summary>
     public string PasswordHash { get; private set; }
-    public string Salt { get; }
+    /// <summary>
+    /// 加言
+    /// </summary>
+    public string Salt { get; private set; }
     public PhoneNumber? UserPhone { get; private set; }
+    /// <summary>
+    /// 用户地址
+    /// </summary>
     public string? UserAddress { get; private set; }
+    /// <summary>
+    /// 创建时间
+    /// </summary>
     [Column(TypeName = "timestamp with time zone")]
-    public DateTimeOffset CreateDatetime { get; init; }
+    public DateTimeOffset CreateDatetime { get; init; } = DateTimeOffset.Now;
+    /// <summary>
+    /// 登录失败次数
+    /// </summary>
     public UserAccessFail UserAccessFail { get; init; }
+    /// <summary>
+    /// 黑名单或者白名单
+    /// </summary>
     public BlackOrWhite? BlackOrWhite { get; private set; }
+    /// <summary>
+    /// 权限
+    /// </summary>
+    public LimitsOfAuthority LimitsOfAuthority { get; private set; } = LimitsOfAuthority.AuthorityUser;
+    /// <summary>
+    /// 头像
+    /// </summary>
+    public Uri ImageCover { get; private set; }
 
+    /// <summary>
+    /// 重新设置用户名
+    /// </summary>
+    /// <param name="userName"></param>
+    public void RestartByUserName(string userName)
+    {
+        UserName = userName;
+    }
 
+    /// <summary>
+    /// 重新设置用户地址
+    /// </summary>
+    /// <param name="userAddress"></param>
+    public void RestartByUserAddress(ref string userAddress)
+    {
+        UserAddress = userAddress;
+    }
+
+    /// <summary>
+    /// 重新设置用户头像
+    /// </summary>
+    /// <param name="imageCover"></param>
+    public void RestartByImageCover(Uri imageCover)
+    {
+        ImageCover = imageCover;
+    }
 
     public ValueTask<User> ChangeByAddressAsync(ref string userAddress)
     {
@@ -74,9 +133,14 @@ public class User : IAggregateRoot
     }
 
     /// <summary>
+    /// 修改密码
     /// </summary>
-    /// <param name="password"></param>
-    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    /// <param name="password">
+    /// 密码
+    /// </param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// 密码长度不能小于8位
+    /// </exception>
     public async ValueTask ChangeByPasswordAsync(string password)
     {
         if (password.Length <= 8)
@@ -87,11 +151,13 @@ public class User : IAggregateRoot
     }
 
     /// <summary>
-    ///     绑定手机号
+    /// 绑定手机号
     /// </summary>
-    /// <param name="region"></param>
-    /// <param name="phoneNumber"></param>
-    /// <returns></returns>
+    /// <param name="region">手机区号</param>
+    /// <param name="phoneNumber">电话号码</param>
+    /// <returns>
+    /// 手机对象
+    /// </returns>
     public static Task<PhoneNumber> BandingByPhoneAsync(long region, string phoneNumber)
     {
         return Task.FromResult(new PhoneNumber
@@ -103,7 +169,7 @@ public class User : IAggregateRoot
 
 
     /// <summary>
-    ///     设置信邮箱
+    /// 设置信邮箱
     /// </summary>
     /// <param name="newEmail"></param>
     /// <returns></returns>
@@ -118,7 +184,7 @@ public class User : IAggregateRoot
     }
 
     /// <summary>
-    ///     设置新密码
+    /// 设置新密码
     /// </summary>
     /// <param name="phoneNumber"></param>
     /// <returns></returns>
@@ -141,7 +207,7 @@ public class User : IAggregateRoot
     }
 
     /// <summary>
-    ///     验证密码是否正确
+    /// 验证密码是否正确
     /// </summary>
     /// <param name="hashPassword">hash密码</param>
     /// <param name="password">密码</param>
@@ -162,7 +228,7 @@ public class User : IAggregateRoot
 
     public async ValueTask<User> ChangeByPasswordValueTask(string password, byte[] salt)
     {
-        if (!HashH256Tool.VerifyPasswordValueTask(password, PasswordHash, salt).GetAwaiter().GetResult())
+        if (!await HashH256Tool.VerifyPasswordValueTask(password, PasswordHash, salt))
         {
             PasswordHash = await HashH256Tool.CreateHash256Async(password, salt);
         }

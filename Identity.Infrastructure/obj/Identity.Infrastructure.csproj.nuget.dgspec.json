@@ -4,6 +4,108 @@
     "C:\\Users\\29617\\source\\repos\\MyService\\Identity.Infrastructure\\Identity.Infrastructure.csproj": {}
   },
   "projects": {
+    "C:\\Users\\29617\\source\\repos\\MyService\\CommonsInitializer\\CommonsInitializer.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\29617\\source\\repos\\MyService\\CommonsInitializer\\CommonsInitializer.csproj",
+        "projectName": "CommonsInitializer",
+        "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\CommonsInitializer\\CommonsInitializer.csproj",
+        "packagesPath": "C:\\Users\\29617\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\29617\\source\\repos\\MyService\\CommonsInitializer\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\29617\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "C:\\Users\\29617\\RiderProjects\\NotMediator\\NotMediator\\bin\\Debug": {},
+          "https://api.nuget.org/v3/index.json": {},
+          "https://nuget.telerik.com/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj": {
+                "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj"
+              },
+              "C:\\Users\\29617\\source\\repos\\MyService\\DomainInfrastructure\\DomainInfrastructure.csproj": {
+                "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainInfrastructure\\DomainInfrastructure.csproj"
+              },
+              "C:\\Users\\29617\\source\\repos\\MyService\\EmailSendServer\\EmailSendServer.csproj": {
+                "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\EmailSendServer\\EmailSendServer.csproj"
+              },
+              "C:\\Users\\29617\\source\\repos\\MyService\\Evenbus\\Evenbus.csproj": {
+                "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\Evenbus\\Evenbus.csproj"
+              },
+              "C:\\Users\\29617\\source\\repos\\MyService\\JWToken\\Token.JWT.csproj": {
+                "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\JWToken\\Token.JWT.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "Microsoft.AspNetCore.Connections.Abstractions": {
+              "target": "Package",
+              "version": "[9.0.4, )"
+            },
+            "Microsoft.Extensions.DependencyInjection.Abstractions": {
+              "target": "Package",
+              "version": "[9.0.4, )"
+            },
+            "Npgsql": {
+              "target": "Package",
+              "version": "[9.0.3, )"
+            },
+            "Npgsql.EntityFrameworkCore.PostgreSQL": {
+              "target": "Package",
+              "version": "[9.0.4, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.301/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
     "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj": {
       "version": "1.0.0",
       "restore": {
@@ -27,6 +129,7 @@
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "C:\\Program Files\\dotnet\\library-packs": {},
+          "C:\\Users\\29617\\RiderProjects\\NotMediator\\NotMediator\\bin\\Debug": {},
           "https://api.nuget.org/v3/index.json": {},
           "https://nuget.telerik.com/v3/index.json": {}
         },
@@ -46,7 +149,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.200"
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net9.0": {
@@ -59,6 +162,10 @@
             "Microsoft.Extensions.DependencyInjection.Abstractions": {
               "target": "Package",
               "version": "[8.0.0, )"
+            },
+            "Scalar.AspNetCore": {
+              "target": "Package",
+              "version": "[2.5.3, )"
             }
           },
           "imports": [
@@ -77,7 +184,93 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.301/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\29617\\source\\repos\\MyService\\DomainInfrastructure\\DomainInfrastructure.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\29617\\source\\repos\\MyService\\DomainInfrastructure\\DomainInfrastructure.csproj",
+        "projectName": "DomainInfrastructure",
+        "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainInfrastructure\\DomainInfrastructure.csproj",
+        "packagesPath": "C:\\Users\\29617\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainInfrastructure\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\29617\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "C:\\Users\\29617\\RiderProjects\\NotMediator\\NotMediator\\bin\\Debug": {},
+          "https://api.nuget.org/v3/index.json": {},
+          "https://nuget.telerik.com/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj": {
+                "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "MediatR": {
+              "target": "Package",
+              "version": "[12.5.0, )"
+            },
+            "Microsoft.AspNetCore.Authentication.JwtBearer": {
+              "target": "Package",
+              "version": "[6.0.21, )"
+            },
+            "Microsoft.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[9.0.4, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.301/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
@@ -104,6 +297,7 @@
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "C:\\Program Files\\dotnet\\library-packs": {},
+          "C:\\Users\\29617\\RiderProjects\\NotMediator\\NotMediator\\bin\\Debug": {},
           "https://api.nuget.org/v3/index.json": {},
           "https://nuget.telerik.com/v3/index.json": {}
         },
@@ -130,7 +324,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.200"
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net9.0": {
@@ -165,7 +359,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.301/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
@@ -187,17 +381,18 @@
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
-          "net6.0"
+          "net9.0"
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "C:\\Program Files\\dotnet\\library-packs": {},
+          "C:\\Users\\29617\\RiderProjects\\NotMediator\\NotMediator\\bin\\Debug": {},
           "https://api.nuget.org/v3/index.json": {},
           "https://nuget.telerik.com/v3/index.json": {}
         },
         "frameworks": {
-          "net6.0": {
-            "targetAlias": "net6.0",
+          "net9.0": {
+            "targetAlias": "net9.0",
             "projectReferences": {}
           }
         },
@@ -211,11 +406,11 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.200"
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
-        "net6.0": {
-          "targetAlias": "net6.0",
+        "net9.0": {
+          "targetAlias": "net9.0",
           "dependencies": {
             "Dynamic.Json": {
               "target": "Package",
@@ -227,7 +422,7 @@
             },
             "Microsoft.AspNetCore.Http.Abstractions": {
               "target": "Package",
-              "version": "[2.2.0, )"
+              "version": "[2.3.0, )"
             },
             "Microsoft.Extensions.DependencyInjection.Abstractions": {
               "target": "Package",
@@ -258,7 +453,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.301/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
@@ -285,6 +480,7 @@
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "C:\\Program Files\\dotnet\\library-packs": {},
+          "C:\\Users\\29617\\RiderProjects\\NotMediator\\NotMediator\\bin\\Debug": {},
           "https://api.nuget.org/v3/index.json": {},
           "https://nuget.telerik.com/v3/index.json": {}
         },
@@ -311,7 +507,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.200"
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net9.0": {
@@ -332,7 +528,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.301/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
@@ -359,6 +555,7 @@
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "C:\\Program Files\\dotnet\\library-packs": {},
+          "C:\\Users\\29617\\RiderProjects\\NotMediator\\NotMediator\\bin\\Debug": {},
           "https://api.nuget.org/v3/index.json": {},
           "https://nuget.telerik.com/v3/index.json": {}
         },
@@ -366,6 +563,12 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
+              "C:\\Users\\29617\\source\\repos\\MyService\\CommonsInitializer\\CommonsInitializer.csproj": {
+                "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\CommonsInitializer\\CommonsInitializer.csproj"
+              },
+              "C:\\Users\\29617\\source\\repos\\MyService\\DomainInfrastructure\\DomainInfrastructure.csproj": {
+                "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainInfrastructure\\DomainInfrastructure.csproj"
+              },
               "C:\\Users\\29617\\source\\repos\\MyService\\EmailSendServer\\EmailSendServer.csproj": {
                 "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\EmailSendServer\\EmailSendServer.csproj"
               },
@@ -388,7 +591,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.200"
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net9.0": {
@@ -429,7 +632,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.301/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
@@ -456,6 +659,7 @@
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "C:\\Program Files\\dotnet\\library-packs": {},
+          "C:\\Users\\29617\\RiderProjects\\NotMediator\\NotMediator\\bin\\Debug": {},
           "https://api.nuget.org/v3/index.json": {},
           "https://nuget.telerik.com/v3/index.json": {}
         },
@@ -479,7 +683,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.200"
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net9.0": {
@@ -496,6 +700,10 @@
             "Microsoft.AspNetCore.SignalR.Client": {
               "target": "Package",
               "version": "[8.0.6, )"
+            },
+            "Scalar.AspNetCore": {
+              "target": "Package",
+              "version": "[2.5.3, )"
             },
             "System.IdentityModel.Tokens.Jwt": {
               "target": "Package",
@@ -518,7 +726,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.301/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

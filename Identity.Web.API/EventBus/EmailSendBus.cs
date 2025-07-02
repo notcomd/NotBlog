@@ -1,10 +1,7 @@
-using EmailSendServer;
-using Identity.Domain.IRepository;
-using MediatR;
-
 namespace Identity.Web.API.EventBus;
 
-public class EmailSendBus : INotificationHandler<EmailSendRecord>
+[EvenBusName("Identity.User.Code")]
+public class EmailSendBus : JsonIntegrationEventHandler<EmailSendRecord>
 {
 
     private readonly IEmail _email;
@@ -18,10 +15,16 @@ public class EmailSendBus : INotificationHandler<EmailSendRecord>
     }
 
 
-    public Task Handle(EmailSendRecord notification, CancellationToken cancellationToken)
+    public async Task Handle(EmailSendRecord notification, CancellationToken cancellationToken)
     {
-        _emailCodeSend.SendEmailCodeAsync(notification.ToEmail, notification.Code.ToString());
+        await _emailCodeSend.SendEmailCodeAsync(notification.ToEmail, notification.Code.ToString());
         _logger.LogInformation($"date:{DateTime.UtcNow},邮件发送{notification.ToEmail}");
-        return Task.CompletedTask;
+
+    }
+
+    public async override Task EventDlerJson(string eventName, EmailSendRecord? eventData)
+    {
+        await _emailCodeSend.SendEmailCodeAsync(eventData?.ToEmail, eventData?.Code.ToString());
+        _logger.LogInformation($"date:{DateTime.UtcNow},邮件发送{eventData.ToEmail}");
     }
 }

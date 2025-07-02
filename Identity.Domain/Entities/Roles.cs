@@ -6,7 +6,7 @@ public class Roles : IAggregateRoot
 {
 
     public Guid UserGuid { get; private set; }
-    public Guid UserRoleGuid { get; private set; }
+    public Guid UserRoleGuid { get; private set; } = Guid.CreateVersion7();
     public User User { get; private set; }
 
     public UserRole UserRole { get; private set; }

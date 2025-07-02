@@ -8,6 +8,6 @@ public class ModuleInitializer : IModuleInitializer
 
     public void Initialize(IServiceCollection service)
     {
-        throw new NotImplementedException();
+        service.AddScoped<IEmail, Email>();
     }
 }

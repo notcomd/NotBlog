@@ -11,14 +11,14 @@ public class UserRole : IAggregateRoot
 
     public UserRole(string roleName)
     {
-        UserRoleGuid = Guid.NewGuid();
+
         RoleName = roleName;
         LimitsOfAuthority = LimitsOfAuthority.AuthorityUser;
         Roles = new Roles();
     }
 
 
-    public Guid UserRoleGuid { get; init; }
+    public Guid UserRoleGuid { get; init; } = Guid.CreateVersion7();
     /// <summary>
     ///     角色名
     /// </summary>

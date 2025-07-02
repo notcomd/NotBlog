@@ -6,9 +6,9 @@ namespace Identity.Infrastructure.Repository;
 
 public class UserRoleRepository : IUserRoleRepository
 {
-    private readonly UserRoleDbContext _userRoleDbContext;
+    private readonly UserDbContext _userRoleDbContext;
 
-    public UserRoleRepository(UserRoleDbContext userRoleDbContext)
+    public UserRoleRepository(UserDbContext userRoleDbContext)
     {
         _userRoleDbContext = userRoleDbContext;
     }

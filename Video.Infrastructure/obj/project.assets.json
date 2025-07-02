@@ -988,6 +988,22 @@
           }
         }
       },
+      "Scalar.AspNetCore/2.5.3": {
+        "type": "package",
+        "compile": {
+          "lib/net9.0/Scalar.AspNetCore.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/Scalar.AspNetCore.dll": {
+            "related": ".xml"
+          }
+        },
+        "frameworkReferences": [
+          "Microsoft.AspNetCore.App"
+        ]
+      },
       "System.CodeDom/6.0.0": {
         "type": "package",
         "compile": {
@@ -1235,7 +1251,8 @@
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
           "MediatR": "12.5.0",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0",
+          "Scalar.AspNetCore": "2.5.3"
         },
         "compile": {
           "bin/placeholder/DomainCommonst.dll": {}
@@ -1252,6 +1269,7 @@
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.6",
           "Microsoft.AspNetCore.Authentication.MicrosoftAccount": "8.0.6",
           "Microsoft.AspNetCore.SignalR.Client": "8.0.6",
+          "Scalar.AspNetCore": "2.5.3",
           "System.IdentityModel.Tokens.Jwt": "7.6.0"
         },
         "compile": {
@@ -1268,6 +1286,7 @@
           "Microsoft.Extensions.Configuration.Abstractions": "9.0.0",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.1",
           "Microsoft.Extensions.Logging.Abstractions": "9.0.0",
+          "Scalar.AspNetCore": "2.5.3",
           "Token.JWT": "1.0.0"
         },
         "compile": {
@@ -3141,6 +3160,23 @@
         "postgresql.png"
       ]
     },
+    "Scalar.AspNetCore/2.5.3": {
+      "sha512": "GhMaITeqvKVDLH/RyAH93n1uSkrP/JNI7cRIPUr5bsHjSiVSmhM68Ni+0x1IORnU5O68YiZJX2DcdGbLuEe9aQ==",
+      "type": "package",
+      "path": "scalar.aspnetcore/2.5.3",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "icon.png",
+        "lib/net8.0/Scalar.AspNetCore.dll",
+        "lib/net8.0/Scalar.AspNetCore.xml",
+        "lib/net9.0/Scalar.AspNetCore.dll",
+        "lib/net9.0/Scalar.AspNetCore.xml",
+        "scalar.aspnetcore.2.5.3.nupkg.sha512",
+        "scalar.aspnetcore.nuspec"
+      ]
+    },
     "System.CodeDom/6.0.0": {
       "sha512": "CPc6tWO1LAer3IzfZufDBRL+UZQcj5uS207NHALQzP84Vp/z6wF0Aa0YZImOQY8iStY0A2zI/e3ihKNPfUm8XA==",
       "type": "package",
@@ -3580,6 +3616,7 @@
       "Microsoft.EntityFrameworkCore >= 9.0.0",
       "Microsoft.EntityFrameworkCore.Tools >= 9.0.0",
       "Npgsql.EntityFrameworkCore.PostgreSQL >= 9.0.0",
+      "Scalar.AspNetCore >= 2.5.3",
       "Video.Domain >= 1.0.0"
     ]
   },
@@ -3610,6 +3647,7 @@
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "C:\\Program Files\\dotnet\\library-packs": {},
+        "C:\\Users\\29617\\RiderProjects\\NotMediator\\NotMediator\\bin\\Debug": {},
         "https://api.nuget.org/v3/index.json": {},
         "https://nuget.telerik.com/v3/index.json": {}
       },
@@ -3633,7 +3671,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "9.0.200"
+      "SdkAnalysisLevel": "9.0.300"
     },
     "frameworks": {
       "net9.0": {
@@ -3652,6 +3690,10 @@
           "Npgsql.EntityFrameworkCore.PostgreSQL": {
             "target": "Package",
             "version": "[9.0.0, )"
+          },
+          "Scalar.AspNetCore": {
+            "target": "Package",
+            "version": "[2.5.3, )"
           }
         },
         "imports": [
@@ -3670,7 +3712,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.301/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

@@ -6,7 +6,7 @@ namespace Notcomd.DomainCommand;
 public abstract class BaseDbContext : DbContext
 {
 
-    private readonly IMediator? _mediator;
+    private IMediator? _mediator;
 
     public BaseDbContext(DbContextOptions options, IMediator mediator) : base(options)
     {

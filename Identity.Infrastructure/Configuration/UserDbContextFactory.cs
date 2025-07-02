@@ -1,4 +1,5 @@
-﻿using Identity.Infrastructure.EntityFramework;
+﻿using CommonsInitializer;
+using Identity.Infrastructure.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
@@ -8,8 +9,8 @@ public class UserDbContextFactory : IDesignTimeDbContextFactory<UserDbContext>
 {
     public UserDbContext CreateDbContext(string[] args)
     {
-        var options = new DbContextOptionsBuilder<UserDbContext>();
+        var options = DbContextOptionBuilderFactory.Create<UserDbContext>();
         options.UseNpgsql("Host=localhost;Database=identityuser;Username=notcomd;Password=makefile");
-        return new UserDbContext(options.Options);
+        return new UserDbContext(options.Options, null);
     }
 }

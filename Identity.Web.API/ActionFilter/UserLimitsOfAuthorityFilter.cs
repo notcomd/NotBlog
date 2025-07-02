@@ -1,11 +1,4 @@
-﻿using System.Reflection;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Controllers;
-using Microsoft.AspNetCore.Mvc.Filters;
-using Notcomd.Token.JWT;
-
-namespace Identity.Web.API.ActionFilter;
+﻿namespace Identity.Web.API.ActionFilter;
 
 public class UserLimitsOfAuthorityFilter : IAsyncActionFilter
 {

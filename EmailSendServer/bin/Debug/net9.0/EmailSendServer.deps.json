@@ -70,35 +70,17 @@
         "dependencies": {
           "Microsoft.Extensions.Features": "8.0.4",
           "System.IO.Pipelines": "8.0.0"
-        },
-        "runtime": {
-          "lib/net8.0/Microsoft.AspNetCore.Connections.Abstractions.dll": {
-            "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.424.17014"
-          }
         }
       },
-      "Microsoft.AspNetCore.Http.Abstractions/2.2.0": {
+      "Microsoft.AspNetCore.Http.Abstractions/2.3.0": {
         "dependencies": {
-          "Microsoft.AspNetCore.Http.Features": "2.2.0",
-          "System.Text.Encodings.Web": "4.5.0"
-        },
-        "runtime": {
-          "lib/netstandard2.0/Microsoft.AspNetCore.Http.Abstractions.dll": {
-            "assemblyVersion": "2.2.0.0",
-            "fileVersion": "2.2.0.18316"
-          }
+          "Microsoft.AspNetCore.Http.Features": "2.3.0",
+          "System.Text.Encodings.Web": "8.0.0"
         }
       },
-      "Microsoft.AspNetCore.Http.Features/2.2.0": {
+      "Microsoft.AspNetCore.Http.Features/2.3.0": {
         "dependencies": {
           "Microsoft.Extensions.Primitives": "9.0.4"
-        },
-        "runtime": {
-          "lib/netstandard2.0/Microsoft.AspNetCore.Http.Features.dll": {
-            "assemblyVersion": "2.2.0.0",
-            "fileVersion": "2.2.0.18316"
-          }
         }
       },
       "Microsoft.Extensions.Configuration.Abstractions/9.0.4": {
@@ -120,14 +102,7 @@
           }
         }
       },
-      "Microsoft.Extensions.Features/8.0.4": {
-        "runtime": {
-          "lib/net8.0/Microsoft.Extensions.Features.dll": {
-            "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.424.17014"
-          }
-        }
-      },
+      "Microsoft.Extensions.Features/8.0.4": {},
       "Microsoft.Extensions.Options/9.0.4": {
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.4",
@@ -173,34 +148,29 @@
           }
         }
       },
+      "Scalar.AspNetCore/2.5.3": {
+        "runtime": {
+          "lib/net9.0/Scalar.AspNetCore.dll": {
+            "assemblyVersion": "2.5.3.0",
+            "fileVersion": "2.5.3.0"
+          }
+        }
+      },
       "System.Formats.Asn1/8.0.1": {},
       "System.IO.Pipelines/8.0.0": {},
       "System.Memory/4.5.5": {},
       "System.Security.Cryptography.Pkcs/8.0.0": {
         "dependencies": {
           "System.Formats.Asn1": "8.0.1"
-        },
-        "runtime": {
-          "lib/net8.0/System.Security.Cryptography.Pkcs.dll": {
-            "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.23.53103"
-          }
-        },
-        "runtimeTargets": {
-          "runtimes/win/lib/net8.0/System.Security.Cryptography.Pkcs.dll": {
-            "rid": "win",
-            "assetType": "runtime",
-            "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.23.53103"
-          }
         }
       },
-      "System.Text.Encodings.Web/4.5.0": {},
+      "System.Text.Encodings.Web/8.0.0": {},
       "System.Threading.Channels/7.0.0": {},
       "DomainCommonst/1.0.0": {
         "dependencies": {
           "MediatR": "12.5.0",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.4"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.4",
+          "Scalar.AspNetCore": "2.5.3"
         },
         "runtime": {
           "DomainCommonst.dll": {
@@ -213,7 +183,7 @@
         "dependencies": {
           "Dynamic.Json": "1.4.1",
           "Microsoft.AspNetCore.Connections.Abstractions": "8.0.4",
-          "Microsoft.AspNetCore.Http.Abstractions": "2.2.0",
+          "Microsoft.AspNetCore.Http.Abstractions": "2.3.0",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.4",
           "Microsoft.Extensions.Options": "9.0.4",
           "RabbitMQ.Client": "6.8.1"
@@ -275,19 +245,19 @@
       "path": "microsoft.aspnetcore.connections.abstractions/8.0.4",
       "hashPath": "microsoft.aspnetcore.connections.abstractions.8.0.4.nupkg.sha512"
     },
-    "Microsoft.AspNetCore.Http.Abstractions/2.2.0": {
+    "Microsoft.AspNetCore.Http.Abstractions/2.3.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-Nxs7Z1q3f1STfLYKJSVXCs1iBl+Ya6E8o4Oy1bCxJ/rNI44E/0f6tbsrVqAWfB7jlnJfyaAtIalBVxPKUPQb4Q==",
-      "path": "microsoft.aspnetcore.http.abstractions/2.2.0",
-      "hashPath": "microsoft.aspnetcore.http.abstractions.2.2.0.nupkg.sha512"
+      "sha512": "sha512-39r9PPrjA6s0blyFv5qarckjNkaHRA5B+3b53ybuGGNTXEj1/DStQJ4NWjFL6QTRQpL9zt7nDyKxZdJOlcnq+Q==",
+      "path": "microsoft.aspnetcore.http.abstractions/2.3.0",
+      "hashPath": "microsoft.aspnetcore.http.abstractions.2.3.0.nupkg.sha512"
     },
-    "Microsoft.AspNetCore.Http.Features/2.2.0": {
+    "Microsoft.AspNetCore.Http.Features/2.3.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-ziFz5zH8f33En4dX81LW84I6XrYXKf9jg6aM39cM+LffN9KJahViKZ61dGMSO2gd3e+qe5yBRwsesvyqlZaSMg==",
-      "path": "microsoft.aspnetcore.http.features/2.2.0",
-      "hashPath": "microsoft.aspnetcore.http.features.2.2.0.nupkg.sha512"
+      "sha512": "sha512-f10WUgcsKqrkmnz6gt8HeZ7kyKjYN30PO7cSic1lPtH7paPtnQqXPOveul/SIPI43PhRD4trttg4ywnrEmmJpA==",
+      "path": "microsoft.aspnetcore.http.features/2.3.0",
+      "hashPath": "microsoft.aspnetcore.http.features.2.3.0.nupkg.sha512"
     },
     "Microsoft.Extensions.Configuration.Abstractions/9.0.4": {
       "type": "package",
@@ -338,6 +308,13 @@
       "path": "rabbitmq.client/6.8.1",
       "hashPath": "rabbitmq.client.6.8.1.nupkg.sha512"
     },
+    "Scalar.AspNetCore/2.5.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-GhMaITeqvKVDLH/RyAH93n1uSkrP/JNI7cRIPUr5bsHjSiVSmhM68Ni+0x1IORnU5O68YiZJX2DcdGbLuEe9aQ==",
+      "path": "scalar.aspnetcore/2.5.3",
+      "hashPath": "scalar.aspnetcore.2.5.3.nupkg.sha512"
+    },
     "System.Formats.Asn1/8.0.1": {
       "type": "package",
       "serviceable": true,
@@ -366,12 +343,12 @@
       "path": "system.security.cryptography.pkcs/8.0.0",
       "hashPath": "system.security.cryptography.pkcs.8.0.0.nupkg.sha512"
     },
-    "System.Text.Encodings.Web/4.5.0": {
+    "System.Text.Encodings.Web/8.0.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-Xg4G4Indi4dqP1iuAiMSwpiWS54ZghzR644OtsRCm/m/lBMG8dUBhLVN7hLm8NNrNTR+iGbshCPTwrvxZPlm4g==",
-      "path": "system.text.encodings.web/4.5.0",
-      "hashPath": "system.text.encodings.web.4.5.0.nupkg.sha512"
+      "sha512": "sha512-yev/k9GHAEGx2Rg3/tU6MQh4HGBXJs70y7j1LaM1i/ER9po+6nnQ6RRqTJn1E7Xu0fbIFK80Nh5EoODxrbxwBQ==",
+      "path": "system.text.encodings.web/8.0.0",
+      "hashPath": "system.text.encodings.web.8.0.0.nupkg.sha512"
     },
     "System.Threading.Channels/7.0.0": {
       "type": "package",

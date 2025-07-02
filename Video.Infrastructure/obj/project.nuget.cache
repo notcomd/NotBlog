@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "GBVSFWW2v68=",
+  "dgSpecHash": "bj8wQAmiN3M=",
   "success": true,
   "projectFilePath": "C:\\Users\\29617\\source\\repos\\MyService\\Video.Infrastructure\\Video.Infrastructure.csproj",
   "expectedPackageFiles": [
@@ -51,6 +51,7 @@
     "C:\\Users\\29617\\.nuget\\packages\\mono.texttemplating\\3.0.0\\mono.texttemplating.3.0.0.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\npgsql\\9.0.0\\npgsql.9.0.0.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\npgsql.entityframeworkcore.postgresql\\9.0.0\\npgsql.entityframeworkcore.postgresql.9.0.0.nupkg.sha512",
+    "C:\\Users\\29617\\.nuget\\packages\\scalar.aspnetcore\\2.5.3\\scalar.aspnetcore.2.5.3.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\system.codedom\\6.0.0\\system.codedom.6.0.0.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\system.collections.immutable\\7.0.0\\system.collections.immutable.7.0.0.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\system.composition\\7.0.0\\system.composition.7.0.0.nupkg.sha512",

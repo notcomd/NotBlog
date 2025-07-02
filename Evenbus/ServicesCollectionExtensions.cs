@@ -54,7 +54,7 @@ public static class ServicesCollectionExtensions
 
             foreach (var type in eventHandler)
             {
-                var eventNameAttrs = type.GetCustomAttributes<IEvenBusAttribute>();
+                var eventNameAttrs = type.GetCustomAttributes<EvenBusNameAttribute>();
                 if (eventNameAttrs.Any() == false)
                 {
                     throw new ApplicationException($"There shoule be at least one EventNameAttribute on {type}");

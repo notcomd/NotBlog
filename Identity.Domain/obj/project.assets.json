@@ -407,6 +407,22 @@
           }
         }
       },
+      "Scalar.AspNetCore/2.5.3": {
+        "type": "package",
+        "compile": {
+          "lib/net9.0/Scalar.AspNetCore.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/Scalar.AspNetCore.dll": {
+            "related": ".xml"
+          }
+        },
+        "frameworkReferences": [
+          "Microsoft.AspNetCore.App"
+        ]
+      },
       "System.IdentityModel.Tokens.Jwt/7.6.0": {
         "type": "package",
         "dependencies": {
@@ -461,7 +477,8 @@
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
           "MediatR": "12.5.0",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0",
+          "Scalar.AspNetCore": "2.5.3"
         },
         "compile": {
           "bin/placeholder/DomainCommonst.dll": {}
@@ -478,6 +495,7 @@
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.6",
           "Microsoft.AspNetCore.Authentication.MicrosoftAccount": "8.0.6",
           "Microsoft.AspNetCore.SignalR.Client": "8.0.6",
+          "Scalar.AspNetCore": "2.5.3",
           "System.IdentityModel.Tokens.Jwt": "7.6.0"
         },
         "compile": {
@@ -1101,6 +1119,23 @@
         "microsoft.identitymodel.tokens.nuspec"
       ]
     },
+    "Scalar.AspNetCore/2.5.3": {
+      "sha512": "GhMaITeqvKVDLH/RyAH93n1uSkrP/JNI7cRIPUr5bsHjSiVSmhM68Ni+0x1IORnU5O68YiZJX2DcdGbLuEe9aQ==",
+      "type": "package",
+      "path": "scalar.aspnetcore/2.5.3",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "icon.png",
+        "lib/net8.0/Scalar.AspNetCore.dll",
+        "lib/net8.0/Scalar.AspNetCore.xml",
+        "lib/net9.0/Scalar.AspNetCore.dll",
+        "lib/net9.0/Scalar.AspNetCore.xml",
+        "scalar.aspnetcore.2.5.3.nupkg.sha512",
+        "scalar.aspnetcore.nuspec"
+      ]
+    },
     "System.IdentityModel.Tokens.Jwt/7.6.0": {
       "sha512": "LIuEbv/kFpuw00yI/mPu+T9NAVdH/u7Y5ChCGzYQQeCg9Pft2C7HFWuO/P+Z7c2RcySNjVk1FmuAheKjYIbOkw==",
       "type": "package",
@@ -1231,6 +1266,7 @@
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "C:\\Program Files\\dotnet\\library-packs": {},
+        "C:\\Users\\29617\\RiderProjects\\NotMediator\\NotMediator\\bin\\Debug": {},
         "https://api.nuget.org/v3/index.json": {},
         "https://nuget.telerik.com/v3/index.json": {}
       },
@@ -1257,7 +1293,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "9.0.200"
+      "SdkAnalysisLevel": "9.0.300"
     },
     "frameworks": {
       "net9.0": {
@@ -1278,7 +1314,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.301/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

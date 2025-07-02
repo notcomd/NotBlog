@@ -71,19 +71,6 @@
           }
         }
       },
-      "MediatR.Extensions.Microsoft.DependencyInjection/11.1.0": {
-        "type": "package",
-        "dependencies": {
-          "MediatR": "[11.0.0, 12.0.0)",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "7.0.0"
-        },
-        "compile": {
-          "lib/netstandard2.1/MediatR.Extensions.Microsoft.DependencyInjection.dll": {}
-        },
-        "runtime": {
-          "lib/netstandard2.1/MediatR.Extensions.Microsoft.DependencyInjection.dll": {}
-        }
-      },
       "Microsoft.AspNetCore.Authentication.JwtBearer/8.0.6": {
         "type": "package",
         "dependencies": {
@@ -678,6 +665,22 @@
           }
         }
       },
+      "Scalar.AspNetCore/2.5.3": {
+        "type": "package",
+        "compile": {
+          "lib/net9.0/Scalar.AspNetCore.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/Scalar.AspNetCore.dll": {
+            "related": ".xml"
+          }
+        },
+        "frameworkReferences": [
+          "Microsoft.AspNetCore.App"
+        ]
+      },
       "System.Formats.Asn1/8.0.1": {
         "type": "package",
         "compile": {
@@ -788,7 +791,8 @@
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
           "MediatR": "12.5.0",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0",
+          "Scalar.AspNetCore": "2.5.3"
         },
         "compile": {
           "bin/placeholder/DomainCommonst.dll": {}
@@ -803,7 +807,6 @@
         "dependencies": {
           "DomainCommonst": "1.0.0",
           "MediatR": "12.5.0",
-          "MediatR.Extensions.Microsoft.DependencyInjection": "11.1.0",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "6.0.21",
           "Microsoft.EntityFrameworkCore": "9.0.4"
         },
@@ -833,11 +836,11 @@
       },
       "Evenbus/1.0.0": {
         "type": "project",
-        "framework": ".NETCoreApp,Version=v6.0",
+        "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
           "Dynamic.Json": "1.4.1",
           "Microsoft.AspNetCore.Connections.Abstractions": "8.0.4",
-          "Microsoft.AspNetCore.Http.Abstractions": "2.2.0",
+          "Microsoft.AspNetCore.Http.Abstractions": "2.3.0",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.1",
           "Microsoft.Extensions.Options": "8.0.2",
           "RabbitMQ.Client": "6.8.1"
@@ -857,6 +860,7 @@
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.6",
           "Microsoft.AspNetCore.Authentication.MicrosoftAccount": "8.0.6",
           "Microsoft.AspNetCore.SignalR.Client": "8.0.6",
+          "Scalar.AspNetCore": "2.5.3",
           "System.IdentityModel.Tokens.Jwt": "7.6.0"
         },
         "compile": {
@@ -978,19 +982,6 @@
         "lib/netstandard2.0/MediatR.Contracts.xml",
         "mediatr.contracts.2.0.1.nupkg.sha512",
         "mediatr.contracts.nuspec"
-      ]
-    },
-    "MediatR.Extensions.Microsoft.DependencyInjection/11.1.0": {
-      "sha512": "RW3etRuy6Xp63cgqfC0r/ITOtUT0f9ymJl1+1XZdzsYUsfv7WBPC2kXGOP8IYpY/6c4Q6805vbIW/88DopUs3w==",
-      "type": "package",
-      "path": "mediatr.extensions.microsoft.dependencyinjection/11.1.0",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "gradient_128x128.png",
-        "lib/netstandard2.1/MediatR.Extensions.Microsoft.DependencyInjection.dll",
-        "mediatr.extensions.microsoft.dependencyinjection.11.1.0.nupkg.sha512",
-        "mediatr.extensions.microsoft.dependencyinjection.nuspec"
       ]
     },
     "Microsoft.AspNetCore.Authentication.JwtBearer/8.0.6": {
@@ -1822,6 +1813,23 @@
         "rabbitmq.client.nuspec"
       ]
     },
+    "Scalar.AspNetCore/2.5.3": {
+      "sha512": "GhMaITeqvKVDLH/RyAH93n1uSkrP/JNI7cRIPUr5bsHjSiVSmhM68Ni+0x1IORnU5O68YiZJX2DcdGbLuEe9aQ==",
+      "type": "package",
+      "path": "scalar.aspnetcore/2.5.3",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "icon.png",
+        "lib/net8.0/Scalar.AspNetCore.dll",
+        "lib/net8.0/Scalar.AspNetCore.xml",
+        "lib/net9.0/Scalar.AspNetCore.dll",
+        "lib/net9.0/Scalar.AspNetCore.xml",
+        "scalar.aspnetcore.2.5.3.nupkg.sha512",
+        "scalar.aspnetcore.nuspec"
+      ]
+    },
     "System.Formats.Asn1/8.0.1": {
       "sha512": "XqKba7Mm/koKSjKMfW82olQdmfbI5yqeoLV/tidRp7fbh5rmHAQ5raDI/7SU0swTzv+jgqtUGkzmFxuUg0it1A==",
       "type": "package",
@@ -2036,7 +2044,6 @@
       "EmailSendServer >= 1.0.0",
       "Evenbus >= 1.0.0",
       "Microsoft.AspNetCore.Connections.Abstractions >= 9.0.4",
-      "Microsoft.AspNetCore.Http.Abstractions >= 2.3.0",
       "Microsoft.Extensions.DependencyInjection.Abstractions >= 9.0.4",
       "Npgsql >= 9.0.3",
       "Npgsql.EntityFrameworkCore.PostgreSQL >= 9.0.4",
@@ -2070,6 +2077,7 @@
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "C:\\Program Files\\dotnet\\library-packs": {},
+        "C:\\Users\\29617\\RiderProjects\\NotMediator\\NotMediator\\bin\\Debug": {},
         "https://api.nuget.org/v3/index.json": {},
         "https://nuget.telerik.com/v3/index.json": {}
       },
@@ -2105,7 +2113,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "9.0.200"
+      "SdkAnalysisLevel": "9.0.300"
     },
     "frameworks": {
       "net9.0": {
@@ -2114,10 +2122,6 @@
           "Microsoft.AspNetCore.Connections.Abstractions": {
             "target": "Package",
             "version": "[9.0.4, )"
-          },
-          "Microsoft.AspNetCore.Http.Abstractions": {
-            "target": "Package",
-            "version": "[2.3.0, )"
           },
           "Microsoft.Extensions.DependencyInjection.Abstractions": {
             "target": "Package",
@@ -2148,20 +2152,8 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.301/PortableRuntimeIdentifierGraph.json"
       }
     }
-  },
-  "logs": [
-    {
-      "code": "NU1608",
-      "level": "Warning",
-      "warningLevel": 1,
-      "message": "Detected package version outside of dependency constraint: MediatR.Extensions.Microsoft.DependencyInjection 11.1.0 requires MediatR (>= 11.0.0 && < 12.0.0) but version MediatR 12.5.0 was resolved.",
-      "libraryId": "MediatR",
-      "targetGraphs": [
-        "net9.0"
-      ]
-    }
-  ]
+  }
 }

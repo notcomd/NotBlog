@@ -17,6 +17,8 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\CommonsInitializer\CommonsInitializer.csproj"/>
+        <ProjectReference Include="..\DomainInfrastructure\DomainInfrastructure.csproj"/>
         <ProjectReference Include="..\EmailSendServer\EmailSendServer.csproj"/>
         <ProjectReference Include="..\Identity.Domain\Identity.Domain.csproj"/>
         <ProjectReference Include="..\JWToken\Token.JWT.csproj"/>

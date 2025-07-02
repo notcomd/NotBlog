@@ -12,11 +12,17 @@ public class RabbitMQEventButs : IEventBus, IDisposable
 {
 
     private readonly IModel _consumerChannel;
+
     private readonly string _exchangeNmae;
+
     private readonly RabbitMQConnection _rabbitMQConnection;
+
     private readonly IServiceProvider _serviceProvider;
+
     private readonly IServiceScope _serviceScope;
+
     private readonly SubscriptionsManager _subscriptionsManager;
+
     private string _queueName;
 
 
@@ -28,9 +34,9 @@ public class RabbitMQEventButs : IEventBus, IDisposable
         _queueName = queueName;
 
 
-        _serviceScope = serviceScopeFactory.CreateScope();
+        _serviceScope = serviceScopeFactory.CreateScope() ?? throw new ArgumentNullException($"无法创建{serviceScopeFactory.CreateScope()}");
         _serviceProvider = _serviceScope.ServiceProvider;
-        _consumerChannel = CreateConsumerChannel();
+        _consumerChannel = CreateConsumerChannel() ?? throw new ArgumentNullException($"无法创建链接");
         _subscriptionsManager.OnEventRemoved += SubsManager_OnEventRemoved;
     }
 
