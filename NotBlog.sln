@@ -19,7 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Message.Web.API", "Message.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Evenbus", "Evenbus\Evenbus.csproj", "{A6EB2308-E00A-4FD4-85A4-BEBD05BE1621}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmailSendServer", "EmailSendServer\EmailSendServer.csproj", "{1B65EDDE-AD94-42D3-BBA2-914362DD1A3F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NotEmail", "NotEmail\NotEmail.csproj", "{1B65EDDE-AD94-42D3-BBA2-914362DD1A3F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileDev.Domain", "FileDev.Domain\FileDev.Domain.csproj", "{14C72867-4E5A-4255-A69A-6FA7307D7E88}"
 EndProject

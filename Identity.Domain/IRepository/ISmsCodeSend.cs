@@ -1,6 +1,4 @@
-﻿using Identity.Domain.Entities;
-
-namespace Identity.Domain.IRepository;
+﻿namespace Identity.Domain.IRepository;
 
 public interface ISmsCodeSend
 {

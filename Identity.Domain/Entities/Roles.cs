@@ -1,5 +1,3 @@
-using DomainCommonst;
-
 namespace Identity.Domain.Entities;
 
 public class Roles : IAggregateRoot

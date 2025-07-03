@@ -19,11 +19,8 @@ public class EmailCodeSend : IEmailCodeSend
 
     public async ValueTask SendEmailCodeAsync(string toEmail, string code)
     {
-        var mailpush = new MailPush
-        {
-            Title = "EmailCodeSend",
-            ToEmailAddress = toEmail
-        };
+        var mailpush = new MailPush("验证玛", toEmail);
+
         var message = new MimeMessage
         {
             Subject = "hello",

@@ -38,8 +38,8 @@ public static class WebApplicationBuilderExtension
         //IdentityService项目还需要启用AddIdentityCore
         builder.Services.AddAuthorization();
         builder.Services.AddAuthentication();
-        var jwtOpt = configuration.GetSection("privateKey").Get<JwtOptions>();
-        builder.Services.AddJwtAuthentication(jwtOpt);
+        var jwtOptions = configuration.GetSection(nameof(JwtOptions)).Get<JwtOptions>() ?? throw new ArgumentNullException($"没有配置JwtOptions{nameof(JwtOptions)}");
+        builder.Services.AddJwtAuthentication(jwtOptions);
 
 
         //启用Swagger中的【Authorize】按钮。这样就不用每个项目的AddSwaggerGen中单独配置了
@@ -64,16 +64,16 @@ public static class WebApplicationBuilderExtension
         //   options.JsonSerializerOptions.Converters.Add(new DateTimeJsonConverter("yyyy-MM-dd HH:mm:ss"));
         // });
 
-        services.AddCors(options =>
-            {
-                //更好的在Program.cs中用绑定方式读取配置的方法：https://github.com/dotnet/aspnetcore/issues/21491
-                //不过比较麻烦。
-                var corsOpt = configuration.GetSection("Cors").Get<CorsSettings>();
-                string[] urls = corsOpt!.AllowedOrigins;
-                options.AddDefaultPolicy(builder => builder.WithOrigins(urls)
-                    .AllowAnyMethod().AllowAnyHeader().AllowCredentials());
-            }
-        );
+        // services.AddCors(options =>
+        //     {
+        //         //更好的在Program.cs中用绑定方式读取配置的方法：https://github.com/dotnet/aspnetcore/issues/21491
+        //         //不过比较麻烦。
+        //         var corsOpt = configuration.GetSection("Cors").Get<CorsSettings>();
+        //         string[] urls = corsOpt!.AllowedOrigins;
+        //         options.AddDefaultPolicy(builder => builder.WithOrigins(urls)
+        //             .AllowAnyMethod().AllowAnyHeader().AllowCredentials());
+        //     }
+        // );
 
         services.AddEmailServer();
         //services.AddLogging(builder =>

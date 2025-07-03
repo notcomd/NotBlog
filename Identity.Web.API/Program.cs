@@ -1,3 +1,5 @@
+using Identity.Web.API.APIs;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.NotBlogConfigureExtraServices(new InitializerOptions
@@ -6,16 +8,17 @@ builder.NotBlogConfigureExtraServices(new InitializerOptions
     LogFilePath = "E:/web.log"
 });
 
+builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
 builder.Services.AddControllers(opt =>
 {
     opt.Filters.Add(new UnitOfWorkFilter());
     opt.Filters.Add(new UserLimitsOfAuthorityFilter());
 });
 
-builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
-builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
+builder.Services.AddProblemDetails();
+
 var app = builder.Build();
 
 app.NotBlogUseServer();
@@ -27,5 +30,7 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 app.UseHttpsRedirection();
+var identityService = app.MapGroup(("api/identity"));
+identityService.NotMapIdentityApi();
 app.MapControllers();
 app.Run();

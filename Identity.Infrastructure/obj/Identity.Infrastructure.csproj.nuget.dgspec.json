@@ -41,14 +41,14 @@
               "C:\\Users\\29617\\source\\repos\\MyService\\DomainInfrastructure\\DomainInfrastructure.csproj": {
                 "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainInfrastructure\\DomainInfrastructure.csproj"
               },
-              "C:\\Users\\29617\\source\\repos\\MyService\\EmailSendServer\\EmailSendServer.csproj": {
-                "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\EmailSendServer\\EmailSendServer.csproj"
-              },
               "C:\\Users\\29617\\source\\repos\\MyService\\Evenbus\\Evenbus.csproj": {
                 "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\Evenbus\\Evenbus.csproj"
               },
               "C:\\Users\\29617\\source\\repos\\MyService\\JWToken\\Token.JWT.csproj": {
                 "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\JWToken\\Token.JWT.csproj"
+              },
+              "C:\\Users\\29617\\source\\repos\\MyService\\NotEmail\\NotEmail.csproj": {
+                "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\NotEmail\\NotEmail.csproj"
               }
             }
           }
@@ -250,95 +250,6 @@
               "version": "[6.0.21, )"
             },
             "Microsoft.EntityFrameworkCore": {
-              "target": "Package",
-              "version": "[9.0.4, )"
-            }
-          },
-          "imports": [
-            "net461",
-            "net462",
-            "net47",
-            "net471",
-            "net472",
-            "net48",
-            "net481"
-          ],
-          "assetTargetFallback": true,
-          "warn": true,
-          "frameworkReferences": {
-            "Microsoft.NETCore.App": {
-              "privateAssets": "all"
-            }
-          },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.301/PortableRuntimeIdentifierGraph.json"
-        }
-      }
-    },
-    "C:\\Users\\29617\\source\\repos\\MyService\\EmailSendServer\\EmailSendServer.csproj": {
-      "version": "1.0.0",
-      "restore": {
-        "projectUniqueName": "C:\\Users\\29617\\source\\repos\\MyService\\EmailSendServer\\EmailSendServer.csproj",
-        "projectName": "EmailSendServer",
-        "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\EmailSendServer\\EmailSendServer.csproj",
-        "packagesPath": "C:\\Users\\29617\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\29617\\source\\repos\\MyService\\EmailSendServer\\obj\\",
-        "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
-        "configFilePaths": [
-          "C:\\Users\\29617\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
-        ],
-        "originalTargetFrameworks": [
-          "net9.0"
-        ],
-        "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
-          "C:\\Users\\29617\\RiderProjects\\NotMediator\\NotMediator\\bin\\Debug": {},
-          "https://api.nuget.org/v3/index.json": {},
-          "https://nuget.telerik.com/v3/index.json": {}
-        },
-        "frameworks": {
-          "net9.0": {
-            "targetAlias": "net9.0",
-            "projectReferences": {
-              "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj": {
-                "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj"
-              },
-              "C:\\Users\\29617\\source\\repos\\MyService\\Evenbus\\Evenbus.csproj": {
-                "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\Evenbus\\Evenbus.csproj"
-              }
-            }
-          }
-        },
-        "warningProperties": {
-          "warnAsError": [
-            "NU1605"
-          ]
-        },
-        "restoreAuditProperties": {
-          "enableAudit": "true",
-          "auditLevel": "low",
-          "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "9.0.300"
-      },
-      "frameworks": {
-        "net9.0": {
-          "targetAlias": "net9.0",
-          "dependencies": {
-            "MailKit": {
-              "target": "Package",
-              "version": "[4.7.1.1, )"
-            },
-            "Microsoft.Extensions.Configuration.Abstractions": {
-              "target": "Package",
-              "version": "[9.0.4, )"
-            },
-            "Microsoft.Extensions.Options": {
               "target": "Package",
               "version": "[9.0.4, )"
             }
@@ -569,14 +480,14 @@
               "C:\\Users\\29617\\source\\repos\\MyService\\DomainInfrastructure\\DomainInfrastructure.csproj": {
                 "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainInfrastructure\\DomainInfrastructure.csproj"
               },
-              "C:\\Users\\29617\\source\\repos\\MyService\\EmailSendServer\\EmailSendServer.csproj": {
-                "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\EmailSendServer\\EmailSendServer.csproj"
-              },
               "C:\\Users\\29617\\source\\repos\\MyService\\Identity.Domain\\Identity.Domain.csproj": {
                 "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\Identity.Domain\\Identity.Domain.csproj"
               },
               "C:\\Users\\29617\\source\\repos\\MyService\\JWToken\\Token.JWT.csproj": {
                 "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\JWToken\\Token.JWT.csproj"
+              },
+              "C:\\Users\\29617\\source\\repos\\MyService\\NotEmail\\NotEmail.csproj": {
+                "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\NotEmail\\NotEmail.csproj"
               }
             }
           }
@@ -708,6 +619,95 @@
             "System.IdentityModel.Tokens.Jwt": {
               "target": "Package",
               "version": "[7.6.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.301/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\29617\\source\\repos\\MyService\\NotEmail\\NotEmail.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\29617\\source\\repos\\MyService\\NotEmail\\NotEmail.csproj",
+        "projectName": "NotEmail",
+        "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\NotEmail\\NotEmail.csproj",
+        "packagesPath": "C:\\Users\\29617\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\29617\\source\\repos\\MyService\\NotEmail\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\29617\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "C:\\Users\\29617\\RiderProjects\\NotMediator\\NotMediator\\bin\\Debug": {},
+          "https://api.nuget.org/v3/index.json": {},
+          "https://nuget.telerik.com/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj": {
+                "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj"
+              },
+              "C:\\Users\\29617\\source\\repos\\MyService\\Evenbus\\Evenbus.csproj": {
+                "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\Evenbus\\Evenbus.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "MailKit": {
+              "target": "Package",
+              "version": "[4.7.1.1, )"
+            },
+            "Microsoft.Extensions.Configuration.Abstractions": {
+              "target": "Package",
+              "version": "[9.0.4, )"
+            },
+            "Microsoft.Extensions.Options": {
+              "target": "Package",
+              "version": "[9.0.4, )"
             }
           },
           "imports": [

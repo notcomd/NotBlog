@@ -1,10 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
-using DomainCommonst;
-using Notcomd.Token.JWT;
-
-namespace Identity.Domain.Entities;
+﻿namespace Identity.Domain.Entities;
 
 public class User : IAggregateRoot
 {
@@ -89,7 +83,7 @@ public class User : IAggregateRoot
     /// <summary>
     /// 黑名单或者白名单
     /// </summary>
-    public BlackOrWhite? BlackOrWhite { get; private set; }
+    public BlackOrWhite? BlackOrWhite { get; private set; } = Entities.BlackOrWhite.AuthorityWhite;
     /// <summary>
     /// 权限
     /// </summary>
@@ -196,14 +190,16 @@ public class User : IAggregateRoot
         return ValueTask.CompletedTask;
     }
 
-    public ValueTask ChangeByEmailAsync(string emailAddress)
+    /// <summary>
+    /// 重新设置邮箱
+    /// </summary>
+    /// <param name="emailAddress"> 邮箱地址 </param>
+    /// <returns></returns>
+    public void RestartByEmailAsync([EmailAddress(ErrorMessage = "your set email is error ,pleas set again your email address!")]string emailAddress)
     {
         if (UserEmail == emailAddress)
-        {
-            return ValueTask.CompletedTask;
-        }
+            throw new ArgumentException("需要不同的邮箱");
         UserEmail = emailAddress;
-        return ValueTask.CompletedTask;
     }
 
     /// <summary>
@@ -212,20 +208,30 @@ public class User : IAggregateRoot
     /// <param name="hashPassword">hash密码</param>
     /// <param name="password">密码</param>
     /// <param name="salt">加盐</param>
-    /// <returns></returns>
+    /// <returns>
+    ///返回一个布尔值，false：密码错误，true：密码正确
+    /// </returns>
     public ValueTask<bool> CheckByPasswordAsync(string hashPassword, string password, byte[] salt)
     {
         return HashH256Tool.VerifyPasswordValueTask(password, hashPassword, salt);
     }
 
-
-    public ValueTask AddBlackOrWhiteValueTask(BlackOrWhite blackOrWhite)
+    /// <summary>
+    /// 添加黑名单或者白名单
+    /// </summary>
+    /// <param name="blackOrWhite"></param>
+    /// <returns></returns>
+    public void RestartByBlackOrWhite(BlackOrWhite blackOrWhite)
     {
         BlackOrWhite = blackOrWhite;
-        return ValueTask.CompletedTask;
     }
 
-
+    /// <summary>
+    /// 修改密码
+    /// </summary>
+    /// <param name="password"></param>
+    /// <param name="salt"></param>
+    /// <returns></returns>
     public async ValueTask<User> ChangeByPasswordValueTask(string password, byte[] salt)
     {
         if (!await HashH256Tool.VerifyPasswordValueTask(password, PasswordHash, salt))

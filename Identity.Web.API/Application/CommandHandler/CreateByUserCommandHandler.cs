@@ -1,4 +1,3 @@
-using Identity.Web.API.APIs;
 using MailKit.Security;
 using MimeKit;
 
@@ -6,31 +5,25 @@ namespace Identity.Web.API.Application.CommandHandler;
 
 public class CreateByUserCommandHandler : IRequestHandler<CreateByUserCommand, bool>
 {
+
     private readonly IEmail _email;
-
-    private readonly IdentityService _identityService;
     private readonly ILogger<CreateByUserCommandHandler> _logger;
-    private readonly UserRepositoryServer _userRepository;
 
-    public CreateByUserCommandHandler(IdentityService identityService, IEmail email
-        , ILogger<CreateByUserCommandHandler> logger, UserRepositoryServer userRepositoryServer)
+
+    public CreateByUserCommandHandler(IEmail email, ILogger<CreateByUserCommandHandler> logger)
     {
-        _identityService = identityService ?? throw new ArgumentNullException(nameof(identityService));
         _email = email ?? throw new ArgumentNullException(nameof(email));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _userRepository = userRepositoryServer ?? throw new ArgumentNullException(nameof(userRepositoryServer));
+
     }
 
     public async Task<bool> Handler(CreateByUserCommand request, CancellationToken cancellationToken)
     {
-        var emailPush = new MailPush
-        {
-            Title = "验证码",
-            ToEmailAddress = request.Email
-        };
+        var emailPush = new MailPush("测试用例", request.Email);
+
         var message = new MimeMessage
         {
-            Subject = emailPush.Title,
+            Subject = emailPush.TitleEmail,
             Body = new BodyBuilder
             {
                 HtmlBody =

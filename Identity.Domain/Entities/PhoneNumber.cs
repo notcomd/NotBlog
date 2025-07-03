@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Identity.Domain.Entities;
+﻿namespace Identity.Domain.Entities;
 
 public class PhoneNumber
 {

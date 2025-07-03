@@ -5,13 +5,13 @@ C:\Users\29617\source\repos\MyService\Identity.Infrastructure\bin\Debug\net9.0\I
 C:\Users\29617\source\repos\MyService\Identity.Infrastructure\bin\Debug\net9.0\CommonsInitializer.dll
 C:\Users\29617\source\repos\MyService\Identity.Infrastructure\bin\Debug\net9.0\DomainCommonst.dll
 C:\Users\29617\source\repos\MyService\Identity.Infrastructure\bin\Debug\net9.0\DomainInfrastructure.dll
-C:\Users\29617\source\repos\MyService\Identity.Infrastructure\bin\Debug\net9.0\EmailSendServer.dll
 C:\Users\29617\source\repos\MyService\Identity.Infrastructure\bin\Debug\net9.0\Evenbus.dll
 C:\Users\29617\source\repos\MyService\Identity.Infrastructure\bin\Debug\net9.0\Identity.Domain.dll
+C:\Users\29617\source\repos\MyService\Identity.Infrastructure\bin\Debug\net9.0\NotEmail.dll
 C:\Users\29617\source\repos\MyService\Identity.Infrastructure\bin\Debug\net9.0\Token.JWT.dll
 C:\Users\29617\source\repos\MyService\Identity.Infrastructure\bin\Debug\net9.0\CommonsInitializer.pdb
 C:\Users\29617\source\repos\MyService\Identity.Infrastructure\bin\Debug\net9.0\DomainInfrastructure.pdb
-C:\Users\29617\source\repos\MyService\Identity.Infrastructure\bin\Debug\net9.0\EmailSendServer.pdb
+C:\Users\29617\source\repos\MyService\Identity.Infrastructure\bin\Debug\net9.0\NotEmail.pdb
 C:\Users\29617\source\repos\MyService\Identity.Infrastructure\bin\Debug\net9.0\Identity.Domain.pdb
 C:\Users\29617\source\repos\MyService\Identity.Infrastructure\bin\Debug\net9.0\Token.JWT.pdb
 C:\Users\29617\source\repos\MyService\Identity.Infrastructure\bin\Debug\net9.0\DomainCommonst.pdb

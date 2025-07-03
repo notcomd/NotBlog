@@ -1,12 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-using System.Security.Claims;
-using System.Text;
-using Identity.Domain.Entities;
-using Identity.Domain.IRepository;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Notcomd.Token.JWT;
-
 namespace Identity.Domain.Server;
 
 public class UserRepositoryServer

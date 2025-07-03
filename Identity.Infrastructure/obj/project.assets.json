@@ -1429,10 +1429,10 @@
         "dependencies": {
           "DomainCommonst": "1.0.0",
           "DomainInfrastructure": "1.0.0",
-          "EmailSendServer": "1.0.0",
           "Evenbus": "1.0.0",
           "Microsoft.AspNetCore.Connections.Abstractions": "9.0.4",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.4",
+          "NotEmail": "1.0.0",
           "Npgsql": "9.0.3",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "9.0.4",
           "Token.JWT": "1.0.0"
@@ -1475,23 +1475,6 @@
           "bin/placeholder/DomainInfrastructure.dll": {}
         }
       },
-      "EmailSendServer/1.0.0": {
-        "type": "project",
-        "framework": ".NETCoreApp,Version=v9.0",
-        "dependencies": {
-          "DomainCommonst": "1.0.0",
-          "Evenbus": "1.0.0",
-          "MailKit": "4.7.1.1",
-          "Microsoft.Extensions.Configuration.Abstractions": "9.0.4",
-          "Microsoft.Extensions.Options": "9.0.4"
-        },
-        "compile": {
-          "bin/placeholder/EmailSendServer.dll": {}
-        },
-        "runtime": {
-          "bin/placeholder/EmailSendServer.dll": {}
-        }
-      },
       "Evenbus/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
@@ -1522,6 +1505,23 @@
         },
         "runtime": {
           "bin/placeholder/Identity.Domain.dll": {}
+        }
+      },
+      "NotEmail/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "dependencies": {
+          "DomainCommonst": "1.0.0",
+          "Evenbus": "1.0.0",
+          "MailKit": "4.7.1.1",
+          "Microsoft.Extensions.Configuration.Abstractions": "9.0.4",
+          "Microsoft.Extensions.Options": "9.0.4"
+        },
+        "compile": {
+          "bin/placeholder/NotEmail.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/NotEmail.dll": {}
         }
       },
       "Token.JWT/1.0.0": {
@@ -4143,11 +4143,6 @@
       "path": "../DomainInfrastructure/DomainInfrastructure.csproj",
       "msbuildProject": "../DomainInfrastructure/DomainInfrastructure.csproj"
     },
-    "EmailSendServer/1.0.0": {
-      "type": "project",
-      "path": "../EmailSendServer/EmailSendServer.csproj",
-      "msbuildProject": "../EmailSendServer/EmailSendServer.csproj"
-    },
     "Evenbus/1.0.0": {
       "type": "project",
       "path": "../Evenbus/Evenbus.csproj",
@@ -4157,6 +4152,11 @@
       "type": "project",
       "path": "../Identity.Domain/Identity.Domain.csproj",
       "msbuildProject": "../Identity.Domain/Identity.Domain.csproj"
+    },
+    "NotEmail/1.0.0": {
+      "type": "project",
+      "path": "../NotEmail/NotEmail.csproj",
+      "msbuildProject": "../NotEmail/NotEmail.csproj"
     },
     "Token.JWT/1.0.0": {
       "type": "project",
@@ -4168,10 +4168,10 @@
     "net9.0": [
       "CommonsInitializer >= 1.0.0",
       "DomainInfrastructure >= 1.0.0",
-      "EmailSendServer >= 1.0.0",
       "Identity.Domain >= 1.0.0",
       "Microsoft.EntityFrameworkCore >= 9.0.4",
       "Microsoft.EntityFrameworkCore.Tools >= 9.0.4",
+      "NotEmail >= 1.0.0",
       "Npgsql >= 9.0.3",
       "Npgsql.EntityFrameworkCore.PostgreSQL >= 9.0.4",
       "Token.JWT >= 1.0.0"
@@ -4218,14 +4218,14 @@
             "C:\\Users\\29617\\source\\repos\\MyService\\DomainInfrastructure\\DomainInfrastructure.csproj": {
               "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainInfrastructure\\DomainInfrastructure.csproj"
             },
-            "C:\\Users\\29617\\source\\repos\\MyService\\EmailSendServer\\EmailSendServer.csproj": {
-              "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\EmailSendServer\\EmailSendServer.csproj"
-            },
             "C:\\Users\\29617\\source\\repos\\MyService\\Identity.Domain\\Identity.Domain.csproj": {
               "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\Identity.Domain\\Identity.Domain.csproj"
             },
             "C:\\Users\\29617\\source\\repos\\MyService\\JWToken\\Token.JWT.csproj": {
               "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\JWToken\\Token.JWT.csproj"
+            },
+            "C:\\Users\\29617\\source\\repos\\MyService\\NotEmail\\NotEmail.csproj": {
+              "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\NotEmail\\NotEmail.csproj"
             }
           }
         }
