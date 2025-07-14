@@ -21,10 +21,10 @@ public class UserRepositoryServer
         _optionsSnapshot = optionsSnapshot;
     }
 
-    public async Task FailAsync(User user)
-    {
-        await user.UserAccessFail.FailAsync();
-    }
+    //public async Task FailAsync(User user)
+    //{
+    //    await user.
+    //}
 
     public async ValueTask<string> LogInByCheckPasswordAsync(PhoneNumber phoneNumber, string password, long code)
     {
@@ -59,11 +59,12 @@ public class UserRepositoryServer
             _loggerUser.LogInformation($"[{DateTime.UtcNow}]存在该用户", nameof(usdata));
             return false;
         }
-        var salt = await HashH256Tool.GenerateSValueTask();
-        var role = new UserRole(email);
+        //var salt = await HashH256Tool.GenerateSValueTask();
+        var role = new Roles(usdata!.UserGuid, email);
         await _userRoleRepository.AddByUserRoleAsync(role);
-        var passwordhash = await HashH256Tool.CreateHash256Async(password, salt);
-        usdata = new User(role.UserRoleGuid, email, passwordhash, Convert.ToBase64String(salt), new Uri("https://www.baidu.com/img/PCtm_d9c8750bed0b3c7d089fa7d55720d6cf.png"));
+        //var passwordhash = await HashH256Tool.CreateHash256Async(password, );
+        // usdata = new User(role.RoleGuid, email, passwordhash, new Uri("https://www.baidu.com/img/PCtm_d9c8750bed0b3c7d089fa7d55720d6cf.png"));
+        var userdata = await User.CreateByEmailUser(userRoleGuid: usdata!.UserGuid, userEmail: email, passwordHash: password, imageCover: new Uri("https://www.baidu.com/img/PCtm_d9c8750bed0b3c7d089fa7d55720d6cf.png"));
         await _userRepository.AddOneByUserAsync(usdata);
         return true;
     }
@@ -107,23 +108,23 @@ public class UserRepositoryServer
 
         try
         {
-            if (await userData.CheckByPasswordAsync(await HashH256Tool.CreateHash256Async(password, Encoding.UTF8.GetBytes(userData.Salt)), password, Encoding.UTF8.GetBytes(userData.Salt)))
+            if (await userData.VerifyByPassword(password))
             {
-                if (await userData.UserAccessFail.CloseLockAsync())
+                if (userData.UserAccessFail.CloseLockAsync())
                 {
                     var listClaims = new List<Claim>
                     {
                         new(ClaimTypes.Name, userData!.UserName),
                         new(ClaimTypes.Email, userData!.UserEmail),
                         new(ClaimTypes.Role, role!.RoleName),
-                        new(ClaimTypes.MobilePhone, userData.UserPhone!.PhoneCode),
-                        new(ClaimTypes.Authentication, role!.LimitsOfAuthority.ToString())
+                        new(ClaimTypes.MobilePhone, userData.PhoneNumber!.PhoneCode),
+                        new(ClaimTypes.Authentication, role!.RoleAuthority.ToString())
                     };
                     _loggerUser.LogInformation($"date:[{userData.UserEmail}] 通验证，Token");
                     return _jwtTokenServer.BuilderTokenAsync(listClaims, _optionsSnapshot.Value);
                 }
             }
-            await FailAsync(userData);
+            // await FailAsync(userData);
             return "密码错误";
         }
         catch (Exception ex)

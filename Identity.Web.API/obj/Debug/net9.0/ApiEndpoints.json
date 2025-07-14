@@ -1,0 +1,110 @@
+[
+  {
+    "ContainingType": "Identity.Web.API.APIs.NotMapIdentityApis",
+    "Method": "GetByTest",
+    "RelativePath": "api/identity/Identity/",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.IActionResult",
+        "MediaTypes": [
+          "application/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Identity.Web.API.APIs.NotMapIdentityApis",
+    "Method": "GetByTest2",
+    "RelativePath": "api/identity/Identity/CreateByUser",
+    "HttpMethod": "POST",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "createByUserDto",
+        "Type": "Identity.Web.API.APIs.NotMapIdentityApis\u002BCreateByUserDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.IActionResult",
+        "MediaTypes": [
+          "application/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Identity.Web.API.APIs.NotMapIdentityApis",
+    "Method": "GenerateCode",
+    "RelativePath": "api/identity/Identity/GenerateCode",
+    "HttpMethod": "POST",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "email",
+        "Type": "Identity.Web.API.APIs.NotMapIdentityApis\u002BGenerateCodeDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.String",
+        "MediaTypes": [
+          "text/plain"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Identity.Web.API.APIs.NotMapIdentityApis",
+    "Method": "TestGetHelloAsync",
+    "RelativePath": "api/identity/Identity/TestGetHello",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.IActionResult",
+        "MediaTypes": [
+          "application/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Identity.Web.API.APIs.NotMapIdentityApis",
+    "Method": "TestSendEmailAsync",
+    "RelativePath": "api/identity/Identity/TestSendEmail",
+    "HttpMethod": "POST",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "emailSendRecord",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.IActionResult",
+        "MediaTypes": [
+          "application/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  }
+]

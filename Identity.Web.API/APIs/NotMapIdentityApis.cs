@@ -1,3 +1,4 @@
+using Identity.Domain.AggregatesModel.UserAggregate;
 using Microsoft.AspNetCore.HttpLogging;
 
 namespace Identity.Web.API.APIs;
@@ -26,17 +27,17 @@ public static class NotMapIdentityApis
     {
         var data = httpContext.User.Claims.Where(en => en.Issuer == "Role").FirstOrDefault();
         if (data is null)
-            return Task.FromResult<IActionResult>(new ResultNotIdentity<string>($"Error", StatusCode.Error, $"Error"));
+            return Task.FromResult<IActionResult>(IdentityResult<string>.NotAuthorized("权限不足", $"{DateTime.Now}"));
 
-        return Task.FromResult<IActionResult>(new ResultNotIdentity<string>("hello world!", StatusCode.Ok, string.Empty));
+        return Task.FromResult<IActionResult>(IdentityResult<string>.Success("hello world!", $"{DateTime.Now}"));
     }
 
     private async static Task<IActionResult> GetByTest2([AsParameters]IdentityService identityService, CreateByUserDto createByUserDto, CancellationToken cancellationToken)
     {
         var userbl = await identityService.UserRepository.FindOneByUserAsync(createByUserDto.Email);
         if (userbl is null)
-            return new ResultNotIdentity<User>($"错误", StatusCode.Error, userbl);
-        return new ResultNotIdentity<User>($"成功", StatusCode.Ok, userbl);
+            return IdentityResult<User>.Error($"错误", userbl);
+        return IdentityResult<User>.Success($"成功", userbl);
     }
 
 
@@ -50,14 +51,14 @@ public static class NotMapIdentityApis
         if (emailSendRecord != string.Empty)
         {
             await identityService.NotMediator.SendAsync(new CreateByUserCommand(emailSendRecord, "123456", "123456"), cancellationToken);
-            return new ResultNotIdentity<string>("发送成功", StatusCode.Ok, emailSendRecord);
+            return IdentityResult<string>.Success("发送成功", $"{DateTime.Now}");
         }
-        return new ResultNotIdentity<string>("发送失败", StatusCode.Error, emailSendRecord);
+        return IdentityResult<string>.Error(emailSendRecord, emailSendRecord, default);
     }
 
     private static Task<IActionResult> TestGetHelloAsync()
     {
-        return Task.FromResult<IActionResult>(new ResultNotIdentity<string>("hello world!", StatusCode.Ok, string.Empty));
+        return Task.FromResult<IActionResult>(IdentityResult<string>.Other("hello world!", StatusCode.Ok, string.Empty));
     }
 
     private record GenerateCodeDto(string Email);

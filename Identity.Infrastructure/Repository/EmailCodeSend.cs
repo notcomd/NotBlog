@@ -1,10 +1,4 @@
-﻿using EmailSendServer;
-using Identity.Domain.IRepository;
-using MailKit.Security;
-using Microsoft.Extensions.Logging;
-using MimeKit;
-
-namespace Identity.Infrastructure.Repository;
+﻿namespace Identity.Infrastructure.Repository;
 
 public class EmailCodeSend : IEmailCodeSend
 {
@@ -30,7 +24,7 @@ public class EmailCodeSend : IEmailCodeSend
                     $"<dir style=\"background-color: deepskyblue; width: auto; height: 60px;\">\n    <span style=\"text-align: left;\"><h1>Notcomd Studio</h1></span>\n</dir>\n<dir style=\" width: auto; height: max-content;\">\n    <span style=\"text-align: center;\"><h1>验证码</h1></span>\n    <span style=\"text-align:center;\"><h2>{code}</h2></span>\n</dir>"
             }.ToMessageBody()
         };
-        await _email.SendEmailValueTask(message, mailpush, SecureSocketOptions.StartTls);
+        await _email.SendEmailValueTask(message, mailpush, SecureSocketOptions.SslOnConnect);
         _logger.LogInformation($"[{DateTime.UtcNow}]Email Send! ");
     }
 }

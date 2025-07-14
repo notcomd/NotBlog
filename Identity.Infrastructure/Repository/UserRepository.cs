@@ -1,22 +1,18 @@
-﻿using Identity.Domain.Entities;
-using Identity.Domain.IRepository;
-using Identity.Infrastructure.EntityFramework;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Distributed;
-
-namespace Identity.Infrastructure.Repository;
+﻿namespace Identity.Infrastructure.Repository;
 
 public class UserRepository : IUserRepository
 {
     private readonly IDistributedCache _distributedCache;
 
-    private readonly UserDbContext _userDbContext;
+    private readonly IdentityDbContext _userDbContext;
 
-    public UserRepository(UserDbContext userDbContext, IDistributedCache distributedCache)
+    public UserRepository(IdentityDbContext userDbContext, IDistributedCache distributedCache)
     {
         _distributedCache = distributedCache;
         _userDbContext = userDbContext;
     }
+
+    public IUnitOfWork UnitOfWork => _userDbContext;
 
     public ValueTask<User?> FindOneByUserAsync(Guid guid)
     {
@@ -31,8 +27,8 @@ public class UserRepository : IUserRepository
         if (phoneNumber is null)
             throw new ArgumentNullException("数据为空");
         var data = _userDbContext.Users
-            .Where(en => en.UserPhone.AddressRegion == phoneNumber.AddressRegion &&
-                         en.UserPhone.PhoneCode == phoneNumber.PhoneCode)
+            .Where(en => en.PhoneNumber.AddressRegion == phoneNumber.AddressRegion &&
+                         en.PhoneNumber.PhoneCode == phoneNumber.PhoneCode)
             .SingleOrDefaultAsync().GetAwaiter().GetResult();
         return new ValueTask<User?>(data);
     }

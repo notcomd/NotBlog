@@ -1,6 +1,6 @@
 ﻿namespace Identity.Domain.IRepository;
 
-public interface IUserRepository
+public interface IUserRepository : IRepository<User>
 {
     ValueTask<User?> FindOneByUserAsync(Guid guid);
 

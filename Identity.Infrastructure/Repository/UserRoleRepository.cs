@@ -1,34 +1,31 @@
-﻿using Identity.Domain.Entities;
-using Identity.Domain.IRepository;
-using Identity.Infrastructure.EntityFramework;
-
-namespace Identity.Infrastructure.Repository;
+﻿namespace Identity.Infrastructure.Repository;
 
 public class UserRoleRepository : IUserRoleRepository
 {
-    private readonly UserDbContext _userRoleDbContext;
+    private readonly IdentityDbContext _userRoleDbContext;
 
-    public UserRoleRepository(UserDbContext userRoleDbContext)
+    public UserRoleRepository(IdentityDbContext userRoleDbContext)
     {
         _userRoleDbContext = userRoleDbContext;
     }
+    public IUnitOfWork UnitOfWork => _userRoleDbContext;
 
 
-    public async ValueTask AddByUserRoleAsync(UserRole userRole)
+    public async ValueTask AddByUserRoleAsync(Roles userRole)
     {
         await _userRoleDbContext.AddAsync(userRole);
     }
 
-    public async ValueTask<UserRole?> FindByUserRoleAsync(Guid guid)
+    public async ValueTask<Roles?> FindByUserRoleAsync(Guid guid)
     {
-        var data = await _userRoleDbContext.FindAsync<UserRole>(guid);
+        var data = await _userRoleDbContext.FindAsync<Roles>(guid);
         if (data is null) throw new ArgumentNullException("data is null");
         return data;
     }
 
-    public async ValueTask<UserRole?> FindByUserRoleAsync(string roleName)
+    public async ValueTask<Roles?> FindByUserRoleAsync(string roleName)
     {
-        var data = await _userRoleDbContext.FindAsync<UserRole>(roleName);
+        var data = await _userRoleDbContext.FindAsync<Roles>(roleName);
         if (data is null) throw new ArgumentNullException("data is null!");
         return data;
     }
@@ -45,9 +42,9 @@ public class UserRoleRepository : IUserRoleRepository
         return true;
     }
 
-    public async ValueTask<bool> UpByUserRoleAsync(UserRole userRole)
+    public async ValueTask<bool> UpByUserRoleAsync(Roles userRole)
     {
-        if (await FindByUserRoleAsync(userRole.UserRoleGuid) == userRole) return true;
+        if (await FindByUserRoleAsync(userRole.RoleGuid) == userRole) return true;
         _userRoleDbContext.Update(userRole);
         return true;
     }

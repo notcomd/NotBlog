@@ -8,17 +8,16 @@ public static class NotEmailExtension
     public static IServiceCollection AddEmailServer(this IServiceCollection serviceCollection)
     {
         serviceCollection.AddScoped<IEmail, Email>();
-        serviceCollection.AddOptions();
+        serviceCollection.AddOptions<EmailOptions>();
         return serviceCollection;
     }
 
     public static IServiceCollection AddEmailServer(this IServiceCollection serviceCollection,
         IConfiguration configuration)
     {
-        var data = configuration.GetSection(nameof(EmailOptions));
-
+        // 正确获取 EmailOptions 配置节并绑定
         serviceCollection.AddScoped<IEmail, Email>();
-        serviceCollection.AddOptions();
+        serviceCollection.Configure<EmailOptions>(configuration.GetSection(nameof(EmailOptions)));
         return serviceCollection;
     }
 }
