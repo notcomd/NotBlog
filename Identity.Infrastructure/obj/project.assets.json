@@ -774,10 +774,10 @@
           "buildTransitive/net8.0/_._": {}
         }
       },
-      "Microsoft.Extensions.DependencyInjection/9.0.4": {
+      "Microsoft.Extensions.DependencyInjection/9.0.5": {
         "type": "package",
         "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.4"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.5"
         },
         "compile": {
           "lib/net9.0/Microsoft.Extensions.DependencyInjection.dll": {
@@ -793,7 +793,7 @@
           "buildTransitive/net8.0/_._": {}
         }
       },
-      "Microsoft.Extensions.DependencyInjection.Abstractions/9.0.4": {
+      "Microsoft.Extensions.DependencyInjection.Abstractions/9.0.7": {
         "type": "package",
         "compile": {
           "lib/net9.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
@@ -1040,6 +1040,18 @@
         },
         "build": {
           "buildTransitive/Mono.TextTemplating.targets": {}
+        }
+      },
+      "NotMediator/1.0.4": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection": "9.0.5"
+        },
+        "compile": {
+          "lib/net9.0/NotMediator.dll": {}
+        },
+        "runtime": {
+          "lib/net9.0/NotMediator.dll": {}
         }
       },
       "Npgsql/9.0.3": {
@@ -1431,7 +1443,7 @@
           "DomainInfrastructure": "1.0.0",
           "Evenbus": "1.0.0",
           "Microsoft.AspNetCore.Connections.Abstractions": "9.0.4",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.4",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.7",
           "NotEmail": "1.0.0",
           "Npgsql": "9.0.3",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "9.0.4",
@@ -1466,7 +1478,8 @@
           "DomainCommonst": "1.0.0",
           "MediatR": "12.5.0",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "6.0.21",
-          "Microsoft.EntityFrameworkCore": "9.0.4"
+          "Microsoft.EntityFrameworkCore": "9.0.4",
+          "NotMediator": "1.0.4"
         },
         "compile": {
           "bin/placeholder/DomainInfrastructure.dll": {}
@@ -1498,6 +1511,7 @@
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
           "DomainCommonst": "1.0.0",
+          "NotMediator": "1.0.4",
           "Token.JWT": "1.0.0"
         },
         "compile": {
@@ -3036,10 +3050,10 @@
         "useSharedDesignerContext.txt"
       ]
     },
-    "Microsoft.Extensions.DependencyInjection/9.0.4": {
-      "sha512": "f2MTUaS2EQ3lX4325ytPAISZqgBfXmY0WvgD80ji6Z20AoDNiCESxsqo6mFRwHJD/jfVKRw9FsW6+86gNre3ug==",
+    "Microsoft.Extensions.DependencyInjection/9.0.5": {
+      "sha512": "N1Mn0T/tUBPoLL+Fzsp+VCEtneUhhxc1//Dx3BeuQ8AX+XrMlYCfnp2zgpEXnTCB7053CLdiqVWPZ7mEX6MPjg==",
       "type": "package",
-      "path": "microsoft.extensions.dependencyinjection/9.0.4",
+      "path": "microsoft.extensions.dependencyinjection/9.0.5",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -3061,15 +3075,15 @@
         "lib/netstandard2.0/Microsoft.Extensions.DependencyInjection.xml",
         "lib/netstandard2.1/Microsoft.Extensions.DependencyInjection.dll",
         "lib/netstandard2.1/Microsoft.Extensions.DependencyInjection.xml",
-        "microsoft.extensions.dependencyinjection.9.0.4.nupkg.sha512",
+        "microsoft.extensions.dependencyinjection.9.0.5.nupkg.sha512",
         "microsoft.extensions.dependencyinjection.nuspec",
         "useSharedDesignerContext.txt"
       ]
     },
-    "Microsoft.Extensions.DependencyInjection.Abstractions/9.0.4": {
-      "sha512": "UI0TQPVkS78bFdjkTodmkH0Fe8lXv9LnhGFKgKrsgUJ5a5FVdFRcgjIkBVLbGgdRhxWirxH/8IXUtEyYJx6GQg==",
+    "Microsoft.Extensions.DependencyInjection.Abstractions/9.0.7": {
+      "sha512": "iPK1FxbGFr2Xb+4Y+dTYI8Gupu9pOi8I3JPuPsrogUmEhe2hzZ9LpCmolMEBhVDo2ikcSr7G5zYiwaapHSQTew==",
       "type": "package",
-      "path": "microsoft.extensions.dependencyinjection.abstractions/9.0.4",
+      "path": "microsoft.extensions.dependencyinjection.abstractions/9.0.7",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -3091,7 +3105,7 @@
         "lib/netstandard2.0/Microsoft.Extensions.DependencyInjection.Abstractions.xml",
         "lib/netstandard2.1/Microsoft.Extensions.DependencyInjection.Abstractions.dll",
         "lib/netstandard2.1/Microsoft.Extensions.DependencyInjection.Abstractions.xml",
-        "microsoft.extensions.dependencyinjection.abstractions.9.0.4.nupkg.sha512",
+        "microsoft.extensions.dependencyinjection.abstractions.9.0.7.nupkg.sha512",
         "microsoft.extensions.dependencyinjection.abstractions.nuspec",
         "useSharedDesignerContext.txt"
       ]
@@ -3520,6 +3534,21 @@
         "mono.texttemplating.3.0.0.nupkg.sha512",
         "mono.texttemplating.nuspec",
         "readme.md"
+      ]
+    },
+    "NotMediator/1.0.4": {
+      "sha512": "S7Mi7xMIxsGlPGYThCw+qTtsjiPHRC8xZxzfqL1dW44WocW9C7/uL+Yj9VJ1s/93eEaP25M+Ljja80S9cHdJiA==",
+      "type": "package",
+      "path": "notmediator/1.0.4",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "4.png",
+        "LICENSE.txt",
+        "README.md",
+        "lib/net9.0/NotMediator.dll",
+        "notmediator.1.0.4.nupkg.sha512",
+        "notmediator.nuspec"
       ]
     },
     "Npgsql/9.0.3": {
@@ -4172,6 +4201,7 @@
       "Microsoft.EntityFrameworkCore >= 9.0.4",
       "Microsoft.EntityFrameworkCore.Tools >= 9.0.4",
       "NotEmail >= 1.0.0",
+      "NotMediator >= 1.0.4",
       "Npgsql >= 9.0.3",
       "Npgsql.EntityFrameworkCore.PostgreSQL >= 9.0.4",
       "Token.JWT >= 1.0.0"
@@ -4204,9 +4234,7 @@
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "C:\\Program Files\\dotnet\\library-packs": {},
-        "C:\\Users\\29617\\RiderProjects\\NotMediator\\NotMediator\\bin\\Debug": {},
-        "https://api.nuget.org/v3/index.json": {},
-        "https://nuget.telerik.com/v3/index.json": {}
+        "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
         "net9.0": {
@@ -4255,6 +4283,10 @@
             "suppressParent": "All",
             "target": "Package",
             "version": "[9.0.4, )"
+          },
+          "NotMediator": {
+            "target": "Package",
+            "version": "[1.0.4, )"
           },
           "Npgsql": {
             "target": "Package",

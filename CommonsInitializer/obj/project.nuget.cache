@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "E03lFldiXko=",
+  "dgSpecHash": "Eu2/Skehpog=",
   "success": true,
   "projectFilePath": "C:\\Users\\29617\\source\\repos\\MyService\\CommonsInitializer\\CommonsInitializer.csproj",
   "expectedPackageFiles": [
@@ -27,8 +27,8 @@
     "C:\\Users\\29617\\.nuget\\packages\\microsoft.extensions.caching.abstractions\\9.0.4\\microsoft.extensions.caching.abstractions.9.0.4.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\microsoft.extensions.caching.memory\\9.0.4\\microsoft.extensions.caching.memory.9.0.4.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\9.0.4\\microsoft.extensions.configuration.abstractions.9.0.4.nupkg.sha512",
-    "C:\\Users\\29617\\.nuget\\packages\\microsoft.extensions.dependencyinjection\\9.0.4\\microsoft.extensions.dependencyinjection.9.0.4.nupkg.sha512",
-    "C:\\Users\\29617\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\9.0.4\\microsoft.extensions.dependencyinjection.abstractions.9.0.4.nupkg.sha512",
+    "C:\\Users\\29617\\.nuget\\packages\\microsoft.extensions.dependencyinjection\\9.0.5\\microsoft.extensions.dependencyinjection.9.0.5.nupkg.sha512",
+    "C:\\Users\\29617\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\9.0.7\\microsoft.extensions.dependencyinjection.abstractions.9.0.7.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\microsoft.extensions.features\\9.0.4\\microsoft.extensions.features.9.0.4.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\microsoft.extensions.logging\\9.0.4\\microsoft.extensions.logging.9.0.4.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\9.0.4\\microsoft.extensions.logging.abstractions.9.0.4.nupkg.sha512",
@@ -41,6 +41,7 @@
     "C:\\Users\\29617\\.nuget\\packages\\microsoft.identitymodel.protocols.openidconnect\\7.1.2\\microsoft.identitymodel.protocols.openidconnect.7.1.2.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\microsoft.identitymodel.tokens\\7.6.0\\microsoft.identitymodel.tokens.7.6.0.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\mimekit\\4.7.1\\mimekit.4.7.1.nupkg.sha512",
+    "C:\\Users\\29617\\.nuget\\packages\\notmediator\\1.0.4\\notmediator.1.0.4.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\npgsql\\9.0.3\\npgsql.9.0.3.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\npgsql.entityframeworkcore.postgresql\\9.0.4\\npgsql.entityframeworkcore.postgresql.9.0.4.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\rabbitmq.client\\6.8.1\\rabbitmq.client.6.8.1.nupkg.sha512",

@@ -12,7 +12,7 @@
           "DomainInfrastructure": "1.0.0",
           "Evenbus": "1.0.0",
           "Microsoft.AspNetCore.Connections.Abstractions": "9.0.4",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.4",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.7",
           "NotEmail": "1.0.0",
           "Npgsql": "9.0.3",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "9.0.4",
@@ -53,7 +53,7 @@
       "MediatR/12.5.0": {
         "dependencies": {
           "MediatR.Contracts": "2.0.1",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.4"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.7"
         },
         "runtime": {
           "lib/net6.0/MediatR.dll": {
@@ -145,7 +145,7 @@
         "dependencies": {
           "Microsoft.AspNetCore.SignalR.Common": "8.0.6",
           "Microsoft.AspNetCore.SignalR.Protocols.Json": "8.0.6",
-          "Microsoft.Extensions.DependencyInjection": "9.0.4",
+          "Microsoft.Extensions.DependencyInjection": "9.0.5",
           "Microsoft.Extensions.Logging": "9.0.4",
           "System.Threading.Channels": "8.0.0"
         },
@@ -218,7 +218,7 @@
       "Microsoft.Extensions.Caching.Memory/9.0.4": {
         "dependencies": {
           "Microsoft.Extensions.Caching.Abstractions": "9.0.4",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.4",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.7",
           "Microsoft.Extensions.Logging.Abstractions": "9.0.4",
           "Microsoft.Extensions.Options": "9.0.4",
           "Microsoft.Extensions.Primitives": "9.0.4"
@@ -241,22 +241,22 @@
           }
         }
       },
-      "Microsoft.Extensions.DependencyInjection/9.0.4": {
+      "Microsoft.Extensions.DependencyInjection/9.0.5": {
         "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.4"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.7"
         },
         "runtime": {
           "lib/net9.0/Microsoft.Extensions.DependencyInjection.dll": {
             "assemblyVersion": "9.0.0.0",
-            "fileVersion": "9.0.425.16305"
+            "fileVersion": "9.0.525.21509"
           }
         }
       },
-      "Microsoft.Extensions.DependencyInjection.Abstractions/9.0.4": {
+      "Microsoft.Extensions.DependencyInjection.Abstractions/9.0.7": {
         "runtime": {
           "lib/net9.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
             "assemblyVersion": "9.0.0.0",
-            "fileVersion": "9.0.425.16305"
+            "fileVersion": "9.0.725.31616"
           }
         }
       },
@@ -270,7 +270,7 @@
       },
       "Microsoft.Extensions.Logging/9.0.4": {
         "dependencies": {
-          "Microsoft.Extensions.DependencyInjection": "9.0.4",
+          "Microsoft.Extensions.DependencyInjection": "9.0.5",
           "Microsoft.Extensions.Logging.Abstractions": "9.0.4",
           "Microsoft.Extensions.Options": "9.0.4"
         },
@@ -283,7 +283,7 @@
       },
       "Microsoft.Extensions.Logging.Abstractions/9.0.4": {
         "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.4"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.7"
         },
         "runtime": {
           "lib/net9.0/Microsoft.Extensions.Logging.Abstractions.dll": {
@@ -294,7 +294,7 @@
       },
       "Microsoft.Extensions.Options/9.0.4": {
         "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.4",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.7",
           "Microsoft.Extensions.Primitives": "9.0.4"
         },
         "runtime": {
@@ -390,6 +390,17 @@
           }
         }
       },
+      "NotMediator/1.0.4": {
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection": "9.0.5"
+        },
+        "runtime": {
+          "lib/net9.0/NotMediator.dll": {
+            "assemblyVersion": "1.0.4.0",
+            "fileVersion": "1.0.4.0"
+          }
+        }
+      },
       "Npgsql/9.0.3": {
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "9.0.4"
@@ -458,7 +469,7 @@
       "DomainCommonst/1.0.0": {
         "dependencies": {
           "MediatR": "12.5.0",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.4",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.7",
           "Scalar.AspNetCore": "2.5.3"
         },
         "runtime": {
@@ -473,7 +484,8 @@
           "DomainCommonst": "1.0.0",
           "MediatR": "12.5.0",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.6",
-          "Microsoft.EntityFrameworkCore": "9.0.4"
+          "Microsoft.EntityFrameworkCore": "9.0.4",
+          "NotMediator": "1.0.4"
         },
         "runtime": {
           "DomainInfrastructure.dll": {
@@ -487,7 +499,7 @@
           "Dynamic.Json": "1.4.1",
           "Microsoft.AspNetCore.Connections.Abstractions": "9.0.4",
           "Microsoft.AspNetCore.Http.Abstractions": "2.3.0",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.4",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.7",
           "Microsoft.Extensions.Options": "9.0.4",
           "RabbitMQ.Client": "6.8.1"
         },
@@ -698,19 +710,19 @@
       "path": "microsoft.extensions.configuration.abstractions/9.0.4",
       "hashPath": "microsoft.extensions.configuration.abstractions.9.0.4.nupkg.sha512"
     },
-    "Microsoft.Extensions.DependencyInjection/9.0.4": {
+    "Microsoft.Extensions.DependencyInjection/9.0.5": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-f2MTUaS2EQ3lX4325ytPAISZqgBfXmY0WvgD80ji6Z20AoDNiCESxsqo6mFRwHJD/jfVKRw9FsW6+86gNre3ug==",
-      "path": "microsoft.extensions.dependencyinjection/9.0.4",
-      "hashPath": "microsoft.extensions.dependencyinjection.9.0.4.nupkg.sha512"
+      "sha512": "sha512-N1Mn0T/tUBPoLL+Fzsp+VCEtneUhhxc1//Dx3BeuQ8AX+XrMlYCfnp2zgpEXnTCB7053CLdiqVWPZ7mEX6MPjg==",
+      "path": "microsoft.extensions.dependencyinjection/9.0.5",
+      "hashPath": "microsoft.extensions.dependencyinjection.9.0.5.nupkg.sha512"
     },
-    "Microsoft.Extensions.DependencyInjection.Abstractions/9.0.4": {
+    "Microsoft.Extensions.DependencyInjection.Abstractions/9.0.7": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-UI0TQPVkS78bFdjkTodmkH0Fe8lXv9LnhGFKgKrsgUJ5a5FVdFRcgjIkBVLbGgdRhxWirxH/8IXUtEyYJx6GQg==",
-      "path": "microsoft.extensions.dependencyinjection.abstractions/9.0.4",
-      "hashPath": "microsoft.extensions.dependencyinjection.abstractions.9.0.4.nupkg.sha512"
+      "sha512": "sha512-iPK1FxbGFr2Xb+4Y+dTYI8Gupu9pOi8I3JPuPsrogUmEhe2hzZ9LpCmolMEBhVDo2ikcSr7G5zYiwaapHSQTew==",
+      "path": "microsoft.extensions.dependencyinjection.abstractions/9.0.7",
+      "hashPath": "microsoft.extensions.dependencyinjection.abstractions.9.0.7.nupkg.sha512"
     },
     "Microsoft.Extensions.Features/9.0.4": {
       "type": "package",
@@ -795,6 +807,13 @@
       "sha512": "sha512-Qoj4aVvhX14A1FNvaJ33hzOP4VZI2j+Mr38I9wSGcjMq4BYDtWLJG89aJ9nRW2cNfH6Czjwyp7+Mh++xv3AZvg==",
       "path": "mimekit/4.7.1",
       "hashPath": "mimekit.4.7.1.nupkg.sha512"
+    },
+    "NotMediator/1.0.4": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-S7Mi7xMIxsGlPGYThCw+qTtsjiPHRC8xZxzfqL1dW44WocW9C7/uL+Yj9VJ1s/93eEaP25M+Ljja80S9cHdJiA==",
+      "path": "notmediator/1.0.4",
+      "hashPath": "notmediator.1.0.4.nupkg.sha512"
     },
     "Npgsql/9.0.3": {
       "type": "package",

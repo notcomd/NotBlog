@@ -1,16 +1,16 @@
 ﻿namespace Identity.Domain.IRepository;
 
-public interface IUserRoleRepository
+public interface IUserRoleRepository : IRepository<Roles>
 {
-    ValueTask AddByUserRoleAsync(UserRole userRole);
+    ValueTask AddByUserRoleAsync(Roles userRole);
 
-    ValueTask<UserRole?> FindByUserRoleAsync(Guid guid);
+    ValueTask<Roles?> FindByUserRoleAsync(Guid guid);
 
-    ValueTask<UserRole?> FindByUserRoleAsync(string roleName);
+    ValueTask<Roles?> FindByUserRoleAsync(string roleName);
 
     ValueTask<bool> IsUserRoleAsync(Guid guid);
 
     ValueTask<bool> IsUserRoleAsync(string roleName);
 
-    ValueTask<bool> UpByUserRoleAsync(UserRole userRole);
+    ValueTask<bool> UpByUserRoleAsync(Roles userRole);
 }

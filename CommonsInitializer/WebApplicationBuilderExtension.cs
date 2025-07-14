@@ -75,7 +75,7 @@ public static class WebApplicationBuilderExtension
         //     }
         // );
 
-        services.AddEmailServer();
+        services.AddEmailServer(configuration);
         //services.AddLogging(builder =>
         //{
         //    Log.Logger = new LoggerConfiguration()

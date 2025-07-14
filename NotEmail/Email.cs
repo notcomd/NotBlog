@@ -59,8 +59,9 @@ public class Email : IEmail
             {
                 throw new ArgumentNullException(nameof(_optionsManager.Value.FromEmail));
             }
-            message.From.Add(new MailboxAddress("", _optionsManager.Value.FromEmail));
-            message.To.Add(new MailboxAddress("", mailPush.ToEmailAddress));
+
+            message.From.Add(new MailboxAddress("Service", _optionsManager.Value.FromEmail));
+            message.To.Add(new MailboxAddress("Client", mailPush.ToEmailAddress));
 
             using (var mailclient = new SmtpClient())
             {

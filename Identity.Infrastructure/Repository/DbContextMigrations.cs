@@ -1,6 +1,4 @@
-﻿using Identity.Domain.IRepository;
-
-namespace Identity.Infrastructure.Repository;
+﻿namespace Identity.Infrastructure.Repository;
 
 public class DbContextMigrations : IWorkAsyncFilter
 {

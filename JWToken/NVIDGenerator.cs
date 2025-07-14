@@ -17,7 +17,7 @@ public static class NVIDGenerator
         {
             sb.Append(BaseChars[b % BaseChars.Length]);
         }
-        return $"BV{sb.ToString()[..length]}"; // 确保总长度为12（BV+10位）
+        return $"NV{sb.ToString()[..length]}"; // 确保总长度为12（BV+10位）
     }
 
     public static string GenerateNvStyleIdWithUuid(int lenght)
@@ -40,7 +40,7 @@ public static class NVIDGenerator
     {
         var uuid = Guid.NewGuid().ToString("N"); // 生成UUID
         var hash = SHA256.HashData(Encoding.UTF8.GetBytes(uuid));
-        return $"BV{Base62Encode(hash).Substring(0, 10)}";
+        return $"NV{Base62Encode(hash).Substring(0, 10)}";
     }
 
     // Base62编码辅助函数

@@ -1,15 +1,4 @@
-﻿using EmailSendServer;
-using Identity.Domain.IRepository;
-using Identity.Domain.Option;
-using Identity.Domain.Server;
-using Identity.Infrastructure.EntityFramework;
-using Identity.Infrastructure.Repository;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Notcomd.Token.JWT;
-
-namespace Identity.Infrastructure;
+﻿namespace Identity.Infrastructure;
 
 public static class AddIdentityServer
 {
@@ -18,7 +7,7 @@ public static class AddIdentityServer
     {
         serviceCollection.AddScoped<IUserRepository, UserRepository>();
         serviceCollection.AddScoped<IUserRoleRepository, UserRoleRepository>();
-        serviceCollection.AddScoped<IEmailCodeSend, EmailCodeSend>();
+        serviceCollection.AddSingleton<IEmailCodeSend, EmailCodeSend>();
         serviceCollection.AddDistributedMemoryCache();
         serviceCollection.AddScoped<ISmsCodeSend, SmsCodeSend>();
         serviceCollection.AddScoped<UserRepositoryServer>();
@@ -30,7 +19,7 @@ public static class AddIdentityServer
     public static IServiceCollection AddIdentityDbContext(this IServiceCollection serviceCollection,
         IConfiguration configuration)
     {
-        serviceCollection.AddDbContext<UserDbContext>(opt =>
+        serviceCollection.AddDbContext<IdentityDbContext>(opt =>
         {
             var data = configuration.Get<DbContextOption>() ??
                        throw new ArgumentNullException("配置项为空", nameof(configuration));

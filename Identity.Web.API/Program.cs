@@ -1,3 +1,4 @@
+using Identity.Infrastructure.EntityFramework;
 using Identity.Web.API.APIs;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,12 +8,15 @@ builder.NotBlogConfigureExtraServices(new InitializerOptions
     EventBusQueueName = "Identity.Web.API",
     LogFilePath = "E:/web.log"
 });
-
+builder.Services.AddDbContext<IdentityDbContext>(opt
+    => opt.UseNpgsql(builder.Configuration.GetConnectionString(nameof(DbContextOptions)),
+        o => o.MigrationsAssembly("Identity.Infrastructure"))
+);
 builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
 builder.Services.AddControllers(opt =>
 {
     opt.Filters.Add(new UnitOfWorkFilter());
-    opt.Filters.Add(new UserLimitsOfAuthorityFilter());
+    //opt.Filters.Add(new UserLimitsOfAuthorityFilter());
 });
 
 builder.Services.AddEndpointsApiExplorer();
