@@ -7,22 +7,22 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.4"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.4" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.4">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="NotMediator" Version="1.0.4"/>
-        <PackageReference Include="Npgsql" Version="9.0.3"/>
-        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4"/>
+        <PackageReference Include="NotMediator" Version="1.0.4" />
+        <PackageReference Include="Npgsql" Version="9.0.3" />
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\CommonsInitializer\CommonsInitializer.csproj"/>
-        <ProjectReference Include="..\DomainInfrastructure\DomainInfrastructure.csproj"/>
-        <ProjectReference Include="..\NotEmail\NotEmail.csproj"/>
-        <ProjectReference Include="..\Identity.Domain\Identity.Domain.csproj"/>
-        <ProjectReference Include="..\JWToken\Token.JWT.csproj"/>
+        <ProjectReference Include="..\CommonsInitializer\CommonsInitializer.csproj" />
+        <ProjectReference Include="..\DomainInfrastructure\DomainInfrastructure.csproj" />
+        <ProjectReference Include="..\NotEmail\NotEmail.csproj" />
+        <ProjectReference Include="..\Identity.Domain\Identity.Domain.csproj" />
+        <ProjectReference Include="..\JWToken\Token.JWT.csproj" />
     </ItemGroup>
 
 </Project>
