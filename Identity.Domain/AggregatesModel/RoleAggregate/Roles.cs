@@ -7,22 +7,25 @@ public class Roles : Entity, IAggregateRoot
     {
     }
 
-    public Roles(Guid userGuid, string roleName, string? attribute = null, RoleAuthority roleAuthority = RoleAuthority.User, RoleStatus roleStatus = RoleStatus.Normal)
+
+
+    public static Roles CreateRole(string roleName, string? attribute = null, RoleAuthority roleAuthority = RoleAuthority.User, RoleStatus roleStatus = RoleStatus.Normal)
     {
-        RoleGuid = Guid.CreateVersion7();
-        UserGuid = userGuid;
-        RoleName = roleName ?? throw new ArgumentNullException(nameof(roleName), "Role name cannot be null");
-        Attribute = attribute;
-        RoleAuthority = roleAuthority;
-        RoleStatus = roleStatus;
-        CreateRole = DateTimeOffset.UtcNow;
+        if (string.IsNullOrEmpty(roleName))
+            throw new ArgumentNullException(nameof(roleName), "Role name cannot be null or empty");
+        return new Roles
+        {
+            RoleGuid = Guid.CreateVersion7(),
+            RoleName = roleName,
+            Attribute = attribute,
+            RoleAuthority = roleAuthority,
+            RoleStatus = roleStatus,
+            CreateRoleTime = DateTimeOffset.UtcNow
+        };
     }
 
+
     public Guid RoleGuid { get; private set; }
-
-    public Guid UserGuid { get; private set; }
-
-    public User User { get; private set; }
 
     public string RoleName { get; private set; }
 
@@ -32,7 +35,9 @@ public class Roles : Entity, IAggregateRoot
 
     public RoleStatus RoleStatus { get; private set; }
 
-    public DateTimeOffset CreateRole { get; init; }
+    public DateTimeOffset CreateRoleTime { get; init; }
+
+
 
     public void ResetByRoleAuthority(RoleAuthority roleAuthority)
     {

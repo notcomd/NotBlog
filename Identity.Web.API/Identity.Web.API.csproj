@@ -7,27 +7,34 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="MailKit" Version="4.13.0"/>
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.7"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.7"/>
+      <Compile Remove="Application\CommandHandler\**" />
+      <Content Remove="Application\CommandHandler\**" />
+      <EmbeddedResource Remove="Application\CommandHandler\**" />
+      <None Remove="Application\CommandHandler\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MailKit" Version="4.13.0" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.7" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.7" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.7">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.7"/>
-        <PackageReference Include="NotMediator" Version="1.0.4"/>
-        <PackageReference Include="Scalar.AspNetCore" Version="2.6.0"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.7" />
+        <PackageReference Include="NotMediator" Version="1.0.4" />
+        <PackageReference Include="Scalar.AspNetCore" Version="2.6.0" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\CommonsInitializer\CommonsInitializer.csproj"/>
-        <ProjectReference Include="..\NotEmail\NotEmail.csproj"/>
-        <ProjectReference Include="..\Identity.Infrastructure\Identity.Infrastructure.csproj"/>
-        <ProjectReference Include="..\JWToken\Token.JWT.csproj"/>
+        <ProjectReference Include="..\CommonsInitializer\CommonsInitializer.csproj" />
+        <ProjectReference Include="..\NotEmail\NotEmail.csproj" />
+        <ProjectReference Include="..\Identity.Infrastructure\Identity.Infrastructure.csproj" />
+        <ProjectReference Include="..\JWToken\Token.JWT.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Application\CommandHandler\"/>
+      <Folder Include="Application\DomainEventHandler\" />
     </ItemGroup>
 
 </Project>
