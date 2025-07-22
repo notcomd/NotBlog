@@ -2,21 +2,20 @@
 
 public interface IUserRepository : IRepository<User>
 {
+
+
     ValueTask<User?> FindOneByUserAsync(Guid guid);
 
-    ValueTask<User?> FindOneByUserAsync(PhoneNumber phoneNumber);
+    ValueTask<User?> FindOneByPhoneUserAsync(PhoneNumber phoneNumber);
 
-    ValueTask<User?> FindOneByUserAsync(string email);
+    ValueTask<User?> FindOneByEmailUserAsync(string email);
 
     ValueTask AddOneByUserAsync(User user);
 
-    ValueTask AddByLoginHistoryAsync(PhoneNumber phoneNumber, string message);
+    ValueTask UpdateByUserAsync(User user);
 
-    ValueTask SaveByPhoneNumberAsync(PhoneNumber phoneNumber, string code);
 
-    ValueTask<string> RetirievePhoneCodeAsync(PhoneNumber phoneNumber);
+    //ValueTask AddByLoginHistoryAsync(PhoneNumber phoneNumber, string message);
 
-    ValueTask<string> FindPhoneNumberAsync(PhoneNumber phoneNumber);
 
-    ValueTask SaveByEmailNumberAsync(string email, string code);
 }

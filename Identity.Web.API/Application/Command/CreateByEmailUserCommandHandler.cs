@@ -1,3 +1,5 @@
+using Org.BouncyCastle.Bcpg;
+
 namespace Identity.Web.API.Application.Command;
 
 public class CreateByEmailUserCommandHandler : IRequestHandler<CreateByEmailUserCommand, bool>
@@ -19,8 +21,11 @@ public class CreateByEmailUserCommandHandler : IRequestHandler<CreateByEmailUser
 
     public async Task<bool> Handler(CreateByEmailUserCommand request, CancellationToken cancellationToken)
     {
-        //await _emailCodeSend.SendEmailCodeAsync(request.Email, request.Code.ToString());
         _logger.LogInformation($"[{DateTime.UtcNow}]Email Send! ");
+        if (request is null)
+            throw new ArgumentNullException(nameof(request));
+        await userData=await _userRepository.find
+        
         return true;
     }
 
