@@ -16,9 +16,51 @@ namespace Identity.Web.API.Application.Command
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public Task<TResult> Handler(IdentifiedCommand<TCommand, TResult> request, CancellationToken cancellationToken)
-        {
+        protected abstract TResult CreateResultForDuplicateRequest();
 
+        public async Task<TResult> Handler(IdentifiedCommand<TCommand, TResult> request, CancellationToken cancellationToken)
+        {
+            var alreadyExists = await _requestManager.ExistAsync(request.Id);
+            if (alreadyExists)
+            {
+                _logger.LogInformation($"Request with id {request.Id} already exists.");
+                return CreateResultForDuplicateRequest();
+            }
+            else
+            {
+                await _requestManager.CreateRequestForCommandAsync<TCommand>(request.Id);
+                try
+                {
+                    var command = request.Command;
+                    var commandName = command.GetGenericTypeName();
+                    var idProperty = string.Empty;
+                    var commandid = string.Empty;
+                    switch(command)
+                    {
+                        case CreateByEmailUserCommand identifiedCommand:
+                            idProperty = nameof(identifiedCommand.RoleName);
+                            commandid = identifiedCommand.RoleName;
+                            break;
+                        case  CreateByPhoneUserCommand createByPhoneUserCommand:
+                            idProperty = nameof(createByPhoneUserCommand.);
+                            commandid = identifiedCommandGuid.CommandId.ToString();
+                            break;
+                        case IIdentifiedCommand<string> identifiedCommandString:
+                            idProperty = identifiedCommandString.IdProperty;
+                            commandid = identifiedCommandString.CommandId;
+                            break;
+                        default:
+                            idProperty = "Unknown";
+                            commandid = "Unknown";
+                            break;
+                    }
+                }
+                catch
+                {
+                    return default;
+                }
+            }
+            await _requestManager.CreateRequestForCommandAsync<TCommand>(request.Id);
         }
     }
 }

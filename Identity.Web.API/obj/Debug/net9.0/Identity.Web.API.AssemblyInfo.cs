@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Identity.Web.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0951827b6339310411be3bada0cec84a0b47aab6")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f22ec47e1f3452fea0dd8a8db47dec5433d01ff4")]
 [assembly: System.Reflection.AssemblyProductAttribute("Identity.Web.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Identity.Web.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
