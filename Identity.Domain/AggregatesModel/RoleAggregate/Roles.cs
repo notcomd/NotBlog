@@ -13,7 +13,7 @@ public class Roles : Entity, IAggregateRoot
 
 
 
-    public  static Task<Roles> CreateByRoleAsync(string roleName, DateTimeOffset dateTimeOffset, string? attribute = null,  RoleAuthority roleAuthority = RoleAuthority.User, RoleStatus roleStatus = RoleStatus.Normal)
+    public  static Task<Roles> CreateByRoleAsync(string roleName, DateTimeOffset dateTimeOffset, string? attribute = null,  EnumRoleAuthority roleAuthority = EnumRoleAuthority.User, EnumRoleStatus roleStatus = EnumRoleStatus.Normal)
     {
         if (string.IsNullOrEmpty(roleName))
             throw new ArgumentNullException(nameof(roleName), "Role name cannot be null or empty");
@@ -37,21 +37,21 @@ public class Roles : Entity, IAggregateRoot
 
     public string? Attribute { get; private set; }
 
-    public RoleAuthority RoleAuthority { get; private set; }
+    public EnumRoleAuthority RoleAuthority { get; private set; }
 
-    public RoleStatus RoleStatus { get; private set; }
+    public EnumRoleStatus RoleStatus { get; private set; }
 
     public DateTimeOffset CreateRoleTime { get; init; }
 
 
 
-    public void ResetByRoleAuthority(RoleAuthority roleAuthority)
+    public void ResetByRoleAuthority(EnumRoleAuthority roleAuthority)
     {
         RoleAuthority = roleAuthority;
     }
 
 
-    public void ResetByRoleStatus(RoleStatus roleStatus)
+    public void ResetByRoleStatus(EnumRoleStatus roleStatus)
     {
         RoleStatus = roleStatus;
     }

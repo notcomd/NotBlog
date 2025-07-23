@@ -1,6 +1,6 @@
 namespace Identity.Domain.AggregatesModel.RoleAggregate;
 
-public enum RoleAuthority
+public enum EnumRoleAuthority
 {
     /// <summary>
     /// 根

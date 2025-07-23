@@ -1,6 +1,6 @@
 ﻿namespace Identity.Domain.AggregatesModel.ClientAggregate
 {
-    public enum ClientType
+    public enum EnumClientType
     {
         /// <summary>
         /// 客户端

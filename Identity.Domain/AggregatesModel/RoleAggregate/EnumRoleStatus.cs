@@ -1,6 +1,6 @@
 ﻿namespace Identity.Domain.AggregatesModel.RoleAggregate
 {
-    public enum RoleStatus
+    public enum EnumRoleStatus
     {
         /// <summary>
         /// 正常
