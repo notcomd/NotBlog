@@ -1,6 +1,6 @@
 ﻿namespace Identity.Domain.AggregatesModel.UserAggregate
 {
-    public enum UserPrivacy
+    public enum EnumUserPrivacy
     {
 
         Public = 0, //公开

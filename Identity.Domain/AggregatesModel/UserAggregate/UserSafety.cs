@@ -11,9 +11,9 @@
 
         public string? PasswordSalt { get; private set; }
 
-        public BlackOrWhite BlackOrWhite { get; private set; }
+        public EnumBlackOrWhite BlackOrWhite { get; private set; }
 
-        public UserStatus UserStatus { get; private set; }
+        public EnumUserStatus UserStatus { get; private set; }
 
         public DateTimeOffset? LockOutEnd { get; private set; }
 
@@ -22,7 +22,7 @@
 
 
         public static UserSafety CreateByUserSafety(Guid UserGuid, string? securityStamp, string? passwordSalt,
-            BlackOrWhite blackOrWhite = BlackOrWhite.AuthorityWhite, UserStatus userStatus = UserStatus.Normal)
+            EnumBlackOrWhite blackOrWhite = EnumBlackOrWhite.AuthorityWhite, EnumUserStatus userStatus = EnumUserStatus.Normal)
         {
 
             if (UserGuid == null)

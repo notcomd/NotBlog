@@ -44,8 +44,8 @@ public class User : Entity, IAggregateRoot
             throw new ArgumentNullException(nameof(passwordHash), "Password hash cannot be null or empty");
         
 
-        var salt = await HashH256Tool.GenerateSValueTask() ?? throw new ArgumentNullException("salt is null");
-        var stamp = await JwtRandom.GenerateSecurityStamp() ?? throw new ArgumentNullException("security stamp is null");
+        var salt = await HashH256Tool.GenerateSaltValueTask() ?? throw new ArgumentNullException("salt is null");
+        var stamp = await JwtGenerateCodeRandom.GenerateSecurityStamp() ?? throw new ArgumentNullException("security stamp is null");
         var UserResult = new User
         {
             UserGuid = Guid.CreateVersion7(),
@@ -54,11 +54,11 @@ public class User : Entity, IAggregateRoot
             PasswordHash = await HashH256Tool.CreateHash256Async(passwordHash, salt),
             ImageCover = null,
             UserAccessFail = UserAccessFail.CreateUserAccessFail(Guid.CreateVersion7()) ?? throw new ArgumentNullException(nameof(UserAccessFail)),
-            UserSafety = UserSafety.CreateByUserSafety(Guid.CreateVersion7(), stamp, salt.ToString(), BlackOrWhite.AuthorityWhite, UserStatus.Normal) ?? throw new ArgumentNullException(nameof(UserSafety)),
+            UserSafety = UserSafety.CreateByUserSafety(Guid.CreateVersion7(), stamp, salt.ToString(), EnumBlackOrWhite.AuthorityWhite, EnumUserStatus.Normal) ?? throw new ArgumentNullException(nameof(UserSafety)),
             CreateDatetime = DateTimeOffset.UtcNow
 
         };
-        UserResult.AddDomainEvent(new UserStartedByEmailDomainEvent(userRoleGuid, userEmail, passwordHash, imageCover));
+        UserResult.AddDomainEvent(new UserStartedByEmailDomainEvent(userRoleGuid, userEmail, passwordHash));
         return UserResult;
     }
 
@@ -74,8 +74,8 @@ public class User : Entity, IAggregateRoot
         //if (imageCover == null)
         //    throw new ArgumentNullException(nameof(imageCover), "Image cover cannot be null");
 
-        var salt = await HashH256Tool.GenerateSValueTask() ?? throw new ArgumentNullException("salt is null");
-        var stamp = await JwtRandom.GenerateSecurityStamp() ?? throw new ArgumentNullException("security stamp is null");
+        var salt = await HashH256Tool.GenerateSaltValueTask() ?? throw new ArgumentNullException("salt is null");
+        var stamp = await JwtGenerateCodeRandom.GenerateSecurityStamp() ?? throw new ArgumentNullException("security stamp is null");
         var UserResult = new User
         {
             UserGuid = Guid.CreateVersion7(),
@@ -84,7 +84,7 @@ public class User : Entity, IAggregateRoot
             PasswordHash = await HashH256Tool.CreateHash256Async(passwordHash, salt),
             ImageCover = null,
             UserAccessFail = UserAccessFail.CreateUserAccessFail(Guid.CreateVersion7()) ?? throw new ArgumentNullException(nameof(UserAccessFail)),
-            UserSafety = UserSafety.CreateByUserSafety(Guid.CreateVersion7(), stamp, salt.ToString(), BlackOrWhite.AuthorityWhite, UserStatus.Normal) ?? throw new ArgumentNullException(nameof(UserSafety)),
+            UserSafety = UserSafety.CreateByUserSafety(Guid.CreateVersion7(), stamp, salt.ToString(), EnumBlackOrWhite.AuthorityWhite, EnumUserStatus.Normal) ?? throw new ArgumentNullException(nameof(UserSafety)),
             CreateDatetime = DateTimeOffset.UtcNow
 
         };
@@ -134,7 +134,7 @@ public class User : Entity, IAggregateRoot
     /// </exception>
     public async ValueTask ChangeByPasswordAsync(string password)
     {
-        if (UserSafety.UserStatus == UserStatus.Locked)
+        if (UserSafety.UserStatus == EnumUserStatus.Locked)
         {
             throw new InvalidOperationException("用户已被锁定，无法修改密码");
         }
@@ -142,7 +142,7 @@ public class User : Entity, IAggregateRoot
         {
             throw new ArgumentOutOfRangeException("your are set password is short!");
         }
-        var salt = await HashH256Tool.GenerateSValueTask() ?? throw new ArgumentNullException($"salt is null!");
+        var salt = await HashH256Tool.GenerateSaltValueTask() ?? throw new ArgumentNullException($"salt is null!");
         UserSafety.ResetByPasswordSalt(salt.ToString());
         PasswordHash = await HashH256Tool.CreateHash256Async(password, Encoding.UTF8.GetBytes(UserSafety.PasswordSalt));
     }
@@ -186,9 +186,11 @@ public class User : Entity, IAggregateRoot
     /// <returns></returns>
     public async Task<bool> VerifyByPassword(string passwordHash)
     {
+
+        //passwordHash=await CheckByPasswordAsync(PasswordHash, passwordHash);
         if (!await CheckByPasswordAsync(PasswordHash, passwordHash))
         {
-            UserAccessFail.VerifyByAccessFaild(true);
+            //UserAccessFail.VerifyByAccessFaild(true);
             AddDomainEvent(new AccountLockedEvent(UserGuid));
         }
         return PasswordHash == passwordHash;

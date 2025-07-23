@@ -13,14 +13,19 @@ public sealed class HashH256Tool
         return new ValueTask<string>(Convert.ToBase64String(hash));
     }
 
-    public static ValueTask<byte[]> GenerateSValueTask()
+    public static ValueTask<byte[]> GenerateSaltValueTask()
     {
         return new ValueTask<byte[]>(RandomNumberGenerator.GetBytes(64));
     }
 
-    public static ValueTask<bool> VerifyPasswordValueTask(string password, string hash, byte[] sart)
+    public async static ValueTask<bool> VerifyPasswordValueTask(string password, string hash, byte[] sart)
     {
-        return new ValueTask<bool>(CreateHash256Async(password, sart).Result == hash);
+        if (string.IsNullOrEmpty(password) || string.IsNullOrEmpty(hash) || sart is null || sart.Length == 0)
+        {
+            return false;
+        }
+        var hashStr = await CreateHash256Async(password, sart);
+        return hashStr== hash;
     }
 
     public static ValueTask<string> HexGenerateHaxCode(string hexStr, int length)

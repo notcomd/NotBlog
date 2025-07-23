@@ -11,7 +11,7 @@ global using Identity.Domain.SeedWork;
 global using Identity.Domain.Server;
 global using Identity.Infrastructure.EntityFramework;
 global using Identity.Infrastructure.Repository;
-
+global using Identity.Domain.INotDateTime;
 global using MailKit.Security;
 
 global using Microsoft.EntityFrameworkCore;

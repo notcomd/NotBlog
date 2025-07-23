@@ -12,6 +12,7 @@ global using System.Xml.Serialization;
 global using Identity.Domain.AggregatesModel.ClientAggregate;
 global using Identity.Domain.AggregatesModel.RoleAggregate;
 global using Identity.Domain.AggregatesModel.UserAggregate;
+global using Identity.Domain.AggregatesModel.Author2Aggregate;
 global using Identity.Domain.Entities;
 global using Identity.Domain.IRepository;
 global using Identity.Domain.SeedWork;

@@ -22,7 +22,7 @@ public class UserRepository : IUserRepository
         return data;
     }
 
-    public async ValueTask<User?> FindOneByPhoneUserAsync(PhoneNumber phoneNumber)
+    public async ValueTask<User?> FindOneByUserAsync(PhoneNumber phoneNumber)
     {
         if (phoneNumber is null)
             throw new ArgumentNullException("数据为空");
@@ -39,24 +39,14 @@ public class UserRepository : IUserRepository
         _logger.LogInformation($"[{DateTime.UtcNow}]User Add! {user.UserGuid}");
     }
 
-    public async ValueTask<User?> FindOneByEmailUserAsync(string email)
+    public async ValueTask<User?> FindOneByUserAsync(string email)
     {
         return string.IsNullOrEmpty(email)
         ? null
         : await _userDbContext.Users.Where(en => en.UserEmail == email).SingleOrDefaultAsync();
     }
 
-    //public ValueTask AddByLoginHistoryAsync(PhoneNumber phoneNumber, string message)
-    //{
-    //    var find = FindOneByUserAsync(phoneNumber).GetAwaiter().GetResult();
-    //    if (find is not null)
-    //    {
-    //        var userid = find.UserGuid;
-    //        //_userDbContext.FindAsync<User>(new UserLoginHistory(userid, phoneNumber, message, find.UserEmail));
-    //    }
-
-    //    return ValueTask.CompletedTask;
-    //}
+  
 
     public async ValueTask UpdateByUserAsync(User user)
     {

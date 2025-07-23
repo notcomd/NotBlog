@@ -1,6 +1,6 @@
 ﻿namespace Identity.Domain.AggregatesModel.UserAggregate
 {
-    public enum UserStatus
+    public enum EnumUserStatus
     {
         /// <summary>
         /// 正常

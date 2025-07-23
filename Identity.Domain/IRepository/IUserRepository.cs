@@ -6,9 +6,9 @@ public interface IUserRepository : IRepository<User>
 
     ValueTask<User?> FindOneByUserAsync(Guid guid);
 
-    ValueTask<User?> FindOneByPhoneUserAsync(PhoneNumber phoneNumber);
+    ValueTask<User?> FindOneByUserAsync(PhoneNumber phoneNumber);
 
-    ValueTask<User?> FindOneByEmailUserAsync(string email);
+    ValueTask<User?> FindOneByUserAsync(string email);
 
     ValueTask AddOneByUserAsync(User user);
 

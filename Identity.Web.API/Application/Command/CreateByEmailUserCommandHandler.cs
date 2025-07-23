@@ -22,10 +22,23 @@ public class CreateByEmailUserCommandHandler : IRequestHandler<CreateByEmailUser
     public async Task<bool> Handler(CreateByEmailUserCommand request, CancellationToken cancellationToken)
     {
         _logger.LogInformation($"[{DateTime.UtcNow}]Email Send! ");
-        if (request is null)
-            throw new ArgumentNullException(nameof(request));
-        await userData=await _userRepository.find
-        
+        ArgumentNullException.ThrowIfNull(request);
+        var userData=await _userRepository.FindOneByUserAsync(request.Email);
+        var roleData = await _userRoleRepository.FindByUserRoleAsync(request.RoleName);
+        if (userData is not null && roleData is not null)
+        {
+            _logger.LogWarning($"[{DateTime.UtcNow}]User Already Exists! {request.Email}");
+            return false;
+        }
+        var userTrc= await User.CreateByEmailUser(roleData!.RoleGuid,request.Email, request.Password);
+        if (userTrc is null)
+        {
+            _logger.LogWarning($"[{DateTime.UtcNow}]User Create Failed! {request.Email}");
+            return false;
+        }
+        await _userRepository.AddOneByUserAsync(userTrc);
+        _logger.LogInformation($"[{DateTime.UtcNow}]User Created! {request.Email}");
+        await _userRoleRepository.UnitOfWork.SavaEntitiesAsync(cancellationToken);
         return true;
     }
 
@@ -39,7 +52,7 @@ public class CreateByUserIdentifiedCommandHandler : IdentifiedCommandHandler<Cre
     INotMediator notMediator) : base(notMediator, requestManager, logger)
     {
     }
-    public override bool CreateResultForDuplicateRequest()
+    protected override bool CreateResultForDuplicateRequest()
     {
         return true;
     }

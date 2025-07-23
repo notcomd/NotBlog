@@ -1,3 +1,7 @@
+using DomainCommonst;
+
+using Identity.Domain.Events;
+
 namespace Identity.Domain.AggregatesModel.RoleAggregate;
 
 public class Roles : Entity, IAggregateRoot
@@ -9,19 +13,21 @@ public class Roles : Entity, IAggregateRoot
 
 
 
-    public static Roles CreateRole(string roleName, string? attribute = null, RoleAuthority roleAuthority = RoleAuthority.User, RoleStatus roleStatus = RoleStatus.Normal)
+    public  static Task<Roles> CreateByRoleAsync(string roleName, DateTimeOffset dateTimeOffset, string? attribute = null,  RoleAuthority roleAuthority = RoleAuthority.User, RoleStatus roleStatus = RoleStatus.Normal)
     {
         if (string.IsNullOrEmpty(roleName))
             throw new ArgumentNullException(nameof(roleName), "Role name cannot be null or empty");
-        return new Roles
+       var role= new Roles
         {
             RoleGuid = Guid.CreateVersion7(),
             RoleName = roleName,
             Attribute = attribute,
             RoleAuthority = roleAuthority,
             RoleStatus = roleStatus,
-            CreateRoleTime = DateTimeOffset.UtcNow
+            CreateRoleTime = dateTimeOffset
         };
+        role.AddDomainEvent(new CreateByRoleStartEvent(role.RoleGuid, role.RoleName, role.Attribute));
+        return Task.FromResult(role);
     }
 
 

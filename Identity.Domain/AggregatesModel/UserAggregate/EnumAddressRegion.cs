@@ -3,7 +3,7 @@
     /// <summary>
     /// 电话号码国家地区代码
     /// </summary>
-    public enum AddressRegion
+    public enum EnumAddressRegion
     {
 
         China = 86,

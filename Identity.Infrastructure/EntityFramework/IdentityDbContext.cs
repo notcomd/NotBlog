@@ -15,11 +15,13 @@ public class IdentityDbContext : DbContext, IUnitOfWork
 
     public IdentityDbContext(DbContextOptions<IdentityDbContext> options, INotMediator mediator) : base(options)
     {
-        _notMediator = mediator ?? throw new ArgumentNullException(nameof(mediator), "Mediator cannot be null");
+        _notMediator = mediator ?? throw new ArgumentNullException(nameof(mediator), "NotMediator cannot be null");
         Debug.WriteLine($"IdentityDbContext::Context->{this.GetHashCode()}");
     }
 
     public DbSet<User> Users { get; set; }
+
+    public DbSet<Author2> Author2s { get; set; }
 
     public DbSet<UserSafety> userSafeties { get; set; }
 

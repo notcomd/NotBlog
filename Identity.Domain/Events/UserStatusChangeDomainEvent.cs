@@ -3,13 +3,13 @@
     public class UserStatusChangeDomainEvent : INotifications
     {
 
-        public UserStatusChangeDomainEvent(Guid userGuid, UserStatus userStatus)
+        public UserStatusChangeDomainEvent(Guid userGuid, EnumUserStatus userStatus)
         {
             UserGuid = userGuid;
             UserStatus = userStatus;
         }
         public Guid UserGuid { get; }
 
-        public UserStatus UserStatus { get; }
+        public EnumUserStatus UserStatus { get; }
     }
 }

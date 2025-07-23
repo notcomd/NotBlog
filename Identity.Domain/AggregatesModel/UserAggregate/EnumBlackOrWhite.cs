@@ -1,6 +1,6 @@
 namespace Identity.Domain.Entities;
 
-public enum BlackOrWhite
+public enum EnumBlackOrWhite
 {
     AuthorityBlack,
 
