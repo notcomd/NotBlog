@@ -42,7 +42,7 @@ public class User : Entity, IAggregateRoot
             throw new ArgumentNullException(nameof(userEmail), "User email cannot be null or empty");
         if (string.IsNullOrEmpty(passwordHash))
             throw new ArgumentNullException(nameof(passwordHash), "Password hash cannot be null or empty");
-        
+
 
         var salt = await HashH256Tool.GenerateSaltValueTask() ?? throw new ArgumentNullException("salt is null");
         var stamp = await JwtGenerateCodeRandom.GenerateSecurityStamp() ?? throw new ArgumentNullException("security stamp is null");
@@ -120,6 +120,14 @@ public class User : Entity, IAggregateRoot
 
     public void ChangeByAddressAsync(ref Address userAddress)
     {
+        if (userAddress is null)
+        {
+            throw new ArgumentNullException(nameof(userAddress), "user address is null");
+        }
+        if (UserAddress is not null && UserAddress.Equals(userAddress))
+        {
+            throw new ArgumentException("需要不同的地址");
+        }
         UserAddress = userAddress;
     }
 
@@ -143,7 +151,7 @@ public class User : Entity, IAggregateRoot
             throw new ArgumentOutOfRangeException("your are set password is short!");
         }
         var salt = await HashH256Tool.GenerateSaltValueTask() ?? throw new ArgumentNullException($"salt is null!");
-        UserSafety.ResetByPasswordSalt(salt.ToString());
+        UserSafety.SetOrResetByPasswordSalt(salt.ToString());
         PasswordHash = await HashH256Tool.CreateHash256Async(password, Encoding.UTF8.GetBytes(UserSafety.PasswordSalt));
     }
 
@@ -164,17 +172,35 @@ public class User : Entity, IAggregateRoot
 
     }
 
+
+    /// <summary>
+    /// 验证手机号是否正确
+    /// </summary>
+    /// <param name="phoneNumber"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException"></exception>
     public bool VerifyByPhoneNumber(PhoneNumber phoneNumber)
     {
         if (phoneNumber is null)
             throw new ArgumentNullException(nameof(phoneNumber), "phone number is null");
+
         return PhoneNumber?.PhoneCode == phoneNumber.PhoneCode && PhoneNumber.AddressRegion == phoneNumber.AddressRegion;
     }
 
+
+    /// <summary>
+    /// 验证邮箱是否正确
+    /// </summary>
+    /// <param name="email">邮箱</param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException"></exception>
+    /// <exception cref="ArgumentException"></exception>
     public bool VerifyByEmail(string email)
     {
         if (string.IsNullOrEmpty(email))
             throw new ArgumentNullException(nameof(email), "email is null or empty");
+        if (!new EmailAddressAttribute().IsValid(email))
+            throw new ArgumentException("your set email is error ,pleas set again your email address!", nameof(email));
         return UserEmail == email;
     }
 
@@ -231,7 +257,7 @@ public class User : Entity, IAggregateRoot
     /// </summary>
     /// <param name="emailAddress"> 邮箱地址 </param>
     /// <returns></returns>
-    public void RestartByEmailAsync([EmailAddress(ErrorMessage = "your set email is error ,pleas set again your email address!")]string emailAddress)
+    public void RestartByEmailAsync([EmailAddress(ErrorMessage = "your set email is error ,pleas set again your email address!")] string emailAddress)
     {
         if (UserEmail == emailAddress)
             throw new ArgumentException("需要不同的邮箱");
@@ -249,6 +275,7 @@ public class User : Entity, IAggregateRoot
     /// </returns>
     private async Task<bool> CheckByPasswordAsync(string hashPassword, string password)
     {
+        ArgumentNullException.ThrowIfNull(password, nameof(password));
         return await HashH256Tool.VerifyPasswordValueTask(password, hashPassword, Encoding.UTF8.GetBytes(UserSafety.PasswordSalt));
     }
 }

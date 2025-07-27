@@ -1,6 +1,6 @@
 ﻿namespace Identity.Domain.Entities;
 
-public enum StatusCode
+public enum EnumStatusCode
 {
 
     /// <summary>

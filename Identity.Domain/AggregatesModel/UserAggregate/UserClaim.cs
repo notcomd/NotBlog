@@ -1,22 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace Identity.Domain.AggregatesModel.UserAggregate;
 
-namespace Identity.Domain.AggregatesModel.UserAggregate;
-
-public abstract class UserClaim :Entity
+public class UserClaim : Entity
 {
+
+    public Guid UserClaimGuid { get; private set; }
+
     public Guid UserGuid { get; private set; }
 
-    public int Age { get; private set; }
+    public string ClaimType { get; private set; } = string.Empty;
 
-    public string Sex { get; private set; }
+    public string ClaimValue { get; private set; } = string.Empty;
 
-    private List<string> _statusTitles = new List<string>();
+    public Claim ToClaim()
+    {
+        return new Claim(ClaimType, ClaimValue);
+    }
 
-    public ReadOnlyCollection<string> StatusTitles => _statusTitles.AsReadOnly();
+    public void Initialize(Claim claim)
+    {
+        ClaimValue = claim.Value;
+        ClaimType = claim.Type;
+    }
 
 }

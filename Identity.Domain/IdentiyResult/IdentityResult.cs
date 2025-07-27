@@ -5,7 +5,7 @@ namespace Identity.Domain.Entities
     public sealed class IdentityResult<TResponse> : IActionResult where TResponse : class
     {
 
-        private IdentityResult(string resultMessage, StatusCode statusCode, TResponse resultData, ResultType resultType = ResultType.ApplicationJson)
+        private IdentityResult(string resultMessage, EnumStatusCode statusCode, TResponse resultData, ResultType resultType = ResultType.ApplicationJson)
         {
             ResultMessage = resultMessage;
             StatusCode = statusCode;
@@ -19,7 +19,7 @@ namespace Identity.Domain.Entities
         /// <summary>
         /// 状态码
         /// </summary>
-        public StatusCode StatusCode { get; set; }
+        public EnumStatusCode StatusCode { get; set; }
         /// <summary>
         /// 返回数据
         /// </summary>
@@ -42,12 +42,12 @@ namespace Identity.Domain.Entities
 
             response.StatusCode = StatusCode switch
             {
-                StatusCode.Ok => 200,
-                StatusCode.Error => 400,
-                StatusCode.TimeOut => 408,
-                StatusCode.Reset => 205,
-                StatusCode.NotAuthorized => 401,
-                StatusCode.InternalServerError => 500,
+                EnumStatusCode.Ok => 200,
+                EnumStatusCode.Error => 400,
+                EnumStatusCode.TimeOut => 408,
+                EnumStatusCode.Reset => 205,
+                EnumStatusCode.NotAuthorized => 401,
+                EnumStatusCode.InternalServerError => 500,
                 _ => 500
             };
 
@@ -74,36 +74,36 @@ namespace Identity.Domain.Entities
 
         public static IdentityResult<TResponse> Success(string message, TResponse data, ResultType resultType = ResultType.ApplicationJson)
         {
-            return new IdentityResult<TResponse>(message, StatusCode.Ok, data, resultType);
+            return new IdentityResult<TResponse>(message, EnumStatusCode.Ok, data, resultType);
         }
 
         public static IdentityResult<TResponse> Error(string message, TResponse data, ResultType resultType = ResultType.ApplicationJson)
         {
-            return new IdentityResult<TResponse>(message, StatusCode.Error, data, resultType);
+            return new IdentityResult<TResponse>(message, EnumStatusCode.Error, data, resultType);
         }
 
         public static IdentityResult<TResponse> TimeOut(string message, TResponse data, ResultType resultType = ResultType.ApplicationJson)
         {
-            return new IdentityResult<TResponse>(message, StatusCode.TimeOut, data, resultType);
+            return new IdentityResult<TResponse>(message, EnumStatusCode.TimeOut, data, resultType);
         }
 
         public static IdentityResult<TResponse> Reset(string message, TResponse data, ResultType resultType = ResultType.ApplicationJson)
         {
-            return new IdentityResult<TResponse>(message, StatusCode.Reset, data, resultType);
+            return new IdentityResult<TResponse>(message, EnumStatusCode.Reset, data, resultType);
         }
 
         public static IdentityResult<TResponse> NotAuthorized(string message, TResponse data, ResultType resultType = ResultType.ApplicationJson)
         {
-            return new IdentityResult<TResponse>(message, StatusCode.NotAuthorized, data, resultType);
+            return new IdentityResult<TResponse>(message, EnumStatusCode.NotAuthorized, data, resultType);
         }
 
         public static IdentityResult<TResponse> InternalServerError(string message, TResponse data, ResultType resultType = ResultType.ApplicationJson)
         {
-            return new IdentityResult<TResponse>(message, StatusCode.InternalServerError, data, resultType);
+            return new IdentityResult<TResponse>(message, EnumStatusCode.InternalServerError, data, resultType);
         }
 
 
-        public static IdentityResult<TResponse> Other(string message, StatusCode statusCode, TResponse data, ResultType resultType = ResultType.ApplicationJson)
+        public static IdentityResult<TResponse> Other(string message, EnumStatusCode statusCode, TResponse data, ResultType resultType = ResultType.ApplicationJson)
         {
             return new IdentityResult<TResponse>(message, statusCode, data, resultType);
         }

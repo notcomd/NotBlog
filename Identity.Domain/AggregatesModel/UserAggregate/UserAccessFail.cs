@@ -43,27 +43,16 @@ public class UserAccessFail : Entity
     }
 
 
-    public bool VerifyByAccessFaild(bool checkByPassword)
+    public bool VerifyByAccessFaild()
     {
 
-        if (!checkByPassword)
+        AccessFaildCount++;
+        if (AccessFaildCount > 5)
         {
-            AccessFaildCount++;
-            if (AccessFaildCount > 5)
-            {
-                LockOutEnd = DateTimeOffset.UtcNow.AddMinutes(15);
-                return false; // 锁定用户
-            }
-            return true; // 继续允许访问
+            LockOutEnd = DateTimeOffset.UtcNow.AddMinutes(15);
+            return false; // 锁定用户
         }
-        else
-        {
-            AccessFaildCount = 0;
-            LockOutEnd = null;
-            return true; // 重置失败计数，允许访问
-        }
-
-        // return false; // 锁定用户
+        return true; // 继续允许访问
     }
 
 

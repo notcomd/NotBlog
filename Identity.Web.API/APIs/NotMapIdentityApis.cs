@@ -58,7 +58,7 @@ public static class NotMapIdentityApis
 
     private static Task<IActionResult> TestGetHelloAsync()
     {
-        return Task.FromResult<IActionResult>(IdentityResult<string>.Other("hello world!", StatusCode.Ok, string.Empty));
+        return Task.FromResult<IActionResult>(IdentityResult<string>.Other("hello world!", EnumStatusCode.Ok, string.Empty));
     }
 
     private record GenerateCodeDto(string Email);

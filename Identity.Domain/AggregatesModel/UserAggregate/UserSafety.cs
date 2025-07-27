@@ -25,24 +25,26 @@
             EnumBlackOrWhite blackOrWhite = EnumBlackOrWhite.AuthorityWhite, EnumUserStatus userStatus = EnumUserStatus.Normal)
         {
 
-            if (UserGuid == null)
-                throw new ArgumentNullException(nameof(UserGuid), "User cannot be null");
-
-            if (string.IsNullOrEmpty(passwordSalt) && string.IsNullOrEmpty(securityStamp))
-                throw new ArgumentException("At least one of passwordSalt or securityStamp must be provided", nameof(passwordSalt));
-
-            var userSafety = new UserSafety
+            if (UserGuid != null)
             {
-                UserSafetyGuid = Guid.CreateVersion7(),
-                //User = user,
-                UserGuid = UserGuid,
-                SecurityStamp = securityStamp,
-                PasswordSalt = passwordSalt,
-                BlackOrWhite = blackOrWhite,
-                UserStatus = userStatus
-            };
+                if (string.IsNullOrEmpty(passwordSalt) && string.IsNullOrEmpty(securityStamp))
+                    throw new ArgumentException("At least one of passwordSalt or securityStamp must be provided", nameof(passwordSalt));
 
-            return userSafety;
+                var userSafety = new UserSafety
+                {
+                    UserSafetyGuid = Guid.CreateVersion7(),
+                    //User = user,
+                    UserGuid = UserGuid,
+                    SecurityStamp = securityStamp,
+                    PasswordSalt = passwordSalt,
+                    BlackOrWhite = blackOrWhite,
+                    UserStatus = userStatus
+                };
+
+                return userSafety;
+            }
+
+            throw new ArgumentNullException(nameof(UserGuid), "User cannot be null");
         }
 
         /// <summary>
@@ -50,7 +52,7 @@
         /// </summary>
         /// <param name="lockOutEnd"></param>
         /// <exception cref="ArgumentException"></exception>
-        public void ChangeByLockOutEnd(DateTimeOffset? lockOutEnd)
+        public void SetOrChangeByLockOutEnd(DateTimeOffset? lockOutEnd)
         {
             if (IsLockedOut)
                 throw new ArgumentException("LockOutEnd cannot be in the past", nameof(lockOutEnd));
@@ -58,14 +60,14 @@
 
         }
 
-        public void ResetByPasswordSalt(string newPasswordSalt)
+        public void SetOrResetByPasswordSalt(string newPasswordSalt)
         {
             if (string.IsNullOrWhiteSpace(newPasswordSalt))
                 throw new ArgumentException("Password salt cannot be null or empty", nameof(newPasswordSalt));
             PasswordSalt = newPasswordSalt;
         }
 
-        public void ResetBySecurityStamp(string newSecurityStamp)
+        public void SetOrResetBySecurityStamp(string newSecurityStamp)
         {
             if (string.IsNullOrWhiteSpace(newSecurityStamp))
                 throw new ArgumentException("Security stamp cannot be null or empty", nameof(newSecurityStamp));
