@@ -26,6 +26,10 @@ public class User : Entity, IAggregateRoot
 
     public Address? UserAddress { get; private set; }
 
+    private IList<UserClaim> UserClaims { get; set; }
+
+    public IEnumerable<UserClaim> UserClaimsReadOnly => UserClaims.AsReadOnly();
+
     public UserAccessFail UserAccessFail { get; private set; }
 
     public UserSafety UserSafety { get; private set; }
@@ -58,8 +62,8 @@ public class User : Entity, IAggregateRoot
             CreateDatetime = DateTimeOffset.UtcNow
 
         };
-        UserResult.AddDomainEvent(new UserStartedByEmailDomainEvent(userRoleGuid, userEmail, passwordHash));
-        return UserResult;
+        UserResult.AddDomainEvent(new UserCreatedByEmailDomainEvent(UserResult, userEmail, userEmail, DateTimeOffset.UtcNow));
+        return UserResult ?? throw new ArgumentNullException(nameof(UserResult));
     }
 
 
@@ -88,8 +92,8 @@ public class User : Entity, IAggregateRoot
             CreateDatetime = DateTimeOffset.UtcNow
 
         };
-        UserResult.AddDomainEvent(new UserStartedByPhoneDomainEvent(userRoleGuid, phoneNumber, passwordHash, imageCover));
-        return UserResult;
+        UserResult.AddDomainEvent(new UserCreatedByPhoneDomainEvent(UserResult,phoneNumber,phoneNumber.PhoneCode,DateTimeOffset.UtcNow));
+        return UserResult ?? throw new ArgumentNullException(nameof(UserResult));
     }
 
 
@@ -100,9 +104,24 @@ public class User : Entity, IAggregateRoot
     /// 重新设置用户名
     /// </summary>
     /// <param name="userName"></param>
-    public void RestartByUserName(string userName)
+    public void SetOrRestartByUserName(string userName)
     {
-        UserName = userName;
+        if (!string.IsNullOrEmpty(userName))
+        {
+            if (UserName == userName)
+            {
+                throw new ArgumentException("需要不同的用户名");
+            }
+            if (userName.Length < 3 || userName.Length > 50)
+            {
+                throw new ArgumentOutOfRangeException(nameof(userName), "用户名长度必须在3到50个字符之间");
+            }
+            UserName = userName;
+        }
+        else
+        {
+            throw new ArgumentNullException(nameof(userName), "user name is null or empty");
+        }
     }
 
 
@@ -111,9 +130,24 @@ public class User : Entity, IAggregateRoot
     /// 重新设置用户头像
     /// </summary>
     /// <param name="imageCover"></param>
-    public void RestartByImageCover(Uri imageCover)
+    public void SetOrRestartByImageCover(Uri imageCover)
     {
-        ImageCover = imageCover;
+        if (imageCover is null)
+        {
+            throw new ArgumentNullException(nameof(imageCover), "image cover is null");
+        }
+        if (ImageCover is not null && ImageCover.Equals(imageCover))
+        {
+            throw new ArgumentException("需要不同的头像");
+        }
+        if (imageCover.IsAbsoluteUri)
+        {
+            ImageCover = imageCover;
+        }
+        else
+        {
+            throw new ArgumentException("image cover must be absolute uri", nameof(imageCover));
+        }
     }
 
 

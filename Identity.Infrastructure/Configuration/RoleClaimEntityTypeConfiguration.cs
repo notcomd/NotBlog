@@ -8,6 +8,8 @@ namespace Identity.Domain.Events
 
             builder.ToTable("RoleClaims", "Identity");
             
+            builder.Property(o => o.Id).UseHiLo("RoleClaimseq");
+
             builder.Ignore(x => x.DomainEventbus);
                     
         }

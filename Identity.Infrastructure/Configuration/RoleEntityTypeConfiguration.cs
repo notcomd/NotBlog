@@ -5,7 +5,8 @@
         public void Configure(EntityTypeBuilder<Roles> builder)
         {
 
-            builder.ToTable("UserPrivacy");
+
+            builder.ToTable("Role","Identity");
 
             builder.Property(o => o.Id).UseHiLo("Roleseq");
 
@@ -14,7 +15,11 @@
             builder.Property(en => en.RoleAuthority).HasConversion<string>().HasMaxLength(50);
 
             builder.Property(en => en.RoleStatus).HasConversion<string>().HasMaxLength(50);
+                                      
 
+            builder.HasMany(en => en.RoleClaims)
+                .WithOne();
+               
 
         }
     }

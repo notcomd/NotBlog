@@ -8,11 +8,11 @@ public class RoleClaim : Entity
 
     public Guid RoleGuid { get; private set; }
 
-    public string ClaimType { get; private set; }
+    public string ClaimType { get; private set; } =string.Empty;
 
-    public string ClaimValue { get; private set; }
+    public string ClaimValue { get; private set; }=string.Empty;
 
-    
+
     public static ValueTask<RoleClaim> CreateByRoleClaimAsync(Guid roleGuid, Claim claim)
     {
         if (roleGuid == Guid.Empty)
@@ -33,7 +33,7 @@ public class RoleClaim : Entity
     {
         if (claim == null)
             throw new ArgumentNullException(nameof(claim), "Claim cannot be null");
-        //RoleGuid = Guid.CreateVersion7();
+        
         ClaimType = claim.Type;
         ClaimValue = claim.Value;
     }

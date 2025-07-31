@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+
+using Identity.Domain.Events;
 using Identity.Infrastructure.Configuration;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -26,6 +28,10 @@ public class IdentityDbContext : DbContext, IUnitOfWork
     public DbSet<UserSafety> userSafeties { get; set; }
 
     public DbSet<UserAccessFail> UserAccessFails { get; set; }
+
+    public DbSet<RoleClaim> RoleClaims { get; set; }
+
+    public DbSet<UserClaim> UserClaims { get; set; }
 
     public DbSet<Roles> Roles { get; set; }
 
@@ -56,7 +62,8 @@ public class IdentityDbContext : DbContext, IUnitOfWork
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.HasDefaultSchema("Identity");
-
+        modelBuilder.ApplyConfiguration(new UserClaimEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new RoleClaimEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new UserEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new RoleEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new Author2EntityTypeConfiguration());

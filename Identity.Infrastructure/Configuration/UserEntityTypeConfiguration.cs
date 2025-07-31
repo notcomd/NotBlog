@@ -20,7 +20,7 @@
 
             builder.Property(x => x.UserRoleGuid).HasColumnName("user_role_guid").IsRequired();
 
-            builder.Property(x => x.UserName).HasColumnName("user_name").IsRequired().HasMaxLength(50);
+            builder.Property(x => x.UserName).HasColumnName("user_name").HasMaxLength(50);
 
             builder.Property(x => x.PasswordHash).HasColumnName("password_hash").IsRequired().HasMaxLength(100);
 
@@ -38,6 +38,9 @@
 
             builder.HasOne(on => on.UserSafety).WithOne()
                 .HasForeignKey<UserSafety>(on => on.UserGuid);
+
+            builder.HasMany(on => on.UserClaimsReadOnly).WithOne();
+                
 
         }
     }
