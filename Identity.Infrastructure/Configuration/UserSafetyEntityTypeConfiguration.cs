@@ -11,7 +11,7 @@
 
             builder.Property(x => x.Id).UseHiLo("UserSafarseq");
 
-            builder.Property(x => x.UserGuid).HasColumnName("user_guid").IsRequired();
+            
 
         }
     }

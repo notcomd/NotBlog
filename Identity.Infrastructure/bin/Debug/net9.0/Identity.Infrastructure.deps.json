@@ -14,7 +14,7 @@
           "Microsoft.EntityFrameworkCore": "9.0.4",
           "Microsoft.EntityFrameworkCore.Tools": "9.0.4",
           "NotEmail": "1.0.0",
-          "NotMediator": "1.0.4",
+          "NotMediator": "1.0.5",
           "Npgsql": "9.0.3",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "9.0.4",
           "Token.JWT": "1.0.0"
@@ -742,14 +742,14 @@
           }
         }
       },
-      "NotMediator/1.0.4": {
+      "NotMediator/1.0.5": {
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection": "9.0.5"
         },
         "runtime": {
           "lib/net9.0/NotMediator.dll": {
-            "assemblyVersion": "1.0.4.0",
-            "fileVersion": "1.0.4.0"
+            "assemblyVersion": "1.0.5.0",
+            "fileVersion": "1.0.5.0"
           }
         }
       },
@@ -933,7 +933,7 @@
           "MediatR": "12.5.0",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.6",
           "Microsoft.EntityFrameworkCore": "9.0.4",
-          "NotMediator": "1.0.4"
+          "NotMediator": "1.0.5"
         },
         "runtime": {
           "DomainInfrastructure.dll": {
@@ -961,7 +961,7 @@
       "Identity.Domain/1.0.0": {
         "dependencies": {
           "DomainCommonst": "1.0.0",
-          "NotMediator": "1.0.4",
+          "NotMediator": "1.0.5",
           "Token.JWT": "1.0.0"
         },
         "runtime": {
@@ -1367,12 +1367,12 @@
       "path": "mono.texttemplating/3.0.0",
       "hashPath": "mono.texttemplating.3.0.0.nupkg.sha512"
     },
-    "NotMediator/1.0.4": {
+    "NotMediator/1.0.5": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-S7Mi7xMIxsGlPGYThCw+qTtsjiPHRC8xZxzfqL1dW44WocW9C7/uL+Yj9VJ1s/93eEaP25M+Ljja80S9cHdJiA==",
-      "path": "notmediator/1.0.4",
-      "hashPath": "notmediator.1.0.4.nupkg.sha512"
+      "sha512": "sha512-pzko9/9jQVspmUUEsxnrrrFxPsxjFDDMN+XJid/sTxM6GFaldaD0UprNN1rTL8XGrm6FKDOi0jkLsnd5y8Sltg==",
+      "path": "notmediator/1.0.5",
+      "hashPath": "notmediator.1.0.5.nupkg.sha512"
     },
     "Npgsql/9.0.3": {
       "type": "package",

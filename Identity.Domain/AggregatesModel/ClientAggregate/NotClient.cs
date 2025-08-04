@@ -9,8 +9,9 @@
 
         } // EF Core needs a parameterless constructor
 
-        public NotClient(string notClientName, string notClientDescription, string notClientPrivateKey, string notClientSecret, string notClientUri, string notClientType)
+        public NotClient(Guid userGuid,string notClientName, string notClientDescription, string notClientPrivateKey, string notClientSecret, string notClientUri, string notClientType)
         {
+            UserGuid = userGuid != Guid.Empty ? userGuid : throw new ArgumentNullException(nameof(userGuid), "UserGuid cannot be empty");
             NotClientName = notClientName ?? throw new ArgumentNullException(nameof(notClientName));
             NotClientDescription = notClientDescription ?? throw new ArgumentNullException(nameof(notClientDescription));
             NotClientPrivateKey = notClientPrivateKey ?? throw new ArgumentNullException(nameof(notClientPrivateKey));
@@ -22,7 +23,12 @@
         /// <summary>
         ///  客户端的唯一标识符
         /// </summary>
-        public Guid NotClientId { get; init; } = Guid.CreateVersion7();
+        public Guid NotClientGuid { get; init; } = Guid.CreateVersion7();
+
+        /// <summary>
+        /// 授权用户的唯一标识符
+        /// </summary>
+        public Guid UserGuid { get; private set; }=Guid.Empty;
 
         /// <summary>
         /// 客户端名称

@@ -8,7 +8,7 @@ global using Identity.Domain.Entities;
 global using Identity.Domain.IRepository;
 global using Identity.Domain.Option;
 global using Identity.Domain.SeedWork;
-global using Identity.Domain.Server;
+
 global using Identity.Infrastructure.EntityFramework;
 global using Identity.Infrastructure.Repository;
 global using Identity.Domain.INotDateTime;

@@ -1,3 +1,5 @@
+using Identity.Domain.Option;
+using Identity.Infrastructure;
 using Identity.Infrastructure.EntityFramework;
 using Identity.Web.API.APIs;
 
@@ -8,11 +10,12 @@ builder.NotBlogConfigureExtraServices(new InitializerOptions
     EventBusQueueName = "Identity.Web.API",
     LogFilePath = "E:/web.log"
 });
-builder.Services.AddDbContext<IdentityDbContext>(opt
-    => opt.UseNpgsql(builder.Configuration.GetConnectionString(nameof(DbContextOptions)),
-        o => o.MigrationsAssembly("Identity.Infrastructure"))
-);
+
+builder.Services.AddIdentityDbContext(builder.Configuration.GetSection(nameof(DbContextOption)));
+
 builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
+
+
 builder.Services.AddControllers(opt =>
 {
     opt.Filters.Add(new UnitOfWorkFilter());
@@ -20,7 +23,9 @@ builder.Services.AddControllers(opt =>
 });
 
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddOpenApi();
+
 builder.Services.AddProblemDetails();
 
 var app = builder.Build();
@@ -34,7 +39,11 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 app.UseHttpsRedirection();
+
 var identityService = app.MapGroup(("api/identity"));
+
 identityService.NotMapIdentityApi();
+
 app.MapControllers();
+
 app.Run();

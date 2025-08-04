@@ -1073,7 +1073,7 @@
           "buildTransitive/Mono.TextTemplating.targets": {}
         }
       },
-      "NotMediator/1.0.4": {
+      "NotMediator/1.0.5": {
         "type": "package",
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection": "9.0.5"
@@ -1136,7 +1136,7 @@
           }
         }
       },
-      "Scalar.AspNetCore/2.6.0": {
+      "Scalar.AspNetCore/2.6.8": {
         "type": "package",
         "compile": {
           "lib/net9.0/Scalar.AspNetCore.dll": {
@@ -1556,9 +1556,9 @@
           "CommonsInitializer": "1.0.0",
           "DomainInfrastructure": "1.0.0",
           "Identity.Domain": "1.0.0",
-          "Microsoft.EntityFrameworkCore": "9.0.4",
+          "Microsoft.EntityFrameworkCore": "9.0.7",
           "NotEmail": "1.0.0",
-          "NotMediator": "1.0.4",
+          "NotMediator": "1.0.5",
           "Npgsql": "9.0.3",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "9.0.4",
           "Token.JWT": "1.0.0"
@@ -3605,10 +3605,10 @@
         "readme.md"
       ]
     },
-    "NotMediator/1.0.4": {
-      "sha512": "S7Mi7xMIxsGlPGYThCw+qTtsjiPHRC8xZxzfqL1dW44WocW9C7/uL+Yj9VJ1s/93eEaP25M+Ljja80S9cHdJiA==",
+    "NotMediator/1.0.5": {
+      "sha512": "pzko9/9jQVspmUUEsxnrrrFxPsxjFDDMN+XJid/sTxM6GFaldaD0UprNN1rTL8XGrm6FKDOi0jkLsnd5y8Sltg==",
       "type": "package",
-      "path": "notmediator/1.0.4",
+      "path": "notmediator/1.0.5",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -3616,7 +3616,7 @@
         "LICENSE.txt",
         "README.md",
         "lib/net9.0/NotMediator.dll",
-        "notmediator.1.0.4.nupkg.sha512",
+        "notmediator.1.0.5.nupkg.sha512",
         "notmediator.nuspec"
       ]
     },
@@ -3669,10 +3669,10 @@
         "rabbitmq.client.nuspec"
       ]
     },
-    "Scalar.AspNetCore/2.6.0": {
-      "sha512": "IRIZcZy+P978wo0GaeQmpHs3juxWiLaYEHDK+di4SiSsY+bUq7HwahrhY5LXi1usKM7w75WRISuhx5Ib20xDQQ==",
+    "Scalar.AspNetCore/2.6.8": {
+      "sha512": "2wwNX51ofrsgLNxe6n2bIuLEFcbVqp/le13nRaAs1mAuracL2tbTdIcgT89o3NmtvVa0hfBdxH5vAi1hwATqTw==",
       "type": "package",
-      "path": "scalar.aspnetcore/2.6.0",
+      "path": "scalar.aspnetcore/2.6.8",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -3682,7 +3682,7 @@
         "lib/net8.0/Scalar.AspNetCore.xml",
         "lib/net9.0/Scalar.AspNetCore.dll",
         "lib/net9.0/Scalar.AspNetCore.xml",
-        "scalar.aspnetcore.2.6.0.nupkg.sha512",
+        "scalar.aspnetcore.2.6.8.nupkg.sha512",
         "scalar.aspnetcore.nuspec"
       ]
     },
@@ -4277,8 +4277,8 @@
       "Microsoft.EntityFrameworkCore.Tools >= 9.0.7",
       "Microsoft.Extensions.DependencyInjection.Abstractions >= 9.0.7",
       "NotEmail >= 1.0.0",
-      "NotMediator >= 1.0.4",
-      "Scalar.AspNetCore >= 2.6.0",
+      "NotMediator >= 1.0.5",
+      "Scalar.AspNetCore >= 2.6.8",
       "Token.JWT >= 1.0.0"
     ]
   },
@@ -4370,11 +4370,11 @@
           },
           "NotMediator": {
             "target": "Package",
-            "version": "[1.0.4, )"
+            "version": "[1.0.5, )"
           },
           "Scalar.AspNetCore": {
             "target": "Package",
-            "version": "[2.6.0, )"
+            "version": "[2.6.8, )"
           }
         },
         "imports": [

@@ -3,7 +3,7 @@
     public class UserSafety : Entity
     {
 
-        public Guid UserSafetyGuid { get; init; }
+        //public Guid UserSafetyGuid { get; init; }
 
         public Guid UserGuid { get; private set; }
 
@@ -17,6 +17,8 @@
 
         public DateTimeOffset? LockOutEnd { get; private set; }
 
+        public bool IsDeleted { get; private set; } = false;
+
         public bool IsLockedOut => LockOutEnd.HasValue && LockOutEnd.Value > DateTimeOffset.UtcNow;
 
 
@@ -25,15 +27,15 @@
             EnumBlackOrWhite blackOrWhite = EnumBlackOrWhite.AuthorityWhite, EnumUserStatus userStatus = EnumUserStatus.Normal)
         {
 
-            if (UserGuid != null)
+            if (UserGuid != Guid.Empty)
             {
                 if (string.IsNullOrEmpty(passwordSalt) && string.IsNullOrEmpty(securityStamp))
                     throw new ArgumentException("At least one of passwordSalt or securityStamp must be provided", nameof(passwordSalt));
 
                 var userSafety = new UserSafety
                 {
-                    UserSafetyGuid = Guid.CreateVersion7(),
-                    //User = user,
+                    //UserSafetyGuid = Guid.CreateVersion7(),
+                    
                     UserGuid = UserGuid,
                     SecurityStamp = securityStamp,
                     PasswordSalt = passwordSalt,
@@ -72,6 +74,14 @@
             if (string.IsNullOrWhiteSpace(newSecurityStamp))
                 throw new ArgumentException("Security stamp cannot be null or empty", nameof(newSecurityStamp));
             SecurityStamp = newSecurityStamp;
+        }
+
+        public void SetOrResetByIsDeleted(bool isDeleted)
+        {
+            if (isDeleted == IsDeleted)
+                throw new ArgumentException("IsDeleted state is already set to the same value", nameof(isDeleted));
+
+            IsDeleted = isDeleted;
         }
     }
 }

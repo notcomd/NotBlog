@@ -508,17 +508,17 @@
           "dependencies": {
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
-              "version": "[9.0.4, )"
+              "version": "[9.0.7, )"
             },
             "Microsoft.EntityFrameworkCore.Tools": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
               "target": "Package",
-              "version": "[9.0.4, )"
+              "version": "[9.0.7, )"
             },
             "NotMediator": {
               "target": "Package",
-              "version": "[1.0.4, )"
+              "version": "[1.0.5, )"
             },
             "Npgsql": {
               "target": "Package",
@@ -633,11 +633,11 @@
             },
             "NotMediator": {
               "target": "Package",
-              "version": "[1.0.4, )"
+              "version": "[1.0.5, )"
             },
             "Scalar.AspNetCore": {
               "target": "Package",
-              "version": "[2.6.0, )"
+              "version": "[2.6.8, )"
             }
           },
           "imports": [

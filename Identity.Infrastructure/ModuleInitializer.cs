@@ -1,7 +1,9 @@
 using DomainCommonst;
 using Identity.Domain.IRepository;
-using Identity.Domain.Server;
+
 using Identity.Infrastructure.Repository;
+using Identity.Infrastructure.RequestManager;
+
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Identity.Infrastructure;
@@ -16,6 +18,8 @@ public class ModuleInitializer : IModuleInitializer
         service.AddScoped<IEmailCodeSend, EmailCodeSend>();
         service.AddDistributedMemoryCache();
         service.AddScoped<ISmsCodeSend, SmsCodeSend>();
-        service.AddScoped<UserRepositoryServer>();
+        service.AddScoped<IRequestManager, RequestManager.RequestManager>();
+        service.AddScoped<INotDateTime, NotDateTime.NotDateTime>();
+        //service.AddScoped<UserRepositoryServer>();
     }
 }

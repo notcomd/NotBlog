@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "TTBfnfk9W7A=",
+  "dgSpecHash": "SxkR2rCjO+U=",
   "success": true,
   "projectFilePath": "C:\\Users\\29617\\source\\repos\\MyService\\Identity.Web.API\\Identity.Web.API.csproj",
   "expectedPackageFiles": [
@@ -57,11 +57,11 @@
     "C:\\Users\\29617\\.nuget\\packages\\microsoft.openapi\\1.6.17\\microsoft.openapi.1.6.17.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\mimekit\\4.13.0\\mimekit.4.13.0.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\mono.texttemplating\\3.0.0\\mono.texttemplating.3.0.0.nupkg.sha512",
-    "C:\\Users\\29617\\.nuget\\packages\\notmediator\\1.0.4\\notmediator.1.0.4.nupkg.sha512",
+    "C:\\Users\\29617\\.nuget\\packages\\notmediator\\1.0.5\\notmediator.1.0.5.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\npgsql\\9.0.3\\npgsql.9.0.3.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\npgsql.entityframeworkcore.postgresql\\9.0.4\\npgsql.entityframeworkcore.postgresql.9.0.4.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\rabbitmq.client\\6.8.1\\rabbitmq.client.6.8.1.nupkg.sha512",
-    "C:\\Users\\29617\\.nuget\\packages\\scalar.aspnetcore\\2.6.0\\scalar.aspnetcore.2.6.0.nupkg.sha512",
+    "C:\\Users\\29617\\.nuget\\packages\\scalar.aspnetcore\\2.6.8\\scalar.aspnetcore.2.6.8.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\system.codedom\\6.0.0\\system.codedom.6.0.0.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\system.collections.immutable\\7.0.0\\system.collections.immutable.7.0.0.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\system.composition\\7.0.0\\system.composition.7.0.0.nupkg.sha512",

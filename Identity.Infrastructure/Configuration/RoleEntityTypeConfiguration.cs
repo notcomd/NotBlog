@@ -6,7 +6,7 @@
         {
 
 
-            builder.ToTable("Role","Identity");
+            builder.ToTable("Role");
 
             builder.Property(o => o.Id).UseHiLo("Roleseq");
 

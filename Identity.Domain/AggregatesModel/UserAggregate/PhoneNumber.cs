@@ -3,7 +3,7 @@
 public class PhoneNumber : Entity
 {
 
-    protected PhoneNumber() {} // EF Core needs a parameterless constructor
+    protected PhoneNumber() { } // EF Core needs a parameterless constructor
 
     public long AddressRegion { get; set; }
 
@@ -13,8 +13,8 @@ public class PhoneNumber : Entity
 
     public static PhoneNumber CreatePhoneNumber(long addressRegion, string phoneCode)
     {
-        if (string.IsNullOrWhiteSpace(phoneCode) || phoneCode.Length != 11)
-            throw new ArgumentException("Phone number must be exactly 11 digits.", nameof(phoneCode));
+        if (string.IsNullOrWhiteSpace(phoneCode) || (phoneCode.Length <= 11 && phoneCode.Length >= 8))
+            throw new ArgumentException("Phone number must be exactly > 11 or 8 < digits.", nameof(phoneCode));
         var phoneNumber = new PhoneNumber
         {
             AddressRegion = addressRegion,
@@ -25,8 +25,10 @@ public class PhoneNumber : Entity
 
     public void UpdatePhoneNumber(long addressRegion, string phoneCode)
     {
-        if (string.IsNullOrWhiteSpace(phoneCode) || phoneCode.Length != 11)
+
+        if (string.IsNullOrWhiteSpace(phoneCode) || (phoneCode.Length <= 11 && phoneCode.Length >= 8))
             throw new ArgumentException("Phone number must be exactly 11 digits.", nameof(phoneCode));
+
         AddressRegion = addressRegion;
         PhoneCode = phoneCode;
     }

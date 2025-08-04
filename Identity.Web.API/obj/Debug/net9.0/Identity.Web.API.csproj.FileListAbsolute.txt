@@ -167,4 +167,3 @@ C:\Users\29617\source\repos\MyService\Identity.Web.API\obj\Debug\net9.0\refint\I
 C:\Users\29617\source\repos\MyService\Identity.Web.API\obj\Debug\net9.0\Identity.Web.API.pdb
 C:\Users\29617\source\repos\MyService\Identity.Web.API\obj\Debug\net9.0\Identity.Web.API.genruntimeconfig.cache
 C:\Users\29617\source\repos\MyService\Identity.Web.API\obj\Debug\net9.0\ref\Identity.Web.API.dll
-C:\Users\29617\source\repos\MyService\Identity.Web.API\bin\Debug\net9.0\System.Text.Json.dll

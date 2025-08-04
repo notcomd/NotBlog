@@ -11,10 +11,9 @@
 
             builder.Property(x => x.Id).UseHiLo("NotClientseq");
 
-            builder.HasKey(xn => xn.NotClientId);
+            builder.HasKey(xn => xn.NotClientGuid);
 
-            builder.Property(x => x.NotClientId).HasColumnName("client_guid").IsRequired();
-
+            
             builder.Property(en => en.NotClientType).HasConversion<string>().HasMaxLength(50);
 
         }

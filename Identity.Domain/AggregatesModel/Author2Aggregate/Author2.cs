@@ -3,12 +3,15 @@
 public class Author2 : Entity, IAggregateRoot
 {
 
+
     protected Author2()
-    { Author2Guid = Guid.CreateVersion7(); }
+    { 
+        Author2Guid = Guid.CreateVersion7(); 
+    }
 
 
 
-    public static Task<Author2> CreateByAuthor2Async(string authorName, string authorDescription, string authorPrivateKey, string authorSecret)
+    public static Task<Author2> CreateByAuthor2Async(Guid userGuid, string authorName, string authorDescription, string authorPrivateKey, string authorSecret)
     {
 
         ArgumentNullException.ThrowIfNull(authorName);
@@ -19,6 +22,7 @@ public class Author2 : Entity, IAggregateRoot
         var author = new Author2
         {
             Author2Guid = Guid.CreateVersion7(),
+            UserGuid = userGuid != Guid.Empty ? userGuid : throw new ArgumentNullException(nameof(userGuid), "UserGuid cannot be empty"),
             AuthorName = authorName ?? throw new ArgumentNullException(nameof(authorName)),
             AuthorDescription = authorDescription ?? throw new ArgumentNullException(nameof(authorDescription)),
             AuthorPrivateKey = authorPrivateKey ?? throw new ArgumentNullException(nameof(authorPrivateKey)),
@@ -29,6 +33,8 @@ public class Author2 : Entity, IAggregateRoot
 
     public Guid Author2Guid { get; init; }
 
+    public Guid UserGuid { get; private set; }
+
     public string AuthorName { get; private set; } = string.Empty;
 
     public string AuthorDescription { get; private set; } = string.Empty;
@@ -36,6 +42,9 @@ public class Author2 : Entity, IAggregateRoot
     public string AuthorPrivateKey { get; private set; } = string.Empty;
 
     public string AuthorSecret { get; private set; } = string.Empty;
+
+
+
 
     public void SetAuthorName(string authorName)
     {

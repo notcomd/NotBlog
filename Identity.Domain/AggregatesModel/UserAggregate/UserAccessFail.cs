@@ -6,10 +6,10 @@ public class UserAccessFail : Entity
 
     protected UserAccessFail()
     {
-        UserAccessFailGuid = Guid.CreateVersion7();
+       
     }
 
-    public Guid UserAccessFailGuid { get; init; }
+   
 
     public Guid UserGuid { get; init; }
 
@@ -24,22 +24,23 @@ public class UserAccessFail : Entity
 
 
 
-    public static UserAccessFail CreateUserAccessFail(Guid userGuid)
+    public static ValueTask<UserAccessFail> CreateByUserAccessFailAsync(Guid userGuid)
     {
-        if (userGuid != null)
+
+        if (userGuid == Guid.Empty)
         {
-            var userAccessFail = new UserAccessFail
-            {
-                UserAccessFailGuid = Guid.CreateVersion7(),
-                UserGuid = userGuid,
-                LockOutEnd = null,
-                AccessFaildCount = 0,
-
-            };
-            return userAccessFail;
+            throw new ArgumentNullException(nameof(userGuid), "UserGuid cannot be empty");
         }
+        var userAccessFail = new UserAccessFail
+        {
+            //UserAccessFailGuid = Guid.CreateVersion7(),
+            UserGuid = userGuid,
+            LockOutEnd = null,
+            AccessFaildCount = 0,
 
-        throw new ArgumentNullException(nameof(UserGuid), "User cannot be null");
+        };
+        return new ValueTask<UserAccessFail>(userAccessFail);
+
     }
 
 

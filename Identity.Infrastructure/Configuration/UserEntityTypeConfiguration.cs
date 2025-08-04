@@ -12,21 +12,21 @@
 
             builder.OwnsOne(o => o.UserAddress);
 
-            // builder.Property()
+
 
             builder.HasKey(x => x.UserGuid);
 
-            builder.Property(x => x.UserGuid).HasColumnName("user_guid").IsRequired();
+            builder.Property(x => x.UserGuid).HasColumnName("UserGuid").IsRequired();
 
-            builder.Property(x => x.UserRoleGuid).HasColumnName("user_role_guid").IsRequired();
+            builder.Property(x => x.UserRoleGuid).HasColumnName("UserRoleGuid").IsRequired();
 
-            builder.Property(x => x.UserName).HasColumnName("user_name").HasMaxLength(50);
+            builder.Property(x => x.UserName).HasColumnName("UserName").HasMaxLength(50);
 
-            builder.Property(x => x.PasswordHash).HasColumnName("password_hash").IsRequired().HasMaxLength(100);
+            builder.Property(x => x.PasswordHash).HasColumnName("PasswordHash").IsRequired().HasMaxLength(100);
 
-            builder.Property(x => x.ImageCover).HasColumnName("image_cover").IsRequired(false);
+            builder.Property(x => x.ImageCover).HasColumnName("ImageCover").IsRequired(false);
 
-            builder.Property(x => x.CreateDatetime).HasColumnName("create_datetime").IsRequired();
+            builder.Property(x => x.CreateDatetime).HasColumnName("CreateDateTime").IsRequired();
 
             // 其他属性配置
 
@@ -39,8 +39,11 @@
             builder.HasOne(on => on.UserSafety).WithOne()
                 .HasForeignKey<UserSafety>(on => on.UserGuid);
 
-            builder.HasMany(on => on.UserClaimsReadOnly).WithOne();
-                
+            builder.HasMany(on => on.UserClaimsReadOnly).WithOne()
+                .HasForeignKey(on => on.UserGuid).OnDelete(DeleteBehavior.NoAction);
+
+            builder.HasIndex(en => new {  en.UserEmail })
+                .HasDatabaseName("IX_User_UserGuid_UserEmail_UserPhone");
 
         }
     }

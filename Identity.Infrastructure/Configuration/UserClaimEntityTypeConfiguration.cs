@@ -12,11 +12,12 @@ namespace Identity.Infrastructure.Configuration
         {
 
 
-            builder.ToTable("UserClaims", "Identity");
+            builder.ToTable("UserClaims");
 
             builder.Ignore(x => x.DomainEventbus);
 
-           
+            builder.Property(o => o.Id).UseHiLo("UserClaimseq");
+
 
         }
     }

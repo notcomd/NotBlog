@@ -10,7 +10,7 @@ public static class AddIdentityServer
         serviceCollection.AddSingleton<IEmailCodeSend, EmailCodeSend>();
         serviceCollection.AddDistributedMemoryCache();
         serviceCollection.AddScoped<ISmsCodeSend, SmsCodeSend>();
-        serviceCollection.AddScoped<UserRepositoryServer>();
+
         serviceCollection.AddEmailServer();
         serviceCollection.AddJwtAuthentication(configuration);
         return serviceCollection;
@@ -20,11 +20,10 @@ public static class AddIdentityServer
         IConfiguration configuration)
     {
         serviceCollection.AddDbContext<IdentityDbContext>(opt =>
-        {
-            var data = configuration.Get<DbContextOption>() ??
-                       throw new ArgumentNullException("配置项为空", nameof(configuration));
-            opt.UseNpgsql(data.DbContextConnect);
-        });
+            opt.UseNpgsql(configuration.GetConnectionString("DbContextConnect") ?? 
+            throw new ArgumentNullException(nameof(configuration)),
+                o => o.MigrationsAssembly("Identity.Infrastructure")));
+
         return serviceCollection;
     }
 }

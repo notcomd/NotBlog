@@ -20,9 +20,9 @@ namespace Identity.Infrastructure.Repository
             //_logger = LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<Author2Repository>();
         }
 
-        public async Task<Author2?> FindOneByAuthorAsync(Guid guid)
+        public async Task<Author2?> FindOneByAuthorAsync(Guid authorGuid)
         {
-            return await _identityDbContext.Author2s.Where(en => en. == guid)
+            return await _identityDbContext.Author2s.Where(en => en.Author2Guid == authorGuid)
                 .SingleOrDefaultAsync();
         }
 

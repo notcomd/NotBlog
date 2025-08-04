@@ -1,4 +1,6 @@
 using Identity.Domain.AggregatesModel.UserAggregate;
+using Identity.Web.API.Application.Command;
+
 using Microsoft.AspNetCore.HttpLogging;
 
 namespace Identity.Web.API.APIs;
@@ -50,7 +52,7 @@ public static class NotMapIdentityApis
     {
         if (emailSendRecord != string.Empty)
         {
-            await identityService.NotMediator.SendAsync(new CreateByUserCommand(emailSendRecord, "123456", "123456"), cancellationToken);
+            await identityService.NotMediator.SendAsync(new CreateByEmailUserCommand(emailSendRecord, "123456", "User","user"), cancellationToken);
             return IdentityResult<string>.Success("发送成功", $"{DateTime.Now}");
         }
         return IdentityResult<string>.Error(emailSendRecord, emailSendRecord, default);

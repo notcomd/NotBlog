@@ -26,6 +26,11 @@ namespace Identity.Infrastructure.Migrations
                 incrementBy: 10);
 
             migrationBuilder.CreateSequence(
+                name: "RoleClaimseq",
+                schema: "Identity",
+                incrementBy: 10);
+
+            migrationBuilder.CreateSequence(
                 name: "Roleseq",
                 schema: "Identity",
                 incrementBy: 10);
@@ -51,6 +56,7 @@ namespace Identity.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false),
+                    Author2Guid = table.Column<Guid>(type: "uuid", nullable: false),
                     AuthorName = table.Column<string>(type: "text", nullable: false),
                     AuthorDescription = table.Column<string>(type: "text", nullable: false),
                     AuthorPrivateKey = table.Column<string>(type: "text", nullable: false),
@@ -81,28 +87,68 @@ namespace Identity.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Role",
+                schema: "Identity",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false),
+                    RoleGuid = table.Column<Guid>(type: "uuid", nullable: false),
+                    RoleName = table.Column<string>(type: "text", nullable: false),
+                    Attribute = table.Column<string>(type: "text", nullable: true),
+                    RoleAuthority = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    RoleStatus = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    CreateRoleTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Role", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "User",
                 schema: "Identity",
                 columns: table => new
                 {
-                    user_guid = table.Column<Guid>(type: "uuid", nullable: false),
-                    user_role_guid = table.Column<Guid>(type: "uuid", nullable: false),
-                    user_name = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    image_cover = table.Column<string>(type: "text", nullable: true),
+                    UserGuid = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserRoleGuid = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    ImageCover = table.Column<string>(type: "text", nullable: true),
                     UserEmail = table.Column<string>(type: "text", nullable: false),
-                    password_hash = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    PasswordHash = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     UserAddress_Country = table.Column<string>(type: "text", nullable: true),
                     UserAddress_Province = table.Column<string>(type: "text", nullable: true),
                     UserAddress_City = table.Column<string>(type: "text", nullable: true),
                     UserAddress_District = table.Column<string>(type: "text", nullable: true),
                     UserAddress_Street = table.Column<string>(type: "text", nullable: true),
                     UserAddress_Detail = table.Column<string>(type: "text", nullable: true),
-                    create_datetime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    CreateDateTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     Id = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_User", x => x.user_guid);
+                    table.PrimaryKey("PK_User", x => x.UserGuid);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RoleClaims",
+                schema: "Identity",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false),
+                    RoleGuid = table.Column<Guid>(type: "uuid", nullable: false),
+                    ClaimType = table.Column<string>(type: "text", nullable: false),
+                    ClaimValue = table.Column<string>(type: "text", nullable: false),
+                    RolesId = table.Column<int>(type: "integer", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RoleClaims", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RoleClaims_Role_RolesId",
+                        column: x => x.RolesId,
+                        principalSchema: "Identity",
+                        principalTable: "Role",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -124,7 +170,7 @@ namespace Identity.Infrastructure.Migrations
                         column: x => x.UserGuid,
                         principalSchema: "Identity",
                         principalTable: "User",
-                        principalColumn: "user_guid",
+                        principalColumn: "UserGuid",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -147,35 +193,31 @@ namespace Identity.Infrastructure.Migrations
                         column: x => x.UserGuid,
                         principalSchema: "Identity",
                         principalTable: "User",
-                        principalColumn: "user_guid",
+                        principalColumn: "UserGuid",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "UserPrivacy",
+                name: "UserClaims",
                 schema: "Identity",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false),
-                    RoleGuid = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserClaimGuid = table.Column<Guid>(type: "uuid", nullable: false),
                     UserGuid = table.Column<Guid>(type: "uuid", nullable: false),
-                    UserGuid1 = table.Column<Guid>(type: "uuid", nullable: false),
-                    RoleName = table.Column<string>(type: "text", nullable: false),
-                    Attribute = table.Column<string>(type: "text", nullable: true),
-                    RoleAuthority = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    RoleStatus = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    CreateRole = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                    ClaimType = table.Column<string>(type: "text", nullable: false),
+                    ClaimValue = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserPrivacy", x => x.Id);
+                    table.PrimaryKey("PK_UserClaims", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_UserPrivacy_User_UserGuid1",
-                        column: x => x.UserGuid1,
+                        name: "FK_UserClaims_User_UserGuid",
+                        column: x => x.UserGuid,
                         principalSchema: "Identity",
                         principalTable: "User",
-                        principalColumn: "user_guid",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "UserGuid");
                 });
 
             migrationBuilder.CreateTable(
@@ -200,7 +242,7 @@ namespace Identity.Infrastructure.Migrations
                         column: x => x.user_guid,
                         principalSchema: "Identity",
                         principalTable: "User",
-                        principalColumn: "user_guid",
+                        principalColumn: "UserGuid",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -212,6 +254,18 @@ namespace Identity.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_RoleClaims_RolesId",
+                schema: "Identity",
+                table: "RoleClaims",
+                column: "RolesId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_User_UserGuid_UserEmail_UserPhone",
+                schema: "Identity",
+                table: "User",
+                column: "UserEmail");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_UserAccessFail_UserGuid",
                 schema: "Identity",
                 table: "UserAccessFail",
@@ -219,10 +273,10 @@ namespace Identity.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserPrivacy_UserGuid1",
+                name: "IX_UserClaims_UserGuid",
                 schema: "Identity",
-                table: "UserPrivacy",
-                column: "UserGuid1");
+                table: "UserClaims",
+                column: "UserGuid");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserSafety_user_guid",
@@ -248,15 +302,23 @@ namespace Identity.Infrastructure.Migrations
                 schema: "Identity");
 
             migrationBuilder.DropTable(
+                name: "RoleClaims",
+                schema: "Identity");
+
+            migrationBuilder.DropTable(
                 name: "UserAccessFail",
                 schema: "Identity");
 
             migrationBuilder.DropTable(
-                name: "UserPrivacy",
+                name: "UserClaims",
                 schema: "Identity");
 
             migrationBuilder.DropTable(
                 name: "UserSafety",
+                schema: "Identity");
+
+            migrationBuilder.DropTable(
+                name: "Role",
                 schema: "Identity");
 
             migrationBuilder.DropTable(
@@ -269,6 +331,10 @@ namespace Identity.Infrastructure.Migrations
 
             migrationBuilder.DropSequence(
                 name: "NotClientseq",
+                schema: "Identity");
+
+            migrationBuilder.DropSequence(
+                name: "RoleClaimseq",
                 schema: "Identity");
 
             migrationBuilder.DropSequence(

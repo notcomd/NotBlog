@@ -29,6 +29,9 @@ namespace Identity.Infrastructure.Migrations
             modelBuilder.HasSequence("NotClientseq")
                 .IncrementsBy(10);
 
+            modelBuilder.HasSequence("RoleClaimseq")
+                .IncrementsBy(10);
+
             modelBuilder.HasSequence("Roleseq")
                 .IncrementsBy(10);
 
@@ -48,6 +51,9 @@ namespace Identity.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<int>("Id"), "Author2seq");
+
+                    b.Property<Guid>("Author2Guid")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("AuthorDescription")
                         .IsRequired()
@@ -112,6 +118,35 @@ namespace Identity.Infrastructure.Migrations
                     b.ToTable("NotClient", "Identity");
                 });
 
+            modelBuilder.Entity("Identity.Domain.AggregatesModel.RoleAggregate.RoleClaim", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<int>("Id"), "RoleClaimseq");
+
+                    b.Property<string>("ClaimType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ClaimValue")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("RoleGuid")
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("RolesId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RolesId");
+
+                    b.ToTable("RoleClaims", "Identity");
+                });
+
             modelBuilder.Entity("Identity.Domain.AggregatesModel.RoleAggregate.Roles", b =>
                 {
                     b.Property<int>("Id")
@@ -123,7 +158,7 @@ namespace Identity.Infrastructure.Migrations
                     b.Property<string>("Attribute")
                         .HasColumnType("text");
 
-                    b.Property<DateTimeOffset>("CreateRole")
+                    b.Property<DateTimeOffset>("CreateRoleTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("RoleAuthority")
@@ -143,17 +178,9 @@ namespace Identity.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<Guid>("UserGuid")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("UserGuid1")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("UserGuid1");
-
-                    b.ToTable("UserPrivacy", "Identity");
+                    b.ToTable("Role", "Identity");
                 });
 
             modelBuilder.Entity("Identity.Domain.AggregatesModel.UserAggregate.User", b =>
@@ -161,11 +188,11 @@ namespace Identity.Infrastructure.Migrations
                     b.Property<Guid>("UserGuid")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("user_guid");
+                        .HasColumnName("UserGuid");
 
                     b.Property<DateTimeOffset>("CreateDatetime")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("create_datetime");
+                        .HasColumnName("CreateDateTime");
 
                     b.Property<int>("Id")
                         .HasColumnType("integer");
@@ -174,29 +201,31 @@ namespace Identity.Infrastructure.Migrations
 
                     b.Property<string>("ImageCover")
                         .HasColumnType("text")
-                        .HasColumnName("image_cover");
+                        .HasColumnName("ImageCover");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
-                        .HasColumnName("password_hash");
+                        .HasColumnName("PasswordHash");
 
                     b.Property<string>("UserEmail")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("UserName")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)")
-                        .HasColumnName("user_name");
+                        .HasColumnName("UserName");
 
                     b.Property<Guid>("UserRoleGuid")
                         .HasColumnType("uuid")
-                        .HasColumnName("user_role_guid");
+                        .HasColumnName("UserRoleGuid");
 
                     b.HasKey("UserGuid");
+
+                    b.HasIndex("UserEmail")
+                        .HasDatabaseName("IX_User_UserGuid_UserEmail_UserPhone");
 
                     b.ToTable("User", "Identity");
                 });
@@ -227,6 +256,35 @@ namespace Identity.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("UserAccessFail", "Identity");
+                });
+
+            modelBuilder.Entity("Identity.Domain.AggregatesModel.UserAggregate.UserClaim", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ClaimValue")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UserClaimGuid")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserGuid")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserGuid");
+
+                    b.ToTable("UserClaims", "Identity");
                 });
 
             modelBuilder.Entity("Identity.Domain.AggregatesModel.UserAggregate.UserSafety", b =>
@@ -293,15 +351,11 @@ namespace Identity.Infrastructure.Migrations
                     b.ToTable("PhoneNumber", "Identity");
                 });
 
-            modelBuilder.Entity("Identity.Domain.AggregatesModel.RoleAggregate.Roles", b =>
+            modelBuilder.Entity("Identity.Domain.AggregatesModel.RoleAggregate.RoleClaim", b =>
                 {
-                    b.HasOne("Identity.Domain.AggregatesModel.UserAggregate.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserGuid1")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
+                    b.HasOne("Identity.Domain.AggregatesModel.RoleAggregate.Roles", null)
+                        .WithMany("RoleClaims")
+                        .HasForeignKey("RolesId");
                 });
 
             modelBuilder.Entity("Identity.Domain.AggregatesModel.UserAggregate.User", b =>
@@ -355,6 +409,15 @@ namespace Identity.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Identity.Domain.AggregatesModel.UserAggregate.UserClaim", b =>
+                {
+                    b.HasOne("Identity.Domain.AggregatesModel.UserAggregate.User", null)
+                        .WithMany("UserClaimsReadOnly")
+                        .HasForeignKey("UserGuid")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Identity.Domain.AggregatesModel.UserAggregate.UserSafety", b =>
                 {
                     b.HasOne("Identity.Domain.AggregatesModel.UserAggregate.User", null)
@@ -373,12 +436,19 @@ namespace Identity.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Identity.Domain.AggregatesModel.RoleAggregate.Roles", b =>
+                {
+                    b.Navigation("RoleClaims");
+                });
+
             modelBuilder.Entity("Identity.Domain.AggregatesModel.UserAggregate.User", b =>
                 {
                     b.Navigation("PhoneNumber");
 
                     b.Navigation("UserAccessFail")
                         .IsRequired();
+
+                    b.Navigation("UserClaimsReadOnly");
 
                     b.Navigation("UserSafety")
                         .IsRequired();
