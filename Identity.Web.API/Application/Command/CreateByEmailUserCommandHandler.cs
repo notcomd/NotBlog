@@ -1,3 +1,5 @@
+using Identity.Domain.INotDateTime;
+
 using Org.BouncyCastle.Bcpg;
 
 namespace Identity.Web.API.Application.Command;
@@ -8,16 +10,18 @@ public class CreateByEmailUserCommandHandler : IRequestHandler<CreateByEmailUser
 
     private readonly IUserRepository _userRepository;
     private readonly IUserRoleRepository _userRoleRepository;
+    private readonly INotDateTime _notDateTime;
     private readonly ILogger<CreateByEmailUserCommandHandler> _logger;
 
-    public CreateByEmailUserCommandHandler(IUserRepository userRepository, IUserRoleRepository userRoleRepository, ILogger<CreateByEmailUserCommandHandler> logger)
+    public CreateByEmailUserCommandHandler(IUserRepository userRepository, IUserRoleRepository userRoleRepository, ILogger<CreateByEmailUserCommandHandler> logger, INotDateTime notDateTime)
     {
         _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         _userRoleRepository = userRoleRepository ?? throw new ArgumentNullException(nameof(userRoleRepository));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _notDateTime = notDateTime;
     }
 
-  
+
 
     public async Task<bool> Handler(CreateByEmailUserCommand request, CancellationToken cancellationToken)
     {
@@ -30,7 +34,7 @@ public class CreateByEmailUserCommandHandler : IRequestHandler<CreateByEmailUser
             _logger.LogWarning($"[{DateTime.UtcNow}]User Already Exists! {request.Email}");
             return false;
         }
-        var userTrc= await User.CreateByEmailUser(roleData!.RoleGuid,request.Email, request.Password);
+        var userTrc= await User.CreateByEmailUser(roleData!.Id,request.Email, request.Password,_notDateTime.NowOffset);
         if (userTrc is null)
         {
             _logger.LogWarning($"[{DateTime.UtcNow}]User Create Failed! {request.Email}");

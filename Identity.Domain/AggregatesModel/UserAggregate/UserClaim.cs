@@ -11,21 +11,21 @@ public class UserClaim : Entity
 
     public string ClaimValue { get; private set; } = string.Empty;
 
-    public static Task<UserClaim> CreateByUserClaimAsync(Guid userGuid ,Claim claim)
+    public static UserClaim CreateByUserClaimAsync(Guid userGuid ,Claim claim)
     {
 
         if (claim == null)
         {
             throw new ArgumentNullException(nameof(claim), "Claim cannot be null");
         }
-        var userClaim = new UserClaim
-        {
-            //UserClaimGuid = Guid.CreateVersion7(),
-            UserGuid = userGuid,
+        return new UserClaim
+        {            
+            Id = Guid.CreateVersion7(),
+            UserGuid=userGuid,
             ClaimType = claim.Type,
             ClaimValue = claim.Value
         };
-        return Task.FromResult(userClaim);
+        
     }
 
 

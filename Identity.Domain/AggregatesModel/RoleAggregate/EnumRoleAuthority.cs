@@ -32,6 +32,9 @@ public enum EnumRoleAuthority
     /// </summary>
     Unknown = 5,
 
-
+    /// <summary>
+    ///  
+    /// </summary>
+    Uknown = 6,
 
 }

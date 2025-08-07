@@ -1,116 +1,160 @@
-﻿namespace Identity.Infrastructure.Repository;
+﻿using Identity.Domain.AggregatesModel.UserAggregate;
+
+namespace Identity.Infrastructure.Repository;
 
 public class UserRepository : IUserRepository
 {
 
     private readonly ILogger<UserRepository> _logger;
+
     private readonly IdentityDbContext _userDbContext;
+    public IUnitOfWork UnitOfWork => _userDbContext;
 
     public UserRepository(IdentityDbContext userDbContext, ILogger<UserRepository> logger)
     {
-        
-        _userDbContext = userDbContext;
-        _logger = logger;
+        _userDbContext = userDbContext ?? throw new ArgumentNullException(nameof(userDbContext));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public IUnitOfWork UnitOfWork => _userDbContext;
 
-    public async ValueTask<User?> FindOneByUserAsync(Guid guid)
+    public async ValueTask<User?> FindOneByUserAsync(Guid userId)
     {
-        var data = await _userDbContext.Users.Where(en => en.UserGuid == guid)
-            .SingleOrDefaultAsync();
-        return data;
+        try
+        {
+            //_logger.LogInformation($"[（*＾-＾*）{DateTimeOffset.UtcNow}]插叙了{userId}的数据");
+            return await _userDbContext.Users
+                .Include(en => en.UserSafety).Include(en => en.UserClaimsReadOnly)
+                .FirstOrDefaultAsync(en => en.Id == userId);
+
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"[ X_X {DateTimeOffset.UtcNow}] 无法找到先关的{userId}信息");
+            throw;
+        }
     }
 
     public async ValueTask<User?> FindOneByUserAsync(PhoneNumber phoneNumber)
     {
-        if (phoneNumber is null)
-            throw new ArgumentNullException("数据为空");
-        var data = await _userDbContext.Users
-            .Where(en => en.PhoneNumber!.AddressRegion == phoneNumber.AddressRegion &&
-                         en.PhoneNumber.PhoneCode == phoneNumber.PhoneCode)
-            .SingleOrDefaultAsync();
-        return data;
+        try
+        {
+            if (phoneNumber is not null)
+                return await _userDbContext.Users
+                    .Include(en => en.UserSafety).Include(en => en.UserClaimsReadOnly)
+                    .FirstOrDefaultAsync(en => en.PhoneNumber.AddressRegion == phoneNumber.AddressRegion
+                    && phoneNumber.PhoneCode == en.PhoneNumber.PhoneCode);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"[ X_X {DateTimeOffset.UtcNow}] 无法找到先关的{phoneNumber}信息");
+            throw;
+        }
+        return null;
     }
 
     public async ValueTask AddOneByUserAsync(User user)
     {
-        await _userDbContext.Users.AddAsync(user);
-        _logger.LogInformation($"[{DateTime.UtcNow}]User Add! {user.UserGuid}");
+        if (user is null)
+            throw new ArgumentException(nameof(user));
+        var _ = await _userDbContext.Users.AddAsync(user);
+        _logger.LogInformation($"[（*＾-＾*）{DateTime.UtcNow}]User Add! {user.Id}");
     }
 
     public async ValueTask<User?> FindOneByUserAsync(string email)
     {
-        return string.IsNullOrEmpty(email)
-        ? null
-        : await _userDbContext.Users.Where(en => en.UserEmail == email).SingleOrDefaultAsync();
+        try
+        {
+            return await _userDbContext.Users
+                .Include(en => en.UserSafety).Include(en => en.UserClaimsReadOnly)
+                .FirstOrDefaultAsync(en => en.UserEmail == email);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"[ 〒▽〒 {DateTimeOffset.UtcNow}] 无法找到先关的{email}信息");
+            throw;
+        }
     }
-
-  
 
     public async ValueTask UpdateByUserAsync(User user)
     {
 
         if (user is null)
         {
-            _logger.LogWarning($"[{DateTime.UtcNow}]User Not Found! {user.UserGuid}");
+            _logger.LogWarning($"[ 〒▽〒 {DateTime.UtcNow}]User Not Found!");
             return;
         }
 
-        var userTrc = await FindOneByUserAsync(user.UserGuid);
+        var userTrc = await FindOneByUserAsync(user.Id);
         if (userTrc is null)
         {
-            _logger.LogWarning($"[{DateTime.UtcNow}]User Not Found! {user.UserGuid}");
+            _logger.LogWarning($"[ (￣﹃￣) {DateTime.UtcNow}]User Not Found! {user.Id}");
             return;
         }
 
         var needsUpdate = false;
         if (userTrc.UserName != user.UserName) needsUpdate = true;
         if (userTrc.UserEmail != user.UserEmail) needsUpdate = true;
-        if (userTrc.PhoneNumber != user.PhoneNumber) needsUpdate = true;
-        if (userTrc.UserSafety != user.UserSafety) needsUpdate = true;
-        if (userTrc.UserAddress != user.UserAddress) needsUpdate = true;
+        if (userTrc.Address != user.Address) needsUpdate = true;
         if (userTrc.UserRoleGuid != user.UserRoleGuid) needsUpdate = true;
         if (userTrc.PasswordHash != user.PasswordHash) needsUpdate = true;
-        if(userTrc.ImageCover != user.ImageCover) needsUpdate = true;
+        if (userTrc.ImageCover != user.ImageCover) needsUpdate = true;
         if (!needsUpdate)
         {
-            _logger.LogInformation($"[{DateTime.UtcNow}]User Not Update! {user.UserGuid}");
+            _logger.LogInformation($"[（*＾-＾*）{DateTime.UtcNow}]User Not Update! {user.Id}");
             return;
         }
 
         try
         {
-
-            var updateCount = await _userDbContext.Users.Where(en => en.UserGuid == user.UserGuid).
-                  ExecuteUpdateAsync(sets => sets
-                  .SetProperty(en => en.UserName, user.UserName)
-                  .SetProperty(en => en.UserEmail, user.UserEmail)
-                  .SetProperty(en => en.PhoneNumber, user.PhoneNumber)
-                  .SetProperty(en => en.UserSafety, user.UserSafety)
-                  .SetProperty(en => en.UserAddress, user.UserAddress)
-                  .SetProperty(en => en.UserRoleGuid, user.UserRoleGuid)
-                  .SetProperty(en => en.PasswordHash, user.PasswordHash)
-                  .SetProperty(en=>en.ImageCover,user.ImageCover));
+            var updateCount = await _userDbContext.Users.Where(en => en.Id == user.Id).
+                 ExecuteUpdateAsync(sets => sets
+                 .SetProperty(en => en.UserName, user.UserName)
+                 .SetProperty(en => en.UserEmail, user.UserEmail)
+                 .SetProperty(en => en.Address, user.Address)
+                 .SetProperty(en => en.UserRoleGuid, user.UserRoleGuid)
+                 .SetProperty(en => en.PasswordHash, user.PasswordHash)
+                 .SetProperty(en => en.ImageCover, user.ImageCover));
 
             if (updateCount == 0)
             {
-                _logger.LogWarning($"[{DateTime.UtcNow}]User Not Update! {user.UserGuid}");
+                _logger.LogWarning($"[ 〒▽〒 {DateTime.UtcNow} ]User Not Update! {user.Id}");
                 return;
             }
             else
             {
-                _logger.LogInformation($"[{DateTime.UtcNow}]User Update! {user.UserGuid}");
+                _logger.LogInformation($"[（*＾-＾*）{DateTimeOffset.UtcNow} 数据更新成功，一共更新了{updateCount}条目]");
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"[{DateTime.UtcNow}]User Update Error! {user.UserGuid}");
+            _logger.LogError(ex, $"[{DateTime.UtcNow}]User Update Error! {user.Id}");
             throw;
         }
         finally
         {
-            _logger.LogInformation($"[{DateTime.UtcNow}]User Update Complete! {user.UserGuid}");
+            _logger.LogInformation($"[{DateTime.UtcNow}]User Update Complete! {user.Id}");
+        }
+    }
+
+    public async ValueTask UpdateByUserSafety(UserSafety userSafety)
+    {
+        try
+        {
+            var updateCount = await _userDbContext.Users
+                     .Where(en => en.UserSafety.Id == userSafety.Id)
+            .ExecuteUpdateAsync(en => en
+                 .SetProperty(en => en.UserSafety.IsDeleted, userSafety.IsDeleted)
+                 .SetProperty(en => en.UserSafety.BlackOrWhite, userSafety.BlackOrWhite)
+                 .SetProperty(en => en.UserSafety.LockOutEnd, userSafety.LockOutEnd)
+                 .SetProperty(en => en.UserSafety.SecurityStamp, userSafety.SecurityStamp)
+                 .SetProperty(en => en.UserSafety.PasswordSalt, userSafety.PasswordSalt)
+                 .SetProperty(en => en.UserSafety.IsLockedOut, userSafety.IsLockedOut));
+            _logger.LogInformation($"[（*＾-＾*）{DateTimeOffset.UtcNow} 数据更新成功，一共更新了{updateCount}条目]");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"[ 〒▽〒 {DateTimeOffset.UtcNow}] 无法完成对{userSafety}");
+            throw;
         }
     }
 

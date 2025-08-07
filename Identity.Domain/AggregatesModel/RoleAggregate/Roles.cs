@@ -4,9 +4,7 @@ namespace Identity.Domain.AggregatesModel.RoleAggregate;
 
 public class Roles : Entity, IAggregateRoot
 {
-
-
-    public Guid RoleGuid { get; private set; }
+       
 
     public string RoleName { get; private set; }
 
@@ -25,6 +23,7 @@ public class Roles : Entity, IAggregateRoot
 
     protected Roles()
     {
+        Id = Guid.CreateVersion7();
     }
 
 
@@ -35,14 +34,14 @@ public class Roles : Entity, IAggregateRoot
             throw new ArgumentNullException(nameof(roleName), "Role name cannot be null or empty");
         var role = new Roles
         {
-            RoleGuid = Guid.CreateVersion7(),
+            Id = Guid.CreateVersion7(),
             RoleName = roleName,
             Attribute = attribute,
             RoleAuthority = roleAuthority,
             RoleStatus = roleStatus,
             CreateRoleTime = dateTimeOffset
         };
-        role.AddDomainEvent(new CreateByRoleStartEvent(role.RoleGuid, role.RoleName, role.Attribute));
+        role.AddDomainEvent(new CreateByRoleStartEvent(role.Id, role.RoleName, role.Attribute));
         return Task.FromResult(role);
     }
 
@@ -61,7 +60,7 @@ public class Roles : Entity, IAggregateRoot
             throw new ArgumentNullException(nameof(roleClaim), "Role claim cannot be null");
 
         _roleClaim ??= new List<RoleClaim>();
-        _roleClaim.Add(roleClaim);
+        _roleClaim.Add(roleClaim);   
     }
 
 

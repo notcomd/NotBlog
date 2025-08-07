@@ -12,5 +12,5 @@ public interface IUserRoleRepository : IRepository<Roles>
 
     ValueTask<bool> IsUserRoleAsync(string roleName);
 
-    ValueTask<bool> UpByUserRoleAsync(Roles userRole);
+    ValueTask UpByUserRoleAsync(Roles userRole);
 }

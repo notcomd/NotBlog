@@ -1,8 +1,4 @@
-﻿using System.Diagnostics;
-
-using Identity.Domain.Events;
-using Identity.Infrastructure.Configuration;
-using Microsoft.EntityFrameworkCore.Storage;
+﻿
 
 namespace Identity.Infrastructure.EntityFramework;
 
@@ -18,7 +14,7 @@ public class IdentityDbContext : DbContext, IUnitOfWork
     public IdentityDbContext(DbContextOptions<IdentityDbContext> options, INotMediator mediator) : base(options)
     {
         _notMediator = mediator ?? throw new ArgumentNullException(nameof(mediator), "NotMediator cannot be null");
-        Debug.WriteLine($"IdentityDbContext::Context->{this.GetHashCode()}");
+        Debug.WriteLine($"IdentityDbContext::Context->{GetHashCode()}");
     }
 
     public DbSet<User> Users { get; set; }
@@ -57,11 +53,10 @@ public class IdentityDbContext : DbContext, IUnitOfWork
     public IDbContextTransaction GetContextTransaction() => _currentTransaction;
 
 
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        modelBuilder.HasDefaultSchema("Identity");
+        //modelBuilder.HasDefaultSchema("Identity");
         modelBuilder.ApplyConfiguration(new UserClaimEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new RoleClaimEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new UserEntityTypeConfiguration());
@@ -70,7 +65,7 @@ public class IdentityDbContext : DbContext, IUnitOfWork
         modelBuilder.ApplyConfiguration(new UserAccessFailEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new UserSafetyEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new NotClientEntityTypeConfiguration());
-
+        modelBuilder.ApplyConfiguration(new ClientRequestEntityTypeConfiguration());
     }
 
     public async Task<IDbContextTransaction> BeginTransactionAsync()

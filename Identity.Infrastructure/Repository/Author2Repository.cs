@@ -22,7 +22,7 @@ namespace Identity.Infrastructure.Repository
 
         public async Task<Author2?> FindOneByAuthorAsync(Guid authorGuid)
         {
-            return await _identityDbContext.Author2s.Where(en => en.Author2Guid == authorGuid)
+            return await _identityDbContext.Author2s.Where(en => en.Id == authorGuid)
                 .SingleOrDefaultAsync();
         }
 

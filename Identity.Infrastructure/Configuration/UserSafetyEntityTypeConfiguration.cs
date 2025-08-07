@@ -7,11 +7,9 @@
             builder.ToTable("UserSafety");
 
             builder.Ignore(b => b.DomainEventbus);
-            // builder.Property(o => o.DomainEventbus);        
+           
 
-            builder.Property(x => x.Id).UseHiLo("UserSafarseq");
-
-            
+            builder.HasKey(en => en.Id);
 
         }
     }

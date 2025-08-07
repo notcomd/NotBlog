@@ -2,13 +2,18 @@
 
 public class UserRoleRepository : IUserRoleRepository
 {
-    private readonly IdentityDbContext _userRoleDbContext;
 
-    public UserRoleRepository(IdentityDbContext userRoleDbContext)
+    private readonly IdentityDbContext _userRoleDbContext;
+    private readonly ILogger<IUserRoleRepository> _logger;
+    public IUnitOfWork UnitOfWork => _userRoleDbContext;
+
+
+    public UserRoleRepository(IdentityDbContext userRoleDbContext, ILogger<IUserRoleRepository> logger)
     {
         _userRoleDbContext = userRoleDbContext;
+        _logger = logger;
     }
-    public IUnitOfWork UnitOfWork => _userRoleDbContext;
+
 
 
     public async ValueTask AddByUserRoleAsync(Roles userRole)
@@ -16,18 +21,33 @@ public class UserRoleRepository : IUserRoleRepository
         await _userRoleDbContext.AddAsync(userRole);
     }
 
-    public async ValueTask<Roles?> FindByUserRoleAsync(Guid guid)
+    public async ValueTask<Roles?> FindByUserRoleAsync(Guid roleId)
     {
-        var data = await _userRoleDbContext.FindAsync<Roles>(guid);
-        if (data is null) throw new ArgumentNullException("data is null");
-        return data;
+        try
+        {
+            return await _userRoleDbContext.Roles.Include(en => en.RoleClaims)
+               .FirstOrDefaultAsync(en => en.Id == roleId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"[ >_< {DateTimeOffset.UtcNow}]在查找时出现问题,无法找到为{roleId}的数据!");
+            throw;
+        }
+
     }
 
     public async ValueTask<Roles?> FindByUserRoleAsync(string roleName)
     {
-        var data = await _userRoleDbContext.FindAsync<Roles>(roleName);
-        if (data is null) throw new ArgumentNullException("data is null!");
-        return data;
+        try
+        {
+            return await _userRoleDbContext.Roles.Include(en => en.RoleClaims)
+               .FirstOrDefaultAsync(en => en.RoleName == roleName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"[ >_< {DateTimeOffset.UtcNow}]在查找时出现问题,无法找到为{roleName}的数据!");
+            throw;
+        }
     }
 
     public async ValueTask<bool> IsUserRoleAsync(Guid guid)
@@ -42,10 +62,22 @@ public class UserRoleRepository : IUserRoleRepository
         return true;
     }
 
-    public async ValueTask<bool> UpByUserRoleAsync(Roles userRole)
+    public async ValueTask UpByUserRoleAsync(Roles userRole)
     {
-        if (await FindByUserRoleAsync(userRole.RoleGuid) == userRole) return true;
-        _userRoleDbContext.Update(userRole);
-        return true;
+        try
+        {
+            var roleData = await FindByUserRoleAsync(userRole.Id);
+            if (roleData is null) return;
+            var updateCount=await _userRoleDbContext.Roles.ExecuteUpdateAsync(en => en
+                .SetProperty(en => en.Attribute, userRole.Attribute)
+                .SetProperty(en => en.RoleStatus, userRole.RoleStatus)
+                .SetProperty(en => en.RoleAuthority, userRole.RoleAuthority));
+            _logger.LogInformation($"[（*＾-＾*）{DateTimeOffset.UtcNow} 数据更新成功，一共更新了{updateCount}条目]");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"[ >_< {DateTimeOffset.UtcNow}]在更新数据时出现问题,无法更新{userRole}的数据!");
+            throw;
+        }
     }
 }

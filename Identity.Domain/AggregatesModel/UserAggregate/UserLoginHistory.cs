@@ -1,12 +1,13 @@
 ﻿
 namespace Identity.Domain.AggregatesModel.UserAggregate;
 
-public class UserLoginHistory
+public class UserLoginHistory:Entity,IAggregateRoot
 {
 
 
     private UserLoginHistory()
     {
+
     }
 
    
@@ -18,7 +19,7 @@ public class UserLoginHistory
         ArgumentNullException.ThrowIfNull(email);
         var userLoginHistory = new UserLoginHistory
         {
-            LoginGuid = Guid.CreateVersion7(),
+            Id = Guid.CreateVersion7(),
             UserGuid = userId != Guid.Empty ? userId : throw new ArgumentNullException(nameof(userId), "UserGuid cannot be empty"),
             PhoneNumber = phoneNumber,
             Email = email,
@@ -29,7 +30,7 @@ public class UserLoginHistory
     }
 
 
-    public Guid LoginGuid { get; init; }
+   
 
     public Guid UserGuid { get; init; }
 
@@ -72,15 +73,6 @@ public class UserLoginHistory
         CreateDataTime = createDataTime;
     }
 
-    public override bool Equals(object? obj)
-    {
-        return obj is UserLoginHistory history &&
-               LoginGuid.Equals(history.LoginGuid) &&
-               UserGuid.Equals(history.UserGuid) &&
-               EqualityComparer<PhoneNumber?>.Default.Equals(PhoneNumber, history.PhoneNumber) &&
-               Email == history.Email &&
-               CreateDataTime.Equals(history.CreateDataTime) &&
-               LoginMessage == history.LoginMessage;
-    }
+    
 
 }

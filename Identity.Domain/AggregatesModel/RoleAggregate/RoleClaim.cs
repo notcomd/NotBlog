@@ -13,19 +13,20 @@ public class RoleClaim : Entity
     public string ClaimValue { get; private set; }=string.Empty;
 
 
-    public static ValueTask<RoleClaim> CreateByRoleClaimAsync(Guid roleGuid, Claim claim)
+    public static RoleClaim CreateByRoleClaimAsync(Guid roleGuid, Claim claim)
     {
         if (roleGuid == Guid.Empty)
             throw new ArgumentNullException(nameof(roleGuid), "Role GUID cannot be empty");
         if (claim == null)
             throw new ArgumentNullException(nameof(claim), "Claim cannot be null");
-        var roleClaim = new RoleClaim
+        return new RoleClaim
         {
+            Id=Guid.CreateVersion7(),
             RoleGuid = roleGuid,
             ClaimType = claim.Type,
             ClaimValue = claim.Value
         };
-        return new ValueTask<RoleClaim>(roleClaim);
+       // return new ValueTask<RoleClaim>(roleClaim);
     }
 
 

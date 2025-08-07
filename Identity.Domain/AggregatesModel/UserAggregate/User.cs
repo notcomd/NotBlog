@@ -5,10 +5,6 @@ namespace Identity.Domain.AggregatesModel.UserAggregate;
 public class User : Entity, IAggregateRoot
 {
 
-
-
-    public Guid UserGuid { get; init; }
-
     public Guid UserRoleGuid { get; init; }
 
     public string? UserName { get; private set; }
@@ -19,13 +15,13 @@ public class User : Entity, IAggregateRoot
 
     public string PasswordHash { get; private set; }
 
+    public string? Address { get; private set; }
+
     public PhoneNumber? PhoneNumber { get; private set; }
 
-    public Address? UserAddress { get; private set; }
+    private IList<UserClaim?> UserClaims { get; set; }
 
-    private IList<UserClaim> UserClaims { get; set; }
-
-    public IEnumerable<UserClaim> UserClaimsReadOnly => UserClaims.AsReadOnly();
+    public IEnumerable<UserClaim?> UserClaimsReadOnly => UserClaims.AsReadOnly();
 
     public UserAccessFail UserAccessFail { get; private set; }
 
@@ -33,12 +29,23 @@ public class User : Entity, IAggregateRoot
 
     public DateTimeOffset CreateDatetime { get; init; }
 
+    /// <summary>
+    ///  无参构造函数
+    /// </summary>
     protected User()
     {
-        UserGuid = Guid.CreateVersion7();
+
     }
 
-    public static async Task<User> CreateByEmailUser(Guid userRoleGuid, string userEmail, string passwordHash)
+    /// <summary>
+    ///  邮件用户创建
+    /// </summary>
+    /// <param name="userRoleGuid"></param>
+    /// <param name="userEmail"></param>
+    /// <param name="passwordHash"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException"></exception>
+    public static ValueTask<User> CreateByEmailUser(Guid userRoleGuid, string userEmail, string passwordHash, DateTimeOffset dateTimeOffset)
     {
         if (userRoleGuid == Guid.Empty)
             throw new ArgumentNullException(nameof(userRoleGuid), "User role cannot be null or empty");
@@ -47,27 +54,28 @@ public class User : Entity, IAggregateRoot
         if (string.IsNullOrEmpty(passwordHash))
             throw new ArgumentNullException(nameof(passwordHash), "Password hash cannot be null or empty");
 
-
-        var salt = await HashH256Tool.GenerateSaltValueTask() ?? throw new ArgumentNullException("salt is null");
-        var stamp = await JwtGenerateCodeRandom.GenerateSecurityStamp() ?? throw new ArgumentNullException("security stamp is null");
         var UserResult = new User
         {
-            UserGuid = Guid.CreateVersion7(),
+            Id = Guid.CreateVersion7(),
             UserRoleGuid = userRoleGuid,
             UserName = userEmail,
-            PasswordHash = await HashH256Tool.CreateHash256Async(passwordHash, salt),
-            ImageCover = null,
-            UserAccessFail = await UserAccessFail.CreateByUserAccessFailAsync(Guid.CreateVersion7()) ?? throw new ArgumentNullException(nameof(UserAccessFail)),
-            UserSafety = UserSafety.CreateByUserSafety(Guid.CreateVersion7(), stamp, salt.ToString(), EnumBlackOrWhite.AuthorityWhite, EnumUserStatus.Normal) ?? throw new ArgumentNullException(nameof(UserSafety)),
-            CreateDatetime = DateTimeOffset.UtcNow
-
+            PasswordHash = passwordHash,
+                      
+            CreateDatetime = dateTimeOffset
         };
         UserResult.AddDomainEvent(new UserCreatedByEmailDomainEvent(UserResult, userEmail, userEmail, DateTimeOffset.UtcNow));
-        return UserResult ?? throw new ArgumentNullException(nameof(UserResult));
+        return new ValueTask<User>(UserResult);
     }
 
-
-    public static async Task<User> CreateByPhoneUser(Guid userRoleGuid, PhoneNumber phoneNumber, string passwordHash)
+    /// <summary>
+    ///  手机号码注册用户
+    /// </summary>
+    /// <param name="userRoleGuid"></param>
+    /// <param name="phoneNumber"></param>
+    /// <param name="passwordHash"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException"></exception>
+    public static ValueTask<User> CreateByPhoneUser(Guid userRoleGuid, PhoneNumber phoneNumber, string passwordHash, DateTimeOffset dateTimeOffset)
     {
         if (userRoleGuid == Guid.Empty)
             throw new ArgumentNullException(nameof(userRoleGuid), "User role cannot be null or empty");
@@ -75,29 +83,18 @@ public class User : Entity, IAggregateRoot
             throw new ArgumentNullException(nameof(phoneNumber), "User email cannot be null or empty");
         if (string.IsNullOrEmpty(passwordHash))
             throw new ArgumentNullException(nameof(passwordHash), "Password hash cannot be null or empty");
-        
 
-        var salt = await HashH256Tool.GenerateSaltValueTask() ?? throw new ArgumentNullException("salt is null");
-        var stamp = await JwtGenerateCodeRandom.GenerateSecurityStamp() ?? throw new ArgumentNullException("security stamp is null");
         var UserResult = new User
         {
-            UserGuid = Guid.CreateVersion7(),
+            Id = Guid.CreateVersion7(),
             UserRoleGuid = userRoleGuid,
             PhoneNumber = phoneNumber,
-            PasswordHash = await HashH256Tool.CreateHash256Async(passwordHash, salt),
-            ImageCover = null,
-            UserAccessFail = await UserAccessFail.CreateByUserAccessFailAsync(Guid.CreateVersion7()) ?? throw new ArgumentNullException(nameof(UserAccessFail)),
-            UserSafety = UserSafety.CreateByUserSafety(Guid.CreateVersion7(), stamp, salt.ToString(), EnumBlackOrWhite.AuthorityWhite, EnumUserStatus.Normal) ?? throw new ArgumentNullException(nameof(UserSafety)),
-            CreateDatetime = DateTimeOffset.UtcNow
-
+            PasswordHash = passwordHash,
+            CreateDatetime = dateTimeOffset
         };
         UserResult.AddDomainEvent(new UserCreatedByPhoneDomainEvent(UserResult, phoneNumber, phoneNumber.PhoneCode, DateTimeOffset.UtcNow));
-        return UserResult ?? throw new ArgumentNullException(nameof(UserResult));
+        return new ValueTask<User>(UserResult);
     }
-
-
-
-
 
     /// <summary>
     /// 重新设置用户名
@@ -123,8 +120,6 @@ public class User : Entity, IAggregateRoot
         }
     }
 
-
-
     /// <summary>
     /// 重新设置用户头像
     /// </summary>
@@ -149,21 +144,6 @@ public class User : Entity, IAggregateRoot
         }
     }
 
-
-
-    public void ChangeByAddressAsync(ref Address userAddress)
-    {
-        if (userAddress is null)
-        {
-            throw new ArgumentNullException(nameof(userAddress), "user address is null");
-        }
-        if (UserAddress is not null && UserAddress.Equals(userAddress))
-        {
-            throw new ArgumentException("需要不同的地址");
-        }
-        UserAddress = userAddress;
-    }
-
     /// <summary>
     /// 修改密码
     /// </summary>
@@ -173,19 +153,21 @@ public class User : Entity, IAggregateRoot
     /// <exception cref="ArgumentOutOfRangeException">
     /// 密码长度不能小于8位
     /// </exception>
-    public async ValueTask ChangeByPasswordAsync(string password)
+    public async ValueTask ChangeByPasswordAsync(string password, byte[] salt, string stamp)
     {
-        if (UserSafety.UserStatus == EnumUserStatus.Locked)
+        if (UserSafety.UserStatus == EnumUserStatus.Locked || UserSafety.BlackOrWhite == EnumBlackOrWhite.AuthorityBlack)
         {
             throw new InvalidOperationException("用户已被锁定，无法修改密码");
         }
         if (password.Length <= 8)
         {
-            throw new ArgumentOutOfRangeException("your are set password is short!");
+            throw new ArgumentOutOfRangeException(nameof(password));
         }
-        var salt = await HashH256Tool.GenerateSaltValueTask() ?? throw new ArgumentNullException($"salt is null!");
-        UserSafety.SetOrResetByPasswordSalt(salt.ToString());
-        PasswordHash = await HashH256Tool.CreateHash256Async(password, Encoding.UTF8.GetBytes(UserSafety.PasswordSalt));
+        var str = salt.ToString() ?? throw new ArgumentNullException(nameof(salt));
+        UserSafety.SetOrResetByPasswordSalt(str);
+        UserSafety.SetOrResetBySecurityStamp(stamp);
+        PasswordHash = await HashH256Tool.CreateHash256Async(password, salt
+            ?? throw new ArgumentNullException("salt is null!"));
     }
 
     /// <summary>
@@ -196,15 +178,11 @@ public class User : Entity, IAggregateRoot
     /// <returns>
     /// 手机对象
     /// </returns>
-    public void BandingByPhoneAsync(long region, string phoneNumber)
+    public  void SetOrRestByPhoneAsync(long region, string phoneNumber)
     {
-
-        PhoneNumber = PhoneNumber.CreatePhoneNumber(region, phoneNumber) ?? throw new ArgumentNullException(nameof(PhoneNumber), "phone number is null");
-
-        AddDomainEvent(new PhoneNumberBandingEvent(UserGuid, PhoneNumber.PhoneCode));
-
+        PhoneNumber = PhoneNumber.CreatePhoneNumber(Id, region, phoneNumber) ?? throw new ArgumentNullException(nameof(PhoneNumber), "phone number is null");
+        AddDomainEvent(new PhoneNumberBandingEvent(Id, PhoneNumber.PhoneCode));
     }
-
 
     /// <summary>
     /// 验证手机号是否正确
@@ -212,14 +190,17 @@ public class User : Entity, IAggregateRoot
     /// <param name="phoneNumber"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentNullException"></exception>
-    public bool VerifyByPhoneNumber(PhoneNumber phoneNumber)
+    public bool IsVerifyByPhoneNumber(PhoneNumber phoneNumber)
     {
         if (phoneNumber is null)
             throw new ArgumentNullException(nameof(phoneNumber), "phone number is null");
+        if (string.IsNullOrEmpty(phoneNumber.PhoneCode))
+            throw new ArgumentNullException(nameof(phoneNumber.PhoneCode), "phone number code is null or empty");
+        if (phoneNumber.AddressRegion <= 0)
+            throw new ArgumentOutOfRangeException(nameof(phoneNumber.AddressRegion), "phone number address region is less than or equal to zero");
 
         return PhoneNumber?.PhoneCode == phoneNumber.PhoneCode && PhoneNumber.AddressRegion == phoneNumber.AddressRegion;
     }
-
 
     /// <summary>
     /// 验证邮箱是否正确
@@ -228,7 +209,7 @@ public class User : Entity, IAggregateRoot
     /// <returns></returns>
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="ArgumentException"></exception>
-    public bool VerifyByEmail(string email)
+    public bool IsVerifyByEmail(string email)
     {
         if (string.IsNullOrEmpty(email))
             throw new ArgumentNullException(nameof(email), "email is null or empty");
@@ -237,64 +218,19 @@ public class User : Entity, IAggregateRoot
         return UserEmail == email;
     }
 
-
     /// <summary>
     /// 验证密码是否正确
     /// </summary>
     /// <param name="passwordHash"></param>
     /// <returns></returns>
-    public async Task<bool> VerifyByPassword(string passwordHash)
+    public async Task<bool> IsVerifyByPassword(string passwordHash)
     {
-
-        //passwordHash=await CheckByPasswordAsync(PasswordHash, passwordHash);
         if (!await CheckByPasswordAsync(PasswordHash, passwordHash))
         {
-            //UserAccessFail.VerifyByAccessFaild(true);
-            AddDomainEvent(new AccountLockedEvent(UserGuid));
+            UserAccessFail.VerifyByAccessFaild();
+            AddDomainEvent(new AccountLockedEvent(Id));
         }
         return PasswordHash == passwordHash;
-    }
-
-
-    /// <summary>
-    /// 设置信邮箱
-    /// </summary>
-    /// <param name="newEmail"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentException"></exception>
-    public void ChangeByEmailAsync(
-        [EmailAddress(ErrorMessage = "your set email is error ,pleas set again your email address!")]
-        ref string newEmail)
-    {
-        if (UserEmail == newEmail)
-            throw new ArgumentException("需要不同的邮箱");
-        UserEmail = newEmail;
-
-    }
-
-    /// <summary>
-    /// 设置新密码
-    /// </summary>
-    /// <param name="phoneNumber"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentException"></exception>
-    public void ChangeByPhoneAsync(PhoneNumber phoneNumber)
-    {
-        if (phoneNumber.PhoneCode == PhoneNumber!.PhoneCode)
-            throw new ArgumentException("需要不要一样的号码");
-        PhoneNumber = phoneNumber;
-    }
-
-    /// <summary>
-    /// 重新设置邮箱
-    /// </summary>
-    /// <param name="emailAddress"> 邮箱地址 </param>
-    /// <returns></returns>
-    public void RestartByEmailAsync([EmailAddress(ErrorMessage = "your set email is error ,pleas set again your email address!")] string emailAddress)
-    {
-        if (UserEmail == emailAddress||string.IsNullOrEmpty(emailAddress))
-            throw new ArgumentNullException("我们需要不同的邮箱且不能为空");
-        UserEmail = emailAddress;
     }
 
     /// <summary>
@@ -311,4 +247,72 @@ public class User : Entity, IAggregateRoot
         ArgumentNullException.ThrowIfNull(password, nameof(password));
         return await HashH256Tool.VerifyPasswordValueTask(password, hashPassword, Encoding.UTF8.GetBytes(UserSafety.PasswordSalt));
     }
+
+    /// <summary>
+    ///  
+    /// </summary>
+    /// <param name="salt"></param>
+    /// <param name="stamp"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException"></exception>
+    public void  SetOrRestByUserSafety(string salt, string stamp)
+    {
+        if (string.IsNullOrEmpty(salt) || string.IsNullOrEmpty(stamp))
+            throw new ArgumentNullException(nameof(salt));
+        UserSafety.CreateByUserSafety(Id, salt, stamp);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="claim"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException"></exception>
+    public void SetOrRestByUserClaim(Claim claim)
+    {
+        if (claim == null)
+            throw new ArgumentNullException(nameof(claim));
+        UserClaim.CreateByUserClaimAsync(Id, claim);
+        // return 
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
+    public async Task SetOrRestByUserAccessFail()
+    {
+        await UserAccessFail.CreateByUserAccessFailAsync(Id);
+    }
+
+    /// <summary>
+    ///  改变用户的账号状态
+    /// </summary>
+    /// <param name="enumBlackOrWhite"></param>
+    /// <param name="enumUserStatus"></param>
+    /// <exception cref="ArgumentException"></exception>
+    public void ChangeByUserStatusAsync(EnumBlackOrWhite enumBlackOrWhite, EnumUserStatus enumUserStatus)
+    {
+        if (enumBlackOrWhite == EnumBlackOrWhite.AuthorityBlack && enumUserStatus != EnumUserStatus.Locked)
+        {
+            throw new ArgumentException("黑名单用户状态必须为锁定状态", nameof(enumUserStatus));
+        }
+        UserSafety.SetOrResetByBlackOrWhiteAndUserStatus(enumBlackOrWhite, enumUserStatus);
+
+    }
+
+    /// <summary>
+    /// 设置或跟新地址
+    /// </summary>
+    /// <param name="address"></param>
+    /// <exception cref="ArgumentException"></exception>
+    public void SetOrRestByAddress(string address)
+    {
+        if (string.IsNullOrEmpty(address) || address.Length <= 100)
+            throw new ArgumentException(nameof(address));
+
+        Address = address;
+    }
+
+
 }

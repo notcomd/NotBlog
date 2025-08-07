@@ -8,15 +8,10 @@
 
             builder.Ignore(b => b.DomainEventbus);
 
-            builder.Property(o => o.Id).UseHiLo("Userseq");
+           
+            builder.HasKey(x => x.Id);
 
-            builder.OwnsOne(o => o.UserAddress);
-
-
-
-            builder.HasKey(x => x.UserGuid);
-
-            builder.Property(x => x.UserGuid).HasColumnName("UserGuid").IsRequired();
+            //builder.Property(x => x.UserGuid).HasColumnName("UserGuid").IsRequired();
 
             builder.Property(x => x.UserRoleGuid).HasColumnName("UserRoleGuid").IsRequired();
 
@@ -40,7 +35,7 @@
                 .HasForeignKey<UserSafety>(on => on.UserGuid);
 
             builder.HasMany(on => on.UserClaimsReadOnly).WithOne()
-                .HasForeignKey(on => on.UserGuid).OnDelete(DeleteBehavior.NoAction);
+                .HasForeignKey(on => on.UserGuid);
 
             builder.HasIndex(en => new {  en.UserEmail })
                 .HasDatabaseName("IX_User_UserGuid_UserEmail_UserPhone");

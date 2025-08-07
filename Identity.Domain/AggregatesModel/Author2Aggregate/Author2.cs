@@ -6,7 +6,7 @@ public class Author2 : Entity, IAggregateRoot
 
     protected Author2()
     { 
-        Author2Guid = Guid.CreateVersion7(); 
+        Id = Guid.CreateVersion7(); 
     }
 
 
@@ -21,7 +21,7 @@ public class Author2 : Entity, IAggregateRoot
 
         var author = new Author2
         {
-            Author2Guid = Guid.CreateVersion7(),
+            Id = Guid.CreateVersion7(),
             UserGuid = userGuid != Guid.Empty ? userGuid : throw new ArgumentNullException(nameof(userGuid), "UserGuid cannot be empty"),
             AuthorName = authorName ?? throw new ArgumentNullException(nameof(authorName)),
             AuthorDescription = authorDescription ?? throw new ArgumentNullException(nameof(authorDescription)),
@@ -31,7 +31,7 @@ public class Author2 : Entity, IAggregateRoot
         return Task.FromResult(author);
     }
 
-    public Guid Author2Guid { get; init; }
+   
 
     public Guid UserGuid { get; private set; }
 

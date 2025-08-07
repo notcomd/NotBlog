@@ -16,8 +16,7 @@ namespace Identity.Infrastructure.Configuration
 
             builder.Ignore(x => x.DomainEventbus);
 
-            builder.Property(o => o.Id).UseHiLo("UserClaimseq");
-
+            builder.HasKey(en => en.Id);
 
         }
     }

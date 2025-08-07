@@ -11,6 +11,7 @@
 
         public NotClient(Guid userGuid,string notClientName, string notClientDescription, string notClientPrivateKey, string notClientSecret, string notClientUri, string notClientType)
         {
+            Id = Guid.CreateVersion7();
             UserGuid = userGuid != Guid.Empty ? userGuid : throw new ArgumentNullException(nameof(userGuid), "UserGuid cannot be empty");
             NotClientName = notClientName ?? throw new ArgumentNullException(nameof(notClientName));
             NotClientDescription = notClientDescription ?? throw new ArgumentNullException(nameof(notClientDescription));
@@ -19,11 +20,7 @@
             NotClientUri = notClientUri ?? throw new ArgumentNullException(nameof(notClientUri));
             NotClientType = notClientType ?? throw new ArgumentNullException(nameof(notClientType));
         }
-
-        /// <summary>
-        ///  客户端的唯一标识符
-        /// </summary>
-        public Guid NotClientGuid { get; init; } = Guid.CreateVersion7();
+                    
 
         /// <summary>
         /// 授权用户的唯一标识符

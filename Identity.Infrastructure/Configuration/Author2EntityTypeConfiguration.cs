@@ -9,7 +9,7 @@
 
             builder.Ignore(b => b.DomainEventbus);
 
-            builder.Property(o => o.Id).UseHiLo("Author2seq");
+            builder.HasKey(e => e.Id); 
 
         }
     }

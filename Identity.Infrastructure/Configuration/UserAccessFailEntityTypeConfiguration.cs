@@ -9,8 +9,8 @@
 
             builder.Ignore(b => b.DomainEventbus);
 
-            builder.Property(o => o.Id).UseHiLo("UserAccessFailseq");
-
+            //builder.Property(o => o.Id).UseHiLo("UserAccessFailseq");
+            builder.HasKey(b => b.Id);
         }
     }
 }

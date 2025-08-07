@@ -14,8 +14,9 @@ public interface IUserRepository : IRepository<User>
 
     ValueTask UpdateByUserAsync(User user);
 
+    ValueTask UpdateByUserSafety(UserSafety userSafety);
 
-    //ValueTask AddByLoginHistoryAsync(PhoneNumber phoneNumber, string message);
+   //ValueTask UpdateByUserClaim(UserClaim claim);
 
 
 }

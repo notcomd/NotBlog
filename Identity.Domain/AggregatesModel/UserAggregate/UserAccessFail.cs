@@ -8,8 +8,7 @@ public class UserAccessFail : Entity
     {
        
     }
-
-   
+      
 
     public Guid UserGuid { get; init; }
 
@@ -32,9 +31,9 @@ public class UserAccessFail : Entity
             throw new ArgumentNullException(nameof(userGuid), "UserGuid cannot be empty");
         }
         var userAccessFail = new UserAccessFail
-        {
-            //UserAccessFailGuid = Guid.CreateVersion7(),
-            UserGuid = userGuid,
+        {             
+            Id = Guid.CreateVersion7(),
+            UserGuid=userGuid,
             LockOutEnd = null,
             AccessFaildCount = 0,
 

@@ -17,42 +17,15 @@ namespace Identity.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasDefaultSchema("Identity")
                 .HasAnnotation("ProductVersion", "9.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.HasSequence("Author2seq")
-                .IncrementsBy(10);
-
-            modelBuilder.HasSequence("NotClientseq")
-                .IncrementsBy(10);
-
-            modelBuilder.HasSequence("RoleClaimseq")
-                .IncrementsBy(10);
-
-            modelBuilder.HasSequence("Roleseq")
-                .IncrementsBy(10);
-
-            modelBuilder.HasSequence("UserAccessFailseq")
-                .IncrementsBy(10);
-
-            modelBuilder.HasSequence("UserSafarseq")
-                .IncrementsBy(10);
-
-            modelBuilder.HasSequence("Userseq")
-                .IncrementsBy(10);
-
             modelBuilder.Entity("Identity.Domain.AggregatesModel.Author2Aggregate.Author2", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<int>("Id"), "Author2seq");
-
-                    b.Property<Guid>("Author2Guid")
                         .HasColumnType("uuid");
 
                     b.Property<string>("AuthorDescription")
@@ -71,22 +44,19 @@ namespace Identity.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<Guid>("UserGuid")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
-                    b.ToTable("Author2", "Identity");
+                    b.ToTable("Author2", (string)null);
                 });
 
             modelBuilder.Entity("Identity.Domain.AggregatesModel.ClientAggregate.NotClient", b =>
                 {
-                    b.Property<Guid>("NotClientId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("client_guid");
-
-                    b.Property<int>("Id")
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<int>("Id"), "NotClientseq");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("NotClientDescription")
                         .IsRequired()
@@ -113,18 +83,19 @@ namespace Identity.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("NotClientId");
+                    b.Property<Guid>("UserGuid")
+                        .HasColumnType("uuid");
 
-                    b.ToTable("NotClient", "Identity");
+                    b.HasKey("Id");
+
+                    b.ToTable("NotClient", (string)null);
                 });
 
             modelBuilder.Entity("Identity.Domain.AggregatesModel.RoleAggregate.RoleClaim", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<int>("Id"), "RoleClaimseq");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("ClaimType")
                         .IsRequired()
@@ -137,23 +108,21 @@ namespace Identity.Infrastructure.Migrations
                     b.Property<Guid>("RoleGuid")
                         .HasColumnType("uuid");
 
-                    b.Property<int?>("RolesId")
-                        .HasColumnType("integer");
+                    b.Property<Guid?>("RolesId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
                     b.HasIndex("RolesId");
 
-                    b.ToTable("RoleClaims", "Identity");
+                    b.ToTable("RoleClaims", (string)null);
                 });
 
             modelBuilder.Entity("Identity.Domain.AggregatesModel.RoleAggregate.Roles", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<int>("Id"), "Roleseq");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Attribute")
                         .HasColumnType("text");
@@ -166,9 +135,6 @@ namespace Identity.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<Guid>("RoleGuid")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("RoleName")
                         .IsRequired()
                         .HasColumnType("text");
@@ -180,24 +146,21 @@ namespace Identity.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Role", "Identity");
+                    b.ToTable("Role", (string)null);
                 });
 
             modelBuilder.Entity("Identity.Domain.AggregatesModel.UserAggregate.User", b =>
                 {
-                    b.Property<Guid>("UserGuid")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("UserGuid");
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Address")
+                        .HasColumnType("text");
 
                     b.Property<DateTimeOffset>("CreateDatetime")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("CreateDateTime");
-
-                    b.Property<int>("Id")
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<int>("Id"), "Userseq");
 
                     b.Property<string>("ImageCover")
                         .HasColumnType("text")
@@ -222,30 +185,25 @@ namespace Identity.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("UserRoleGuid");
 
-                    b.HasKey("UserGuid");
+                    b.HasKey("Id");
 
                     b.HasIndex("UserEmail")
                         .HasDatabaseName("IX_User_UserGuid_UserEmail_UserPhone");
 
-                    b.ToTable("User", "Identity");
+                    b.ToTable("User", (string)null);
                 });
 
             modelBuilder.Entity("Identity.Domain.AggregatesModel.UserAggregate.UserAccessFail", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<int>("Id"), "UserAccessFailseq");
+                        .HasColumnType("uuid");
 
                     b.Property<int>("AccessFaildCount")
                         .HasColumnType("integer");
 
                     b.Property<DateTimeOffset?>("LockOutEnd")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("UserAccessFailGuid")
-                        .HasColumnType("uuid");
 
                     b.Property<Guid>("UserGuid")
                         .HasColumnType("uuid");
@@ -255,16 +213,14 @@ namespace Identity.Infrastructure.Migrations
                     b.HasIndex("UserGuid")
                         .IsUnique();
 
-                    b.ToTable("UserAccessFail", "Identity");
+                    b.ToTable("UserAccessFail", (string)null);
                 });
 
             modelBuilder.Entity("Identity.Domain.AggregatesModel.UserAggregate.UserClaim", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                        .HasColumnType("uuid");
 
                     b.Property<string>("ClaimType")
                         .IsRequired()
@@ -274,9 +230,6 @@ namespace Identity.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid>("UserClaimGuid")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid>("UserGuid")
                         .HasColumnType("uuid");
 
@@ -284,34 +237,33 @@ namespace Identity.Infrastructure.Migrations
 
                     b.HasIndex("UserGuid");
 
-                    b.ToTable("UserClaims", "Identity");
+                    b.ToTable("UserClaims", (string)null);
                 });
 
             modelBuilder.Entity("Identity.Domain.AggregatesModel.UserAggregate.UserSafety", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<int>("Id"), "UserSafarseq");
+                        .HasColumnType("uuid");
 
                     b.Property<int>("BlackOrWhite")
                         .HasColumnType("integer");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
 
                     b.Property<DateTimeOffset?>("LockOutEnd")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("PasswordSalt")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("SecurityStamp")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<Guid>("UserGuid")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_guid");
-
-                    b.Property<Guid>("UserSafetyGuid")
                         .HasColumnType("uuid");
 
                     b.Property<int>("UserStatus")
@@ -322,16 +274,14 @@ namespace Identity.Infrastructure.Migrations
                     b.HasIndex("UserGuid")
                         .IsUnique();
 
-                    b.ToTable("UserSafety", "Identity");
+                    b.ToTable("UserSafety", (string)null);
                 });
 
             modelBuilder.Entity("Identity.Domain.Entities.PhoneNumber", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                        .HasColumnType("uuid");
 
                     b.Property<long>("AddressRegion")
                         .HasColumnType("bigint");
@@ -348,7 +298,25 @@ namespace Identity.Infrastructure.Migrations
                     b.HasIndex("UserGuid")
                         .IsUnique();
 
-                    b.ToTable("PhoneNumber", "Identity");
+                    b.ToTable("PhoneNumber");
+                });
+
+            modelBuilder.Entity("Identity.Infrastructure.RequestManager.ClientRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("Time")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ClientRequests", (string)null);
                 });
 
             modelBuilder.Entity("Identity.Domain.AggregatesModel.RoleAggregate.RoleClaim", b =>
@@ -356,48 +324,6 @@ namespace Identity.Infrastructure.Migrations
                     b.HasOne("Identity.Domain.AggregatesModel.RoleAggregate.Roles", null)
                         .WithMany("RoleClaims")
                         .HasForeignKey("RolesId");
-                });
-
-            modelBuilder.Entity("Identity.Domain.AggregatesModel.UserAggregate.User", b =>
-                {
-                    b.OwnsOne("Identity.Domain.AggregatesModel.UserAggregate.Address", "UserAddress", b1 =>
-                        {
-                            b1.Property<Guid>("UserGuid")
-                                .HasColumnType("uuid");
-
-                            b1.Property<string>("City")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.Property<string>("Country")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.Property<string>("Detail")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.Property<string>("District")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.Property<string>("Province")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.Property<string>("Street")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.HasKey("UserGuid");
-
-                            b1.ToTable("User", "Identity");
-
-                            b1.WithOwner()
-                                .HasForeignKey("UserGuid");
-                        });
-
-                    b.Navigation("UserAddress");
                 });
 
             modelBuilder.Entity("Identity.Domain.AggregatesModel.UserAggregate.UserAccessFail", b =>
@@ -414,7 +340,7 @@ namespace Identity.Infrastructure.Migrations
                     b.HasOne("Identity.Domain.AggregatesModel.UserAggregate.User", null)
                         .WithMany("UserClaimsReadOnly")
                         .HasForeignKey("UserGuid")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 

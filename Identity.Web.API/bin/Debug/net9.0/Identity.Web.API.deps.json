@@ -17,7 +17,7 @@
           "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.7",
           "NotEmail": "1.0.0",
           "NotMediator": "1.0.5",
-          "Scalar.AspNetCore": "2.6.0",
+          "Scalar.AspNetCore": "2.6.8",
           "Token.JWT": "1.0.0"
         },
         "runtime": {
@@ -808,11 +808,11 @@
           }
         }
       },
-      "Scalar.AspNetCore/2.6.0": {
+      "Scalar.AspNetCore/2.6.8": {
         "runtime": {
           "lib/net9.0/Scalar.AspNetCore.dll": {
-            "assemblyVersion": "2.6.0.0",
-            "fileVersion": "2.6.0.0"
+            "assemblyVersion": "2.6.8.0",
+            "fileVersion": "2.6.8.0"
           }
         }
       },
@@ -933,7 +933,7 @@
         "dependencies": {
           "MediatR": "12.5.0",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.7",
-          "Scalar.AspNetCore": "2.6.0"
+          "Scalar.AspNetCore": "2.6.8"
         },
         "runtime": {
           "DomainCommonst.dll": {
@@ -1026,7 +1026,7 @@
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.6",
           "Microsoft.AspNetCore.Authentication.MicrosoftAccount": "8.0.6",
           "Microsoft.AspNetCore.SignalR.Client": "8.0.6",
-          "Scalar.AspNetCore": "2.6.0",
+          "Scalar.AspNetCore": "2.6.8",
           "System.IdentityModel.Tokens.Jwt": "7.6.0"
         },
         "runtime": {
@@ -1443,12 +1443,12 @@
       "path": "rabbitmq.client/6.8.1",
       "hashPath": "rabbitmq.client.6.8.1.nupkg.sha512"
     },
-    "Scalar.AspNetCore/2.6.0": {
+    "Scalar.AspNetCore/2.6.8": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-IRIZcZy+P978wo0GaeQmpHs3juxWiLaYEHDK+di4SiSsY+bUq7HwahrhY5LXi1usKM7w75WRISuhx5Ib20xDQQ==",
-      "path": "scalar.aspnetcore/2.6.0",
-      "hashPath": "scalar.aspnetcore.2.6.0.nupkg.sha512"
+      "sha512": "sha512-2wwNX51ofrsgLNxe6n2bIuLEFcbVqp/le13nRaAs1mAuracL2tbTdIcgT89o3NmtvVa0hfBdxH5vAi1hwATqTw==",
+      "path": "scalar.aspnetcore/2.6.8",
+      "hashPath": "scalar.aspnetcore.2.6.8.nupkg.sha512"
     },
     "System.CodeDom/6.0.0": {
       "type": "package",

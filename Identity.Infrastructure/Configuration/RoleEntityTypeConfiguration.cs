@@ -8,7 +8,8 @@
 
             builder.ToTable("Role");
 
-            builder.Property(o => o.Id).UseHiLo("Roleseq");
+            //builder.Property(o => o.Id).UseHiLo("Roleseq");
+            builder.HasKey(en => en.Id);
 
             builder.Ignore(o => o.DomainEventbus);
 
