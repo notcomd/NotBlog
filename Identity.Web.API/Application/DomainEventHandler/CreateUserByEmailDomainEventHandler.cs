@@ -19,7 +19,13 @@ namespace Identity.Web.API.Application.DomainEventHandler
 
         public Task Handler(CreateUserByEmailDomainEvent notifications, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            if(notifications is null)
+            {
+                _logger.LogWarning($"[w(ﾟДﾟ)w{_notDateTime.UtcNow}] 数据为空{nameof(notifications)}");
+                return Task.CompletedTask;
+            }
+
+            return Task.CompletedTask;
         }
     }
 }

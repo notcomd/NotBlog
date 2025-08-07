@@ -1,4 +1,4 @@
-using Identity.Domain.Events;
+﻿using Identity.Domain.Events;
 
 namespace Identity.Domain.AggregatesModel.RoleAggregate;
 
@@ -41,7 +41,7 @@ public class Roles : Entity, IAggregateRoot
             RoleStatus = roleStatus,
             CreateRoleTime = dateTimeOffset
         };
-        role.AddDomainEvent(new CreateByRoleStartEvent(role.Id, role.RoleName, role.Attribute));
+        role.AddDomainEvent(new CreatedByRoleDomainEvent(role.Id, role.RoleName, role.Attribute));
         return Task.FromResult(role);
     }
 
