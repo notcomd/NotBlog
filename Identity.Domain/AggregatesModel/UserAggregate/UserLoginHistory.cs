@@ -1,7 +1,10 @@
 ﻿
 namespace Identity.Domain.AggregatesModel.UserAggregate;
 
-public class UserLoginHistory:Entity,IAggregateRoot
+/// <summary>
+/// 登入事件
+/// </summary>
+public class UserLoginHistory : Entity, IAggregateRoot
 {
 
 
@@ -10,14 +13,11 @@ public class UserLoginHistory:Entity,IAggregateRoot
 
     }
 
-   
 
-    public ValueTask<UserLoginHistory> CreateByUserLoginHistoryAsync(Guid userId, PhoneNumber? phoneNumber, string loginMessage, string? email, DateTimeOffset dateTimeOffset)
+
+    public UserLoginHistory CreateByUserLoginHistoryAsync(Guid userId, PhoneNumber? phoneNumber, string? email, string loginMessage, DateTimeOffset dateTimeOffset)
     {
-        ArgumentNullException.ThrowIfNull(phoneNumber);
-        ArgumentNullException.ThrowIfNull(loginMessage);
-        ArgumentNullException.ThrowIfNull(email);
-        var userLoginHistory = new UserLoginHistory
+        return new UserLoginHistory
         {
             Id = Guid.CreateVersion7(),
             UserGuid = userId != Guid.Empty ? userId : throw new ArgumentNullException(nameof(userId), "UserGuid cannot be empty"),
@@ -26,11 +26,10 @@ public class UserLoginHistory:Entity,IAggregateRoot
             CreateDataTime = dateTimeOffset,
             LoginMessage = loginMessage
         };
-        return new ValueTask<UserLoginHistory>(userLoginHistory);
+
     }
 
 
-   
 
     public Guid UserGuid { get; init; }
 
@@ -73,6 +72,6 @@ public class UserLoginHistory:Entity,IAggregateRoot
         CreateDataTime = createDataTime;
     }
 
-    
+
 
 }

@@ -196,6 +196,27 @@ namespace Identity.Infrastructure.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "UserLoginHistories",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserGuid = table.Column<Guid>(type: "uuid", nullable: false),
+                    PhoneNumberId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Email = table.Column<string>(type: "text", nullable: true),
+                    CreateDataTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    LoginMessage = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserLoginHistories", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserLoginHistories_PhoneNumber_PhoneNumberId",
+                        column: x => x.PhoneNumberId,
+                        principalTable: "PhoneNumber",
+                        principalColumn: "Id");
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_PhoneNumber_UserGuid",
                 table: "PhoneNumber",
@@ -224,6 +245,11 @@ namespace Identity.Infrastructure.Migrations
                 column: "UserGuid");
 
             migrationBuilder.CreateIndex(
+                name: "IX_UserLoginHistories_PhoneNumberId",
+                table: "UserLoginHistories",
+                column: "PhoneNumberId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_UserSafety_UserGuid",
                 table: "UserSafety",
                 column: "UserGuid",
@@ -243,9 +269,6 @@ namespace Identity.Infrastructure.Migrations
                 name: "NotClient");
 
             migrationBuilder.DropTable(
-                name: "PhoneNumber");
-
-            migrationBuilder.DropTable(
                 name: "RoleClaims");
 
             migrationBuilder.DropTable(
@@ -255,10 +278,16 @@ namespace Identity.Infrastructure.Migrations
                 name: "UserClaims");
 
             migrationBuilder.DropTable(
+                name: "UserLoginHistories");
+
+            migrationBuilder.DropTable(
                 name: "UserSafety");
 
             migrationBuilder.DropTable(
                 name: "Role");
+
+            migrationBuilder.DropTable(
+                name: "PhoneNumber");
 
             migrationBuilder.DropTable(
                 name: "User");

@@ -27,15 +27,6 @@
       "targetGraphs": [
         "net9.0"
       ]
-    },
-    {
-      "code": "NU1900",
-      "level": "Warning",
-      "message": "获取包漏洞数据时出错: 无法加载源 https://api.nuget.org/v3/index.json 的服务索引。",
-      "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\Notcomd.Net.WebFileAPI\\Markdown.Web.API.csproj",
-      "warningLevel": 1,
-      "filePath": "C:\\Users\\29617\\source\\repos\\MyService\\Notcomd.Net.WebFileAPI\\Markdown.Web.API.csproj",
-      "targetGraphs": []
     }
   ]
 }

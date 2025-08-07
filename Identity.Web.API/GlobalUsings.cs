@@ -1,4 +1,4 @@
-// global using 指令
+﻿// global using 指令
 
 global using System.ComponentModel.DataAnnotations;
 global using System.Reflection;
@@ -15,6 +15,7 @@ global using Identity.Domain.AggregatesModel.Author2Aggregate;
 global using Identity.Domain.AggregatesModel.ClientAggregate;
 global using Identity.Domain.SeedWork;
 global using Identity.Domain.Entities;
+global using Identity.Domain.Events;
 global using Identity.Domain.IRepository;
 global using Identity.Infrastructure.RequestManager;
 global using Identity.Web.API.ActionFilter;

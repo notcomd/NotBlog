@@ -2,12 +2,14 @@
 {
     public interface INotMemoryCache
     {
-        Task AddByMemoryCacheAsync(object key, object value, long expiredTimeMinutes = 5);
+        Task AddByMemoryCacheAsync(string key, byte[] value, long expiredTimeMinutes = 5);
 
-        Task<T?> GetByMemoryCacheAsync<T>(object key) where T : class;
+        Task AddByMemoryCacheAsync(string key, string value, long expiredTimeMinutes = 5);
 
-        Task RemoveByMemoryCacheAsync(object key);
+        Task<string?> GetByMemoryCacheAsync(string key);
 
-        Task<bool> ValidateCodeAsync(object key, object vlaue);
+        Task RemoveByMemoryCacheAsync(string key);
+
+        Task<bool> IsValidateCodeAsync(string key, string vlaue);
     }
 }

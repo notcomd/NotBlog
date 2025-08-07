@@ -240,6 +240,34 @@ namespace Identity.Infrastructure.Migrations
                     b.ToTable("UserClaims", (string)null);
                 });
 
+            modelBuilder.Entity("Identity.Domain.AggregatesModel.UserAggregate.UserLoginHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreateDataTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("text");
+
+                    b.Property<string>("LoginMessage")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("PhoneNumberId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserGuid")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PhoneNumberId");
+
+                    b.ToTable("UserLoginHistories");
+                });
+
             modelBuilder.Entity("Identity.Domain.AggregatesModel.UserAggregate.UserSafety", b =>
                 {
                     b.Property<Guid>("Id")
@@ -342,6 +370,15 @@ namespace Identity.Infrastructure.Migrations
                         .HasForeignKey("UserGuid")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Identity.Domain.AggregatesModel.UserAggregate.UserLoginHistory", b =>
+                {
+                    b.HasOne("Identity.Domain.Entities.PhoneNumber", "PhoneNumber")
+                        .WithMany()
+                        .HasForeignKey("PhoneNumberId");
+
+                    b.Navigation("PhoneNumber");
                 });
 
             modelBuilder.Entity("Identity.Domain.AggregatesModel.UserAggregate.UserSafety", b =>

@@ -63,7 +63,7 @@ public class User : Entity, IAggregateRoot
                       
             CreateDatetime = dateTimeOffset
         };
-        UserResult.AddDomainEvent(new UserCreatedByEmailDomainEvent(UserResult, userEmail, userEmail, DateTimeOffset.UtcNow));
+        UserResult.AddDomainEvent(new CreateUserByEmailDomainEvent(UserResult, userEmail, userEmail, DateTimeOffset.UtcNow));
         return new ValueTask<User>(UserResult);
     }
 
@@ -92,7 +92,7 @@ public class User : Entity, IAggregateRoot
             PasswordHash = passwordHash,
             CreateDatetime = dateTimeOffset
         };
-        UserResult.AddDomainEvent(new UserCreatedByPhoneDomainEvent(UserResult, phoneNumber, phoneNumber.PhoneCode, DateTimeOffset.UtcNow));
+        UserResult.AddDomainEvent(new CreateUserByPhoneDomainEvent(UserResult, phoneNumber, phoneNumber.PhoneCode, DateTimeOffset.UtcNow));
         return new ValueTask<User>(UserResult);
     }
 

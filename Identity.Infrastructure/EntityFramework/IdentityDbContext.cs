@@ -25,6 +25,8 @@ public class IdentityDbContext : DbContext, IUnitOfWork
 
     public DbSet<UserAccessFail> UserAccessFails { get; set; }
 
+    public DbSet<UserLoginHistory> UserLoginHistories { get; set; }
+
     public DbSet<RoleClaim> RoleClaims { get; set; }
 
     public DbSet<UserClaim> UserClaims { get; set; }

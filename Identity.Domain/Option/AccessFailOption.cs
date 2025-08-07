@@ -1,6 +1,6 @@
 ﻿namespace Identity.Domain.Option
 {
-    public abstract class AccessFailOption
+    public class AccessFailOption
     {
 
         public int MiximumAccessFailCount { get; set; } = 5;

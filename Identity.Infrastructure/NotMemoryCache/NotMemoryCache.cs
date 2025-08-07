@@ -1,68 +1,90 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 
 namespace Identity.Infrastructure.NotMemoryCache
 {
-    public class NotMemoryCache: INotMemoryCache
+    public class NotMemoryCache : INotMemoryCache
     {
 
-        private readonly MemoryCache _memoryCache;
+        private readonly IDistributedCache _memoryCache;
 
         private readonly ILogger<NotMemoryCache> _logger;
 
-        public NotMemoryCache(MemoryCache memoryCache, ILogger<NotMemoryCache> logger)
+
+
+        public NotMemoryCache(IDistributedCache memoryCache, ILogger<NotMemoryCache> logger)
         {
             _memoryCache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public Task AddByMemoryCacheAsync(object key, object value, long expiredTimeMinutes = 5)
+
+        public Task AddByMemoryCacheAsync(string key, byte[] value, long expiredTimeMinutes = 5)
         {
-            if(key != null && value != null)
+            if (key != null && value != null)
             {
-                var cacheEntryOptions = new MemoryCacheEntryOptions
+                var cacheEntryOptions = new DistributedCacheEntryOptions
                 {
                     AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(expiredTimeMinutes) // Set expiration time as needed
                 };
-                _memoryCache.Set(key, value, cacheEntryOptions);
                 _logger.LogInformation($"Added item with key '{key}' to memory cache.");
-                return Task.CompletedTask;
+                return _memoryCache.SetAsync(key, value, cacheEntryOptions);
             }
-           return Task.CompletedTask;
+            return Task.CompletedTask;
         }
 
-        public Task<T?> GetByMemoryCacheAsync<T>(object key) where T : class
+
+        public Task AddByMemoryCacheAsync(string key, string value, long expiredTimeMinutes = 5)
+        {
+
+            if (!string.IsNullOrEmpty(key) && !string.IsNullOrEmpty(value))
+            {
+                var byteValue = Encoding.UTF8.GetBytes(value);
+                var cacheEntryOptions = new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(expiredTimeMinutes) // Set expiration time as needed
+                };
+                _logger.LogInformation($"Added item with key '{key}' to memory cache.");
+                return _memoryCache.SetAsync(key, byteValue, cacheEntryOptions);
+            }
+            return Task.CompletedTask;
+        }
+
+        public async Task<string?> GetByMemoryCacheAsync(string key)
         {
             if (key == null)
             {
                 _logger.LogWarning("Key is null, cannot retrieve item from memory cache.");
-                return Task.FromResult<T?>(null);
+                return string.Empty;
             }
-            return _memoryCache.Get(key) is not null
-                ? Task.FromResult<T?>(_memoryCache.Get<T>(key))
-                : Task.FromResult<T?>(null);
-
+            return await _memoryCache.GetAsync(key) is not null
+                ? _memoryCache.GetAsync(key)
+                .ToString()
+                : null;
         }
 
-        public Task RemoveByMemoryCacheAsync(object key)
+        public Task RemoveByMemoryCacheAsync(string key)
         {
-            this._memoryCache.Remove(key);
-            return Task.CompletedTask;
+            return _memoryCache.RemoveAsync(key);
         }
 
-        public Task<bool> ValidateCodeAsync(object key, object vlaue)
+        public async Task<bool> IsValidateCodeAsync(string key, string value)
         {
-            if(key == null || vlaue == null)
+            if (key == null || value == null)
             {
                 _logger.LogWarning("Key or value is null, cannot validate code.");
-                return Task.FromResult(false);
+                return false;
             }
-            var cachedCode = _memoryCache.Get<object>(key);
-            return Task.FromResult(cachedCode != null && cachedCode.Equals(vlaue));
-
+            var cachedCode = await GetByMemoryCacheAsync(key);
+            if (string.IsNullOrEmpty(cachedCode))
+            {
+                return false;
+            }
+            if (cachedCode == value)
+            {
+                await RemoveByMemoryCacheAsync(key);
+                return true;
+            }
+            return false;
         }
     }
 }
