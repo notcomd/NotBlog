@@ -4,6 +4,7 @@ namespace Identity.Domain.Events;
 
 public record CreatedByUserDomainEvent : INotifications
 {
+
     public CreatedByUserDomainEvent(Guid userGuid, Guid roleGuid, string name, string? email,
         PhoneNumber? phoneNumber, DateTimeOffset dateTimeOffset)
     {

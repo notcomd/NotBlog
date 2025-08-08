@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Notcomd.Token.JWT;
 
-public static class JwtGenerateCodeRandom
+public static class GenerateHper
 {
 
     private static readonly Random random = new Random();

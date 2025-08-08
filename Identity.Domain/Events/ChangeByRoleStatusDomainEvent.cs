@@ -1,8 +1,8 @@
 ﻿namespace Identity.Domain.Events
 {
-    public record ChangeByRoleStatusDomianEvent : INotifications
+    public record ChangeByRoleStatusDomainEvent : INotifications
     {
-        public ChangeByRoleStatusDomianEvent(Guid roleGuid, string roleName, string attribute, string eventMessage, List<RoleClaim> roleClaim, DateTimeOffset changeTime)
+        public ChangeByRoleStatusDomainEvent(Guid roleGuid, string roleName, string attribute, string eventMessage, List<RoleClaim> roleClaim, DateTimeOffset changeTime)
         {
             RoleGuid = roleGuid;
             RoleName = roleName;

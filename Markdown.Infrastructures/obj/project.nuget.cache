@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "dgSpecHash": "Ym6DbXrE81c=",
-  "success": false,
+  "dgSpecHash": "pHMcFHqQt7w=",
+  "success": true,
   "projectFilePath": "C:\\Users\\29617\\source\\repos\\MyService\\Markdown.Infrastructures\\Markdown.Infrastructures.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\29617\\.nuget\\packages\\microsoft.entityframeworkcore\\8.0.5\\microsoft.entityframeworkcore.8.0.5.nupkg.sha512",
@@ -16,17 +16,5 @@
     "C:\\Users\\29617\\.nuget\\packages\\microsoft.extensions.options\\8.0.0\\microsoft.extensions.options.8.0.0.nupkg.sha512",
     "C:\\Users\\29617\\.nuget\\packages\\microsoft.extensions.primitives\\8.0.0\\microsoft.extensions.primitives.8.0.0.nupkg.sha512"
   ],
-  "logs": [
-    {
-      "code": "NU1104",
-      "level": "Error",
-      "message": "找不到项目“C:\\Users\\29617\\source\\repos\\MyService\\Notcomd.Document.Server\\Markdown.Domain.csproj”。请检查项目引用是否有效以及项目文件是否存在。",
-      "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\Markdown.Infrastructures\\Markdown.Infrastructures.csproj",
-      "filePath": "C:\\Users\\29617\\source\\repos\\MyService\\Markdown.Infrastructures\\Markdown.Infrastructures.csproj",
-      "libraryId": "C:\\Users\\29617\\source\\repos\\MyService\\Notcomd.Document.Server\\Markdown.Domain.csproj",
-      "targetGraphs": [
-        "net9.0"
-      ]
-    }
-  ]
+  "logs": []
 }

@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Notcomd.Token.JWT;
 
-public sealed class HashH256Tool
+public sealed class HashHper
 {
     public static ValueTask<string> CreateHash256Async(string hashString, byte[] salt)
     {

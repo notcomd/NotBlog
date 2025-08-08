@@ -4,7 +4,7 @@ namespace Identity.Domain.Entities
 {
     public sealed class IdentityResult<TResponse> : IActionResult where TResponse : class
     {
-
+        private object _lock = new object();
         private IdentityResult(string resultMessage, EnumStatusCode statusCode, TResponse resultData, ResultType resultType = ResultType.ApplicationJson)
         {
             ResultMessage = resultMessage;
@@ -72,39 +72,21 @@ namespace Identity.Domain.Entities
             }
         }
 
-        public static IdentityResult<TResponse> Success(string message, TResponse data, ResultType resultType = ResultType.ApplicationJson)
+        public static IdentityResult<TResponse> ResultAsync(string? message, EnumStatusCode statusCode, TResponse data, ResultType resultType = ResultType.ApplicationJson)
         {
-            return new IdentityResult<TResponse>(message, EnumStatusCode.Ok, data, resultType);
-        }
-
-        public static IdentityResult<TResponse> Error(string message, TResponse data, ResultType resultType = ResultType.ApplicationJson)
-        {
-            return new IdentityResult<TResponse>(message, EnumStatusCode.Error, data, resultType);
-        }
-
-        public static IdentityResult<TResponse> TimeOut(string message, TResponse data, ResultType resultType = ResultType.ApplicationJson)
-        {
-            return new IdentityResult<TResponse>(message, EnumStatusCode.TimeOut, data, resultType);
-        }
-
-        public static IdentityResult<TResponse> Reset(string message, TResponse data, ResultType resultType = ResultType.ApplicationJson)
-        {
-            return new IdentityResult<TResponse>(message, EnumStatusCode.Reset, data, resultType);
-        }
-
-        public static IdentityResult<TResponse> NotAuthorized(string message, TResponse data, ResultType resultType = ResultType.ApplicationJson)
-        {
-            return new IdentityResult<TResponse>(message, EnumStatusCode.NotAuthorized, data, resultType);
-        }
-
-        public static IdentityResult<TResponse> InternalServerError(string message, TResponse data, ResultType resultType = ResultType.ApplicationJson)
-        {
-            return new IdentityResult<TResponse>(message, EnumStatusCode.InternalServerError, data, resultType);
-        }
-
-
-        public static IdentityResult<TResponse> Other(string message, EnumStatusCode statusCode, TResponse data, ResultType resultType = ResultType.ApplicationJson)
-        {
+            if (string.IsNullOrEmpty(message))
+            {
+                message = statusCode switch
+                {
+                    EnumStatusCode.Ok => "操作成功",
+                    EnumStatusCode.Error => "操作失败",
+                    EnumStatusCode.TimeOut => "请求超时",
+                    EnumStatusCode.Reset => "重置成功",
+                    EnumStatusCode.NotAuthorized => "未授权",
+                    EnumStatusCode.InternalServerError => "服务器内部错误",
+                    _ => "未知状态"
+                };
+            }
             return new IdentityResult<TResponse>(message, statusCode, data, resultType);
         }
     }

@@ -166,7 +166,7 @@ public class User : Entity, IAggregateRoot
         var str = salt.ToString() ?? throw new ArgumentNullException(nameof(salt));
         UserSafety.SetOrResetByPasswordSalt(str);
         UserSafety.SetOrResetBySecurityStamp(stamp);
-        PasswordHash = await HashH256Tool.CreateHash256Async(password, salt
+        PasswordHash = await HashHper.CreateHash256Async(password, salt
             ?? throw new ArgumentNullException("salt is null!"));
     }
 
@@ -228,7 +228,7 @@ public class User : Entity, IAggregateRoot
         if (!await CheckByPasswordAsync(PasswordHash, passwordHash))
         {
             UserAccessFail.VerifyByAccessFaild();
-            AddDomainEvent(new AccountLockedEvent(Id));
+            AddDomainEvent(new AccountLockedDomainEvent(Id));
         }
         return PasswordHash == passwordHash;
     }
@@ -245,7 +245,7 @@ public class User : Entity, IAggregateRoot
     private async Task<bool> CheckByPasswordAsync(string hashPassword, string password)
     {
         ArgumentNullException.ThrowIfNull(password, nameof(password));
-        return await HashH256Tool.VerifyPasswordValueTask(password, hashPassword, Encoding.UTF8.GetBytes(UserSafety.PasswordSalt));
+        return await HashHper.VerifyPasswordValueTask(password, hashPassword, Encoding.UTF8.GetBytes(UserSafety.PasswordSalt));
     }
 
     /// <summary>

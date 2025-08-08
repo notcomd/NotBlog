@@ -213,7 +213,6 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
-          "C:\\Users\\29617\\source\\repos\\MyService\\Notcomd.Document.Server\\Markdown.Domain.csproj": "1.0.0",
           "Markdown.Domain": "1.0.0",
           "Microsoft.EntityFrameworkCore": "8.0.5"
         },
@@ -675,16 +674,5 @@
         "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
       }
     }
-  },
-  "logs": [
-    {
-      "code": "NU1104",
-      "level": "Error",
-      "message": "找不到项目“C:\\Users\\29617\\source\\repos\\MyService\\Notcomd.Document.Server\\Markdown.Domain.csproj”。请检查项目引用是否有效以及项目文件是否存在。",
-      "libraryId": "C:\\Users\\29617\\source\\repos\\MyService\\Notcomd.Document.Server\\Markdown.Domain.csproj",
-      "targetGraphs": [
-        "net9.0"
-      ]
-    }
-  ]
+  }
 }

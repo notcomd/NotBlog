@@ -5,10 +5,11 @@ namespace EmailSendServer;
 public class MailPush
 {
 
-    public MailPush(string titleEmail, string toEmailAddress)
+    public MailPush(string titleEmail, string toEmailAddress, string bodyEmail)
     {
         TitleEmail = titleEmail;
         ToEmailAddress = toEmailAddress;
+        BodyEmail = bodyEmail;
     }
 
     /// <summary>
@@ -19,6 +20,8 @@ public class MailPush
     ///     邮件接收地址
     /// </summary>
     public string ToEmailAddress { get; set; }
+
+    public string BodyEmail { get; set; } = string.Empty;
 
     public List<MailboxAddress> ToEmailList { get; } = new();
 

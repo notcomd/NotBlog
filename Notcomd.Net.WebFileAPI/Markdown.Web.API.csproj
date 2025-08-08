@@ -7,12 +7,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Markdown.Domain\Markdown.Domain.csproj"/>
-        <ProjectReference Include="..\Markdown.Infrastructures\Markdown.Infrastructures.csproj"/>
+      <Compile Remove="Protos\**" />
+      <Content Remove="Protos\**" />
+      <EmbeddedResource Remove="Protos\**" />
+      <None Remove="Protos\**" />
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Protos\"/>
+        <ProjectReference Include="..\Markdown.Domain\Markdown.Domain.csproj" />
+        <ProjectReference Include="..\Markdown.Infrastructures\Markdown.Infrastructures.csproj" />
     </ItemGroup>
 
 </Project>

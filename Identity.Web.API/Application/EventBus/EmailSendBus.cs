@@ -1,4 +1,4 @@
-namespace Identity.Web.API.EventBus;
+﻿namespace Identity.Web.API.Application.EventBus;
 
 [EvenBusName("Identity.User.Code")]
 public class EmailSendBus : JsonIntegrationEventHandler<EmailSendRecord>

@@ -1,4 +1,4 @@
-using Identity.Domain.INotDateTime;
+﻿using Identity.Domain.INotDateTime;
 
 using Org.BouncyCastle.Bcpg;
 
@@ -25,7 +25,7 @@ public class CreateByEmailUserCommandHandler : IRequestHandler<CreateByEmailUser
 
     public async Task<bool> Handler(CreateByEmailUserCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation($"[{DateTime.UtcNow}]Email Send! ");
+        //_logger.LogInformation($"[{DateTime.UtcNow}]Email Send! ");
         ArgumentNullException.ThrowIfNull(request);
         var userData=await _userRepository.FindOneByUserAsync(request.Email);
         var roleData = await _userRoleRepository.FindByUserRoleAsync(request.RoleName);

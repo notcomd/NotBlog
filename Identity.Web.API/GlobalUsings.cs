@@ -9,14 +9,13 @@ global using DomainCommonst;
 
 global using EmailSendServer;
 
-global using Identity.Domain.AggregatesModel.UserAggregate;
 global using Identity.Domain.AggregatesModel.RoleAggregate;
-global using Identity.Domain.AggregatesModel.Author2Aggregate;
-global using Identity.Domain.AggregatesModel.ClientAggregate;
-global using Identity.Domain.SeedWork;
+global using Identity.Domain.AggregatesModel.UserAggregate;
 global using Identity.Domain.Entities;
 global using Identity.Domain.Events;
+global using Identity.Domain.INotDateTime;
 global using Identity.Domain.IRepository;
+global using Identity.Infrastructure.NotMemoryCache;
 global using Identity.Infrastructure.RequestManager;
 global using Identity.Web.API.ActionFilter;
 

@@ -101,9 +101,6 @@
             "projectReferences": {
               "C:\\Users\\29617\\source\\repos\\MyService\\Markdown.Domain\\Markdown.Domain.csproj": {
                 "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\Markdown.Domain\\Markdown.Domain.csproj"
-              },
-              "C:\\Users\\29617\\source\\repos\\MyService\\Notcomd.Document.Server\\Markdown.Domain.csproj": {
-                "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\Notcomd.Document.Server\\Markdown.Domain.csproj"
               }
             }
           }

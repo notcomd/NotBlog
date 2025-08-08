@@ -1,4 +1,6 @@
-﻿namespace Identity.Infrastructure.Repository;
+﻿using Org.BouncyCastle.Asn1.Cms;
+
+namespace Identity.Infrastructure.Repository;
 
 public class EmailCodeSend : IEmailCodeSend
 {
@@ -13,18 +15,45 @@ public class EmailCodeSend : IEmailCodeSend
 
     public async ValueTask SendEmailCodeAsync(string toEmail, string code)
     {
-        var mailpush = new MailPush("验证玛", toEmail);
+        ArgumentNullException.ThrowIfNull(toEmail, nameof(toEmail));
+        ArgumentNullException.ThrowIfNull(code, nameof(code));
+
+        var mailpush = new MailPush("验证玛", toEmail,PushEmailTemplate(code));
 
         var message = new MimeMessage
         {
             Subject = "hello",
             Body = new BodyBuilder
             {
-                HtmlBody =
-                    $"<dir style=\"background-color: deepskyblue; width: auto; height: 60px;\">\n    <span style=\"text-align: left;\"><h1>Notcomd Studio</h1></span>\n</dir>\n<dir style=\" width: auto; height: max-content;\">\n    <span style=\"text-align: center;\"><h1>验证码</h1></span>\n    <span style=\"text-align:center;\"><h2>{code}</h2></span>\n</dir>"
+                HtmlBody =mailpush.BodyEmail
+                    
             }.ToMessageBody()
         };
-        await _email.SendEmailValueTask(message, mailpush, SecureSocketOptions.SslOnConnect);
-        _logger.LogInformation($"[{DateTime.UtcNow}]Email Send! ");
+
+        try
+        {
+            await _email.SendEmailValueTask(message, mailpush, SecureSocketOptions.SslOnConnect);
+            _logger.LogInformation($"[（*＾-＾*）{0}] 邮件发送成功，接收人：{toEmail}",DateTimeOffset.UtcNow);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError($"[(≧ ﹏ ≦){DateTimeOffset.UtcNow}] 邮件发送失败，接收人：{toEmail}，错误信息：{e.Message}");
+            throw;
+        }
+
+        
     }
+
+    private string PushEmailTemplate(string code)
+    {
+        return $@"
+            <h1>欢迎使用我们的服务！</h1>
+            <p>您的验证码是: <strong>{code}</strong></p>
+            <p>请在10分钟内使用此验证码。</p>
+            <p>如果您没有请求此验证码，请忽略此邮件。</p>
+            <br/>
+            <p>谢谢！</p>
+        ";
+    }
+
 }

@@ -1,9 +1,9 @@
 ﻿namespace Identity.Domain.Events;
 
-public record ChangeByUserStatusDomianEvent : INotifications
+public record ChangeByUserStatusDomainEvent : INotifications
 {
 
-    public ChangeByUserStatusDomianEvent(Guid userGuid, string eventMessage, string userName, string? email, PhoneNumber? phoneNumber, UserSafety? userSafety, UserAccessFail? userAccessFail, DateTimeOffset dateTimeOffset)
+    public ChangeByUserStatusDomainEvent(Guid userGuid, string eventMessage, string userName, string? email, PhoneNumber? phoneNumber, UserSafety? userSafety, UserAccessFail? userAccessFail, DateTimeOffset dateTimeOffset)
     {
         UserGuid = userGuid;
 

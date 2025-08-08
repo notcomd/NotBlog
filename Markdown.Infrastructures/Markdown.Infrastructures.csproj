@@ -7,12 +7,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Markdown.Domain\Markdown.Domain.csproj"/>
-        <ProjectReference Include="..\Notcomd.Document.Server\Markdown.Domain.csproj"/>
+        <ProjectReference Include="..\Markdown.Domain\Markdown.Domain.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.5"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.5" />
     </ItemGroup>
 
 </Project>

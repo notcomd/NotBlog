@@ -572,7 +572,6 @@
   },
   "projectFileDependencyGroups": {
     "net9.0": [
-      "C:\\Users\\29617\\source\\repos\\MyService\\Notcomd.Document.Server\\Markdown.Domain.csproj",
       "Markdown.Domain >= 1.0.0",
       "Microsoft.EntityFrameworkCore >= 8.0.5"
     ]
@@ -612,9 +611,6 @@
           "projectReferences": {
             "C:\\Users\\29617\\source\\repos\\MyService\\Markdown.Domain\\Markdown.Domain.csproj": {
               "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\Markdown.Domain\\Markdown.Domain.csproj"
-            },
-            "C:\\Users\\29617\\source\\repos\\MyService\\Notcomd.Document.Server\\Markdown.Domain.csproj": {
-              "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\Notcomd.Document.Server\\Markdown.Domain.csproj"
             }
           }
         }
@@ -659,16 +655,5 @@
         "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
       }
     }
-  },
-  "logs": [
-    {
-      "code": "NU1104",
-      "level": "Error",
-      "message": "找不到项目“C:\\Users\\29617\\source\\repos\\MyService\\Notcomd.Document.Server\\Markdown.Domain.csproj”。请检查项目引用是否有效以及项目文件是否存在。",
-      "libraryId": "C:\\Users\\29617\\source\\repos\\MyService\\Notcomd.Document.Server\\Markdown.Domain.csproj",
-      "targetGraphs": [
-        "net9.0"
-      ]
-    }
-  ]
+  }
 }
