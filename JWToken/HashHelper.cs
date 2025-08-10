@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Notcomd.Token.JWT;
 
-public sealed class HashHper
+public sealed class HashHelper
 {
     public static ValueTask<string> CreateHash256Async(string hashString, byte[] salt)
     {
@@ -17,6 +17,19 @@ public sealed class HashHper
     {
         return new ValueTask<byte[]>(RandomNumberGenerator.GetBytes(64));
     }
+
+
+    public static ValueTask<string> GenerateSecurityStamp()
+    {
+        var bytes = new byte[16];
+        RandomNumberGenerator.Fill(bytes);
+        return Convert.ToBase64String(bytes) switch
+        {
+            string securityStamp => new ValueTask<string>(securityStamp),
+            _ => throw new InvalidOperationException("Failed to generate security stamp.")
+        };
+    }
+
 
     public async static ValueTask<bool> VerifyPasswordValueTask(string password, string hash, byte[] sart)
     {

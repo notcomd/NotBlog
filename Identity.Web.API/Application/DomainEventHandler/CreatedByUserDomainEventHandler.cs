@@ -34,7 +34,7 @@ namespace Identity.Web.API.Application.DomainEventHandler
                 account = notifications.PhoneNumber!.PhoneCode;
             else
                 account = notifications.Email;
-            var generaCode = await GenerateHper.CreateRandomValueTask(9);
+            var generaCode = await GenerateHelper.CreateRandomValueTask(9);
             await _notMemoryCache.AddByMemoryCacheAsync($"Signe_{notifications.Email}", Encoding.UTF8.GetBytes(generaCode));
             _logger.LogInformation($"[（*＾-＾*）{DateTimeOffset.UtcNow} ]成功生成了{account}激活码！");
             return;

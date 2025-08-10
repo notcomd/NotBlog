@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Notcomd.Token.JWT;
 
-public static class GenerateHper
+public static class GenerateHelper
 {
 
     private static readonly Random random = new Random();
@@ -34,6 +34,7 @@ public static class GenerateHper
     /// <returns></returns>
     public static ValueTask<string> CreateRandomStringValueTask(in int length)
     {
+        
         var GenerateCode = new StringBuilder(length);
         for (int item = 0; item < length; item++)
         {
@@ -51,14 +52,5 @@ public static class GenerateHper
     }
 
 
-    public static ValueTask<string> GenerateSecurityStamp()
-    {
-        var bytes = new byte[16];
-        RandomNumberGenerator.Fill(bytes);
-        return Convert.ToBase64String(bytes) switch
-        {
-            string securityStamp => new ValueTask<string>(securityStamp),
-            _ => throw new InvalidOperationException("Failed to generate security stamp.")
-        };
-    }
+   
 }

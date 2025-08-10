@@ -2,8 +2,7 @@
 
 public class UserClaim : Entity
 {
-
-    //public Guid UserClaimGuid { get; private set; }
+       
 
     public Guid UserGuid { get; private set; }
 
