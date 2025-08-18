@@ -13,4 +13,7 @@ public interface IUserRoleRepository : IRepository<Roles>
     ValueTask<bool> IsUserRoleAsync(string roleName);
 
     ValueTask UpByUserRoleAsync(Roles userRole);
+
+    ValueTask <IEnumerable<RoleClaim>> FindRoleClaimByRolesAsync(Guid roleGuid);
+
 }

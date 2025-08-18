@@ -8,8 +8,13 @@
 
             builder.Ignore(b => b.DomainEventbus);
            
-
             builder.HasKey(en => en.Id);
+
+            builder.Property("IsActive");
+
+            builder.Property("IsLockedOut");
+
+            builder.Property("IsDeleted");
 
         }
     }

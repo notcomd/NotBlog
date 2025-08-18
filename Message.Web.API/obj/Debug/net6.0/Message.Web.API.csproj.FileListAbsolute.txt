@@ -34,3 +34,4 @@ C:\Users\29617\source\repos\MyService\Message.Web.API\obj\Debug\net6.0\refint\Me
 C:\Users\29617\source\repos\MyService\Message.Web.API\obj\Debug\net6.0\Message.Web.API.pdb
 C:\Users\29617\source\repos\MyService\Message.Web.API\obj\Debug\net6.0\Message.Web.API.genruntimeconfig.cache
 C:\Users\29617\source\repos\MyService\Message.Web.API\obj\Debug\net6.0\ref\Message.Web.API.dll
+C:\Users\29617\source\repos\MyService\Message.Web.API\obj\Debug\net6.0\rpswa.dswa.cache.json

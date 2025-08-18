@@ -19,9 +19,9 @@ public class User : Entity, IAggregateRoot
 
     public PhoneNumber? PhoneNumber { get; private set; }
 
-    private IList<UserClaim?> UserClaims { get; set; }
+    private readonly List<UserClaim> _UserClaims = new List<UserClaim>();
 
-    public IEnumerable<UserClaim?> UserClaimsReadOnly => UserClaims.AsReadOnly();
+    public IReadOnlyCollection<UserClaim?> UserClaims => _UserClaims.AsReadOnly();
 
     public UserAccessFail UserAccessFail { get; private set; }
 
@@ -34,7 +34,17 @@ public class User : Entity, IAggregateRoot
     /// </summary>
     protected User()
     {
+        Id = Guid.CreateVersion7();
+    }
 
+    public static ValueTask<User> CreateByEmailAsync(Guid userRoleGuid, string userEmail, string passwordHash, DateTimeOffset dateTimeOffset)
+    {
+        return new ValueTask<User>(CreateByEmailUser(userRoleGuid, userEmail, passwordHash, dateTimeOffset));
+    }
+
+    public static ValueTask<User> CreateByPhoneAsync(Guid userRoleGuid, PhoneNumber phoneNumber, string passwordHash, DateTimeOffset dateTimeOffset)
+    {
+        return new ValueTask<User>(CreateByPhoneUser(userRoleGuid, phoneNumber, passwordHash, dateTimeOffset));
     }
 
     /// <summary>
@@ -45,7 +55,8 @@ public class User : Entity, IAggregateRoot
     /// <param name="passwordHash"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentNullException"></exception>
-    public static ValueTask<User> CreateByEmailUser(Guid userRoleGuid, string userEmail, string passwordHash, DateTimeOffset dateTimeOffset)
+    public static User CreateByEmailUser(Guid userRoleGuid, string userEmail, string passwordHash,
+        DateTimeOffset dateTimeOffset)
     {
         if (userRoleGuid == Guid.Empty)
             throw new ArgumentNullException(nameof(userRoleGuid), "User role cannot be null or empty");
@@ -56,15 +67,13 @@ public class User : Entity, IAggregateRoot
 
         var UserResult = new User
         {
-            Id = Guid.CreateVersion7(),
             UserRoleGuid = userRoleGuid,
             UserName = userEmail,
             PasswordHash = passwordHash,
-                      
             CreateDatetime = dateTimeOffset
         };
-        UserResult.AddDomainEvent(new CreateUserByEmailDomainEvent(UserResult, userEmail, userEmail, DateTimeOffset.UtcNow));
-        return new ValueTask<User>(UserResult);
+        UserResult.AddDomainEvent(new CreatedByUserDomainEvent(UserResult.Id, userRoleGuid, userEmail, userEmail, null, dateTimeOffset));
+        return UserResult;
     }
 
     /// <summary>
@@ -75,7 +84,8 @@ public class User : Entity, IAggregateRoot
     /// <param name="passwordHash"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentNullException"></exception>
-    public static ValueTask<User> CreateByPhoneUser(Guid userRoleGuid, PhoneNumber phoneNumber, string passwordHash, DateTimeOffset dateTimeOffset)
+    public static User CreateByPhoneUser(Guid userRoleGuid, PhoneNumber phoneNumber, string passwordHash,
+        DateTimeOffset dateTimeOffset)
     {
         if (userRoleGuid == Guid.Empty)
             throw new ArgumentNullException(nameof(userRoleGuid), "User role cannot be null or empty");
@@ -86,14 +96,14 @@ public class User : Entity, IAggregateRoot
 
         var UserResult = new User
         {
-            Id = Guid.CreateVersion7(),
+
             UserRoleGuid = userRoleGuid,
             PhoneNumber = phoneNumber,
             PasswordHash = passwordHash,
             CreateDatetime = dateTimeOffset
         };
-        UserResult.AddDomainEvent(new CreateUserByPhoneDomainEvent(UserResult, phoneNumber, phoneNumber.PhoneCode, DateTimeOffset.UtcNow));
-        return new ValueTask<User>(UserResult);
+        UserResult.AddDomainEvent(new CreatedByUserDomainEvent(UserResult.Id, userRoleGuid, phoneNumber.PhoneCode, string.Empty, phoneNumber, DateTimeOffset.UtcNow));
+        return UserResult;
     }
 
     /// <summary>
@@ -155,6 +165,12 @@ public class User : Entity, IAggregateRoot
     /// </exception>
     public async ValueTask ChangeByPasswordAsync(string password, byte[] salt, string stamp)
     {
+        ArgumentNullException.ThrowIfNullOrEmpty(password, nameof(password));
+        ArgumentNullException.ThrowIfNull(salt, nameof(salt));
+        if (string.IsNullOrEmpty(stamp))
+        {
+            throw new ArgumentNullException(nameof(stamp), "security stamp is null or empty");
+        }
         if (UserSafety.UserStatus == EnumUserStatus.Locked || UserSafety.BlackOrWhite == EnumBlackOrWhite.AuthorityBlack)
         {
             throw new InvalidOperationException("用户已被锁定，无法修改密码");
@@ -163,9 +179,7 @@ public class User : Entity, IAggregateRoot
         {
             throw new ArgumentOutOfRangeException(nameof(password));
         }
-        var str = salt.ToString() ?? throw new ArgumentNullException(nameof(salt));
-        UserSafety.SetOrResetByPasswordSalt(str);
-        UserSafety.SetOrResetBySecurityStamp(stamp);
+        var str = Encoding.UTF8.GetString(salt);       
         PasswordHash = await HashHelper.CreateHash256Async(password, salt
             ?? throw new ArgumentNullException("salt is null!"));
     }
@@ -178,10 +192,11 @@ public class User : Entity, IAggregateRoot
     /// <returns>
     /// 手机对象
     /// </returns>
-    public  void SetOrRestByPhoneAsync(long region, string phoneNumber)
+    public async Task SetOrRestByPhoneAsync(long region, string phoneNumber)
     {
         PhoneNumber = PhoneNumber.CreatePhoneNumber(Id, region, phoneNumber) ?? throw new ArgumentNullException(nameof(PhoneNumber), "phone number is null");
-        AddDomainEvent(new PhoneNumberBandingEvent(Id, PhoneNumber.PhoneCode));
+        var stamp = await HashHelper.GenerateSecurityStamp();
+        var code = await GenerateHelper.CreateRandomStringValueTask(9);
     }
 
     /// <summary>
@@ -227,8 +242,8 @@ public class User : Entity, IAggregateRoot
     {
         if (!await CheckByPasswordAsync(PasswordHash, passwordHash))
         {
-            UserAccessFail.VerifyByAccessFaild();
-            AddDomainEvent(new AccountLockedDomainEvent(Id));
+            UserAccessFail.VerifyByAccessFailed();
+            AddDomainEvent(new AccountLockedDomainEvent(Id, DateTimeOffset.UtcNow));
         }
         return PasswordHash == passwordHash;
     }
@@ -249,70 +264,44 @@ public class User : Entity, IAggregateRoot
     }
 
     /// <summary>
-    ///  
-    /// </summary>
-    /// <param name="salt"></param>
-    /// <param name="stamp"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentNullException"></exception>
-    public void  SetOrRestByUserSafety(string salt, string stamp)
-    {
-        if (string.IsNullOrEmpty(salt) || string.IsNullOrEmpty(stamp))
-            throw new ArgumentNullException(nameof(salt));
-        UserSafety.CreateByUserSafety(Id, salt, stamp);
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="claim"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentNullException"></exception>
-    public void SetOrRestByUserClaim(Claim claim)
-    {
-        if (claim == null)
-            throw new ArgumentNullException(nameof(claim));
-        UserClaim.CreateByUserClaimAsync(Id, claim);
-        // return 
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <returns></returns>
-    public async Task SetOrRestByUserAccessFail()
-    {
-        await UserAccessFail.CreateByUserAccessFailAsync(Id);
-    }
-
-    /// <summary>
-    ///  改变用户的账号状态
-    /// </summary>
-    /// <param name="enumBlackOrWhite"></param>
-    /// <param name="enumUserStatus"></param>
-    /// <exception cref="ArgumentException"></exception>
-    public void ChangeByUserStatusAsync(EnumBlackOrWhite enumBlackOrWhite, EnumUserStatus enumUserStatus)
-    {
-        if (enumBlackOrWhite == EnumBlackOrWhite.AuthorityBlack && enumUserStatus != EnumUserStatus.Locked)
-        {
-            throw new ArgumentException("黑名单用户状态必须为锁定状态", nameof(enumUserStatus));
-        }
-        UserSafety.SetOrResetByBlackOrWhiteAndUserStatus(enumBlackOrWhite, enumUserStatus);
-
-    }
-
-    /// <summary>
     /// 设置或跟新地址
     /// </summary>
     /// <param name="address"></param>
     /// <exception cref="ArgumentException"></exception>
-    public void SetOrRestByAddress(string address)
+    public void ChangeByAddress(string address)
     {
         if (string.IsNullOrEmpty(address) || address.Length <= 100)
             throw new ArgumentException(nameof(address));
-
         Address = address;
     }
 
+    public void AddUserClaim(string claimType, string claimValue)
+    {
+
+        if (_UserClaims.Any(c => c.ClaimType == claimType))
+        {
+            throw new ArgumentException($"User already has a claim of type {claimType}", nameof(claimType));
+        }
+        var newClaim = UserClaim.CreateByUserClaimAsync(Id, claimType, claimValue);
+        _UserClaims.Add(newClaim);
+
+    }
+
+    public void UpdateClaim(string type, string newValue)
+    {
+        var claim = _UserClaims.FirstOrDefault(c => c.ClaimType == type)
+            ?? throw new ArgumentException($"User does not have a claim of type {type}", nameof(type));
+        claim.UpdateClaim(type, newValue);
+    }
+
+    public void RemoveClaim(string type)
+    {
+        var claim = _UserClaims.FirstOrDefault(c => c.ClaimType == type);
+        if (claim is null)
+        {
+            throw new ArgumentException($"User does not have a claim of type {type}", nameof(type));
+        }
+        _UserClaims.Remove(claim);
+    }
 
 }

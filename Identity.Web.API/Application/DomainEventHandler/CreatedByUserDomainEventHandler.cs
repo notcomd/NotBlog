@@ -1,7 +1,4 @@
-﻿
-using System.Text;
-
-using Identity.Domain.INotDateTime;
+﻿using Identity.Web.API.Application.Command;
 
 namespace Identity.Web.API.Application.DomainEventHandler
 {
@@ -10,14 +7,16 @@ namespace Identity.Web.API.Application.DomainEventHandler
 
         private readonly INotDateTime _notDateTime;
         private readonly ILogger<CreatedByUserDomainEventHandler> _logger;
-        private readonly INotMemoryCache _notMemoryCache;
+        private readonly INotMediator _notMediator;
 
 
-        public CreatedByUserDomainEventHandler(INotDateTime notDateTime, ILogger<CreatedByUserDomainEventHandler> logger, INotMemoryCache notMemoryCache)
+
+        public CreatedByUserDomainEventHandler(INotDateTime notDateTime, ILogger<CreatedByUserDomainEventHandler> logger, INotMediator notMediator)
         {
             _notDateTime = notDateTime;
             _logger = logger;
-            _notMemoryCache = notMemoryCache;
+            _notMediator = notMediator;
+                       
         }
 
 
@@ -35,9 +34,12 @@ namespace Identity.Web.API.Application.DomainEventHandler
             else
                 account = notifications.Email;
             var generaCode = await GenerateHelper.CreateRandomValueTask(9);
-            await _notMemoryCache.AddByMemoryCacheAsync($"Signe_{notifications.Email}", Encoding.UTF8.GetBytes(generaCode));
-            _logger.LogInformation($"[（*＾-＾*）{DateTimeOffset.UtcNow} ]成功生成了{account}激活码！");
+            var changeCode=new GenerateCodeCommand(account,$"SignUpCode_{account}", generaCode);
+            await _notMediator.SendAsync(changeCode, cancellationToken);
+            _logger.LogInformation($"[（*＾-＾*）{_notDateTime.UtcNow} ]成功生成了{account}激活码！");
             return;
         }
+
+
     }
 }

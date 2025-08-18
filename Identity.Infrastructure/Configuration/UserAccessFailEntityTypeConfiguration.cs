@@ -8,9 +8,10 @@
             builder.ToTable("UserAccessFail");
 
             builder.Ignore(b => b.DomainEventbus);
-
-            //builder.Property(o => o.Id).UseHiLo("UserAccessFailseq");
+             
             builder.HasKey(b => b.Id);
+
+            builder.Property("IsLockOut");
         }
     }
 }

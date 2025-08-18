@@ -20,6 +20,11 @@
         /// <summary>
         /// 删除
         /// </summary>
-        Deleted = 3
+        Deleted = 3,
+
+       /// <summary>
+       ///  未激活
+       /// </summary>
+       UnActive = 4,
     }
 }

@@ -9,6 +9,9 @@ namespace Identity.Domain.IRepository
     public interface IUserRepositoryManager
     {
 
+        ValueTask<IEnumerable<User?>> FindByUserAsync(Guid[] guids);
+
+
         ValueTask DeleteByUser(Guid UserGuid);
 
 

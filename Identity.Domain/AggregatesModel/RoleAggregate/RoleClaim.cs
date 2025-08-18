@@ -1,32 +1,35 @@
-﻿using Microsoft.AspNetCore.Authentication;
-
-namespace Identity.Domain.AggregatesModel.RoleAggregate;
+﻿namespace Identity.Domain.AggregatesModel.RoleAggregate;
 
 public class RoleClaim : Entity
 {
 
-
     public Guid RoleGuid { get; private set; }
 
-    public string ClaimType { get; private set; } =string.Empty;
+    public string ClaimType { get; private set; } = string.Empty;
 
-    public string ClaimValue { get; private set; }=string.Empty;
+    public string ClaimValue { get; private set; } = string.Empty;
 
 
-    public static RoleClaim CreateByRoleClaimAsync(Guid roleGuid, Claim claim)
+    public static ValueTask<RoleClaim> CreteByRoleClaimValueTask(Guid roleGuid,string claimType,string claimValue)
     {
+        return new ValueTask<RoleClaim>(CreateByRoleClaimAsync(roleGuid, claimType, claimValue));
+    }
+
+
+    public static RoleClaim CreateByRoleClaimAsync(Guid roleGuid, string claimType, string claimValue)
+    {
+        ArgumentNullException.ThrowIfNullOrEmpty(nameof(claimType));
+        ArgumentNullException.ThrowIfNullOrEmpty(nameof(claimValue));
         if (roleGuid == Guid.Empty)
             throw new ArgumentNullException(nameof(roleGuid), "Role GUID cannot be empty");
-        if (claim == null)
-            throw new ArgumentNullException(nameof(claim), "Claim cannot be null");
+
         return new RoleClaim
         {
-            Id=Guid.CreateVersion7(),
+            Id = Guid.CreateVersion7(),
             RoleGuid = roleGuid,
-            ClaimType = claim.Type,
-            ClaimValue = claim.Value
+            ClaimType = claimType,
+            ClaimValue = claimValue
         };
-       // return new ValueTask<RoleClaim>(roleClaim);
     }
 
 
@@ -34,7 +37,7 @@ public class RoleClaim : Entity
     {
         if (claim == null)
             throw new ArgumentNullException(nameof(claim), "Claim cannot be null");
-        
+
         ClaimType = claim.Type;
         ClaimValue = claim.Value;
     }

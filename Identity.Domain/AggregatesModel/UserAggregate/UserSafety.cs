@@ -2,7 +2,6 @@
 
 public class UserSafety : Entity
 {
-       
 
     public Guid UserGuid { get; private set; }
 
@@ -16,13 +15,18 @@ public class UserSafety : Entity
 
     public DateTimeOffset? LockOutEnd { get; private set; }
 
-    public bool IsDeleted { get; private set; } = false;
+    private bool IsDeleted => UserStatus == EnumUserStatus.Deleted;
 
-    public bool IsLockedOut => LockOutEnd.HasValue && LockOutEnd.Value > DateTimeOffset.UtcNow;
+    private bool IsActive => UserStatus != EnumUserStatus.UnActive || UserStatus != EnumUserStatus.Deleted;
 
+    private bool IsLockedOut => LockOutEnd.HasValue && LockOutEnd.Value > DateTimeOffset.UtcNow;
 
+    protected UserSafety()
+    {
+        Id = Guid.CreateVersion7();
+    }
 
-    public static ValueTask<UserSafety> CreateByUserSafety(Guid UserGuid, string passwordSalt, string securityStamp, 
+    public static UserSafety CreateByUserSafety(Guid UserGuid, string passwordSalt, string securityStamp,
         EnumBlackOrWhite blackOrWhite = EnumBlackOrWhite.AuthorityWhite, EnumUserStatus userStatus = EnumUserStatus.Normal)
     {
 
@@ -32,16 +36,16 @@ public class UserSafety : Entity
                 throw new ArgumentException("At least one of passwordSalt or securityStamp must be provided", nameof(passwordSalt));
 
             var userSafety = new UserSafety
-            {                       
-                Id =Guid.CreateVersion7(),
-                UserGuid=UserGuid,
+            {
+                UserGuid = UserGuid,
                 SecurityStamp = securityStamp,
                 PasswordSalt = passwordSalt,
                 BlackOrWhite = blackOrWhite,
-                UserStatus = userStatus
+                UserStatus = userStatus,
+                LockOutEnd = null,                
             };
 
-            return new ValueTask<UserSafety>(userSafety);
+            return userSafety;
         }
 
         throw new ArgumentNullException(nameof(UserGuid), "User cannot be null");
@@ -52,7 +56,7 @@ public class UserSafety : Entity
     /// </summary>
     /// <param name="lockOutEnd"></param>
     /// <exception cref="ArgumentException"></exception>
-    public void SetOrChangeByLockOutEnd(DateTimeOffset? lockOutEnd)
+    public void ChangeByLockOutEnd(DateTimeOffset? lockOutEnd)
     {
         if (IsLockedOut)
             throw new ArgumentException("LockOutEnd cannot be in the past", nameof(lockOutEnd));
@@ -60,29 +64,21 @@ public class UserSafety : Entity
 
     }
 
-    public void SetOrResetByPasswordSalt(string newPasswordSalt)
+    public void ChangeByPasswordSalt(string newPasswordSalt)
     {
         if (string.IsNullOrWhiteSpace(newPasswordSalt))
             throw new ArgumentException("Password salt cannot be null or empty", nameof(newPasswordSalt));
         PasswordSalt = newPasswordSalt;
     }
 
-    public void SetOrResetBySecurityStamp(string newSecurityStamp)
+    public void ChangeBySecurityStamp(string newSecurityStamp)
     {
         if (string.IsNullOrWhiteSpace(newSecurityStamp))
             throw new ArgumentException("Security stamp cannot be null or empty", nameof(newSecurityStamp));
         SecurityStamp = newSecurityStamp;
     }
 
-    public void SetOrResetByIsDeleted(bool isDeleted)
-    {
-        if (isDeleted == IsDeleted)
-            throw new ArgumentException("IsDeleted state is already set to the same value", nameof(isDeleted));
-
-        IsDeleted = isDeleted;
-    }
-
-    public void SetOrResetByLockTime(DateTimeOffset? dateTimeOffset)
+    public void ChangeByLockTime(DateTimeOffset? dateTimeOffset)
     {
         if (dateTimeOffset is null)
         {
@@ -93,18 +89,28 @@ public class UserSafety : Entity
             throw new ArgumentException("DateTimeOffset cannot be default", nameof(dateTimeOffset));
         if (dateTimeOffset.Value < DateTimeOffset.UtcNow)
             throw new ArgumentException("DateTimeOffset cannot be in the future", nameof(dateTimeOffset));
-                    
+
         LockOutEnd = dateTimeOffset.Value;
     }
 
-    public void SetOrResetByBlackOrWhiteAndUserStatus(EnumBlackOrWhite blackOrWhite, EnumUserStatus enumUserStatus)
+    public void ChangeByBlackOrWhiteStatus(EnumBlackOrWhite blackOrWhite)
     {
-        if (blackOrWhite == BlackOrWhite && enumUserStatus == UserStatus)
-            throw new ArgumentException("BlackOrWhite and UserStatus are already set to the same values", nameof(blackOrWhite));
+        if (blackOrWhite == BlackOrWhite)
+            throw new ArgumentException("BlackOrWhite is already set to the same value", nameof(blackOrWhite));
         BlackOrWhite = blackOrWhite;
-        UserStatus = enumUserStatus;
     }
 
-        
+    public void ChangeByUserStatus(EnumUserStatus userStatus)
+    {
+        if (userStatus == UserStatus)
+            throw new ArgumentException("UserStatus is already set to the same value", nameof(userStatus));
+        UserStatus = userStatus;
+    }
+       
+    public bool GetIsActive() => IsActive;
+
+    public bool GetIsLockedOut() => IsLockedOut;
+
+    public bool GetIsDeleted() => IsDeleted;
 
 }

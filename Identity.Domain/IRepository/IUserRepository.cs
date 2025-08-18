@@ -10,13 +10,18 @@ public interface IUserRepository : IRepository<User>
 
     ValueTask<User?> FindOneByUserAsync(string email);
 
+    ValueTask AddOneByUserClaimAsync(UserClaim userClaim);
+
     ValueTask AddOneByUserAsync(User user);
 
     ValueTask UpdateByUserAsync(User user);
 
-    ValueTask UpdateByUserSafety(UserSafety userSafety);
+    ValueTask UpdateByUserSafetyAsync(UserSafety userSafety);
 
-   //ValueTask UpdateByUserClaim(UserClaim claim);
+    ValueTask <IEnumerable<UserClaim>> FindUserClaimsByUserAsync(Guid userGuid);
 
+    ValueTask UpdateByUserClaimAsync(Guid userGuid,Action<User> userAction);
+
+    ValueTask UpdataByUserSafetyAsync(Guid guid, Action<UserSafety> userSafetyAction);
 
 }

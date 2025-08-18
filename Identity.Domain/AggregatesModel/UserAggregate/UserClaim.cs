@@ -2,41 +2,46 @@
 
 public class UserClaim : Entity
 {
-       
 
-    public Guid UserGuid { get; private set; }
+    public Guid UserGuid { get; init; }
 
     public string ClaimType { get; private set; } = string.Empty;
 
     public string ClaimValue { get; private set; } = string.Empty;
 
-    public static UserClaim CreateByUserClaimAsync(Guid userGuid ,Claim claim)
+    public static UserClaim CreateByUserClaimAsync(Guid userGuid, string claimType, string claimValue)
     {
+        if (userGuid == Guid.Empty)
+            throw new ArgumentNullException(nameof(userGuid));
+        ArgumentNullException.ThrowIfNullOrEmpty(nameof(claimType));
+        ArgumentNullException.ThrowIfNullOrEmpty(nameof(claimValue));
 
-        if (claim == null)
-        {
-            throw new ArgumentNullException(nameof(claim), "Claim cannot be null");
-        }
         return new UserClaim
-        {            
+        {
             Id = Guid.CreateVersion7(),
-            UserGuid=userGuid,
-            ClaimType = claim.Type,
-            ClaimValue = claim.Value
+            UserGuid = userGuid,
+            ClaimType = claimType,
+            ClaimValue = claimValue
         };
-        
+
     }
 
+    public static ValueTask<UserClaim> CreateByClaimAsync(Guid userGuid, string claimType, string claimValue)
+    {
+        return new ValueTask<UserClaim>(CreateByUserClaimAsync(userGuid, claimType, claimValue));
+    }
 
     public Claim ToClaim()
     {
         return new Claim(ClaimType, ClaimValue);
     }
 
-    public void Initialize(Claim claim)
+    public void UpdateClaim(string claimType, string claimValue)
     {
-        ClaimValue = claim.Value;
-        ClaimType = claim.Type;
+        ArgumentNullException.ThrowIfNullOrEmpty(nameof(claimType));
+        ArgumentNullException.ThrowIfNullOrEmpty(nameof(claimValue));
+        ClaimType = claimType;
+        ClaimValue = claimValue;
     }
 
 }

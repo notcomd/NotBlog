@@ -1,4 +1,4 @@
-﻿using Identity.Domain.AggregatesModel.UserAggregate;
+﻿using RabbitMQ.Client;
 
 namespace Identity.Infrastructure.Repository;
 
@@ -21,9 +21,9 @@ public class UserRepository : IUserRepository
     {
         try
         {
-            //_logger.LogInformation($"[（*＾-＾*）{DateTimeOffset.UtcNow}]插叙了{userId}的数据");
+            _logger.LogInformation($"[（*＾-＾*）{DateTimeOffset.UtcNow}]获取{userId}的数据");
             return await _userDbContext.Users
-                .Include(en => en.UserSafety).Include(en => en.UserClaimsReadOnly)
+                .Include(en => en.UserSafety).Include(en => en.UserClaims)
                 .FirstOrDefaultAsync(en => en.Id == userId);
 
         }
@@ -40,7 +40,7 @@ public class UserRepository : IUserRepository
         {
             if (phoneNumber is not null)
                 return await _userDbContext.Users
-                    .Include(en => en.UserSafety).Include(en => en.UserClaimsReadOnly)
+                    .Include(en => en.UserSafety).Include(en => en.UserClaims)
                     .FirstOrDefaultAsync(en => en.PhoneNumber.AddressRegion == phoneNumber.AddressRegion
                     && phoneNumber.PhoneCode == en.PhoneNumber.PhoneCode);
         }
@@ -65,7 +65,7 @@ public class UserRepository : IUserRepository
         try
         {
             return await _userDbContext.Users
-                .Include(en => en.UserSafety).Include(en => en.UserClaimsReadOnly)
+                .Include(en => en.UserSafety).Include(en => en.UserClaims)
                 .FirstOrDefaultAsync(en => en.UserEmail == email);
         }
         catch (Exception ex)
@@ -75,37 +75,21 @@ public class UserRepository : IUserRepository
         }
     }
 
+    /// <summary>
+    ///  更新用户信息
+    /// </summary>
+    /// <param name="user">传入用户更新类</param>
+    /// <returns></returns>
     public async ValueTask UpdateByUserAsync(User user)
     {
-
-        if (user is null)
-        {
-            _logger.LogWarning($"[ 〒▽〒 {DateTime.UtcNow}]User Not Found!");
-            return;
-        }
-
-        var userTrc = await FindOneByUserAsync(user.Id);
-        if (userTrc is null)
-        {
-            _logger.LogWarning($"[ (￣﹃￣) {DateTime.UtcNow}]User Not Found! {user.Id}");
-            return;
-        }
-
-        var needsUpdate = false;
-        if (userTrc.UserName != user.UserName) needsUpdate = true;
-        if (userTrc.UserEmail != user.UserEmail) needsUpdate = true;
-        if (userTrc.Address != user.Address) needsUpdate = true;
-        if (userTrc.UserRoleGuid != user.UserRoleGuid) needsUpdate = true;
-        if (userTrc.PasswordHash != user.PasswordHash) needsUpdate = true;
-        if (userTrc.ImageCover != user.ImageCover) needsUpdate = true;
-        if (!needsUpdate)
-        {
-            _logger.LogInformation($"[（*＾-＾*）{DateTime.UtcNow}]User Not Update! {user.Id}");
-            return;
-        }
-
         try
         {
+            ArgumentNullException.ThrowIfNull(user, nameof(user));
+
+            var userTrc = await FindOneByUserAsync(user.Id);
+
+            ArgumentNullException.ThrowIfNull(userTrc, nameof(userTrc));
+
             var updateCount = await _userDbContext.Users.Where(en => en.Id == user.Id).
                  ExecuteUpdateAsync(sets => sets
                  .SetProperty(en => en.UserName, user.UserName)
@@ -136,19 +120,24 @@ public class UserRepository : IUserRepository
         }
     }
 
-    public async ValueTask UpdateByUserSafety(UserSafety userSafety)
+    /// <summary>
+    ///  更新用户安全信息
+    /// </summary>
+    /// <param name="userSafety">传入用户安全信息</param>
+    /// <returns></returns>
+    public async ValueTask UpdateByUserSafetyAsync(UserSafety userSafety)
     {
         try
         {
             var updateCount = await _userDbContext.Users
                      .Where(en => en.UserSafety.Id == userSafety.Id)
             .ExecuteUpdateAsync(en => en
-                 .SetProperty(en => en.UserSafety.IsDeleted, userSafety.IsDeleted)
+
                  .SetProperty(en => en.UserSafety.BlackOrWhite, userSafety.BlackOrWhite)
                  .SetProperty(en => en.UserSafety.LockOutEnd, userSafety.LockOutEnd)
                  .SetProperty(en => en.UserSafety.SecurityStamp, userSafety.SecurityStamp)
-                 .SetProperty(en => en.UserSafety.PasswordSalt, userSafety.PasswordSalt)
-                 .SetProperty(en => en.UserSafety.IsLockedOut, userSafety.IsLockedOut));
+                 .SetProperty(en => en.UserSafety.PasswordSalt, userSafety.PasswordSalt));
+            ;
             _logger.LogInformation($"[（*＾-＾*）{DateTimeOffset.UtcNow} 数据更新成功，一共更新了{updateCount}条目]");
         }
         catch (Exception ex)
@@ -156,6 +145,82 @@ public class UserRepository : IUserRepository
             _logger.LogError(ex, $"[ 〒▽〒 {DateTimeOffset.UtcNow}] 无法完成对{userSafety}");
             throw;
         }
+    }
+
+    /// <summary>
+    ///  查询用户Claim信息
+    /// </summary>
+    /// <param name="userGuid"></param>
+    /// <returns></returns>
+    public async ValueTask<IEnumerable<UserClaim>> FindUserClaimsByUserAsync(Guid userGuid)
+    {
+        try
+        {
+            var data = await FindOneByUserAsync(userGuid);
+            var claimData = data?.UserClaims.ToList();
+            if (claimData is null || claimData.Count == 0)
+            {
+                _logger.LogWarning($"[(≧ ﹏ ≦){DateTimeOffset.UtcNow}]User Claims Not Found! {userGuid}");
+                return Array.Empty<UserClaim>();
+            }
+            return claimData;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"[ 〒▽〒 {DateTimeOffset.UtcNow}] 无法找到先关的{userGuid}信息");
+            throw;
+        }
+    }
+
+    public async ValueTask AddOneByUserClaimAsync(Guid userGuid, UserClaim userClaim)
+    {
+        var userData = await _userDbContext.Users.Include(en => en.UserClaims)
+            .FirstOrDefaultAsync(en => en.Id == userGuid);
+
+        if (userData is null)
+        {
+            _logger.LogWarning($"[(≧ ﹏ ≦){DateTimeOffset.UtcNow}]User Not Found! {userGuid}");
+            return;
+        }
+        userData.AddUserClaim(userClaim.ClaimType,userClaim.ClaimValue);
+    }
+
+    public ValueTask AddOneByUserClaimAsync(UserClaim userClaim)
+    {
+        throw new NotImplementedException();
+    }
+
+    /// <summary>
+    ///  更新用户Claim信息
+    /// </summary>
+    /// <param name="userGuid"></param>
+    /// <param name="updateAction"></param>
+    /// <returns></returns>
+    public async ValueTask UpdateByUserClaimAsync(Guid userGuid,Action<User> updateAction)
+    {
+       var user=await _userDbContext.Users.Include(en=>en.UserClaims)
+            .FirstOrDefaultAsync(en => en.Id == userGuid);
+        if (user is null)
+        {
+            _logger.LogWarning($"[(≧ ﹏ ≦){DateTimeOffset.UtcNow}]User Not Found! {userGuid}");
+            return;
+        }
+        updateAction(user);        
+    }
+
+    public async ValueTask UpdateByUserSafetyAsync(Guid userGuid, Action<UserSafety> userSafetyAction)
+    {
+        var userSafety = await _userDbContext.Users.Include(en=>en.UserSafety)
+            .Where(en => en.Id == userGuid)
+            .Select(en => en.UserSafety)
+            .FirstOrDefaultAsync();
+
+        if (userSafety is null)
+        {
+            _logger.LogWarning($"[(≧ ﹏ ≦){DateTimeOffset.UtcNow}]User Safety Not Found! {guid}");
+            return;
+        }
+        userSafetyAction(userSafety);
     }
 
 }

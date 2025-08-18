@@ -21,7 +21,7 @@ public sealed class HashHelper
 
     public static ValueTask<string> GenerateSecurityStamp()
     {
-        var bytes = new byte[16];
+        var bytes = new byte[32];
         RandomNumberGenerator.Fill(bytes);
         return Convert.ToBase64String(bytes) switch
         {
