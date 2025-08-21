@@ -168,8 +168,8 @@ namespace Identity.Infrastructure.Migrations
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
                         .HasColumnName("PasswordHash");
 
                     b.Property<string>("UserEmail")
@@ -277,9 +277,6 @@ namespace Identity.Infrastructure.Migrations
                     b.Property<int>("BlackOrWhite")
                         .HasColumnType("integer");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
                     b.Property<DateTimeOffset?>("LockOutEnd")
                         .HasColumnType("timestamp with time zone");
 
@@ -366,7 +363,7 @@ namespace Identity.Infrastructure.Migrations
             modelBuilder.Entity("Identity.Domain.AggregatesModel.UserAggregate.UserClaim", b =>
                 {
                     b.HasOne("Identity.Domain.AggregatesModel.UserAggregate.User", null)
-                        .WithMany("UserClaimsReadOnly")
+                        .WithMany("UserClaims")
                         .HasForeignKey("UserGuid")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -411,7 +408,7 @@ namespace Identity.Infrastructure.Migrations
                     b.Navigation("UserAccessFail")
                         .IsRequired();
 
-                    b.Navigation("UserClaimsReadOnly");
+                    b.Navigation("UserClaims");
 
                     b.Navigation("UserSafety")
                         .IsRequired();

@@ -13,27 +13,37 @@ namespace Identity.Domain.IdentiyResult
         /// </summary>
         Success = 0,
         /// <summary>
-        /// 用户不存在
+        /// 锁定
         /// </summary>
-        UserNotFound = 1,
+        Locked = 2,
         /// <summary>
-        /// 用户被锁定
+        /// 错误
         /// </summary>
-        UserLocked = 2,
+        Error = 3,
         /// <summary>
-        /// 用户密码错误
+        /// 未激活
         /// </summary>
-        PasswordError = 3,
+        NotActive = 4,
         /// <summary>
-        /// 用户未激活
+        /// 已存在
         /// </summary>
-        UserNotActive = 4,
+        AlreadyExists = 5,
         /// <summary>
-        /// 用户已存在
+        /// 邮箱未验证
         /// </summary>
-        UserAlreadyExists = 5,
-      
-
+        EmailNotVerify = 6,
+        /// <summary>
+        ///  不存在
+        /// </summary>
+        NotFund = 7,
+        /// <summary>
+        /// 权限不足
+        /// </summary>
+        InsufficientPermissions = 8,
+        /// <summary>
+        /// 未分配
+        /// </summary>
+        NotAssigned = 9,   
 
     }
 }

@@ -7,11 +7,11 @@
 
             builder.ToTable("UserAccessFail");
 
-            builder.Ignore(b => b.DomainEventbus);
-             
+            builder.Ignore(b => b.DomainEventbus).Ignore("IsLockOut");
+
             builder.HasKey(b => b.Id);
 
-            builder.Property("IsLockOut");
+          
         }
     }
 }

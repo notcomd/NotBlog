@@ -17,7 +17,7 @@
 
             builder.Property(x => x.UserName).HasColumnName("UserName").HasMaxLength(50);
 
-            builder.Property(x => x.PasswordHash).HasColumnName("PasswordHash").IsRequired().HasMaxLength(100);
+            builder.Property("PasswordHash").HasColumnName("PasswordHash").IsRequired().HasMaxLength(300);
 
             builder.Property(x => x.ImageCover).HasColumnName("ImageCover").IsRequired(false);
 
@@ -34,7 +34,7 @@
             builder.HasOne(on => on.UserSafety).WithOne()
                 .HasForeignKey<UserSafety>(on => on.UserGuid);
 
-            builder.HasMany(on => on.UserClaimsReadOnly).WithOne()
+            builder.HasMany(on => on.UserClaims).WithOne()
                 .HasForeignKey(on => on.UserGuid);
 
             builder.HasIndex(en => new {  en.UserEmail })

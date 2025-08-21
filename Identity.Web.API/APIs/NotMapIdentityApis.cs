@@ -1,6 +1,7 @@
-using Identity.Domain.AggregatesModel.UserAggregate;
+﻿using Identity.Domain.AggregatesModel.UserAggregate;
 using Identity.Web.API.Application.Command;
 
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.HttpLogging;
 
 namespace Identity.Web.API.APIs;
@@ -17,7 +18,7 @@ public static class NotMapIdentityApis
 
         route.MapPost("/CreateByUser", GetByTest2).WithHttpLogging(HttpLoggingFields.All);
 
-        route.MapPost("/TestSendEmail", TestSendEmailAsync).WithHttpLogging(HttpLoggingFields.All);
+        //route.MapPost("/TestSendEmail", TestSendEmailAsync).WithHttpLogging(HttpLoggingFields.All);
 
         route.MapGet("/TestGetHello", TestGetHelloAsync).WithHttpLogging(HttpLoggingFields.All);
 
@@ -25,21 +26,23 @@ public static class NotMapIdentityApis
     }
 
 
-    private static Task<IActionResult> GetByTest(this HttpContext httpContext, [AsParameters]IdentityService identityService, CancellationToken cancellationToken)
+    private static  string GetByTest(this HttpContext httpContext, [AsParameters]IdentityService identityService, CancellationToken cancellationToken)
     {
         var data = httpContext.User.Claims.Where(en => en.Issuer == "Role").FirstOrDefault();
         if (data is null)
-            return Task.FromResult<IActionResult>(IdentityResult<string>.NotAuthorized("权限不足", $"{DateTime.Now}"));
-
-        return Task.FromResult<IActionResult>(IdentityResult<string>.Success("hello world!", $"{DateTime.Now}"));
+        {
+            return string.Empty;
+        }
+        return data.Value.ToLower();           
     }
 
-    private async static Task<IActionResult> GetByTest2([AsParameters]IdentityService identityService, CreateByUserDto createByUserDto, CancellationToken cancellationToken)
+    private async static Task<string> GetByTest2([AsParameters]IdentityService identityService, CreateByUserDto createByUserDto, CancellationToken cancellationToken)
     {
         var userbl = await identityService.UserRepository.FindOneByUserAsync(createByUserDto.Email);
         if (userbl is null)
-            return IdentityResult<User>.Error($"错误", userbl);
-        return IdentityResult<User>.Success($"成功", userbl);
+            return string.Empty;
+        return userbl!.ToString();
+
     }
 
 
@@ -48,19 +51,19 @@ public static class NotMapIdentityApis
         throw new NotImplementedException();
     }
 
-    private async static Task<IActionResult> TestSendEmailAsync([AsParameters]IdentityService identityService, [EmailAddress(ErrorMessage = "格式错误")]string emailSendRecord, CancellationToken cancellationToken)
-    {
-        if (emailSendRecord != string.Empty)
-        {
-            await identityService.NotMediator.SendAsync(new CreateByEmailUserCommand(emailSendRecord, "123456", "User","user"), cancellationToken);
-            return IdentityResult<string>.Success("发送成功", $"{DateTime.Now}");
-        }
-        return IdentityResult<string>.Error(emailSendRecord, emailSendRecord, default);
-    }
+    //private async static Task<string> TestSendEmailAsync([AsParameters]IdentityService identityService, [EmailAddress(ErrorMessage = "格式错误")]string emailSendRecord, CancellationToken cancellationToken)
+    //{
+    //    if (emailSendRecord != string.Empty)
+    //    {
+    //        await identityService.NotMediator.SendAsync(new CreateByEmailUserCommand(emailSendRecord, "123456", "User","user"), cancellationToken);
+    //        return "发送成功";
+    //    }
+    //    return "发送失败，请检查邮箱格式";
+    //}
 
     private static Task<IActionResult> TestGetHelloAsync()
     {
-        return Task.FromResult<IActionResult>(IdentityResult<string>.Other("hello world!", EnumStatusCode.Ok, string.Empty));
+        return Task.FromResult<IActionResult>(IdentityResult<string>.Result("hello world!", EnumStatusCode.Ok, string.Empty));
     }
 
     private record GenerateCodeDto(string Email);

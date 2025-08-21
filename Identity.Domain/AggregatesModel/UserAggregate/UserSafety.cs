@@ -27,7 +27,7 @@ public class UserSafety : Entity
     }
 
     public static UserSafety CreateByUserSafety(Guid UserGuid, string passwordSalt, string securityStamp,
-        EnumBlackOrWhite blackOrWhite = EnumBlackOrWhite.AuthorityWhite, EnumUserStatus userStatus = EnumUserStatus.Normal)
+        EnumBlackOrWhite blackOrWhite = EnumBlackOrWhite.AuthorityWhite, EnumUserStatus userStatus = EnumUserStatus.UnActive)
     {
 
         if (UserGuid != Guid.Empty)

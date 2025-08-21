@@ -5,13 +5,7 @@ namespace Identity.Domain.Entities
     public sealed class IdentityResult<TResponse> : IActionResult where TResponse : class
     {
         private object _lock = new object();
-        private IdentityResult(string resultMessage, EnumStatusCode statusCode, TResponse resultData, ResultType resultType = ResultType.ApplicationJson)
-        {
-            ResultMessage = resultMessage;
-            StatusCode = statusCode;
-            ResultData = resultData;
-            ResultType = resultType;
-        }
+       
         /// <summary>
         /// 返回结果消息
         /// </summary>
@@ -72,7 +66,7 @@ namespace Identity.Domain.Entities
             }
         }
 
-        public static IdentityResult<TResponse> ResultAsync(string? message, EnumStatusCode statusCode, TResponse data, ResultType resultType = ResultType.ApplicationJson)
+        public static IdentityResult<TResponse> Result(string? message, EnumStatusCode statusCode, TResponse data, ResultType resultType = ResultType.ApplicationJson)
         {
             if (string.IsNullOrEmpty(message))
             {
@@ -87,7 +81,19 @@ namespace Identity.Domain.Entities
                     _ => "未知状态"
                 };
             }
-            return new IdentityResult<TResponse>(message, statusCode, data, resultType);
+            return new IdentityResult<TResponse>
+            {
+                ResultMessage = message,
+                StatusCode = statusCode,
+                ResultData = data,
+                ResultType = resultType
+            };
         }
+
+        public static ValueTask<IdentityResult<TResponse>> ResultAsync(string? message, EnumStatusCode statusCode, TResponse data, ResultType resultType = ResultType.ApplicationJson)
+        {
+            return new ValueTask<IdentityResult<TResponse>>(Result(message, statusCode, data, resultType));
+        }
+
     }
 }

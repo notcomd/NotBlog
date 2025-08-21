@@ -13,6 +13,7 @@ public class UserAccessFail : Entity
 
     private bool IsLockOut => LockOutEnd.HasValue && LockOutEnd.Value > DateTimeOffset.UtcNow;
 
+
     protected UserAccessFail()
     {
         Id = Guid.CreateVersion7();
@@ -20,10 +21,10 @@ public class UserAccessFail : Entity
 
     public static ValueTask<UserAccessFail> CreateByUserAccessFailAsync(Guid userGuid)
     {
-        return new ValueTask<UserAccessFail>(CreateUserAccessFail1(userGuid));
+        return new ValueTask<UserAccessFail>(CreateByUserAccessFail(userGuid));
     }
 
-    public static UserAccessFail CreateUserAccessFail1(Guid userGuid)
+    public static  UserAccessFail CreateByUserAccessFail(Guid userGuid)
     {
         if (userGuid == Guid.Empty)
         {

@@ -22,28 +22,29 @@ public class CreateByPhoneUserCommandHandler : IRequestHandler<CreateByPhoneUser
         {
 
             ArgumentNullException.ThrowIfNull(request);
-            var userData = await _userRepository.FindOneByUserAsync(request.PhoneNumber);
-            var roleData = await _userRoleRepository.FindByUserRoleAsync(request.RoleName);
-            if (userData is not null || roleData is null)
-            {
-                _logger.LogWarning($"[(≧ ﹏ ≦){DateTime.UtcNow}]User Already Exists! {request.PhoneNumber}");
-                return false;
-            }
+            //var userData = await _userRepository.FindOneByUserAsync(request.PhoneNumber);
+            //var roleData = await _userRoleRepository.FindByUserRoleAsync(request.RoleName);
+            //if (userData is not null || roleData is null)
+            //{
+            //    _logger.LogWarning($"[(≧ ﹏ ≦){DateTime.UtcNow}]User Already Exists! {request.PhoneNumber}");
+            //    return false;
+            //}
 
-            var salt = await HashHelper.GenerateSaltValueTask();
-            var stamp = await HashHelper.GenerateSecurityStamp();
+            //var salt = await HashHelper.GenerateSaltValueTask();
+            //var stamp = await HashHelper.GenerateSecurityStamp();
 
-            var userTrc = await User.CreateByPhoneUser(roleData.Id, request.PhoneNumber, request.Password, _notDateTime.NowOffset);
-            userTrc.SetOrRestByUserSafety(Convert.ToBase64String(salt), stamp);
-            if (userTrc is null)
-            {
-                _logger.LogWarning($"[(≧ ﹏ ≦){DateTime.UtcNow}]User Create Failed! {request.PhoneNumber}");
-                return false;
-            }
+            //var userTrc = new User(roleData.Id, request.PhoneNumber, request.Password, _notDateTime.NowOffset);
+            //userTrc.UserSafety.ChangeByBlackOrWhiteStatus(EnumBlackOrWhite.AuthorityWhite);
+            //userTrc.UserSafety.ChangeByUserStatus(EnumUserStatus.UnActive);
+            //if (userTrc is null)
+            //{
+            //    _logger.LogWarning($"[(≧ ﹏ ≦){DateTime.UtcNow}]User Create Failed! {request.PhoneNumber}");
+            //    return false;
+            //}
             await _userRepository.AddOneByUserAsync(userTrc);
             _logger.LogInformation($"[（*＾-＾*）{DateTime.UtcNow}]User Created! {request.PhoneNumber}");
             await _userRoleRepository.UnitOfWork.SavaEntitiesAsync(cancellationToken);
-           // _logger.LogInformation($"[{DateTime.UtcNow}]User Role Assigned! {request.PhoneNumber}, Role: {request.RoleName}");
+         
 
             return true;
 

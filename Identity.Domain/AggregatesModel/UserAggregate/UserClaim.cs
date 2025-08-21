@@ -9,26 +9,23 @@ public class UserClaim : Entity
 
     public string ClaimValue { get; private set; } = string.Empty;
 
-    public static UserClaim CreateByUserClaimAsync(Guid userGuid, string claimType, string claimValue)
+    public static UserClaim CreateByUserClaim(Guid userGuid, string? claimType, string? claimValue)
     {
         if (userGuid == Guid.Empty)
             throw new ArgumentNullException(nameof(userGuid));
-        ArgumentNullException.ThrowIfNullOrEmpty(nameof(claimType));
-        ArgumentNullException.ThrowIfNullOrEmpty(nameof(claimValue));
-
         return new UserClaim
         {
             Id = Guid.CreateVersion7(),
             UserGuid = userGuid,
-            ClaimType = claimType,
-            ClaimValue = claimValue
+            ClaimType = claimType ?? string.Empty,
+            ClaimValue = claimValue ?? string.Empty
         };
 
     }
 
     public static ValueTask<UserClaim> CreateByClaimAsync(Guid userGuid, string claimType, string claimValue)
     {
-        return new ValueTask<UserClaim>(CreateByUserClaimAsync(userGuid, claimType, claimValue));
+        return new ValueTask<UserClaim>(CreateByUserClaim(userGuid, claimType, claimValue));
     }
 
     public Claim ToClaim()

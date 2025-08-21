@@ -95,10 +95,8 @@ public class UserRepository : IUserRepository
                  .SetProperty(en => en.UserName, user.UserName)
                  .SetProperty(en => en.UserEmail, user.UserEmail)
                  .SetProperty(en => en.Address, user.Address)
-                 .SetProperty(en => en.UserRoleGuid, user.UserRoleGuid)
-                 .SetProperty(en => en.PasswordHash, user.PasswordHash)
+                 .SetProperty(en => en.UserRoleGuid, user.UserRoleGuid)                 
                  .SetProperty(en => en.ImageCover, user.ImageCover));
-
             if (updateCount == 0)
             {
                 _logger.LogWarning($"[ 〒▽〒 {DateTime.UtcNow} ]User Not Update! {user.Id}");
@@ -208,6 +206,12 @@ public class UserRepository : IUserRepository
         updateAction(user);        
     }
 
+    /// <summary>
+    ///  更新用户安全信息
+    /// </summary>
+    /// <param name="userGuid"></param>
+    /// <param name="userSafetyAction"></param>
+    /// <returns></returns>
     public async ValueTask UpdateByUserSafetyAsync(Guid userGuid, Action<UserSafety> userSafetyAction)
     {
         var userSafety = await _userDbContext.Users.Include(en=>en.UserSafety)
@@ -217,10 +221,28 @@ public class UserRepository : IUserRepository
 
         if (userSafety is null)
         {
-            _logger.LogWarning($"[(≧ ﹏ ≦){DateTimeOffset.UtcNow}]User Safety Not Found! {guid}");
+            _logger.LogWarning($"[(≧ ﹏ ≦){DateTimeOffset.UtcNow}]User Safety Not Found! {userGuid}");
             return;
         }
         userSafetyAction(userSafety);
+    }
+
+    /// <summary>
+    ///  更新用户信息
+    /// </summary>
+    /// <param name="userGuid"></param>
+    /// <param name="userAction"></param>
+    /// <returns></returns>
+    public async ValueTask UpdateByUserAsync(Guid userGuid, Action<User> userAction)
+    {
+        var user = await _userDbContext.Users
+            .FirstOrDefaultAsync(en => en.Id == userGuid);
+        if (user is null)
+        {
+            _logger.LogWarning($"[(≧ ﹏ ≦){DateTimeOffset.UtcNow}]User Not Found! {userGuid}");
+            return;
+        }
+        userAction(user);
     }
 
 }

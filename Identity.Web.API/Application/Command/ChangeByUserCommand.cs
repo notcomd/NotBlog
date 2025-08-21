@@ -6,8 +6,7 @@ public class ChangeByUserCommand : IRequest<bool>
     public PhoneNumber? PhoneNumber { get; set; }
 
     public string UserName { get; set; }
-
-    public string 
+    
 
     public UserSafety UserSafety { get; set; }
     

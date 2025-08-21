@@ -20,5 +20,7 @@
 
         Singapore = 65,
 
+        XiaMen = 592,
+
     }
 }
