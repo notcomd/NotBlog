@@ -50,19 +50,7 @@ public class UserSafety : Entity
 
         throw new ArgumentNullException(nameof(UserGuid), "User cannot be null");
     }
-
-    /// <summary>
-    /// 修改用户锁定状态
-    /// </summary>
-    /// <param name="lockOutEnd"></param>
-    /// <exception cref="ArgumentException"></exception>
-    public void ChangeByLockOutEnd(DateTimeOffset? lockOutEnd)
-    {
-        if (IsLockedOut)
-            throw new ArgumentException("LockOutEnd cannot be in the past", nameof(lockOutEnd));
-        LockOutEnd = lockOutEnd;
-
-    }
+      
 
     public void ChangeByPasswordSalt(string newPasswordSalt)
     {
@@ -78,7 +66,7 @@ public class UserSafety : Entity
         SecurityStamp = newSecurityStamp;
     }
 
-    public void ChangeByLockTime(DateTimeOffset? dateTimeOffset)
+    public void ChangeByLockOutEndTime(DateTimeOffset? dateTimeOffset)
     {
         if (dateTimeOffset is null)
         {

@@ -28,6 +28,7 @@ public class UserClaim : Entity
         return new ValueTask<UserClaim>(CreateByUserClaim(userGuid, claimType, claimValue));
     }
 
+
     public Claim ToClaim()
     {
         return new Claim(ClaimType, ClaimValue);
@@ -40,5 +41,6 @@ public class UserClaim : Entity
         ClaimType = claimType;
         ClaimValue = claimValue;
     }
+
 
 }

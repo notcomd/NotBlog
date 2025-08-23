@@ -42,12 +42,20 @@ public class RoleClaim : Entity
         ClaimValue = claim.Value;
     }
 
-
     public Claim ToClaim()
     {
         if (string.IsNullOrEmpty(ClaimType) || string.IsNullOrEmpty(ClaimValue))
             throw new InvalidOperationException("ClaimType and ClaimValue cannot be null or empty");
 
         return new Claim(ClaimType, ClaimValue);
+    }
+
+    public void ChangeByRoleClaim(string claimType,string claimValue)
+    {
+        if (string.IsNullOrEmpty(ClaimType) && string.IsNullOrEmpty(ClaimValue))
+            throw new InvalidOperationException($"{claimType}And {claimValue} is null!");
+
+        this.ClaimValue= claimValue;
+        this.ClaimType= claimType;
     }
 }

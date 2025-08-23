@@ -29,9 +29,9 @@ namespace Identity.Domain.IdentiyResult
         /// </summary>
         AlreadyExists = 5,
         /// <summary>
-        /// 邮箱未验证
+        /// 未验证
         /// </summary>
-        EmailNotVerify = 6,
+        NotVerify = 6,
         /// <summary>
         ///  不存在
         /// </summary>
@@ -43,7 +43,9 @@ namespace Identity.Domain.IdentiyResult
         /// <summary>
         /// 未分配
         /// </summary>
-        NotAssigned = 9,   
+        NotAssigned = 9,
+        
+        NotChange = 10,
 
     }
 }

@@ -318,6 +318,7 @@ public class User : Entity, IAggregateRoot
 
     public IEnumerable<Claim>? UserClaimToClaim(IEnumerable<UserClaim> userClaims)
     {
+     
         if(userClaims is not null && userClaims.Any())
         {
             foreach (var userClaim in userClaims)

@@ -155,8 +155,11 @@ public class UserRepository : IUserRepository
         try
         {
             var data = await FindOneByUserAsync(userGuid);
-            var claimData = data?.UserClaims.ToList();
-            if (claimData is null || claimData.Count == 0)
+            var claimData = data?.UserClaims
+                .Where(c => c != null)
+                .Cast<UserClaim>()
+                .ToList() ?? new List<UserClaim>();
+            if (claimData.Count == 0)
             {
                 _logger.LogWarning($"[(≧ ﹏ ≦){DateTimeOffset.UtcNow}]User Claims Not Found! {userGuid}");
                 return Array.Empty<UserClaim>();
