@@ -31,7 +31,7 @@ public class IdentityDomainSignUpServer
         if (string.IsNullOrEmpty(email))
         {
             _logger.LogWarning($"[(≧ ﹏ ≦){_notDateTime.UtcNow}] 邮箱地址不能为空。");
-            return UserAccessResult.EmailNotVerify;
+            return UserAccessResult.NotVerify;
         }
         var emailSignUp = await _userRepository.FindOneByUserAsync(email);
         var roleDefult = await _userRoleRepository.FindByUserRoleAsync(roleName);

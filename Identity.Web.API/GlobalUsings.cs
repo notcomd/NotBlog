@@ -15,7 +15,7 @@ global using Identity.Domain.Entities;
 global using Identity.Domain.Events;
 global using Identity.Domain.INotDateTime;
 global using Identity.Domain.IRepository;
-global using Identity.Infrastructure.NotMemoryCache;
+global using Identity.Domain.Server;
 global using Identity.Infrastructure.RequestManager;
 global using Identity.Web.API.ActionFilter;
 

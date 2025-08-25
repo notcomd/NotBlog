@@ -16,7 +16,7 @@ namespace Identity.Web.API.Application.DomainEventHandler
             _notDateTime = notDateTime;
             _logger = logger;
             _notMediator = notMediator;
-                       
+
         }
 
 
@@ -33,8 +33,7 @@ namespace Identity.Web.API.Application.DomainEventHandler
                 account = notifications.PhoneNumber!.PhoneCode;
             else
                 account = notifications.Email;
-            var generaCode = await GenerateHelper.CreateRandomValueTask(9);
-            var changeCode=new GenerateCodeCommand(account,$"SignUpCode_{account}", generaCode);
+            var changeCode = new GenerateCodeCommand(account, 9);
             await _notMediator.SendAsync(changeCode, cancellationToken);
             _logger.LogInformation($"[（*＾-＾*）{_notDateTime.UtcNow} ]成功生成了{account}激活码！");
             return;

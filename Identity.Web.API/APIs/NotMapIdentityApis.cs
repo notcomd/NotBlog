@@ -1,7 +1,5 @@
-﻿using Identity.Domain.AggregatesModel.UserAggregate;
-using Identity.Web.API.Application.Command;
+﻿using Identity.Web.API.Application.Command;
 
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.HttpLogging;
 
 namespace Identity.Web.API.APIs;
@@ -18,7 +16,7 @@ public static class NotMapIdentityApis
 
         route.MapPost("/CreateByUser", GetByTest2).WithHttpLogging(HttpLoggingFields.All);
 
-        //route.MapPost("/TestSendEmail", TestSendEmailAsync).WithHttpLogging(HttpLoggingFields.All);
+        
 
         route.MapGet("/TestGetHello", TestGetHelloAsync).WithHttpLogging(HttpLoggingFields.All);
 
@@ -26,17 +24,17 @@ public static class NotMapIdentityApis
     }
 
 
-    private static  string GetByTest(this HttpContext httpContext, [AsParameters]IdentityService identityService, CancellationToken cancellationToken)
+    private static string GetByTest(this HttpContext httpContext, [AsParameters] IdentityService identityService, CancellationToken cancellationToken)
     {
         var data = httpContext.User.Claims.Where(en => en.Issuer == "Role").FirstOrDefault();
         if (data is null)
         {
             return string.Empty;
         }
-        return data.Value.ToLower();           
+        return data.Value.ToLower();
     }
 
-    private async static Task<string> GetByTest2([AsParameters]IdentityService identityService, CreateByUserDto createByUserDto, CancellationToken cancellationToken)
+    private async static Task<string> GetByTest2([AsParameters] IdentityService identityService, CreateByUserDto createByUserDto, CancellationToken cancellationToken)
     {
         var userbl = await identityService.UserRepository.FindOneByUserAsync(createByUserDto.Email);
         if (userbl is null)
@@ -46,9 +44,10 @@ public static class NotMapIdentityApis
     }
 
 
-    private static Task<string> GenerateCode([AsParameters]IdentityService identityService, GenerateCodeDto email, CancellationToken cancellationToken)
+    private static async Task GenerateCode([AsParameters] IdentityService identityService, GenerateCodeDto email, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var code = await identityService.NotMediator.SendAsync(new GenerateCodeCommand(email.Email, 9), cancellationToken);
+        await identityService.NotMediator.SendAsync(new SendWithEmailCommand(email.Email, code), cancellationToken);
     }
 
     //private async static Task<string> TestSendEmailAsync([AsParameters]IdentityService identityService, [EmailAddress(ErrorMessage = "格式错误")]string emailSendRecord, CancellationToken cancellationToken)

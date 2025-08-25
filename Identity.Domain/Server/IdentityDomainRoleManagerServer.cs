@@ -76,6 +76,14 @@ public class IdentityDomainRoleManagerServer
     {
        roles.AddRoleClaim(roleClaim);
     }
-    public Claim ResultWhitRoleClaim(Roles roles) => roles.RoleClaimToClaim(roles.RoleClaims);
+    public List<Claim> ResultWhitRoleClaim(Roles roles)
+    {
+        var claim = new List<Claim>();
+        foreach(var item in roles.RoleClaims)
+        {
+            claim.Add(item.ToClaim());
+        }
+        return claim;
+    }
 
 }

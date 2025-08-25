@@ -36,33 +36,7 @@ public class CreateByEmailUserCommandHandler : IRequestHandler<CreateByEmailUser
     {
 
         try
-        {
-            //ArgumentNullException.ThrowIfNull(request);
-           
-            //var userData = await _userRepository.FindOneByUserAsync(request.Email);
-            //var roleData = await _userRoleRepository.FindByUserRoleAsync(request.RoleName);
-
-            //if (userData is not null || roleData is  null)
-            //{
-            //    _logger.LogWarning($"[(≧ ﹏ ≦){DateTime.UtcNow}]User Already Exists! {request.Email}");
-            //    return false;
-            //}
-
-            //var salt = await HashHelper.GenerateSaltValueTask();
-            //var stamp = await HashHelper.GenerateSecurityStamp();
-            //var passwordHash = await HashHelper.CreateHash256Async(request.Password, salt);
-            //var userTrc = new User(roleData.Id, request.Email, passwordHash, _notDateTime.NowOffset);
-            //userTrc.UserSafety.ChangeByBlackOrWhiteStatus(EnumBlackOrWhite.AuthorityWhite);
-            //userTrc.UserSafety.ChangeByUserStatus(EnumUserStatus.UnActive);
-
-            //if (userTrc is null)
-            //{
-            //    _logger.LogWarning($"[(≧ ﹏ ≦){DateTime.UtcNow}]User Create Failed! {request.Email}");
-            //    return false;
-            //}
-
-            //await _userRepository.AddOneByUserAsync(userTrc);
-            //_logger.LogInformation($"[（*＾-＾*）{DateTime.UtcNow}]User Created! {request.Email}");
+        {                     
             ArgumentNullException.ThrowIfNull(request, nameof(request));
             if(await _identityDomainSignUpServer.SignUpWhitEmailAsync(request.Email, request.Password,request.RoleName) is not UserAccessResult.Success)
             {
@@ -70,7 +44,8 @@ public class CreateByEmailUserCommandHandler : IRequestHandler<CreateByEmailUser
                 return false;
             }
             await _userRoleRepository.UnitOfWork.SavaEntitiesAsync(cancellationToken);
-            await _notMediator.SendAsync(new GenerateCodeCommand(request.Email, request.RoleName), cancellationToken);
+            
+            await _notMediator.SendAsync(new GenerateCodeCommand(request.Email, 9), cancellationToken);
             _logger.LogInformation($"[（*＾-＾*）{DateTime.UtcNow}]User Created! {request.Email}");
             return true;
         }

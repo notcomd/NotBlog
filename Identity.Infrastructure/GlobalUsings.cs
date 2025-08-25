@@ -10,6 +10,7 @@ global using Identity.Domain.AggregatesModel.UserAggregate;
 global using Identity.Domain.Entities;
 global using Identity.Domain.Events;
 global using Identity.Domain.INotDateTime;
+global using Identity.Domain.INotMemoryCache;
 global using Identity.Domain.IRepository;
 global using Identity.Domain.Option;
 global using Identity.Domain.SeedWork;

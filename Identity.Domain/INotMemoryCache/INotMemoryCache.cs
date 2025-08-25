@@ -1,4 +1,5 @@
-﻿namespace Identity.Infrastructure.NotMemoryCache
+﻿namespace Identity.Domain
+    .INotMemoryCache
 {
     public interface INotMemoryCache
     {
@@ -11,5 +12,7 @@
         Task RemoveByMemoryCacheAsync(string key);
 
         Task<bool> IsValidateCodeAsync(string key, string vlaue);
+
+        ValueTask<bool> IsExistsAsync(string key);
     }
 }

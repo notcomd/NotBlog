@@ -9,9 +9,9 @@
     "Parameters": [],
     "ReturnTypes": [
       {
-        "Type": "Microsoft.AspNetCore.Mvc.IActionResult",
+        "Type": "System.String",
         "MediaTypes": [
-          "application/json"
+          "text/plain"
         ],
         "StatusCode": 200
       }
@@ -33,9 +33,9 @@
     ],
     "ReturnTypes": [
       {
-        "Type": "Microsoft.AspNetCore.Mvc.IActionResult",
+        "Type": "System.String",
         "MediaTypes": [
-          "application/json"
+          "text/plain"
         ],
         "StatusCode": 200
       }
@@ -73,30 +73,6 @@
     "IsController": false,
     "Order": 0,
     "Parameters": [],
-    "ReturnTypes": [
-      {
-        "Type": "Microsoft.AspNetCore.Mvc.IActionResult",
-        "MediaTypes": [
-          "application/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "Identity.Web.API.APIs.NotMapIdentityApis",
-    "Method": "TestSendEmailAsync",
-    "RelativePath": "api/identity/Identity/TestSendEmail",
-    "HttpMethod": "POST",
-    "IsController": false,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "emailSendRecord",
-        "Type": "System.String",
-        "IsRequired": true
-      }
-    ],
     "ReturnTypes": [
       {
         "Type": "Microsoft.AspNetCore.Mvc.IActionResult",

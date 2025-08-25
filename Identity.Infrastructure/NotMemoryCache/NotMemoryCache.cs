@@ -1,5 +1,6 @@
 ﻿
 
+
 namespace Identity.Infrastructure.NotMemoryCache
 {
     public class NotMemoryCache : INotMemoryCache
@@ -67,9 +68,9 @@ namespace Identity.Infrastructure.NotMemoryCache
             return _memoryCache.RemoveAsync(key);
         }
 
-        public async Task<bool> IsValidateCodeAsync(string key, string value)
+        public async Task<bool> IsValidateCodeAsync(string key, string checkGenerate)
         {
-            if (key == null || value == null)
+            if (key == null || checkGenerate == null)
             {
                 _logger.LogWarning("Key or value is null, cannot validate code.");
                 return false;
@@ -79,12 +80,24 @@ namespace Identity.Infrastructure.NotMemoryCache
             {
                 return false;
             }
-            if (cachedCode == value)
+            if (cachedCode == checkGenerate)
             {
                 await RemoveByMemoryCacheAsync(key);
                 return true;
             }
             return false;
+        }
+
+        public async ValueTask<bool> IsExistsAsync(string key)
+        {
+            if (await GetByMemoryCacheAsync(key) is null)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
         }
     }
 }

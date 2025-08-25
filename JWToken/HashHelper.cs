@@ -18,7 +18,6 @@ public sealed class HashHelper
         return new ValueTask<byte[]>(RandomNumberGenerator.GetBytes(64));
     }
 
-
     public static ValueTask<string> GenerateSecurityStamp()
     {
         var bytes = new byte[32];
@@ -29,7 +28,6 @@ public sealed class HashHelper
             _ => throw new InvalidOperationException("Failed to generate security stamp.")
         };
     }
-
 
     public async static ValueTask<bool> VerifyPasswordValueTask(string password, string hash, byte[] sart)
     {
@@ -48,4 +46,17 @@ public sealed class HashHelper
         var hxCode = myBash.GetBytes(length);
         return new ValueTask<string>(Convert.ToBase64String(hxCode));
     }
+
+    public static ValueTask<string> ComputeWithStreamHashAsync(Stream stream)
+    {
+        using var sha = SHA256.Create();
+        var hash = sha.ComputeHash(stream);
+        var hashString = new StringBuilder();
+        foreach (var itm in hash)
+        {
+            hashString.Append(itm.ToString("x2"));
+        }
+        return new ValueTask<string>(hashString.ToString());
+    }
+
 }

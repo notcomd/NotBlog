@@ -1,7 +1,8 @@
-using Identity.Domain.Option;
+﻿using Identity.Domain.Option;
 using Identity.Infrastructure;
 using Identity.Infrastructure.EntityFramework;
 using Identity.Web.API.APIs;
+using Identity.Web.API.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,7 +13,7 @@ builder.NotBlogConfigureExtraServices(new InitializerOptions
 });
 
 builder.Services.AddIdentityDbContext(builder.Configuration.GetSection(nameof(DbContextOption)));
-
+builder.Services.AddMigration<IdentityDbContext>();
 builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
 
 

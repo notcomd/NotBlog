@@ -7,6 +7,8 @@ public class EmailSendBus : JsonIntegrationEventHandler<EmailSendRecord>
     private readonly IEmail _email;
     private readonly IEmailCodeSend _emailCodeSend;
     private readonly ILogger<IEmailCodeSend> _logger;
+
+
     public EmailSendBus(IEmail email, IEmailCodeSend emailCodeSend, ILogger<IEmailCodeSend> logger)
     {
         _email = email ?? throw new ArgumentNullException(nameof(email));

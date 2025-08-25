@@ -8,6 +8,7 @@ public class UserRepository : IUserRepository
     private readonly ILogger<UserRepository> _logger;
 
     private readonly IdentityDbContext _userDbContext;
+
     public IUnitOfWork UnitOfWork => _userDbContext;
 
     public UserRepository(IdentityDbContext userDbContext, ILogger<UserRepository> logger)
@@ -16,14 +17,13 @@ public class UserRepository : IUserRepository
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-
     public async ValueTask<User?> FindOneByUserAsync(Guid userId)
     {
         try
         {
             _logger.LogInformation($"[（*＾-＾*）{DateTimeOffset.UtcNow}]获取{userId}的数据");
             return await _userDbContext.Users
-                .Include(en => en.UserSafety).Include(en => en.UserClaims)
+                .Include(en => en.UserSafety).Include(en => en.UserClaims).Include(en=>en.PhoneNumber)
                 .FirstOrDefaultAsync(en => en.Id == userId);
 
         }
@@ -40,7 +40,7 @@ public class UserRepository : IUserRepository
         {
             if (phoneNumber is not null)
                 return await _userDbContext.Users
-                    .Include(en => en.UserSafety).Include(en => en.UserClaims)
+                    .Include(en => en.UserSafety).Include(en => en.UserClaims).Include(en=>en.PhoneNumber)
                     .FirstOrDefaultAsync(en => en.PhoneNumber.AddressRegion == phoneNumber.AddressRegion
                     && phoneNumber.PhoneCode == en.PhoneNumber.PhoneCode);
         }

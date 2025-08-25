@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace Identity.Web.API.Extensions;
 
@@ -48,8 +48,7 @@ internal static class MigrateDbContextExtensions
         {
             logger.LogError(ex, "An error occurred while migrating the database used on context {DbContextName}", typeof(TContext).Name);
 
-            // activity.SetExceptionTags(ex);
-
+            
             throw;
         }
     }

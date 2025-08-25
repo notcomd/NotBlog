@@ -88,8 +88,7 @@ public class IdentityDomainCheckLogInServer
         _loggerUser.LogInformation($"[（*＾-＾*）{_notDateTime.UtcNow}] 用户 {phoneNumber.PhoneCode} 验证成功。");
         return UserAccessResult.Success;
     }
-
-
+    
        
     public bool IsUserLockedOut(User user) => user.UserAccessFail.IsLockOutByAccessFaild();
 
