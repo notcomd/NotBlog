@@ -26,7 +26,7 @@ public class Roles : Entity, IAggregateRoot
         Id = Guid.CreateVersion7();
     }
 
-    public static Roles CreateByRoleAsync(string roleName, DateTimeOffset dateTimeOffset, string? attribute = null,
+    public static Roles CreateByRoleAsync(string roleName, string? attribute, DateTimeOffset dateTimeOffset,
         EnumRoleAuthority roleAuthority = EnumRoleAuthority.User, EnumRoleStatus roleStatus = EnumRoleStatus.Normal)
     {
         if (string.IsNullOrEmpty(roleName))
@@ -45,7 +45,7 @@ public class Roles : Entity, IAggregateRoot
 
     public static ValueTask<Roles> CreateByRoleAsyncTask(string roleName, DateTimeOffset dateTimeOffset, string? attribute = null, EnumRoleAuthority roleAuthority = EnumRoleAuthority.User, EnumRoleStatus roleStatus = EnumRoleStatus.Normal)
     {
-        return new ValueTask<Roles>(CreateByRoleAsync(roleName, dateTimeOffset, attribute, roleAuthority, roleStatus));
+        return new ValueTask<Roles>(CreateByRoleAsync(roleName,  attribute, dateTimeOffset, roleAuthority, roleStatus));
     }
 
     public void ChangeByRoleAuthority(EnumRoleAuthority roleAuthority)

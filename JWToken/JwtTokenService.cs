@@ -21,13 +21,25 @@ public class JwtTokenService : IJwtTokenService
     }
 
 
-    public string BuilderTokenAsync(IEnumerable<Claim> claims, JwtOptions configuration)
+    public ValueTask<string> BuilderTokenAsync(IEnumerable<Claim> claims, JwtOptions configuration)
     {
         //var expiry = TimeSpan.FromSeconds(configuration.ExpirSeconds);
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration.PrivateKey));
         var signingCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature);
-        var tokenDescript = new JwtSecurityToken(configuration.Issuer, configuration.Audiencs, claims, DateTime.Now, DateTime.Now.AddDays(configuration.ExpirSeconds), signingCredentials);
-        return new JwtSecurityTokenHandler().WriteToken(tokenDescript);
+        var tokenDescript = new JwtSecurityToken(configuration.Issuer, configuration.Audiencs, claims, 
+            DateTime.Now, DateTime.Now.AddDays(configuration.ExpirSeconds), signingCredentials);
+        return new ValueTask<string>(new JwtSecurityTokenHandler().WriteToken(tokenDescript));
+    }
+
+
+    public ValueTask<string> BuilderTokenAsync(IEnumerable<Claim> claims)
+    {
+        //var expiry = TimeSpan.FromSeconds(configuration.ExpirSeconds);
+        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_optionsSnapshot.Value.PrivateKey));
+        var signingCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature);
+        var tokenDescript = new JwtSecurityToken(_optionsSnapshot.Value.Issuer, _optionsSnapshot.Value.Audiencs, claims,
+            DateTime.Now, DateTime.Now.AddDays(_optionsSnapshot.Value.ExpirSeconds), signingCredentials);
+        return new ValueTask<string>(new JwtSecurityTokenHandler().WriteToken(tokenDescript));
     }
 
 

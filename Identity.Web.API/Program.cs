@@ -3,6 +3,7 @@ using Identity.Infrastructure;
 using Identity.Infrastructure.EntityFramework;
 using Identity.Web.API.APIs;
 using Identity.Web.API.Extensions;
+using Identity.Web.API.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,7 +14,10 @@ builder.NotBlogConfigureExtraServices(new InitializerOptions
 });
 
 builder.Services.AddIdentityDbContext(builder.Configuration.GetSection(nameof(DbContextOption)));
-builder.Services.AddMigration<IdentityDbContext>();
+
+builder.Services.AddMigration<IdentityDbContext,RoleContextSeed>();
+builder.Services.AddMigration<IdentityDbContext,UserDefullContextSeed>();
+
 builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
 
 

@@ -14,7 +14,7 @@ public class ModuleInitializer : IModuleInitializer
         service.AddScoped<IUserRepository, UserRepository>();
         service.AddScoped<IUserRoleRepository, UserRoleRepository>();
         service.AddScoped<IEmailCodeSend, EmailCodeSend>();
-        service.AddDistributedMemoryCache();
+        service.AddDistributedMemoryCache();    
         service.AddScoped<INotMemoryCache, NotMemoryCache.NotMemoryCache>();
         service.AddScoped<ISmsCodeSend, SmsCodeSend>();
         service.AddScoped<IRequestManager, RequestManager.RequestManager>();

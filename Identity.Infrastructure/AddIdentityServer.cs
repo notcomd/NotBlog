@@ -20,9 +20,12 @@ public static class AddIdentityServer
         IConfiguration configuration)
     {
         serviceCollection.AddDbContext<IdentityDbContext>(opt =>
+        {
             opt.UseNpgsql(configuration.Get<DbContextOption>()!.DbContextConnect ??
             throw new ArgumentNullException(nameof(configuration)),
-                o => o.MigrationsAssembly("Identity.Infrastructure")));
+                o => o.MigrationsAssembly("Identity.Infrastructure"));
+        });
+
 
         return serviceCollection;
     }

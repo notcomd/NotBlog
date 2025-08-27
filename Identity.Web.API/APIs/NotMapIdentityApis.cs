@@ -1,4 +1,5 @@
 ﻿using Identity.Web.API.Application.Command;
+using Identity.Web.API.Application.Models;
 
 using Microsoft.AspNetCore.HttpLogging;
 
@@ -8,17 +9,24 @@ public static class NotMapIdentityApis
 {
     public static RouteGroupBuilder NotMapIdentityApi(this RouteGroupBuilder routeBuilder)
     {
+
         var route = routeBuilder.MapGroup(("/Identity")).WithHttpLogging(HttpLoggingFields.All);
+
 
         route.MapGet("/", GetByTest).WithHttpLogging(HttpLoggingFields.All);
 
+
         route.MapPost("/GenerateCode", GenerateCode).WithHttpLogging(HttpLoggingFields.All);
+
 
         route.MapPost("/CreateByUser", GetByTest2).WithHttpLogging(HttpLoggingFields.All);
 
-        
 
         route.MapGet("/TestGetHello", TestGetHelloAsync).WithHttpLogging(HttpLoggingFields.All);
+
+
+        route.MapPost("/SignUpWithEmail", SignUpWithEmailAsync).WithHttpLogging(HttpLoggingFields.All);
+
 
         return route;
     }
@@ -50,15 +58,17 @@ public static class NotMapIdentityApis
         await identityService.NotMediator.SendAsync(new SendWithEmailCommand(email.Email, code), cancellationToken);
     }
 
-    //private async static Task<string> TestSendEmailAsync([AsParameters]IdentityService identityService, [EmailAddress(ErrorMessage = "格式错误")]string emailSendRecord, CancellationToken cancellationToken)
-    //{
-    //    if (emailSendRecord != string.Empty)
-    //    {
-    //        await identityService.NotMediator.SendAsync(new CreateByEmailUserCommand(emailSendRecord, "123456", "User","user"), cancellationToken);
-    //        return "发送成功";
-    //    }
-    //    return "发送失败，请检查邮箱格式";
-    //}
+
+    private static async Task SignUpWithEmailAsync([AsParameters] IdentityService identityService, RquistSignUpWithEmailModel createByUserDto, CancellationToken cancellationToken)
+    {
+        if (createByUserDto is null) throw new ArgumentNullException(nameof(createByUserDto));
+        var signal = await identityService.NotMediator.SendAsync(new CreateByEmailUserCommand(createByUserDto.SignUpEmail,
+             createByUserDto.HashPassword, "User", "User", identityService.NotDateTime.UtcNow), cancellationToken);
+        var status = await identityService.IdentityDomainToolServer.IsCheckWithAlreadyExistsAsync(createByUserDto.SignUpEmail);
+              
+    }
+
+
 
     private static Task<IActionResult> TestGetHelloAsync()
     {

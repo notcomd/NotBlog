@@ -80,12 +80,12 @@ namespace Identity.Infrastructure.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     UserRoleGuid = table.Column<Guid>(type: "uuid", nullable: false),
-                    UserName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    UserName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     ImageCover = table.Column<string>(type: "text", nullable: true),
                     UserEmail = table.Column<string>(type: "text", nullable: false),
-                    PasswordHash = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Address = table.Column<string>(type: "text", nullable: true),
-                    CreateDateTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                    CreateDateTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    PasswordHash = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -182,8 +182,7 @@ namespace Identity.Infrastructure.Migrations
                     PasswordSalt = table.Column<string>(type: "text", nullable: false),
                     BlackOrWhite = table.Column<int>(type: "integer", nullable: false),
                     UserStatus = table.Column<int>(type: "integer", nullable: false),
-                    LockOutEnd = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false)
+                    LockOutEnd = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {

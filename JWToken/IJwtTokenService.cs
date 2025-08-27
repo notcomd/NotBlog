@@ -12,8 +12,10 @@ public interface IJwtTokenService
     /// <typeparam name="T">需要声明Claim数据</typeparam>
     /// <param name="Redname"></param>
     /// <returns></returns>
-    string BuilderTokenAsync(IEnumerable<Claim> claims, JwtOptions configuration);
+    ValueTask<string> BuilderTokenAsync(IEnumerable<Claim> claims, JwtOptions configuration);
 
+
+    ValueTask<string> BuilderTokenAsync(IEnumerable<Claim> claims);
 
     /// <summary>
     ///     解析jwt

@@ -177,6 +177,7 @@ namespace Identity.Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("UserName")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)")
                         .HasColumnName("UserName");
