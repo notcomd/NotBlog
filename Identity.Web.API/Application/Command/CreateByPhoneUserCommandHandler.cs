@@ -6,10 +6,10 @@ public class CreateByPhoneUserCommandHandler : IRequestHandler<CreateByPhoneUser
     private readonly IUserRoleRepository _userRoleRepository;
     private readonly ILogger<CreateByPhoneUserCommandHandler> _logger;
     private readonly INotDateTime _notDateTime;
-    private readonly IdentityDomainSignUpServer _identityDomainSignUpServer;
+    private readonly IdentityDomainRegisterServer _identityDomainSignUpServer;
     private readonly INotMediator _notMediator;
 
-    public CreateByPhoneUserCommandHandler(IUserRepository userRepository, IUserRoleRepository userRoleRepository, ILogger<CreateByPhoneUserCommandHandler> logger, INotDateTime notDateTime, IdentityDomainSignUpServer identityDomainSignUpServer, INotMediator notMediator)
+    public CreateByPhoneUserCommandHandler(IUserRepository userRepository, IUserRoleRepository userRoleRepository, ILogger<CreateByPhoneUserCommandHandler> logger, INotDateTime notDateTime, IdentityDomainRegisterServer identityDomainSignUpServer, INotMediator notMediator)
     {
         _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         _userRoleRepository = userRoleRepository ?? throw new ArgumentNullException(nameof(userRoleRepository));
@@ -26,7 +26,7 @@ public class CreateByPhoneUserCommandHandler : IRequestHandler<CreateByPhoneUser
         {
             ArgumentNullException.ThrowIfNull(request);
 
-            await _identityDomainSignUpServer.SigUpWhitPhoneAsync(request.PhoneNumber, request.Password, request.RoleName);
+            await _identityDomainSignUpServer.RegisterWhitPhoneAsync(request.PhoneNumber, request.Password, request.RoleName);
             //await _notMediator.SendAsync(new GenerateCodeCommand(request.PhoneNumber, 9), cancellationToken);
             _logger.LogInformation($"[（*＾-＾*）{DateTime.UtcNow}]User Created! {request.PhoneNumber}");
             await _userRoleRepository.UnitOfWork.SavaEntitiesAsync(cancellationToken);

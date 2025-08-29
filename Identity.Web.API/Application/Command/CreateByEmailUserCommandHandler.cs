@@ -14,13 +14,13 @@ public class CreateByEmailUserCommandHandler : IRequestHandler<CreateByEmailUser
     private readonly INotDateTime _notDateTime;
     private readonly ILogger<CreateByEmailUserCommandHandler> _logger;
     private readonly INotMediator _notMediator;
-    private readonly IdentityDomainSignUpServer _identityDomainSignUpServer;
+    private readonly IdentityDomainRegisterServer _identityDomainSignUpServer;
 
 
 
     public CreateByEmailUserCommandHandler(IUserRepository userRepository, IUserRoleRepository userRoleRepository,
         ILogger<CreateByEmailUserCommandHandler> logger, INotDateTime notDateTime,
-        IdentityDomainSignUpServer identityDomainSignUpServer, INotMediator notMediator)
+        IdentityDomainRegisterServer identityDomainSignUpServer, INotMediator notMediator)
     {
         _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         _userRoleRepository = userRoleRepository ?? throw new ArgumentNullException(nameof(userRoleRepository));
@@ -38,14 +38,13 @@ public class CreateByEmailUserCommandHandler : IRequestHandler<CreateByEmailUser
         try
         {                     
             ArgumentNullException.ThrowIfNull(request, nameof(request));
-            if(await _identityDomainSignUpServer.SignUpWhitEmailAsync(request.Email, request.Password,request.RoleName) is not UserAccessResult.Success)
+            if(await _identityDomainSignUpServer.RegisterWhitEmailAsync(request.Email, request.Password,request.RoleName) is not UserAccessResult.Success)
             {
                 _logger.LogWarning($"[(≧ ﹏ ≦){DateTime.UtcNow}]User Already Exists! {request.Email}");
                 return false;
             }
-            await _userRoleRepository.UnitOfWork.SavaEntitiesAsync(cancellationToken);
-            
-            await _notMediator.SendAsync(new GenerateCodeCommand(request.Email, 9), cancellationToken);
+            await _userRoleRepository.UnitOfWork.SavaEntitiesAsync(cancellationToken);            
+           // await _notMediator.SendAsync(new GenerateCodeCommand(request.Email, 9), cancellationToken);
             _logger.LogInformation($"[（*＾-＾*）{DateTime.UtcNow}]User Created! {request.Email}");
             return true;
         }
@@ -53,7 +52,6 @@ public class CreateByEmailUserCommandHandler : IRequestHandler<CreateByEmailUser
         {
             _logger.LogError(ex, $"[(≧ ﹏ ≦){DateTime.UtcNow}]User Create Failed! {request.Email}");
             return false;
-
         }
 
     }

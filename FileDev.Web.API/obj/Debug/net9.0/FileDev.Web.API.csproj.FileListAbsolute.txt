@@ -1,9 +1,0 @@
-C:\Users\29617\source\repos\MyService\FileDev.Web.API\obj\Debug\net9.0\FileDev.Web.API.csproj.AssemblyReference.cache
-C:\Users\29617\source\repos\MyService\FileDev.Web.API\obj\Debug\net9.0\rpswa.dswa.cache.json
-C:\Users\29617\source\repos\MyService\FileDev.Web.API\obj\Debug\net9.0\FileDev.Web.API.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\29617\source\repos\MyService\FileDev.Web.API\obj\Debug\net9.0\FileDev.Web.API.AssemblyInfoInputs.cache
-C:\Users\29617\source\repos\MyService\FileDev.Web.API\obj\Debug\net9.0\FileDev.Web.API.AssemblyInfo.cs
-C:\Users\29617\source\repos\MyService\FileDev.Web.API\obj\Debug\net9.0\FileDev.Web.API.csproj.CoreCompileInputs.cache
-C:\Users\29617\source\repos\MyService\FileDev.Web.API\obj\Debug\net9.0\FileDev.Web.API.MvcApplicationPartsAssemblyInfo.cs
-C:\Users\29617\source\repos\MyService\FileDev.Web.API\obj\Debug\net9.0\FileDev.Web.API.MvcApplicationPartsAssemblyInfo.cache
-C:\Users\29617\source\repos\MyService\FileDev.Web.API\obj\Debug\net9.0\FileDev.Web.API.sourcelink.json

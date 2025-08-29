@@ -65,8 +65,7 @@ internal static class MigrateDbContextExtensions
         }
         catch (Exception ex)
         {
-            //activity.SetExceptionTags(ex);
-
+            ArgumentException.ThrowIfNullOrWhiteSpace(nameof(ex));
             throw;
         }
     }

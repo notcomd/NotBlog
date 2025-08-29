@@ -45,9 +45,10 @@ if (app.Environment.IsDevelopment())
 }
 app.UseHttpsRedirection();
 
-var identityService = app.MapGroup(("api/identity"));
-
-identityService.NotMapIdentityApi();
+var identitySignUpWithLoginApis = app.MapGroup(("api/identity"));
+var identityManagerApis=app.MapGroup(("api/identity/manager"));
+identitySignUpWithLoginApis.NotMapIdentityApi();
+identityManagerApis.NotMapIdentityManagerApi();
 
 app.MapControllers();
 

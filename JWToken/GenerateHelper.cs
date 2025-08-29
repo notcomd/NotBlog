@@ -9,6 +9,7 @@ public static class GenerateHelper
     private static readonly Random random = new Random();
 
     private static readonly object _lock = new object();
+
     /// <summary>
     /// 创建随机数
     /// </summary>
@@ -43,12 +44,16 @@ public static class GenerateHelper
                 var rand = random.Next(48, 122);
                 if (rand is >= 48 and <= 57 || rand is >= 65 and <= 90 || rand is >= 97 and <= 122)
                 {
-                    GenerateCode.Append(Convert.ToChar(random));
+                    GenerateCode.Append(Convert.ToChar(rand));
+                }
+                else
+                {
+                    item--;
                 }
             }
 
         }
-        return new ValueTask<string>(GenerateCode.ToString());
+        return ValueTask.FromResult(GenerateCode.ToString());
     }
 
 

@@ -1,7 +1,5 @@
 ﻿using Identity.Domain.Events;
 
-using Microsoft.IdentityModel.Tokens;
-
 namespace Identity.Domain.AggregatesModel.UserAggregate;
 
 public class User : Entity, IAggregateRoot
@@ -63,19 +61,18 @@ public class User : Entity, IAggregateRoot
         passwordHash = HashHelper.CreateHash256Async(passwordHash, salt
             ?? throw new ArgumentNullException("salt is null!")).Result;
 
-        var UserResult = new User
-        {
-            UserRoleGuid = userRoleGuid,
-            UserName = userEmail,
-            PasswordHash = passwordHash,
-            CreateDatetime = dateTimeOffset,
-            UserAccessFail = UserAccessFail.CreateByUserAccessFail(Id),
-            UserSafety = UserSafety.CreateByUserSafety(Id, Encoding.UTF8.GetString(salt), stamp),
-            UserEmail = userEmail,
-            ImageCover = new Uri(uriString: string.Empty),
-            PhoneNumber = null,
-        };
-        UserResult.AddDomainEvent(new CreatedByUserDomainEvent(UserResult.Id, userRoleGuid, userEmail, userEmail, null, dateTimeOffset));
+        Id = Guid.CreateVersion7();
+        UserRoleGuid = userRoleGuid;
+        UserName = userEmail;
+        PasswordHash = passwordHash;
+        CreateDatetime = dateTimeOffset;
+        UserEmail = userEmail;
+        ImageCover = null;
+        PhoneNumber = null;
+        this.UserAccessFail = UserAccessFail.CreateByUserAccessFail(Id);
+        UserSafety = UserSafety.CreateByUserSafety(Id, Encoding.UTF8.GetString(salt), stamp);
+        AddDomainEvent(new CreatedByUserDomainEvent(Id, userRoleGuid, userEmail, userEmail, null, dateTimeOffset));
+
     }
 
 
@@ -102,19 +99,19 @@ public class User : Entity, IAggregateRoot
         passwordHash = HashHelper.CreateHash256Async(passwordHash, salt
             ?? throw new ArgumentNullException("salt is null!")).Result;
 
-        var UserResult = new User
-        {
-            UserRoleGuid = userRoleGuid,
-            UserName = phoneNumber.PhoneCode,
-            PasswordHash = passwordHash,
-            CreateDatetime = dateTimeOffset,
-            UserAccessFail = UserAccessFail.CreateByUserAccessFail(Id),
-            UserSafety = UserSafety.CreateByUserSafety(Id, Encoding.UTF8.GetString(salt), stamp),
-            UserEmail = string.Empty,
-            ImageCover = new Uri(uriString: string.Empty),
-            PhoneNumber = phoneNumber,
-        };
-        UserResult.AddDomainEvent(new CreatedByUserDomainEvent(UserResult.Id, userRoleGuid, phoneNumber.PhoneCode, string.Empty, phoneNumber, DateTimeOffset.UtcNow));
+
+        Id = Guid.CreateVersion7();
+        UserRoleGuid = userRoleGuid;
+        UserName = phoneNumber.PhoneCode;
+        PasswordHash = passwordHash;
+        CreateDatetime = dateTimeOffset;       
+        UserEmail = string.Empty;
+        ImageCover = null;
+        PhoneNumber = phoneNumber;
+        UserAccessFail = UserAccessFail.CreateByUserAccessFail(Id);
+        UserSafety = UserSafety.CreateByUserSafety(Id, Encoding.UTF8.GetString(salt), stamp);
+        
+        AddDomainEvent(new CreatedByUserDomainEvent(Id, userRoleGuid, phoneNumber.PhoneCode, string.Empty, phoneNumber, DateTimeOffset.UtcNow));
         //return UserResult;
     }
 
@@ -183,7 +180,7 @@ public class User : Entity, IAggregateRoot
         {
             throw new ArgumentNullException(nameof(stamp), "security stamp is null or empty");
         }
-        if (UserSafety.UserStatus == EnumUserStatus.Locked || UserSafety.BlackOrWhite == EnumBlackOrWhite.AuthorityBlack)
+        if (UserSafety.UserStatus == EnUserStatus.Locked || UserSafety.BlackOrWhite == EnBlackOrWhite.AuthorityBlack)
         {
             throw new InvalidOperationException("用户已被锁定，无法修改密码");
         }
@@ -225,14 +222,14 @@ public class User : Entity, IAggregateRoot
             throw new ArgumentNullException(nameof(phoneNumber.PhoneCode), "phone number code is null or empty");
         switch (phoneNumber.AddressRegion)
         {
-            case (long)EnumAddressRegion.China:
-            case (long)EnumAddressRegion.UnitedStates:
-            case (long)EnumAddressRegion.SouthKorea:
-            case (long)EnumAddressRegion.Japan:
-            case (long)EnumAddressRegion.Taiwan:
-            case (long)EnumAddressRegion.Hongkong:
-            case (long)EnumAddressRegion.Singapore:
-            case (long)EnumAddressRegion.XiaMen:
+            case (long)EnAddressRegion.China:
+            case (long)EnAddressRegion.UnitedStates:
+            case (long)EnAddressRegion.SouthKorea:
+            case (long)EnAddressRegion.Japan:
+            case (long)EnAddressRegion.Taiwan:
+            case (long)EnAddressRegion.Hongkong:
+            case (long)EnAddressRegion.Singapore:
+            case (long)EnAddressRegion.XiaMen:
                 break;
             default:
                 throw new ArgumentException("phone number address region is error", nameof(phoneNumber.AddressRegion));
@@ -262,7 +259,7 @@ public class User : Entity, IAggregateRoot
     /// </summary>
     /// <param name="passwordHash"></param>
     /// <returns></returns>
-    public ValueTask<bool> IsVerifyByPasswordAsync(string passwordHash)=> HashHelper.VerifyPasswordValueTask(passwordHash, PasswordHash, Encoding.UTF8.GetBytes(UserSafety.PasswordSalt));
+    public ValueTask<bool> IsVerifyByPasswordAsync(string passwordHash) => HashHelper.VerifyPasswordValueTask(passwordHash, PasswordHash, Encoding.UTF8.GetBytes(UserSafety.PasswordSalt));
 
     public void ChangeByUserRole(Guid userRoleGuid)
     {
@@ -282,8 +279,12 @@ public class User : Entity, IAggregateRoot
     /// <exception cref="ArgumentException"></exception>
     public void ChangeByAddress(string address)
     {
-        if (string.IsNullOrEmpty(address) || address.Length <= 100)
-            throw new ArgumentException(nameof(address));
+        if (string.IsNullOrEmpty(address))
+            throw new ArgumentException("地址不能为空", nameof(address));
+
+        if (address.Length > 100)
+            throw new ArgumentException("地址长度不能超过100个字符", nameof(address));
+
         Address = address;
     }
 
@@ -318,22 +319,24 @@ public class User : Entity, IAggregateRoot
 
     public IEnumerable<Claim>? UserClaimToClaim(IEnumerable<UserClaim> userClaims)
     {
-     
-        if(userClaims is not null && userClaims.Any())
-        {
-            foreach (var userClaim in userClaims)
-            {
-                if (string.IsNullOrEmpty(userClaim.ClaimType) || string.IsNullOrEmpty(userClaim.ClaimValue))
-                {
-                    throw new InvalidOperationException("User claim type and value cannot be null or empty");
-                }
-                yield return userClaim.ToClaim();
-            }
-        }
-        else
-        {
-            throw new ArgumentNullException(nameof(userClaims), "User claims cannot be null or empty");
-        }
+
+        if( userClaims is null || !userClaims.Any())
+            throw new ArgumentNullException(nameof(userClaims), "user claims is null or empty");
+
+       return userClaims.Where(entity => string.IsNullOrEmpty(entity.ClaimValue) || string.IsNullOrEmpty(entity.ClaimType))
+            .Select(en => en.ToClaim());
+
     }
+
+
+    public void ChangeByUserClaim(IEnumerable<UserClaim> userClaims)
+    {
+       if(userClaims is null || !userClaims.Any())
+            throw new ArgumentNullException(nameof(userClaims), "user claims is null or empty");
+       _UserClaims.Clear();
+       _UserClaims.AddRange(userClaims);
+    }
+
+    public bool IsUserLockedOut() => UserAccessFail.IsLockOutByAccessFaild();
 
 }

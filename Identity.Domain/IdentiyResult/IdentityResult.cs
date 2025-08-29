@@ -2,7 +2,7 @@
 
 namespace Identity.Domain.Entities
 {
-    public sealed class IdentityResult<TResponse> : IActionResult where TResponse : class
+    public sealed class IdentityResult<TResponse> 
     {
         private object _lock = new object();
        
@@ -66,7 +66,7 @@ namespace Identity.Domain.Entities
             }
         }
 
-        public static IdentityResult<TResponse> Result(string? message, EnumStatusCode statusCode, TResponse data, ResultType resultType = ResultType.ApplicationJson)
+        public static IdentityResult<TResponse> Result(TResponse data,  EnumStatusCode statusCode, string? message, ResultType resultType = ResultType.ApplicationJson)
         {
             if (string.IsNullOrEmpty(message))
             {
@@ -90,9 +90,12 @@ namespace Identity.Domain.Entities
             };
         }
 
-        public static ValueTask<IdentityResult<TResponse>> ResultAsync(string? message, EnumStatusCode statusCode, TResponse data, ResultType resultType = ResultType.ApplicationJson)
+        public static ValueTask<IdentityResult<TResponse>> ResultAsync(TResponse data, EnumStatusCode statusCode, string? message, ResultType resultType = ResultType.ApplicationJson)
         {
-            return new ValueTask<IdentityResult<TResponse>>(Result(message, statusCode, data, resultType));
+            
+
+
+            return new ValueTask<IdentityResult<TResponse>>(Result(data,  statusCode, message, resultType));
         }
 
     }

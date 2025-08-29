@@ -16,4 +16,10 @@ public interface IUserRoleRepository : IRepository<Roles>
 
     ValueTask <IEnumerable<RoleClaim>> FindRoleClaimByRolesAsync(Guid roleGuid);
 
+    ValueTask  UpdateWithRoleAsync(Guid roleGuid,Func<Roles,Task> func);
+
+    ValueTask  UpdateWithRoleAsync(string roleName, Func<Roles,Task> func);
+
+    ValueTask DeleteByUserRoleAsync(Guid roleGuid);
+
 }

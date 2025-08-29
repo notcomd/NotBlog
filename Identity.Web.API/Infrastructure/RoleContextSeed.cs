@@ -22,9 +22,9 @@ public class RoleContextSeed : IDbSeeder<IdentityDbContext>
     private static IEnumerable<Roles> GetRolesType()
     {
 
-        yield return Roles.CreateByRoleAsync("Admin", "Administrator role", DateTimeOffset.UtcNow, EnumRoleAuthority.Admin, EnumRoleStatus.Normal);
-        yield return Roles.CreateByRoleAsync("User", "Standard user role", DateTimeOffset.UtcNow, EnumRoleAuthority.User, EnumRoleStatus.Normal);
-        yield return Roles.CreateByRoleAsync("Guest", "Guest user role", DateTimeOffset.UtcNow, EnumRoleAuthority.Guest, EnumRoleStatus.Normal);
+        yield return new Roles("Admin", "Administrator role", DateTimeOffset.UtcNow, EnRoleAuthority.Admin, EnRoleStatus.Normal);
+        yield return new Roles("User", "Standard user role", DateTimeOffset.UtcNow, EnRoleAuthority.User, EnRoleStatus.Normal);
+        yield return new Roles("Guest", "Guest user role", DateTimeOffset.UtcNow, EnRoleAuthority.Guest, EnRoleStatus.Normal);
 
     }
 }

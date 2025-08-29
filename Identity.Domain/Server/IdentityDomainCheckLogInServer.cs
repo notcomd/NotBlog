@@ -27,23 +27,24 @@ public class IdentityDomainCheckLogInServer
     public async ValueTask<UserAccessResult> CheckLogInWhitEmailAsync(string email, string password)
     {
         var user = await _userRepository.FindOneByUserAsync(email);
+
         if (user is null)
         {
             _loggerUser.LogError($"[(≧ ﹏ ≦){_notDateTime.UtcNow}] 用户 {email} 不存在。");
             return UserAccessResult.NotFund;
         }
-        if (IsUserLockedOut(user))
+        else if (IsUserLockedOut(user))
         {
             _loggerUser.LogError($"[(≧ ﹏ ≦){_notDateTime.UtcNow}] 用户 {email} 被锁定。");
             return UserAccessResult.Locked;
         }
-        if (!await user.IsVerifyByPasswordAsync(password))
+        else if (!await user.IsVerifyByPasswordAsync(password))
         {
             AccessFailed(user);
             _loggerUser.LogError($"[（*＾-＾*）{_notDateTime.UtcNow}] 用户 {email} 密码错误。");
             return UserAccessResult.Error;
         }
-        if (!this.IsUserActive(user))
+        else if (!IsUserActive(user))
         {
             _loggerUser.LogError($"[（*＾-＾*）{_notDateTime.UtcNow}] 用户 {email} 未激活。");
             return UserAccessResult.NotActive;
@@ -62,7 +63,9 @@ public class IdentityDomainCheckLogInServer
     public async ValueTask<UserAccessResult> CheckLogInWhitPhoneAsync(PhoneNumber phoneNumber,string password)
     {
         ArgumentNullException.ThrowIfNull(phoneNumber, nameof(phoneNumber));
+
         var loginPhone=await _userRepository.FindOneByUserAsync(phoneNumber);
+
         if (loginPhone is null)
         {
             _loggerUser.LogError($"[(≧ ﹏ ≦){_notDateTime.UtcNow}] 用户 {phoneNumber.PhoneCode} 不存在。");
@@ -89,7 +92,9 @@ public class IdentityDomainCheckLogInServer
         return UserAccessResult.Success;
     }
     
-       
+   
+    public bool IsUserLocked(User user)=>user.IsUserLockedOut();
+
     public bool IsUserLockedOut(User user) => user.UserAccessFail.IsLockOutByAccessFaild();
 
     public void ResetAccessFailCount(User user) => user.UserAccessFail.ResetFail();
@@ -97,5 +102,7 @@ public class IdentityDomainCheckLogInServer
     public void AccessFailed(User user) => user.UserAccessFail.VerifyByAccessFailed();
 
     public bool IsUserActive(User user) => user.UserSafety.GetIsActive();
+
+    public bool IsUserSafetyLocked(User user) => user.UserSafety.GetIsLockedOut();
 
 }

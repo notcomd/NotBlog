@@ -16,8 +16,7 @@ namespace Identity.Infrastructure.Repository
         public Author2Repository(IdentityDbContext identityDbContext, ILogger<Author2Repository> logger)
         {
             _identityDbContext = identityDbContext ?? throw new ArgumentNullException(nameof(identityDbContext));
-            _logger = logger;
-            //_logger = LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<Author2Repository>();
+            _logger = logger;             
         }
 
         public async Task<Author2?> FindOneByAuthorAsync(Guid authorGuid)

@@ -137,13 +137,13 @@ C:\Users\29617\source\repos\MyService\Identity.Web.API\bin\Debug\net9.0\Identity
 C:\Users\29617\source\repos\MyService\Identity.Web.API\bin\Debug\net9.0\NotEmail.dll
 C:\Users\29617\source\repos\MyService\Identity.Web.API\bin\Debug\net9.0\Token.JWT.dll
 C:\Users\29617\source\repos\MyService\Identity.Web.API\bin\Debug\net9.0\CommonsInitializer.pdb
+C:\Users\29617\source\repos\MyService\Identity.Web.API\bin\Debug\net9.0\Identity.Domain.pdb
 C:\Users\29617\source\repos\MyService\Identity.Web.API\bin\Debug\net9.0\NotEmail.pdb
 C:\Users\29617\source\repos\MyService\Identity.Web.API\bin\Debug\net9.0\Identity.Infrastructure.pdb
 C:\Users\29617\source\repos\MyService\Identity.Web.API\bin\Debug\net9.0\Token.JWT.pdb
 C:\Users\29617\source\repos\MyService\Identity.Web.API\bin\Debug\net9.0\DomainCommonst.pdb
 C:\Users\29617\source\repos\MyService\Identity.Web.API\bin\Debug\net9.0\DomainInfrastructure.pdb
 C:\Users\29617\source\repos\MyService\Identity.Web.API\bin\Debug\net9.0\Evenbus.pdb
-C:\Users\29617\source\repos\MyService\Identity.Web.API\bin\Debug\net9.0\Identity.Domain.pdb
 C:\Users\29617\source\repos\MyService\Identity.Web.API\obj\Debug\net9.0\Identity.Web.API.csproj.AssemblyReference.cache
 C:\Users\29617\source\repos\MyService\Identity.Web.API\obj\Debug\net9.0\rpswa.dswa.cache.json
 C:\Users\29617\source\repos\MyService\Identity.Web.API\obj\Debug\net9.0\Identity.Web.API.GeneratedMSBuildEditorConfig.editorconfig
@@ -161,10 +161,10 @@ C:\Users\29617\source\repos\MyService\Identity.Web.API\obj\Debug\net9.0\staticwe
 C:\Users\29617\source\repos\MyService\Identity.Web.API\obj\Debug\net9.0\staticwebassets.build.json.cache
 C:\Users\29617\source\repos\MyService\Identity.Web.API\obj\Debug\net9.0\staticwebassets.development.json
 C:\Users\29617\source\repos\MyService\Identity.Web.API\obj\Debug\net9.0\staticwebassets.build.endpoints.json
+C:\Users\29617\source\repos\MyService\Identity.Web.API\obj\Debug\net9.0\staticwebassets.upToDateCheck.txt
 C:\Users\29617\source\repos\MyService\Identity.Web.API\obj\Debug\net9.0\Identity.AEA762E2.Up2Date
 C:\Users\29617\source\repos\MyService\Identity.Web.API\obj\Debug\net9.0\Identity.Web.API.dll
 C:\Users\29617\source\repos\MyService\Identity.Web.API\obj\Debug\net9.0\refint\Identity.Web.API.dll
 C:\Users\29617\source\repos\MyService\Identity.Web.API\obj\Debug\net9.0\Identity.Web.API.pdb
 C:\Users\29617\source\repos\MyService\Identity.Web.API\obj\Debug\net9.0\Identity.Web.API.genruntimeconfig.cache
 C:\Users\29617\source\repos\MyService\Identity.Web.API\obj\Debug\net9.0\ref\Identity.Web.API.dll
-C:\Users\29617\source\repos\MyService\Identity.Web.API\obj\Debug\net9.0\staticwebassets.upToDateCheck.txt

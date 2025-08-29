@@ -2,5 +2,5 @@
 
 public interface IEmailCodeSend
 {
-    ValueTask SendEmailCodeAsync(string toEmail, string code);
+    ValueTask SendEmailCodeAsync(string subject, string toEmail, string code);
 }

@@ -19,24 +19,22 @@ public class IdentityDomainRoleManagerServer
     }
 
 
-    public async ValueTask<UserAccessResult> CreateRoleAsync(string roleName,string? roleAttribute)
+    public async ValueTask<UserAccessResult> RegisterWithRoleAsync(RegisterWithRoleDto registerWithRoleDto)
     {
         try
         {
-            if (string.IsNullOrEmpty(roleName))
-            {
-                _logger.LogWarning($"[(≧ ﹏ ≦){_notDateTime.UtcNow}] 角色名称不能为空。");
-                return UserAccessResult.NotFund;
-            }
-            var roleExists = await _userRoleRepository.FindByUserRoleAsync(roleName);
+            if (registerWithRoleDto is null)
+                throw new ArgumentNullException(nameof(registerWithRoleDto));
+            var roleExists = await _userRoleRepository.FindByUserRoleAsync(registerWithRoleDto.RoleName);
             if (roleExists is not null)
             {
-                _logger.LogWarning($"[(≧ ﹏ ≦){_notDateTime.UtcNow}] 角色 {roleName} 已存在。");
+                _logger.LogWarning($"[(≧ ﹏ ≦){_notDateTime.UtcNow}] 角色 {roleExists.RoleName} 已存在。");
                 return UserAccessResult.AlreadyExists;
             }
-            var newRole = Roles.CreateByRoleAsync(roleName,roleAttribute,_notDateTime.NowOffset);
+            var newRole = new Roles(registerWithRoleDto.RoleName, registerWithRoleDto.Attribute,
+                _notDateTime.UtcNow, registerWithRoleDto.RoleAuthority, registerWithRoleDto.RoleStatus);
             await _userRoleRepository.AddByUserRoleAsync(newRole);
-            _logger.LogInformation($"[（*＾-＾*）{_notDateTime.UtcNow}] 角色 {roleName} 创建成功。");
+            _logger.LogInformation($"[（*＾-＾*）{_notDateTime.UtcNow}] 角色 {newRole.RoleName} 创建成功。");
             return UserAccessResult.Success;
         }
         catch (Exception ex)
@@ -58,32 +56,109 @@ public class IdentityDomainRoleManagerServer
                 _logger.LogWarning($"[(≧ ﹏ ≦){_notDateTime.UtcNow}] 角色 {roles.RoleName} 以存在。");
                 return UserAccessResult.AlreadyExists;
             }
-
             return UserAccessResult.Success;
-
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, $"[(≧ ﹏ ≦){_notDateTime.UtcNow}] 角色更改失败。");
             return UserAccessResult.Error;
         }
-
-
     }
 
 
     public void ChangeWhitRoleClaim(Roles roles, RoleClaim roleClaim)
     {
-       roles.AddRoleClaim(roleClaim);
+        roles.AddRoleClaim(roleClaim);
     }
+
+
     public List<Claim> ResultWhitRoleClaim(Roles roles)
     {
         var claim = new List<Claim>();
-        foreach(var item in roles.RoleClaims)
+        foreach (var item in roles.RoleClaims)
         {
             claim.Add(item.ToClaim());
         }
         return claim;
+    }
+
+
+    public async ValueTask<UserAccessResult> ChangeWithRoleAsync(string roleName, ChangeWithRoleDto changeWithRoleDto)
+    {
+        try
+        {
+            ArgumentNullException.ThrowIfNull(roleName, nameof(roleName));
+            ArgumentNullException.ThrowIfNull(changeWithRoleDto, nameof(changeWithRoleDto));
+
+            await _userRoleRepository.UpdateWithRoleAsync(roleName, async en =>
+            {
+                if (changeWithRoleDto.ChangeRoleAuthority != en.RoleAuthority)
+                    en.ChangeByRoleAuthority(changeWithRoleDto.ChangeRoleAuthority);
+                if (changeWithRoleDto.ChangeRoleStatus != en.RoleStatus)
+                    en.ChangeByRoleStatus(changeWithRoleDto.ChangeRoleStatus);
+                if (!string.IsNullOrEmpty(changeWithRoleDto.ChangeRoleName) && changeWithRoleDto.ChangeRoleName != en.RoleName)
+                    en.ChangeByRoleName(changeWithRoleDto.ChangeRoleName);
+                if (changeWithRoleDto.ChangeRoleClaims is not null && changeWithRoleDto.ChangeRoleClaims.Any())
+                {
+                    var list = new List<RoleClaim>();
+                    foreach (var claim in changeWithRoleDto.ChangeRoleClaims)
+                    {
+                        var claimTrc = RoleClaim.CreateByRoleClaim(en.Id, claim.ClaimType, claim.ClaimValue);
+                        list.Add(claimTrc);
+                    }
+                    en.ChangeByRoleClaim(list);
+                }
+            });
+            _logger.LogInformation($"[（*＾-＾*）{_notDateTime.UtcNow}] 角色 {roleName} 的信息已更改。");
+            return UserAccessResult.Success;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"[(≧ ﹏ ≦){_notDateTime.UtcNow}] 角色更改失败。");
+            return UserAccessResult.Error;
+        }
+    }
+
+
+    public async ValueTask<ResultWithRoleDto?> GetWithRoleAsync(object roleWithObject)
+    {
+        try
+        {
+            if (roleWithObject is Guid roleGuid)
+            {
+                var roleDate = await _userRoleRepository.FindByUserRoleAsync(roleGuid);
+                if (roleDate is null)
+                {
+                    _logger.LogWarning($"[(≧ ﹏ ≦){_notDateTime.UtcNow}] 角色 {roleGuid} 未找到。");
+                    return null;
+                }
+                var roleResult = new ResultWithRoleDto(roleDate.RoleName, roleDate.Attribute,
+                    roleDate.RoleClaims?.Select(en => new WithResultRoleClaimDto(en.ClaimType, en.ClaimValue)));
+                return roleResult;
+            }
+            else if (roleWithObject is string roleName)
+            {
+                var roleDate = await _userRoleRepository.FindByUserRoleAsync(roleName);
+                if (roleDate is null)
+                {
+                    _logger.LogWarning($"[(≧ ﹏ ≦){_notDateTime.UtcNow}] 角色 {roleName} 未找到。");
+                    return null;
+                }
+                var roleResult = new ResultWithRoleDto(roleDate.RoleName, roleDate.Attribute,
+                    roleDate.RoleClaims?.Select(en => new WithResultRoleClaimDto(en.ClaimType, en.ClaimValue)));
+                return roleResult;
+            }
+            else {                
+                _logger.LogWarning($"[(≧ ﹏ ≦){_notDateTime.UtcNow}] 提供的参数类型不支持。");
+                throw new Exception("Provided parameter type is not supported.");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"[(≧ ﹏ ≦){_notDateTime.UtcNow}] 获取角色信息失败。");
+            return null;
+        }
+
     }
 
 }

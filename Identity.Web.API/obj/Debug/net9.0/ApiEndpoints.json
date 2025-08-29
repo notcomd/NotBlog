@@ -1,17 +1,168 @@
 [
   {
-    "ContainingType": "Identity.Web.API.APIs.NotMapIdentityApis",
-    "Method": "GetByTest",
-    "RelativePath": "api/identity/Identity/",
-    "HttpMethod": "GET",
+    "ContainingType": "Identity.Web.API.APIs.NotMapIdentityManagerApis",
+    "Method": "ChangeWithUserInfomationAsync",
+    "RelativePath": "api/identity/manager/api/identity/manager/ChangeWithUserInfomation",
+    "HttpMethod": "POST",
     "IsController": false,
     "Order": 0,
-    "Parameters": [],
+    "Parameters": [
+      {
+        "Name": "requestChangeWithUserInfomationModel",
+        "Type": "Identity.Web.API.Application.Models.RequestChangeWithUserInfomationModel",
+        "IsRequired": true
+      }
+    ],
     "ReturnTypes": [
       {
-        "Type": "System.String",
+        "Type": "Identity.Domain.Entities.IdentityResult\u00601[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
         "MediaTypes": [
-          "text/plain"
+          "application/json"
+        ],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "IdentityManager"
+    ],
+    "EndpointName": "ChangeWithUserInfomation",
+    "Description": "\u66F4\u65B0\u7528\u6237\u4FE1\u606F\u63A5\u53E3"
+  },
+  {
+    "ContainingType": "Identity.Web.API.APIs.NotMapIdentityManagerApis",
+    "Method": "ChangeWithUserPasswordAsync",
+    "RelativePath": "api/identity/manager/api/identity/manager/ChangeWithUserPasswordAsync",
+    "HttpMethod": "POST",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "requestChangeWithPassworrdInformetionModel",
+        "Type": "Identity.Web.API.Application.Models.RequestChangeWithPassworrdInformetionModel",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Identity.Domain.Entities.IdentityResult\u00601[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "application/json"
+        ],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "IdentityManager"
+    ],
+    "EndpointName": "ChangeWithUserPassword",
+    "Description": "\u66F4\u65B0\u7528\u6237\u5BC6\u7801\u63A5\u53E3"
+  },
+  {
+    "ContainingType": "Identity.Web.API.APIs.NotMapIdentityManagerApis",
+    "Method": "ChangeWithUserSafetyAsync",
+    "RelativePath": "api/identity/manager/api/identity/manager/ChangeWithUserSafetyAsync",
+    "HttpMethod": "POST",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "requestChangeWithSafetyInformetionModel",
+        "Type": "Identity.Web.API.Application.Models.RequestChangeWithSafetyInformetionModel",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Identity.Domain.Entities.IdentityResult\u00601[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "application/json"
+        ],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "IdentityManager"
+    ],
+    "EndpointName": "ChangeWithUserSafety",
+    "Description": "\u66F4\u65B0\u7528\u6237\u5B89\u5168\u4FE1\u606F\u63A5\u53E3"
+  },
+  {
+    "ContainingType": "Identity.Web.API.APIs.NotMapIdentityManagerApis",
+    "Method": "GetWithUserInforMetionAsync",
+    "RelativePath": "api/identity/manager/api/identity/manager/GetWithUserInforMetionAsync",
+    "HttpMethod": "POST",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "requestWithUserInformetion",
+        "Type": "Identity.Web.API.Application.Models.RequestWithUserInformetionModel",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Identity.Domain.Entities.IdentityResult\u00601[[Identity.Domain.AggregatesModel.UserAggregate.ResultWIthUserDto, Identity.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "application/json"
+        ],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "IdentityManager"
+    ],
+    "EndpointName": "GetWithUserInforMetion",
+    "Description": "\u83B7\u53D6\u7528\u6237\u4FE1\u606F\u63A5\u53E3"
+  },
+  {
+    "ContainingType": "Identity.Web.API.APIs.NotMapIdentityManagerApis",
+    "Method": "RegisterWithRoleAsync",
+    "RelativePath": "api/identity/manager/api/identity/manager/RegisterWithRoleAsync",
+    "HttpMethod": "POST",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "requestRegisterrWithRoleModel",
+        "Type": "Identity.Web.API.Application.Models.RequestRegisterWithRoleModel",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Identity.Domain.Entities.IdentityResult\u00601[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "application/json"
+        ],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "IdentityManager"
+    ],
+    "EndpointName": "RegisterWithRole",
+    "Description": "\u6CE8\u518C\u89D2\u8272\u63A5\u53E3"
+  },
+  {
+    "ContainingType": "Identity.Web.API.APIs.NotMapIdentityApis",
+    "Method": "RegisterWithGenerateCodeAsync",
+    "RelativePath": "api/identity/NotAuthor/GetRquestGenerateCode",
+    "HttpMethod": "POST",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "requestRegisterWithGenerateeCodeModel",
+        "Type": "Identity.Web.API.Application.Models.RequestRegisterWithGenerateeCodeModel",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Identity.Domain.Entities.IdentityResult\u00601[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "application/json"
         ],
         "StatusCode": 200
       }
@@ -19,23 +170,23 @@
   },
   {
     "ContainingType": "Identity.Web.API.APIs.NotMapIdentityApis",
-    "Method": "GetByTest2",
-    "RelativePath": "api/identity/Identity/CreateByUser",
+    "Method": "LogInWithEmailAsync",
+    "RelativePath": "api/identity/NotAuthor/LogInWithEmail",
     "HttpMethod": "POST",
     "IsController": false,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "createByUserDto",
-        "Type": "Identity.Web.API.APIs.NotMapIdentityApis\u002BCreateByUserDto",
+        "Name": "requestLogInWithEmailModel",
+        "Type": "Identity.Web.API.Application.Models.RequestLogInWithEmailModel",
         "IsRequired": true
       }
     ],
     "ReturnTypes": [
       {
-        "Type": "System.String",
+        "Type": "Identity.Domain.Entities.IdentityResult\u00601[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
         "MediaTypes": [
-          "text/plain"
+          "application/json"
         ],
         "StatusCode": 200
       }
@@ -43,37 +194,45 @@
   },
   {
     "ContainingType": "Identity.Web.API.APIs.NotMapIdentityApis",
-    "Method": "GenerateCode",
-    "RelativePath": "api/identity/Identity/GenerateCode",
+    "Method": "LogInWithGenerateCodeAsync",
+    "RelativePath": "api/identity/NotAuthor/LogInWithGenerateCode",
     "HttpMethod": "POST",
     "IsController": false,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "email",
-        "Type": "Identity.Web.API.APIs.NotMapIdentityApis\u002BGenerateCodeDto",
+        "Name": "requestLoginWithGenerateCodeModel",
+        "Type": "Identity.Web.API.Application.Models.RequestLoginWithGenerateCodeModel",
         "IsRequired": true
       }
     ],
     "ReturnTypes": [
       {
-        "Type": "System.Void",
-        "MediaTypes": [],
+        "Type": "Identity.Domain.Entities.IdentityResult\u00601[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "application/json"
+        ],
         "StatusCode": 200
       }
     ]
   },
   {
     "ContainingType": "Identity.Web.API.APIs.NotMapIdentityApis",
-    "Method": "TestGetHelloAsync",
-    "RelativePath": "api/identity/Identity/TestGetHello",
-    "HttpMethod": "GET",
+    "Method": "RegisterWithEmailAsync",
+    "RelativePath": "api/identity/NotAuthor/RegisterWithEmailUser",
+    "HttpMethod": "POST",
     "IsController": false,
     "Order": 0,
-    "Parameters": [],
+    "Parameters": [
+      {
+        "Name": "rquestRegisterWithEmail",
+        "Type": "Identity.Web.API.Application.Models.RquestRegisterWithEmailModel",
+        "IsRequired": true
+      }
+    ],
     "ReturnTypes": [
       {
-        "Type": "Microsoft.AspNetCore.Mvc.IActionResult",
+        "Type": "Identity.Domain.Entities.IdentityResult\u00601[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
         "MediaTypes": [
           "application/json"
         ],

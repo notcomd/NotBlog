@@ -12,11 +12,11 @@ public class RoleClaim : Entity
 
     public static ValueTask<RoleClaim> CreteByRoleClaimValueTask(Guid roleGuid,string claimType,string claimValue)
     {
-        return new ValueTask<RoleClaim>(CreateByRoleClaimAsync(roleGuid, claimType, claimValue));
+        return new ValueTask<RoleClaim>(CreateByRoleClaim(roleGuid, claimType, claimValue));
     }
 
 
-    public static RoleClaim CreateByRoleClaimAsync(Guid roleGuid, string claimType, string claimValue)
+    public static RoleClaim CreateByRoleClaim(Guid roleGuid, string claimType, string claimValue)
     {
         ArgumentNullException.ThrowIfNullOrEmpty(nameof(claimType));
         ArgumentNullException.ThrowIfNullOrEmpty(nameof(claimValue));
@@ -33,13 +33,13 @@ public class RoleClaim : Entity
     }
 
 
-    public void AddRoleClaim(Claim claim)
+    public void AddRoleClaim(string claimType,string claimValue)
     {
-        if (claim == null)
-            throw new ArgumentNullException(nameof(claim), "Claim cannot be null");
+        if(string.IsNullOrEmpty(claimType) || string.IsNullOrEmpty(claimValue))
+            throw new ArgumentNullException($"{claimType} or {claimValue} is null!");
 
-        ClaimType = claim.Type;
-        ClaimValue = claim.Value;
+        ClaimType = claimType;
+        ClaimValue = claimValue;
     }
 
     public Claim ToClaim()

@@ -13,7 +13,7 @@ public class EmailCodeSend : IEmailCodeSend
         _logger = logger;
     }
 
-    public async ValueTask SendEmailCodeAsync(string toEmail, string code)
+    public async ValueTask SendEmailCodeAsync(string subject,string toEmail, string code)
     {
         ArgumentNullException.ThrowIfNull(toEmail, nameof(toEmail));
         ArgumentNullException.ThrowIfNull(code, nameof(code));
@@ -22,7 +22,7 @@ public class EmailCodeSend : IEmailCodeSend
 
         var message = new MimeMessage
         {
-            Subject = "hello",
+            Subject = subject,
             Body = new BodyBuilder
             {
                 HtmlBody =mailpush.BodyEmail
@@ -47,10 +47,10 @@ public class EmailCodeSend : IEmailCodeSend
     private string PushEmailTemplate(string code)
     {
         return $@"
-            <h1>欢迎使用我们的服务！</h1>
+            <h1>欢迎使用我们的服务！ヾ(≧▽≦*)o</h1>
             <p>您的验证码是: <strong>{code}</strong></p>
             <p>请在10分钟内使用此验证码。</p>
-            <p>如果您没有请求此验证码，请忽略此邮件。</p>
+            <p>如果您没有请求此验证码，请忽略此邮件。（*＾-＾*）</p>
             <br/>
             <p>谢谢！</p>
         ";

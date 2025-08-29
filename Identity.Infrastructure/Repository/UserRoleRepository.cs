@@ -1,4 +1,6 @@
-﻿namespace Identity.Infrastructure.Repository;
+﻿using System.Net.WebSockets;
+
+namespace Identity.Infrastructure.Repository;
 
 public class UserRoleRepository : IUserRoleRepository
 {
@@ -93,6 +95,53 @@ public class UserRoleRepository : IUserRoleRepository
         catch (Exception ex)
         {
             _logger.LogError(ex, $"[ >_< {_notDateTime.UtcNow}]在查找角色声明时出现问题,无法找到为{roleGuid}的数据!");
+            throw;
+        }
+    }
+
+
+    public async ValueTask UpdateWithRoleAsync(Guid roleGuid, Func<Roles, Task> func)
+    {
+        try
+        {
+            var roleData = await FindByUserRoleAsync(roleGuid);
+            if(roleData is null) throw new ArgumentNullException(nameof(roleGuid), "Role GUID cannot be empty");
+            await func(roleData);
+            _logger.LogInformation($"[（*＾-＾*）{_notDateTime.UtcNow} 数据更新成功，更新了{roleData.Id}条目]");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"[ >_< {_notDateTime.UtcNow}]在更新数据时出现问题,无法更新{roleGuid}的数据!");
+            return;
+        }
+    }
+
+    public async ValueTask UpdateWithRoleAsync(string roleName, Func<Roles, Task> func)
+    {
+        try
+        {
+            var roleData =await FindByUserRoleAsync(roleName);
+            if (roleData is null) throw new ArgumentNullException(nameof(roleName), "Role Name cannot be empty");
+            await func(roleData);
+            _logger.LogInformation($"[（*＾-＾*）{_notDateTime.UtcNow} 数据更新成功，更新了{roleData.Id}条目]");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"[ >_< {_notDateTime.UtcNow}]在更新数据时出现问题,无法更新{roleName}的数据!");
+            return;
+        }
+    }
+
+    public async ValueTask DeleteByUserRoleAsync(Guid roleGuid)
+    {
+        try {
+            var roleData = await FindByUserRoleAsync(roleGuid);
+            if (roleData is null) throw new ArgumentNullException(nameof(roleGuid), "Role GUID cannot be empty");
+            _userRoleDbContext.Roles.Remove(roleData);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"[ >_< {_notDateTime.UtcNow}]在删除数据时出现问题,无法删除{roleGuid}的数据!");
             throw;
         }
     }

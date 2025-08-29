@@ -18,12 +18,12 @@ public interface IUserRepository : IRepository<User>
 
     ValueTask UpdateByUserSafetyAsync(UserSafety userSafety);
 
-    ValueTask <IEnumerable<UserClaim>> FindUserClaimsByUserAsync(Guid userGuid);
+    ValueTask <IEnumerable<UserClaim>?> FindUserClaimsByUserAsync(Guid userGuid);
 
-    ValueTask UpdateByUserClaimAsync(Guid userGuid,Action<User> userAction);
+    ValueTask UpdateByUserClaimAsync(Guid userGuid,Func<User,Task> userAction);
 
-    ValueTask UpdateByUserSafetyAsync(Guid guid, Action<UserSafety> userSafetyAction);
+    ValueTask UpdateByUserSafetyAsync(string findEmail, Func<User,Task> userSafetyAction);
 
-    ValueTask UpdateByUserAsync(Guid guid, Action<User> userAction);
+    ValueTask UpdateByUserAsync(string userEmail, Func<User, Task> userAction);
 
 }

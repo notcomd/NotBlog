@@ -22,5 +22,6 @@ namespace Identity.Domain.INotDateTime
         DateTime Today { get; }
 
         DateTimeOffset NowOffset { get; }
+        
     }
 }

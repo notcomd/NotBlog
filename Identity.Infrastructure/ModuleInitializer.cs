@@ -20,8 +20,9 @@ public class ModuleInitializer : IModuleInitializer
         service.AddScoped<IRequestManager, RequestManager.RequestManager>();
         service.AddScoped<INotDateTime, NotDateTime.NotDateTime>();
         service.AddScoped<IdentityDomainCheckLogInServer>();
-        service.AddScoped<IdentityDomainSignUpServer>();
+        service.AddScoped<IdentityDomainRegisterServer>();
         service.AddScoped<IdentityDomainUserManagerServer>();
-        service.AddScoped<IdentityDomainToolServer>();         
+        service.AddScoped<IdentityDomainToolServer>();
+        service.AddScoped<IdentityDomainRoleManagerServer>();
     }
 }

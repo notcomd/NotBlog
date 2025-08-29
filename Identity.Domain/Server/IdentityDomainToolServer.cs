@@ -69,9 +69,8 @@ public class IdentityDomainToolServer
             {
                 _logger.LogWarning($"[(≧ ﹏ ≦){_notDateTime.UtcNow}] 用户 {userId} 不存在。");
                 throw new ArgumentException("用户不存在。");
-            }
-           
-            var token= _jwtTokenService.BuilderTokenAsync(claims,);
+            }            
+            var token=await _jwtTokenService.BuilderTokenAsync(claims);
             
             return token;
 
@@ -83,7 +82,8 @@ public class IdentityDomainToolServer
         }
 
     }
-    public async ValueTask<bool> IsCheckGenerateCodeAsync(string memoryKey, string code)
+
+    public async ValueTask<bool> IsCheckWithVerifyGenerateCodeAsync(string memoryKey, string code)
     {
         if(string.IsNullOrEmpty(memoryKey))
             throw new ArgumentNullException(nameof(memoryKey));

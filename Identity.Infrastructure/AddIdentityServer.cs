@@ -10,7 +10,6 @@ public static class AddIdentityServer
         serviceCollection.AddSingleton<IEmailCodeSend, EmailCodeSend>();
         serviceCollection.AddDistributedMemoryCache();
         serviceCollection.AddScoped<ISmsCodeSend, SmsCodeSend>();
-
         serviceCollection.AddEmailServer();
         serviceCollection.AddJwtAuthentication(configuration);
         return serviceCollection;
@@ -25,8 +24,6 @@ public static class AddIdentityServer
             throw new ArgumentNullException(nameof(configuration)),
                 o => o.MigrationsAssembly("Identity.Infrastructure"));
         });
-
-
         return serviceCollection;
     }
 }
