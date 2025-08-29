@@ -30,7 +30,7 @@
                     _logger.LogWarning($"[(≧ ﹏ ≦){DateTime.UtcNow}]Role Already Exists! {request.RoleName}");
                     return false;
                 }
-                var roleTrc = Roles.CreateByRoleAsync(request.RoleName, request.Attribute, _notDateTime.NowOffset);
+                var roleTrc = Roles.CreateByRoleAsync(request.RoleName, request.Attribute, _notDateTime.UtcNow);
                 _logger.LogInformation($"[（*＾-＾*）{DateTime.UtcNow}]Role Created! RoleName: {request.RoleName}, Attribute: {request.Attribute}");
                 await _userRoleRepository.AddByUserRoleAsync(roleTrc);
                 await _userRoleRepository.UnitOfWork.SavaEntitiesAsync(cancellationToken);

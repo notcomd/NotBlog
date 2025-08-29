@@ -68,7 +68,7 @@ public class IdentityDomainCheckLogInServer
             _loggerUser.LogError($"[(≧ ﹏ ≦){_notDateTime.UtcNow}] 用户 {phoneNumber.PhoneCode} 不存在。");
             return UserAccessResult.NotFund;
         }
-        if (IsUserLockedOut(loginPhone))
+        if (IsUserLocked(loginPhone))
         {
             _loggerUser.LogError($"[(≧ ﹏ ≦){_notDateTime.UtcNow}] 用户 {phoneNumber.PhoneCode} 被锁定。");
             return UserAccessResult.Locked;
@@ -89,7 +89,9 @@ public class IdentityDomainCheckLogInServer
         return UserAccessResult.Success;
     }
     
-       
+   
+    public bool IsUserLocked(User user)=>user.IsUserLockedOut();
+
     public bool IsUserLockedOut(User user) => user.UserAccessFail.IsLockOutByAccessFaild();
 
     public void ResetAccessFailCount(User user) => user.UserAccessFail.ResetFail();

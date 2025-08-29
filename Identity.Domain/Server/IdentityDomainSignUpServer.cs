@@ -45,7 +45,7 @@ public class IdentityDomainSignUpServer
             _logger.LogWarning($"[(≧ ﹏ ≦){_notDateTime.UtcNow}] 角色 {roleName} 不存在。");
             return UserAccessResult.NotFund;
         }
-        var emailSignUpTrc = new User(roleDefult.Id, email, passwordHash, _notDateTime.NowOffset);
+        var emailSignUpTrc = new User(roleDefult.Id, email, passwordHash, _notDateTime.UtcNow);
         await _userRepository.AddOneByUserAsync(emailSignUpTrc);
         _logger.LogInformation($"[（*＾-＾*）{_notDateTime.UtcNow}] 用户 {email} 创建成功。");
         return UserAccessResult.Success;
@@ -66,7 +66,7 @@ public class IdentityDomainSignUpServer
             _logger.LogWarning($"[(≧ ﹏ ≦){_notDateTime.UtcNow}] 角色 {roleName} 不存在。");
             return UserAccessResult.NotFund;
         }
-        var phoneSignUpTrc = new User(roleDefult.Id, phoneNumber, passwordHash, _notDateTime.NowOffset);
+        var phoneSignUpTrc = new User(roleDefult.Id, phoneNumber, passwordHash, _notDateTime.UtcNow);
         await _userRepository.AddOneByUserAsync(phoneSignUpTrc);
         _logger.LogInformation($"[（*＾-＾*）{_notDateTime.UtcNow}] 用户 {phoneNumber.PhoneCode} 创建成功。");
         return UserAccessResult.Success;

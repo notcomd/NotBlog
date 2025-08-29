@@ -19,14 +19,16 @@ public class EmailSendBus : JsonIntegrationEventHandler<EmailSendRecord>
 
     public async Task Handle(EmailSendRecord notification, CancellationToken cancellationToken)
     {
-        await _emailCodeSend.SendEmailCodeAsync(notification.ToEmail, notification.Code.ToString());
+        await _emailCodeSend.SendEmailCodeAsync("",notification.ToEmail, notification.Code.ToString());
         _logger.LogInformation($"date:{DateTime.UtcNow},邮件发送{notification.ToEmail}");
 
     }
 
     public async override Task EventDlerJson(string eventName, EmailSendRecord? eventData)
     {
-        await _emailCodeSend.SendEmailCodeAsync(eventData?.ToEmail, eventData?.Code.ToString());
+        if (eventData is null)
+            throw new ArgumentNullException(nameof(eventData));
+        await _emailCodeSend.SendEmailCodeAsync(eventData.Subject,eventData!.ToEmail, eventData!.Code);
         _logger.LogInformation($"date:{DateTime.UtcNow},邮件发送{eventData.ToEmail}");
     }
 }

@@ -50,7 +50,21 @@ public class UserSafety : Entity
 
         throw new ArgumentNullException(nameof(UserGuid), "User cannot be null");
     }
-      
+    
+    public UserSafety(User user, string passwordSalt, string securityStamp,
+        EnumBlackOrWhite blackOrWhite = EnumBlackOrWhite.AuthorityWhite, EnumUserStatus userStatus = EnumUserStatus.UnActive)
+    {
+        if (user is null)
+            throw new ArgumentNullException(nameof(user), "User cannot be null");
+        if (string.IsNullOrEmpty(passwordSalt) && string.IsNullOrEmpty(securityStamp))
+            throw new ArgumentException("At least one of passwordSalt or securityStamp must be provided", nameof(passwordSalt));
+        UserGuid = user.Id;
+        SecurityStamp = securityStamp;
+        PasswordSalt = passwordSalt;
+        BlackOrWhite = blackOrWhite;
+        UserStatus = userStatus;
+        LockOutEnd = null;
+    }
 
     public void ChangeByPasswordSalt(string newPasswordSalt)
     {

@@ -33,7 +33,9 @@ public class UserDefullContextSeed : IDbSeeder<IdentityDbContext>
         {
             throw new InvalidOperationException("Admin role not found. Please seed roles first.");
         }
-        return new User(role.Id,"Admin@notcomd.com","Admin@notcomd.com",DateTimeOffset.UtcNow);
+        var userObject= new User(role.Id,"Admin@notcomd.com","Admin@notcomd.com",DateTimeOffset.UtcNow);
+        userObject.UserSafety.ChangeByUserStatus(EnumUserStatus.Normal);
+        return userObject;
     }
 }
 

@@ -164,16 +164,16 @@ public class IdentityDomainUserManagerServer
         {
             var userDate = await _userRepository.FindOneByUserAsync(changeEmail);
             ArgumentNullException.ThrowIfNullOrEmpty(nameof(userDate));
-            foreach(var item in userDate.UserClaims ?? throw new ArgumentNullException(nameof(userDate)))
+            foreach (var item in userDate.UserClaims ?? throw new ArgumentNullException(nameof(userDate)))
             {
-                foreach(var trc in changeUserClaims)
+                foreach (var trc in changeUserClaims)
                 {
-                    if (UserClaimEquals(item, trc)&&item is not null && trc is not null)
+                    if (UserClaimEquals(item, trc) && item is not null && trc is not null)
                     {
                         _logger.LogWarning($"[(≧ ﹏ ≦){_notDateTime.UtcNow}]用户{changeEmail} 无需更新");
                         break;
                     }
-                    userDate.UpdateClaim(trc.ClaimType,trc.ClaimValue);
+                    userDate.UpdateClaim(trc.ClaimType, trc.ClaimValue);
                     _logger.LogInformation($"[（*＾-＾*）{_notDateTime.UtcNow}] 更新了Key:{trc.ClaimType}->Value:{trc.ClaimValue}");
                 }
             }
@@ -185,6 +185,31 @@ public class IdentityDomainUserManagerServer
             return UserAccessResult.Error;
         }
     }
+
+
+    public async ValueTask<UserAccessResult> ChangeWithEmailUserAsync(string changeEmail, ChangeByUserDto newUserInformetion)
+    {
+        try
+        {
+            ArgumentNullException.ThrowIfNullOrEmpty(changeEmail);
+            ArgumentNullException.ThrowIfNull(newUserInformetion);
+
+            await _userRepository.UpdateByUserAsync(changeEmail, en =>
+             {
+                 en.ChangeByUserName(newUserInformetion.UserName);
+                 en.ChangeByAddress(newUserInformetion!.UserAddress);
+                 en.ChangeByImageCover(newUserInformetion!.UserImageCover);
+             });
+            _logger.LogInformation($"[（*＾-＾*）{_notDateTime.UtcNow}] 用户 {changeEmail} 的信息已更改。");
+            return UserAccessResult.Success;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"[ (≧ ﹏ ≦) {_notDateTime.UtcNow}]在变更用户信息时出现问题!");
+            return UserAccessResult.Error;
+        }
+    }
+
 
 
     protected bool UserSafetyEquals(UserSafety userSafety, UserSafety userSafetyTrc)
@@ -200,6 +225,7 @@ public class IdentityDomainUserManagerServer
                userSafety.PasswordSalt == userSafetyTrc.PasswordSalt;
     }
 
+
     protected bool UserClaimEquals(UserClaim userClaim, UserClaim claim)
     {
         if (userClaim is null || claim is null)
@@ -208,6 +234,6 @@ public class IdentityDomainUserManagerServer
 
     }
 
-    
+
 
 }

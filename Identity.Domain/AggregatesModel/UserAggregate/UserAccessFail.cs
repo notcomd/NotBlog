@@ -24,10 +24,21 @@ public class UserAccessFail : Entity
         return new ValueTask<UserAccessFail>(CreateByUserAccessFail(userGuid));
     }
 
+    public UserAccessFail(User user)
+    {
+        var userAccessFail = new UserAccessFail
+        {
+            UserGuid = user.Id,
+            LockOutEnd = null,
+            AccessFaildCount = 0,
+        };       
+    }
+
     public static  UserAccessFail CreateByUserAccessFail(Guid userGuid)
     {
         if (userGuid == Guid.Empty)
         {
+            Console.WriteLine($"debug Guid =>{userGuid}");
             throw new ArgumentNullException(nameof(userGuid), "UserGuid cannot be empty");
         }
         var userAccessFail = new UserAccessFail
@@ -35,7 +46,6 @@ public class UserAccessFail : Entity
             UserGuid = userGuid,
             LockOutEnd = null,
             AccessFaildCount = 0,
-
         };
         return userAccessFail;
 

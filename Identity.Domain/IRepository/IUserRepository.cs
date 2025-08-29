@@ -24,6 +24,6 @@ public interface IUserRepository : IRepository<User>
 
     ValueTask UpdateByUserSafetyAsync(Guid guid, Action<UserSafety> userSafetyAction);
 
-    ValueTask UpdateByUserAsync(Guid guid, Action<User> userAction);
+    ValueTask UpdateByUserAsync(string userEmail, Action<User> userAction);
 
 }

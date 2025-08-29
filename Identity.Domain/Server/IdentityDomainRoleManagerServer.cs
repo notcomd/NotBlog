@@ -34,7 +34,7 @@ public class IdentityDomainRoleManagerServer
                 _logger.LogWarning($"[(≧ ﹏ ≦){_notDateTime.UtcNow}] 角色 {roleName} 已存在。");
                 return UserAccessResult.AlreadyExists;
             }
-            var newRole = Roles.CreateByRoleAsync(roleName,roleAttribute,_notDateTime.NowOffset);
+            var newRole = Roles.CreateByRoleAsync(roleName,roleAttribute,_notDateTime.UtcNow);
             await _userRoleRepository.AddByUserRoleAsync(newRole);
             _logger.LogInformation($"[（*＾-＾*）{_notDateTime.UtcNow}] 角色 {roleName} 创建成功。");
             return UserAccessResult.Success;

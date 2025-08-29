@@ -17,7 +17,7 @@ public class SendWithEmailCommandHandler:IRequestHandler<SendWithEmailCommand, b
 
     public async Task<bool> Handler(SendWithEmailCommand request, CancellationToken cancellationToken)
     {
-        await _emailCodeSend.SendEmailCodeAsync(request.ToEmailAddress, request.GeneratedCode);
+        await _emailCodeSend.SendEmailCodeAsync(request.Subject,request.ToEmailAddress, request.GeneratedCode);
         return true;
     }
 
