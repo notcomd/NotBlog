@@ -213,7 +213,7 @@ public class IdentityDomainUserManagerServer
             
 
             var result = userData is null ? null : new ResultWIthUserDto(userData.UserName, userData.UserEmail,
-                userData.ImageCover, 
+                userData.ImageCover, userData.UserRoleGuid,
                 userData.PhoneNumber is not null ? new WithResultPhoneDto((int)userData.PhoneNumber.AddressRegion, userData.PhoneNumber.PhoneCode) : null,
                 new WIthResultSafetyDto(userData.UserSafety.UserStatus, userData.UserSafety.BlackOrWhite),
                  userData.UserClaims?

@@ -120,7 +120,7 @@ public class IdentityDomainRoleManagerServer
     }
 
 
-    public async ValueTask<ResultWithRoleDto?> GetWithRoleAsync(object roleWithObject)
+    public async ValueTask<ResultWithRoleDto?> GetWithRoleAsync(object roleWithObject,CancellationToken cancellationToken)
     {
         try
         {
@@ -160,5 +160,7 @@ public class IdentityDomainRoleManagerServer
         }
 
     }
+
+
 
 }

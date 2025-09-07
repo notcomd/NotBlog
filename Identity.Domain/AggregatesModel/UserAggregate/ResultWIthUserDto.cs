@@ -2,7 +2,7 @@
 
 public class ResultWIthUserDto
 {
-    public ResultWIthUserDto(string userName, string userEmail, Uri imageCoveer, WithResultPhoneDto? withResultPhoneDto,
+    public ResultWIthUserDto(string userName, string userEmail, Uri imageCoveer, Guid roleGuid, WithResultPhoneDto? withResultPhoneDto,
         WIthResultSafetyDto wIthResultSafetyDto, IEnumerable<WithResultClaimDto> claims, DateTimeOffset createdTime)
     {
         UserName = userName;
@@ -12,11 +12,14 @@ public class ResultWIthUserDto
         WIthResultSafetyDto = wIthResultSafetyDto;
         CreatedTime = createdTime;
         Claims = claims;
+        RoleGuid = roleGuid;
     }
 
     public string UserName { get; }
 
     public string UserEmail { get; }
+                                                                     
+    public Guid RoleGuid { get; }                     
 
     public Uri ImageCoveer { get; }
 

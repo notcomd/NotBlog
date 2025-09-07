@@ -102,7 +102,7 @@
     ],
     "ReturnTypes": [
       {
-        "Type": "Identity.Domain.Entities.IdentityResult\u00601[[Identity.Domain.AggregatesModel.UserAggregate.ResultWIthUserDto, Identity.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "Type": "Identity.Domain.Entities.IdentityResult\u00601[[Identity.Web.API.Application.Models.ResponseResultUserWithRoleInformetionModel, Identity.Web.API, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
         "MediaTypes": [
           "application/json"
         ],

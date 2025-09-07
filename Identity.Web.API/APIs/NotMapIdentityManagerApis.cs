@@ -1,6 +1,4 @@
-﻿using System.Reflection.Metadata.Ecma335;
-
-using Identity.Web.API.Application.Command;
+﻿using Identity.Web.API.Application.Command;
 using Identity.Web.API.Application.Models;
 
 namespace Identity.Web.API.APIs
@@ -114,15 +112,17 @@ namespace Identity.Web.API.APIs
         }
 
 
-        public async static ValueTask<IdentityResult<ResultWIthUserDto>> GetWithUserInforMetionAsync([AsParameters] IdentityService identityService,
+        public async static ValueTask<IdentityResult<ResponseResultUserWithRoleInformetionModel>> GetWithUserInforMetionAsync([AsParameters] IdentityService identityService,
             RequestWithUserInformetionModel requestWithUserInformetion, CancellationToken cancellationToken)
         {
-            var userData=await identityService.IdentityDomainUserManagerServer.GetWithUserAsync(requestWithUserInformetion.FindByEmail,cancellationToken);
-            if(userData is null)
-            {
-                return await IdentityResult<ResultWIthUserDto>.ResultAsync(null, EnumStatusCode.Error, "未找到用户信息");
-            }
-            return await IdentityResult<ResultWIthUserDto>.ResultAsync(userData, EnumStatusCode.Ok, "操作成功");
+            if (requestWithUserInformetion is null) throw new ArgumentNullException(nameof(requestWithUserInformetion));
+            var userData = await identityService.IdentityDomainUserManagerServer
+               .GetWithUserAsync(requestWithUserInformetion.FindByEmail, cancellationToken);
+            if (userData is null)
+                return await IdentityResult<ResponseResultUserWithRoleInformetionModel>.ResultAsync(null, EnumStatusCode.Error, "未找到用户信息");
+            var roleDate = await identityService.IdentityDomainRoleManagerServer.GetWithRoleAsync(userData, cancellationToken);
+            var result = new ResponseResultUserWithRoleInformetionModel(roleDate, userData);
+            return await IdentityResult<ResponseResultUserWithRoleInformetionModel>.ResultAsync(result, EnumStatusCode.Ok, "操作成功");
         }
     }
 }
