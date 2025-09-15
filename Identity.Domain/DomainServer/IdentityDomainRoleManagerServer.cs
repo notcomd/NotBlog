@@ -90,7 +90,7 @@ public class IdentityDomainRoleManagerServer
             ArgumentNullException.ThrowIfNull(roleName, nameof(roleName));
             ArgumentNullException.ThrowIfNull(changeWithRoleDto, nameof(changeWithRoleDto));
 
-            await _userRoleRepository.UpdateWithRoleAsync(roleName, async en =>
+            await _userRoleRepository.UpdateWithRoleAsync(roleName, en =>
             {
                 if (changeWithRoleDto.ChangeRoleAuthority != en.RoleAuthority)
                     en.ChangeByRoleAuthority(changeWithRoleDto.ChangeRoleAuthority);
@@ -108,6 +108,7 @@ public class IdentityDomainRoleManagerServer
                     }
                     en.ChangeByRoleClaim(list);
                 }
+                return Task.CompletedTask;
             });
             _logger.LogInformation($"[（*＾-＾*）{_notDateTime.UtcNow}] 角色 {roleName} 的信息已更改。");
             return UserAccessResult.Success;
@@ -120,7 +121,7 @@ public class IdentityDomainRoleManagerServer
     }
 
 
-    public async ValueTask<ResultWithRoleDto?> GetWithRoleAsync(object roleWithObject,CancellationToken cancellationToken)
+    public async ValueTask<ResultWithRoleDto?> GetWithRoleAsync(object roleWithObject, CancellationToken cancellationToken)
     {
         try
         {
@@ -133,7 +134,7 @@ public class IdentityDomainRoleManagerServer
                     return null;
                 }
                 var roleResult = new ResultWithRoleDto(roleDate.RoleName, roleDate.Attribute is null ? string.Empty : roleDate.Attribute,
-                    roleDate.RoleClaims?.Select(en => new WithResultRoleClaimDto(en.ClaimType, en.ClaimValue))??[]);
+                    roleDate.RoleClaims?.Select(en => new WithResultRoleClaimDto(en.ClaimType, en.ClaimValue)) ?? []);
                 return roleResult;
             }
             else if (roleWithObject is string roleName)
@@ -145,10 +146,11 @@ public class IdentityDomainRoleManagerServer
                     return null;
                 }
                 var roleResult = new ResultWithRoleDto(roleDate.RoleName, roleDate.Attribute is null ? string.Empty : roleDate.Attribute,
-                    roleDate.RoleClaims?.Select(en => new WithResultRoleClaimDto(en.ClaimType, en.ClaimValue))??[]);
+                    roleDate.RoleClaims?.Select(en => new WithResultRoleClaimDto(en.ClaimType, en.ClaimValue)) ?? []);
                 return roleResult;
             }
-            else {                
+            else
+            {
                 _logger.LogWarning($"[(≧ ﹏ ≦){_notDateTime.UtcNow}] 提供的参数类型不支持。");
                 throw new Exception("Provided parameter type is not supported.");
             }
@@ -162,7 +164,7 @@ public class IdentityDomainRoleManagerServer
     }
 
 
-    public async ValueTask<ResultWithRoleManagerDto?> GetWithRoleManagerInformetionAsync(object roleWithObject,CancellationToken cancellationToken)
+    public async ValueTask<ResultWithRoleManagerDto?> GetWithRoleManagerInformetionAsync(object roleWithObject, CancellationToken cancellationToken)
     {
         try
         {
@@ -174,11 +176,11 @@ public class IdentityDomainRoleManagerServer
                     _logger.LogWarning($"[(≧ ﹏ ≦){_notDateTime.UtcNow}] 角色 {roleGuid} 未找到。");
                     return null;
                 }
-                var roleResult = new ResultWithRoleManagerDto(roleDate.RoleName, 
-                    roleDate.Attribute is null?string.Empty:roleDate.Attribute,
+                var roleResult = new ResultWithRoleManagerDto(roleDate.RoleName,
+                    roleDate.Attribute is null ? string.Empty : roleDate.Attribute,
                     roleDate.RoleAuthority,
                     roleDate.RoleStatus,
-                    roleDate.RoleClaims?.Select(en => new WithResultRoleClaimDto(en.ClaimType, en.ClaimValue))??[]);
+                    roleDate.RoleClaims?.Select(en => new WithResultRoleClaimDto(en.ClaimType, en.ClaimValue)) ?? []);
                 return roleResult;
             }
             else if (roleWithObject is string roleName)
@@ -190,10 +192,10 @@ public class IdentityDomainRoleManagerServer
                     return null;
                 }
                 var roleResult = new ResultWithRoleManagerDto(roleDate.RoleName,
-                    roleDate.Attribute is null?string.Empty:roleDate.Attribute,
+                    roleDate.Attribute is null ? string.Empty : roleDate.Attribute,
                     roleDate.RoleAuthority,
                     roleDate.RoleStatus,
-                    roleDate.RoleClaims?.Select(en => new WithResultRoleClaimDto(en.ClaimType, en.ClaimValue))?? []);
+                    roleDate.RoleClaims?.Select(en => new WithResultRoleClaimDto(en.ClaimType, en.ClaimValue)) ?? []);
                 return roleResult;
             }
             else
@@ -212,7 +214,8 @@ public class IdentityDomainRoleManagerServer
 
     public async ValueTask<IEnumerable<ResultWithRoleManagerDto>> GetWithRoleManagerInformetionsAsync(CancellationToken cancellationToken)
     {
-        try{
+        try
+        {
             // 接口中的FindByUserRolesAsync方法不接受CancellationToken参数
             var roleDate = await _userRoleRepository.FindByUserRolesAsync();
             if (roleDate is null)
@@ -227,7 +230,8 @@ public class IdentityDomainRoleManagerServer
                     role.RoleClaims?.Select(claim => new WithResultRoleClaimDto(claim.ClaimType, claim.ClaimValue)) ?? []));
             return roleResult;
 
-        }catch(Exception ex)
+        }
+        catch (Exception ex)
         {
             _logger.LogError(ex, $"[(≧ ﹏ ≦){_notDateTime.UtcNow}] 获取角色信息失败。");
             return Enumerable.Empty<ResultWithRoleManagerDto>();
