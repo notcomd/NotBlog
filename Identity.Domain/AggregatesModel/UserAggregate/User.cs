@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 ﻿
-=======
-﻿using Identity.Domain.Events;
->>>>>>> 8e1a7f66420ec3bdbf7689044ea9f7d83b5d42f9
 
 namespace Identity.Domain.AggregatesModel.UserAggregate;
 
@@ -77,21 +73,6 @@ public class User : Entity, IAggregateRoot
         UserSafety = UserSafety.CreateByUserSafety(Id, Encoding.UTF8.GetString(salt), stamp);
         AddDomainEvent(new CreatedByUserDomainEvent(Id, userRoleGuid, userEmail, userEmail, null, dateTimeOffset));
 
-<<<<<<< HEAD
-=======
-        Id = Guid.CreateVersion7();
-        UserRoleGuid = userRoleGuid;
-        UserName = userEmail;
-        PasswordHash = passwordHash;
-        CreateDatetime = dateTimeOffset;
-        UserEmail = userEmail;
-        ImageCover = null;
-        PhoneNumber = null;
-        UserAccessFail = new UserAccessFail(this);
-        UserSafety = UserSafety.CreateByUserSafety(Id, Encoding.UTF8.GetString(salt), stamp);
-        AddDomainEvent(new CreatedByUserDomainEvent(Id, userRoleGuid, userEmail, userEmail, null, dateTimeOffset));
-
->>>>>>> 8e1a7f66420ec3bdbf7689044ea9f7d83b5d42f9
     }
 
 
@@ -116,33 +97,21 @@ public class User : Entity, IAggregateRoot
         var stamp = HashHelper.GenerateSecurityStamp();
         var salt = HashHelper.GenerateToString(HashHelper.GenerateSaltValue());
 
-<<<<<<< HEAD
         passwordHash = HashHelper.CreateHash256Async(passwordHash, HashHelper.ConvertStringToBytes(salt)
             ?? throw new ArgumentNullException("salt is null!"));
 
-=======
->>>>>>> 8e1a7f66420ec3bdbf7689044ea9f7d83b5d42f9
 
         Id = Guid.CreateVersion7();
         UserRoleGuid = userRoleGuid;
         UserName = phoneNumber.PhoneCode;
         PasswordHash = passwordHash;
-<<<<<<< HEAD
         CreateDatetime = dateTimeOffset;
-=======
-        CreateDatetime = dateTimeOffset;       
->>>>>>> 8e1a7f66420ec3bdbf7689044ea9f7d83b5d42f9
         UserEmail = string.Empty;
         ImageCover = null;
         PhoneNumber = phoneNumber;
         UserAccessFail = UserAccessFail.CreateByUserAccessFail(Id);
-<<<<<<< HEAD
         UserSafety = UserSafety.CreateByUserSafety(Id, salt, stamp);
 
-=======
-        UserSafety = UserSafety.CreateByUserSafety(Id, Encoding.UTF8.GetString(salt), stamp);
-        
->>>>>>> 8e1a7f66420ec3bdbf7689044ea9f7d83b5d42f9
         AddDomainEvent(new CreatedByUserDomainEvent(Id, userRoleGuid, phoneNumber.PhoneCode, string.Empty, phoneNumber, DateTimeOffset.UtcNow));
         //return UserResult;
     }
@@ -285,7 +254,6 @@ public class User : Entity, IAggregateRoot
     /// <summary>
     /// 验证密码是否正确
     /// </summary>
-<<<<<<< HEAD
     /// <param name="passwordHash"> 密码哈希值</param>
     /// <returns> 验证结果</returns>
     public bool IsVerifyByPassword(string passwordHash)
@@ -294,11 +262,6 @@ public class User : Entity, IAggregateRoot
             throw new AggregateException("passwordSalt is null");
         return HashHelper.VerifyPasswordValueTask(passwordHash, PasswordHash, HashHelper.ConvertStringToBytes(UserSafety.PasswordSalt));
     }
-=======
-    /// <param name="passwordHash"></param>
-    /// <returns></returns>
-    public ValueTask<bool> IsVerifyByPasswordAsync(string passwordHash) => HashHelper.VerifyPasswordValueTask(passwordHash, PasswordHash, Encoding.UTF8.GetBytes(UserSafety.PasswordSalt));
->>>>>>> 8e1a7f66420ec3bdbf7689044ea9f7d83b5d42f9
 
     public void ChangeByUserRole(Guid userRoleGuid)
     {
@@ -319,7 +282,6 @@ public class User : Entity, IAggregateRoot
     /// <exception cref="ArgumentException">当地址为空或超过长度限制时抛出</exception>
     public void ChangeByAddress(string address)
     {
-<<<<<<< HEAD
         // 验证地址是否为空或仅包含空白字符
         ArgumentException.ThrowIfNullOrWhiteSpace(address, nameof(address));
         // 验证地址长度
@@ -335,15 +297,6 @@ public class User : Entity, IAggregateRoot
         }
         // 更新地址
         Address = address.Trim();
-=======
-        if (string.IsNullOrEmpty(address))
-            throw new ArgumentException("地址不能为空", nameof(address));
-
-        if (address.Length > 100)
-            throw new ArgumentException("地址长度不能超过100个字符", nameof(address));
-
-        Address = address;
->>>>>>> 8e1a7f66420ec3bdbf7689044ea9f7d83b5d42f9
     }
 
     /// <summary>
@@ -402,7 +355,6 @@ public class User : Entity, IAggregateRoot
     public IEnumerable<Claim>? UserClaimToClaim(IEnumerable<UserClaim> userClaims)
     {
 
-<<<<<<< HEAD
         if (userClaims is null || !userClaims.Any())
             throw new ArgumentNullException(nameof(userClaims), "user claims is null or empty");
 
@@ -428,25 +380,6 @@ public class User : Entity, IAggregateRoot
     /// 检查用户是否被锁定
     /// </summary>
     /// <returns>如果用户被锁定则返回true，否则返回false</returns>
-=======
-        if (userClaims is not null && userClaims.Any())
-        {
-            foreach (var userClaim in userClaims)
-            {
-                if (string.IsNullOrEmpty(userClaim.ClaimType) || string.IsNullOrEmpty(userClaim.ClaimValue))
-                {
-                    throw new InvalidOperationException("User claim type and value cannot be null or empty");
-                }
-                yield return userClaim.ToClaim();
-            }
-        }
-        else
-        {
-            throw new ArgumentNullException(nameof(userClaims), "User claims cannot be null or empty");
-        }
-    }
-
->>>>>>> 8e1a7f66420ec3bdbf7689044ea9f7d83b5d42f9
     public bool IsUserLockedOut() => UserAccessFail.IsLockOutByAccessFaild();
 
 }
