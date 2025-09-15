@@ -1,10 +1,6 @@
-<<<<<<< HEAD
-﻿
-using System.Net.WebSockets;
-
-namespace Identity.Web.API.Application.Command
+﻿namespace Identity.Web.API.Application.Command
 {
-    public class ChangeByUserSafetyCommandHandler : IRequestHandler<ChangeByUserSafetyCommand,bool>
+    public class ChangeByUserSafetyCommandHandler : IRequestHandler<ChangeByUserSafetyCommand, bool>
     {
 
         private readonly INotDateTime _notDateTime;
@@ -25,9 +21,9 @@ namespace Identity.Web.API.Application.Command
         {
             try
             {
-                if(request is null) throw new ArgumentNullException(nameof(ChangeByUserSafetyCommand));
-                var changeBySafety= new ChangByUserSafetyDto(string.Empty,string.Empty,(EnBlackOrWhite)request.EnumBlackOrWhite,(EnUserStatus)request.EnumUserStatus,null);
-                var signal=await _identityDomainUserManagerServer.ChangeWithUserSafetyAsync(request.UserEmail,changeBySafety);
+                if (request is null) throw new ArgumentNullException(nameof(ChangeByUserSafetyCommand));
+                var changeBySafety = new ChangByUserSafetyDto(string.Empty, string.Empty, (EnBlackOrWhite)request.EnumBlackOrWhite, (EnUserStatus)request.EnumUserStatus, null);
+                var signal = await _identityDomainUserManagerServer.ChangeWithUserSafetyAsync(request.UserEmail, changeBySafety);
                 if (signal == Domain.IdentiyResult.UserAccessResult.Error)
                 {
                     _logger?.LogError($"[(≧ ﹏ ≦){_notDateTime?.UtcNow}]ChangeByUserSafetyCommand Failed! {request.UserEmail}");
@@ -43,11 +39,5 @@ namespace Identity.Web.API.Application.Command
                 return false;
             }
         }
-=======
-﻿namespace Identity.Web.API.Application.Command
-{
-    public class ChangeByUserSafetyCommandHandler
-    {
->>>>>>> 8e1a7f66420ec3bdbf7689044ea9f7d83b5d42f9
     }
 }
