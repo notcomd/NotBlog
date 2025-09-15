@@ -1,0 +1,6 @@
+C:\Users\29617\source\repos\MyService\Identity.Infrastructure\obj\Debug\net9.0\Identity.Infrastructure.csproj.AssemblyReference.cache
+C:\Users\29617\source\repos\MyService\Identity.Infrastructure\obj\Debug\net9.0\Identity.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\29617\source\repos\MyService\Identity.Infrastructure\obj\Debug\net9.0\Identity.Infrastructure.AssemblyInfoInputs.cache
+C:\Users\29617\source\repos\MyService\Identity.Infrastructure\obj\Debug\net9.0\Identity.Infrastructure.AssemblyInfo.cs
+C:\Users\29617\source\repos\MyService\Identity.Infrastructure\obj\Debug\net9.0\Identity.Infrastructure.csproj.CoreCompileInputs.cache
+C:\Users\29617\source\repos\MyService\Identity.Infrastructure\obj\Debug\net9.0\Identity.Infrastructure.sourcelink.json
