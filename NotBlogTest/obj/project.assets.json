@@ -1930,6 +1930,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
+          "DomainCommonst": "1.0.0",
           "NotMediator": "1.0.5",
           "Token.JWT": "1.0.0"
         },

@@ -1370,6 +1370,7 @@
   },
   "projectFileDependencyGroups": {
     "net9.0": [
+      "DomainCommonst >= 1.0.0",
       "NotMediator >= 1.0.5",
       "Token.JWT >= 1.0.0"
     ]
@@ -1407,6 +1408,9 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
+            "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj": {
+              "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj"
+            },
             "C:\\Users\\29617\\source\\repos\\MyService\\JWToken\\Token.JWT.csproj": {
               "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\JWToken\\Token.JWT.csproj"
             }

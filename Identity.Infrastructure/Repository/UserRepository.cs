@@ -95,15 +95,9 @@ public class UserRepository : IUserRepository
             var updateCount = await _userDbContext.Users.Where(en => en.Id == user.Id).
                  ExecuteUpdateAsync(sets => sets
                  .SetProperty(en => en.UserName, user.UserName)
-<<<<<<< HEAD
 
                  .SetProperty(en => en.Address, user.Address)
 
-=======
-                 //.SetProperty(en => en.UserEmail, user.UserEmail)
-                 .SetProperty(en => en.Address, user.Address)
-                 //.SetProperty(en => en.UserRoleGuid, user.UserRoleGuid)                 
->>>>>>> 8e1a7f66420ec3bdbf7689044ea9f7d83b5d42f9
                  .SetProperty(en => en.ImageCover, user.ImageCover));
             if (updateCount == 0)
             {
@@ -204,17 +198,9 @@ public class UserRepository : IUserRepository
     /// <param name="userGuid"></param>
     /// <param name="updateAction"></param>
     /// <returns></returns>
-<<<<<<< HEAD
     public async ValueTask UpdateByUserClaimAsync(Guid userGuid, Func<User, Task> updateAction)
     {
         try
-=======
-    public async ValueTask UpdateByUserClaimAsync(Guid userGuid, Action<User> updateAction)
-    {
-        var user = await _userDbContext.Users.Include(en => en.UserClaims)
-             .FirstOrDefaultAsync(en => en.Id == userGuid);
-        if (user is null)
->>>>>>> 8e1a7f66420ec3bdbf7689044ea9f7d83b5d42f9
         {
             var user = await _userDbContext.Users.Include(en => en.UserClaims)
              .FirstOrDefaultAsync(en => en.Id == userGuid);
@@ -225,16 +211,12 @@ public class UserRepository : IUserRepository
             }
             await updateAction(user);
         }
-<<<<<<< HEAD
         catch (Exception ex)
         {
             _logger.LogError(ex, "[〒▽〒] 无法完成对用户声明的更新 UserId:{UserId}", userGuid);
             throw;
         }
 
-=======
-        updateAction(user);
->>>>>>> 8e1a7f66420ec3bdbf7689044ea9f7d83b5d42f9
     }
 
 
@@ -249,7 +231,6 @@ public class UserRepository : IUserRepository
         try
         {
             var userSafety = await _userDbContext.Users.Include(en => en.UserSafety)
-<<<<<<< HEAD
                 .FirstOrDefaultAsync(en => en.UserEmail == findObject);
 
             if (userSafety is null)
@@ -267,30 +248,6 @@ public class UserRepository : IUserRepository
             _logger.LogError(ex, "[〒▽〒] 无法完成对用户安全信息的更新 Email:{Email}", findObject);
             throw;
         }
-=======
-            .Where(en => en.Id == userGuid)
-            .Select(en => en.UserSafety)
-            .FirstOrDefaultAsync();
-
-            if (userSafety is null)
-            {
-                _logger.LogWarning($"[(≧ ﹏ ≦){DateTimeOffset.UtcNow}]User Safety Not Found! {userGuid}");
-                return;
-            }
-            userSafetyAction(userSafety);
-            _userDbContext.Entry(userSafety).State = EntityState.Modified;
-            _logger.LogInformation($"[（*＾-＾*）{DateTimeOffset.UtcNow} 数据更新成功]");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, $"[ 〒▽〒 {DateTimeOffset.UtcNow}] 无法完成对{userGuid}的更新");
-            throw;
-        }
-        finally
-        {
-            _logger.LogInformation($"[（￣︶￣）↗　{DateTime.UtcNow}]User Safety Update Complete! {userGuid}");
-        }
->>>>>>> 8e1a7f66420ec3bdbf7689044ea9f7d83b5d42f9
 
     }
 
@@ -300,11 +257,7 @@ public class UserRepository : IUserRepository
     /// <param name="userGuid"></param>
     /// <param name="userAction"></param>
     /// <returns></returns>
-<<<<<<< HEAD
     public async ValueTask UpdateByUserAsync(string userEmail, Func<User, Task> userAction)
-=======
-    public async ValueTask UpdateByUserAsync(string userEmail, Action<User> userAction)
->>>>>>> 8e1a7f66420ec3bdbf7689044ea9f7d83b5d42f9
     {
         try
         {
@@ -312,7 +265,6 @@ public class UserRepository : IUserRepository
            .FirstOrDefaultAsync(en => en.UserEmail == userEmail);
             if (user is null)
             {
-<<<<<<< HEAD
                 _logger.LogWarning("[(≧ ﹏ ≦)] 未找到用户 Email:{Email}", userEmail);
                 return;
             }
@@ -346,25 +298,6 @@ public class UserRepository : IUserRepository
             _logger.LogError(ex, "[〒▽〒] 获取用户列表失败");
             throw;
         }
-=======
-                _logger.LogWarning($"[(≧ ﹏ ≦){DateTimeOffset.UtcNow}]User Not Found! {userEmail}");
-                return;
-            }
-            userAction(user);
-            _userDbContext.Entry(user).State = EntityState.Modified;
-            _logger.LogInformation($"[（*＾-＾*）{DateTimeOffset.UtcNow} 数据更新成功]");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, $"[(≧ ﹏ ≦){DateTime.UtcNow}]User Update Error! {userEmail}");
-            throw;
-        }
-        finally
-        {
-            _logger.LogInformation($"[（￣︶￣）↗{DateTime.UtcNow}]User Update Complete! {userEmail}");
-        }
-
->>>>>>> 8e1a7f66420ec3bdbf7689044ea9f7d83b5d42f9
     }
 
 }

@@ -93,19 +93,19 @@ public class IdentityDomainUserManagerServer
             }
 
             await _userRepository.UpdateByUserClaimAsync(userData.Id, en =>
-             {
-                 foreach (var claimItm in userData.UserClaims)
-                 {
-                     if (UserClaimEquals(claimItm, changeUserClaim) && claimItm is not null)
-                     {
-                         _logger.LogWarning($"[(≧ ﹏ ≦){_notDateTime.UtcNow}]用户{changeEmail} 无需更新");
-                         break;
-                     }
-                     userData.UpdateClaim(changeUserClaim.ClaimType, changeUserClaim.ClaimValue);
+            {
+                foreach (var claimItm in userData.UserClaims)
+                {
+                    if (UserClaimEquals(claimItm, changeUserClaim) && claimItm is not null)
+                    {
+                        _logger.LogWarning($"[(≧ ﹏ ≦){_notDateTime.UtcNow}]用户{changeEmail} 无需更新");
+                        break;
+                    }
+                    userData.UpdateClaim(changeUserClaim.ClaimType, changeUserClaim.ClaimValue);
 
-                 }
-                 return Task.CompletedTask;
-             });
+                }
+                return Task.CompletedTask;
+            });
 
             _logger.LogInformation($"[（*＾-＾*）{_notDateTime.UtcNow}] 用户 {changeEmail} 的信息已更改。");
             return UserAccessResult.Success;
@@ -157,12 +157,12 @@ public class IdentityDomainUserManagerServer
             ArgumentNullException.ThrowIfNull(newUserInformetion);
 
             await _userRepository.UpdateByUserAsync(changeEmail, en =>
-             {
-                 en.ChangeByUserName(newUserInformetion!.UserName);
-                 en.ChangeByAddress(newUserInformetion?.UserAddress ?? string.Empty);
-                 en.ChangeByImageCover(newUserInformetion!.UserImageCover);
-                 return Task.CompletedTask;
-             });
+            {
+                en.ChangeByUserName(newUserInformetion!.UserName);
+                en.ChangeByAddress(newUserInformetion?.UserAddress ?? string.Empty);
+                en.ChangeByImageCover(newUserInformetion!.UserImageCover);
+                return Task.CompletedTask;
+            });
             _logger.LogInformation($"[（*＾-＾*）{_notDateTime.UtcNow}] 用户 {changeEmail} 的信息已更改。");
             return UserAccessResult.Success;
         }

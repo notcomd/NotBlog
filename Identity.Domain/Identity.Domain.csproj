@@ -11,6 +11,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\DomainCommonst\DomainCommonst.csproj" />
       <ProjectReference Include="..\JWToken\Token.JWT.csproj" />
     </ItemGroup>
 

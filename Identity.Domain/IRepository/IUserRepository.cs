@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-
-namespace Identity.Domain.IRepository;
+﻿namespace Identity.Domain.IRepository;
 
 public interface IUserRepository : IRepository<User>
 {
@@ -25,16 +23,12 @@ public interface IUserRepository : IRepository<User>
 
     ValueTask UpdateByUserSafetyAsync(UserSafety userSafety);
 
-    ValueTask <IEnumerable<UserClaim>?> FindUserClaimsByUserAsync(Guid userGuid);
+    ValueTask<IEnumerable<UserClaim>?> FindUserClaimsByUserAsync(Guid userGuid);
 
-    ValueTask UpdateByUserClaimAsync(Guid userGuid,Func<User,Task> userAction);
+    ValueTask UpdateByUserClaimAsync(Guid userGuid, Func<User, Task> userAction);
 
-    ValueTask UpdateByUserSafetyAsync(string findEmail, Func<User,Task> userSafetyAction);
+    ValueTask UpdateByUserSafetyAsync(string findEmail, Func<User, Task> userSafetyAction);
 
-<<<<<<< HEAD
     ValueTask UpdateByUserAsync(string userEmail, Func<User, Task> userAction);
-=======
-    ValueTask UpdateByUserAsync(string userEmail, Action<User> userAction);
->>>>>>> 8e1a7f66420ec3bdbf7689044ea9f7d83b5d42f9
 
 }
