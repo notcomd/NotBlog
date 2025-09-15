@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CommonsInitializer")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cadc40dbba632b2ef00a0c558fa0dffffe222267")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d4a99994e240040d02c85f81b47d1f9cc02c601d")]
 [assembly: System.Reflection.AssemblyProductAttribute("CommonsInitializer")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CommonsInitializer")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
