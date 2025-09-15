@@ -11,7 +11,11 @@ public class EmailCodeSend : IEmailCodeSend
         _logger = logger;
     }
 
+<<<<<<< HEAD
     public async ValueTask SendEmailCodeAsync(string subject, string toEmail, string code)
+=======
+    public async ValueTask SendEmailCodeAsync(string subject,string toEmail, string code)
+>>>>>>> 8e1a7f66420ec3bdbf7689044ea9f7d83b5d42f9
     {
         ArgumentNullException.ThrowIfNull(toEmail, nameof(toEmail));
         ArgumentNullException.ThrowIfNull(code, nameof(code));

@@ -47,7 +47,11 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 var identitySignUpWithLoginApis = app.MapGroup(("api/identity"));
+<<<<<<< HEAD
 var identityManagerApis = app.MapGroup(("api/identity/manager"));
+=======
+var identityManagerApis=app.MapGroup(("api/identity/manager"));
+>>>>>>> 8e1a7f66420ec3bdbf7689044ea9f7d83b5d42f9
 identitySignUpWithLoginApis.NotMapIdentityApi();
 identityManagerApis.NotMapIdentityManagerApi();
 

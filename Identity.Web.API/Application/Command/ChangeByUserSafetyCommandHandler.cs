@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿
 using System.Net.WebSockets;
 
@@ -42,5 +43,11 @@ namespace Identity.Web.API.Application.Command
                 return false;
             }
         }
+=======
+﻿namespace Identity.Web.API.Application.Command
+{
+    public class ChangeByUserSafetyCommandHandler
+    {
+>>>>>>> 8e1a7f66420ec3bdbf7689044ea9f7d83b5d42f9
     }
 }

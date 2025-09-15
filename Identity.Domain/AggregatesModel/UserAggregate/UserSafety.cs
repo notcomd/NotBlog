@@ -26,7 +26,7 @@ public class UserSafety : Entity
         Id = Guid.CreateVersion7();
     }
 
-    public static UserSafety CreateByUserSafety(Guid UserGuid, string passwordSalt, string securityStamp )
+    public static UserSafety CreateByUserSafety(Guid UserGuid, string passwordSalt, string securityStamp)
     {
 
         if (UserGuid != Guid.Empty)
@@ -69,9 +69,9 @@ public class UserSafety : Entity
     {
         if (string.IsNullOrWhiteSpace(newPasswordSalt))
         {
-            throw new ArgumentException("Password salt cannot be null or empty", nameof(newPasswordSalt));            
+            throw new ArgumentException("Password salt cannot be null or empty", nameof(newPasswordSalt));
         }
-            
+
         PasswordSalt = newPasswordSalt;
     }
 

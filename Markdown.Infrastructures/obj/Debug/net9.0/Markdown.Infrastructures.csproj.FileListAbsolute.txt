@@ -1,6 +1,0 @@
-C:\Users\29617\source\repos\MyService\Markdown.Infrastructures\obj\Debug\net9.0\Markdown.Infrastructures.csproj.AssemblyReference.cache
-C:\Users\29617\source\repos\MyService\Markdown.Infrastructures\obj\Debug\net9.0\Markdown.Infrastructures.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\29617\source\repos\MyService\Markdown.Infrastructures\obj\Debug\net9.0\Markdown.Infrastructures.AssemblyInfoInputs.cache
-C:\Users\29617\source\repos\MyService\Markdown.Infrastructures\obj\Debug\net9.0\Markdown.Infrastructures.AssemblyInfo.cs
-C:\Users\29617\source\repos\MyService\Markdown.Infrastructures\obj\Debug\net9.0\Markdown.Infrastructures.csproj.CoreCompileInputs.cache
-C:\Users\29617\source\repos\MyService\Markdown.Infrastructures\obj\Debug\net9.0\Markdown.Infrastructures.sourcelink.json

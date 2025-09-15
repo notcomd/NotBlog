@@ -75,7 +75,7 @@ public class IdentityDomainCheckLogInServer
             _loggerUser.LogError($"[(≧ ﹏ ≦){_notDateTime.UtcNow}] 用户 {phoneNumber.PhoneCode} 不存在。");
             return UserAccessResult.NotFund;
         }
-        if (IsUserLockedOut(loginPhone))
+        if (IsUserLocked(loginPhone))
         {
             _loggerUser.LogError($"[(≧ ﹏ ≦){_notDateTime.UtcNow}] 用户 {phoneNumber.PhoneCode} 被锁定。");
             return UserAccessResult.Locked;
@@ -95,6 +95,7 @@ public class IdentityDomainCheckLogInServer
         _loggerUser.LogInformation($"[（*＾-＾*）{_notDateTime.UtcNow}] 用户 {phoneNumber.PhoneCode} 验证成功。");
         return UserAccessResult.Success;
     }
+<<<<<<< HEAD:Identity.Domain/DomainServer/IdentityDomainCheckLogInServer.cs
 
     public async ValueTask<UserAccessResult> CheckLogInWithGenalAsync(string LoginWithEmail, string code)
     {
@@ -136,6 +137,11 @@ public class IdentityDomainCheckLogInServer
     }
 
     public bool IsUserLocked(User user) => user.IsUserLockedOut();
+=======
+    
+   
+    public bool IsUserLocked(User user)=>user.IsUserLockedOut();
+>>>>>>> 8e1a7f66420ec3bdbf7689044ea9f7d83b5d42f9:Identity.Domain/Server/IdentityDomainCheckLogInServer.cs
 
     public bool IsUserLockedOut(User user) => user.UserAccessFail.IsLockOutByAccessFaild();
 

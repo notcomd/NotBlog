@@ -1,8 +1,0 @@
-C:\Users\29617\source\repos\MyService\Message.Web.API\obj\Debug\net9.0\Message.Web.API.csproj.AssemblyReference.cache
-C:\Users\29617\source\repos\MyService\Message.Web.API\obj\Debug\net9.0\rpswa.dswa.cache.json
-C:\Users\29617\source\repos\MyService\Message.Web.API\obj\Debug\net9.0\Message.Web.API.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\29617\source\repos\MyService\Message.Web.API\obj\Debug\net9.0\Message.Web.API.AssemblyInfoInputs.cache
-C:\Users\29617\source\repos\MyService\Message.Web.API\obj\Debug\net9.0\Message.Web.API.AssemblyInfo.cs
-C:\Users\29617\source\repos\MyService\Message.Web.API\obj\Debug\net9.0\Message.Web.API.csproj.CoreCompileInputs.cache
-C:\Users\29617\source\repos\MyService\Message.Web.API\obj\Debug\net9.0\Message.Web.API.MvcApplicationPartsAssemblyInfo.cache
-C:\Users\29617\source\repos\MyService\Message.Web.API\obj\Debug\net9.0\Message.Web.API.sourcelink.json

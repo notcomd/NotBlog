@@ -34,8 +34,23 @@ public class CreateByRoleCommandHandler : IRequestHandler<CreateByRoleCommand, b
 
             if (signal == UserAccessResult.Success)
             {
+<<<<<<< HEAD
                 await _userRoleRepository.UnitOfWork.SavaChangesAsync(cancellationToken);
                 _logger.LogInformation($"[（*＾-＾*）{_notDateTime.UtcNow}] Role Create Success! {request.RoleName}");
+=======
+                _logger.LogInformation($"[（*＾-＾*）{DateTime.UtcNow}]Role Created! RoleName: {request.RoleName}, Attribute: {request.Attribute}");
+                var roleData = await _userRoleRepository.FindByUserRoleAsync(request.RoleName);
+                if (roleData is not null)
+                {
+                    _logger.LogWarning($"[(≧ ﹏ ≦){DateTime.UtcNow}]Role Already Exists! {request.RoleName}");
+                    return false;
+                }
+                var roleTrc = Roles.CreateByRoleAsync(request.RoleName, request.Attribute, _notDateTime.UtcNow);
+                _logger.LogInformation($"[（*＾-＾*）{DateTime.UtcNow}]Role Created! RoleName: {request.RoleName}, Attribute: {request.Attribute}");
+                await _userRoleRepository.AddByUserRoleAsync(roleTrc);
+                await _userRoleRepository.UnitOfWork.SavaEntitiesAsync(cancellationToken);
+                _logger.LogInformation($"[（*＾-＾*）{DateTime.UtcNow}]Role Added to Repository! RoleName: {request.RoleName}, Attribute: {request.Attribute}");
+>>>>>>> 8e1a7f66420ec3bdbf7689044ea9f7d83b5d42f9
                 return true;
             }
             else if (signal == UserAccessResult.AlreadyExists)

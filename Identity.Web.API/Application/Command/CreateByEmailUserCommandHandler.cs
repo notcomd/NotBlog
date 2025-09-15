@@ -43,8 +43,13 @@ public class CreateByEmailUserCommandHandler : IRequestHandler<CreateByEmailUser
                 _logger.LogWarning($"[(≧ ﹏ ≦){DateTime.UtcNow}]User Already Exists! {request.Email}");
                 return false;
             }
+<<<<<<< HEAD
             await _userRoleRepository.UnitOfWork.SavaEntitiesAsync(cancellationToken);          
            
+=======
+            await _userRoleRepository.UnitOfWork.SavaEntitiesAsync(cancellationToken);            
+           // await _notMediator.SendAsync(new GenerateCodeCommand(request.Email, 9), cancellationToken);
+>>>>>>> 8e1a7f66420ec3bdbf7689044ea9f7d83b5d42f9
             _logger.LogInformation($"[（*＾-＾*）{DateTime.UtcNow}]User Created! {request.Email}");
             return true;
         }

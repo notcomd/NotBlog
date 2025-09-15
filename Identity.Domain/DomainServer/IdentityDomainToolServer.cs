@@ -79,9 +79,15 @@ public class IdentityDomainToolServer
             {
                 _logger.LogWarning($"[(≧ ﹏ ≦){_notDateTime.UtcNow}] 用户 {userId} 不存在。");
                 throw new ArgumentException("用户不存在。");
+<<<<<<< HEAD:Identity.Domain/DomainServer/IdentityDomainToolServer.cs
             }
             var token = await _jwtTokenService.BuilderTokenAsync(claims);
 
+=======
+            }            
+            var token=await _jwtTokenService.BuilderTokenAsync(claims);
+            
+>>>>>>> 8e1a7f66420ec3bdbf7689044ea9f7d83b5d42f9:Identity.Domain/Server/IdentityDomainToolServer.cs
             return token;
 
         }

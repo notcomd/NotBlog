@@ -2,6 +2,7 @@
   {
     "ContainingType": "Identity.Web.API.APIs.NotMapIdentityManagerApis",
     "Method": "ChangeWithUserInfomationAsync",
+<<<<<<< HEAD
     "RelativePath": "api/identity/manager/NotAuthorManager/ChangeWithUserInfomation",
     "HttpMethod": "POST",
     "IsController": false,
@@ -91,12 +92,26 @@
     "Method": "GetAllRoleInforMetionAsync",
     "RelativePath": "api/identity/manager/NotAuthorManager/GetAllRoleWithRole",
     "HttpMethod": "GET",
+=======
+    "RelativePath": "api/identity/manager/api/identity/manager/ChangeWithUserInfomation",
+    "HttpMethod": "POST",
+>>>>>>> 8e1a7f66420ec3bdbf7689044ea9f7d83b5d42f9
     "IsController": false,
     "Order": 0,
-    "Parameters": [],
+    "Parameters": [
+      {
+        "Name": "requestChangeWithUserInfomationModel",
+        "Type": "Identity.Web.API.Application.Models.RequestChangeWithUserInfomationModel",
+        "IsRequired": true
+      }
+    ],
     "ReturnTypes": [
       {
+<<<<<<< HEAD
         "Type": "Identity.Domain.Entities.IdentityResult\u00601[[System.Collections.Generic.IEnumerable\u00601[[Identity.Web.API.Application.Models.ResponseResultRoleManagerInformetionModel, Identity.Web.API, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+=======
+        "Type": "Identity.Domain.Entities.IdentityResult\u00601[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+>>>>>>> 8e1a7f66420ec3bdbf7689044ea9f7d83b5d42f9
         "MediaTypes": [
           "application/json"
         ],
@@ -106,6 +121,7 @@
     "Tags": [
       "IdentityManager"
     ],
+<<<<<<< HEAD
     "EndpointName": "GetAllRoleWithRole",
     "Description": "\u83B7\u53D6\u6240\u6709\u89D2\u8272\u8BE6\u60C5\u6570\u636E"
   },
@@ -189,6 +205,10 @@
     ],
     "EndpointName": "RegisterWithRole",
     "Description": "\u6CE8\u518C\u89D2\u8272\u63A5\u53E3"
+=======
+    "EndpointName": "ChangeWithUserInfomation",
+    "Description": "\u66F4\u65B0\u7528\u6237\u4FE1\u606F\u63A5\u53E3"
+>>>>>>> 8e1a7f66420ec3bdbf7689044ea9f7d83b5d42f9
   },
   {
     "ContainingType": "Identity.Web.API.APIs.NotMapIdentityApis",
@@ -216,32 +236,13 @@
   },
   {
     "ContainingType": "Identity.Web.API.APIs.NotMapIdentityApis",
+<<<<<<< HEAD
     "Method": "LogInByEmailWithGenerateCodeAsync",
     "RelativePath": "api/identity/NotAuthor/LogInByEmailWithGenerateCode",
-    "HttpMethod": "POST",
-    "IsController": false,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "requestLogInWithEmailModel",
-        "Type": "Identity.Web.API.Application.Models.RequestLogInWithEmailModel",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": [
-      {
-        "Type": "Identity.Domain.Entities.IdentityResult\u00601[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
-        "MediaTypes": [
-          "application/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "Identity.Web.API.APIs.NotMapIdentityApis",
+=======
     "Method": "LogInWithEmailAsync",
     "RelativePath": "api/identity/NotAuthor/LogInWithEmail",
+>>>>>>> 8e1a7f66420ec3bdbf7689044ea9f7d83b5d42f9
     "HttpMethod": "POST",
     "IsController": false,
     "Order": 0,
@@ -264,21 +265,66 @@
   },
   {
     "ContainingType": "Identity.Web.API.APIs.NotMapIdentityApis",
+<<<<<<< HEAD
+    "Method": "LogInWithEmailAsync",
+    "RelativePath": "api/identity/NotAuthor/LogInWithEmail",
+=======
     "Method": "LogInWithGenerateCodeAsync",
     "RelativePath": "api/identity/NotAuthor/LogInWithGenerateCode",
+>>>>>>> 8e1a7f66420ec3bdbf7689044ea9f7d83b5d42f9
     "HttpMethod": "POST",
     "IsController": false,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "requestGetLogInGenerateCodeModel",
-        "Type": "Identity.Web.API.Application.Models.RequestGetLogInGenerateCodeModel",
+<<<<<<< HEAD
+        "Name": "requestLogInWithEmailModel",
+        "Type": "Identity.Web.API.Application.Models.RequestLogInWithEmailModel",
+=======
+        "Name": "requestLoginWithGenerateCodeModel",
+        "Type": "Identity.Web.API.Application.Models.RequestLoginWithGenerateCodeModel",
+>>>>>>> 8e1a7f66420ec3bdbf7689044ea9f7d83b5d42f9
         "IsRequired": true
       }
     ],
     "ReturnTypes": [
       {
         "Type": "Identity.Domain.Entities.IdentityResult\u00601[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "application/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Identity.Web.API.APIs.NotMapIdentityApis",
+<<<<<<< HEAD
+    "Method": "LogInWithGenerateCodeAsync",
+    "RelativePath": "api/identity/NotAuthor/LogInWithGenerateCode",
+=======
+    "Method": "RegisterWithEmailAsync",
+    "RelativePath": "api/identity/NotAuthor/RegisterWithEmailUser",
+>>>>>>> 8e1a7f66420ec3bdbf7689044ea9f7d83b5d42f9
+    "HttpMethod": "POST",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+<<<<<<< HEAD
+        "Name": "requestGetLogInGenerateCodeModel",
+        "Type": "Identity.Web.API.Application.Models.RequestGetLogInGenerateCodeModel",
+=======
+        "Name": "rquestRegisterWithEmail",
+        "Type": "Identity.Web.API.Application.Models.RquestRegisterWithEmailModel",
+>>>>>>> 8e1a7f66420ec3bdbf7689044ea9f7d83b5d42f9
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Identity.Domain.Entities.IdentityResult\u00601[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+<<<<<<< HEAD
         "MediaTypes": [
           "application/json"
         ],
@@ -303,6 +349,8 @@
     "ReturnTypes": [
       {
         "Type": "Identity.Domain.Entities.IdentityResult\u00601[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+=======
+>>>>>>> 8e1a7f66420ec3bdbf7689044ea9f7d83b5d42f9
         "MediaTypes": [
           "application/json"
         ],
