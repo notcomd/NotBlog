@@ -61,7 +61,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.300"
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
         "net9.0": {
@@ -69,11 +69,11 @@
           "dependencies": {
             "Microsoft.AspNetCore.Connections.Abstractions": {
               "target": "Package",
-              "version": "[9.0.4, )"
+              "version": "[9.0.9, )"
             },
             "Microsoft.Extensions.DependencyInjection.Abstractions": {
               "target": "Package",
-              "version": "[9.0.7, )"
+              "version": "[9.0.9, )"
             },
             "Npgsql": {
               "target": "Package",
@@ -100,7 +100,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.100-rc.1.25451.107/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
@@ -145,23 +145,23 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.300"
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
         "net9.0": {
           "targetAlias": "net9.0",
           "dependencies": {
-            "MediatR": {
+            "Microsoft.EntityFrameworkCore": {
               "target": "Package",
-              "version": "[12.5.0, )"
+              "version": "[9.0.9, )"
             },
             "Microsoft.Extensions.DependencyInjection.Abstractions": {
               "target": "Package",
-              "version": "[8.0.0, )"
+              "version": "[9.0.9, )"
             },
-            "Scalar.AspNetCore": {
+            "NotMediator": {
               "target": "Package",
-              "version": "[2.5.3, )"
+              "version": "[1.0.5, )"
             }
           },
           "imports": [
@@ -180,7 +180,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.100-rc.1.25451.107/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
@@ -229,27 +229,37 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.300"
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
         "net9.0": {
           "targetAlias": "net9.0",
           "dependencies": {
-            "MediatR": {
-              "target": "Package",
-              "version": "[12.5.0, )"
-            },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
-              "version": "[6.0.21, )"
+              "version": "[9.0.9, )"
             },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
-              "version": "[9.0.4, )"
+              "version": "[9.0.9, )"
+            },
+            "Microsoft.EntityFrameworkCore.Abstractions": {
+              "target": "Package",
+              "version": "[9.0.9, )"
+            },
+            "Microsoft.EntityFrameworkCore.Tools": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.9, )"
             },
             "NotMediator": {
               "target": "Package",
-              "version": "[1.0.4, )"
+              "version": "[1.0.5, )"
+            },
+            "Npgsql.EntityFrameworkCore.PostgreSQL": {
+              "target": "Package",
+              "version": "[9.0.4, )"
             }
           },
           "imports": [
@@ -268,7 +278,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.100-rc.1.25451.107/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
@@ -313,7 +323,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.300"
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
         "net9.0": {
@@ -360,7 +370,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.100-rc.1.25451.107/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
@@ -393,9 +403,6 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj": {
-                "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj"
-              },
               "C:\\Users\\29617\\source\\repos\\MyService\\JWToken\\Token.JWT.csproj": {
                 "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\JWToken\\Token.JWT.csproj"
               }
@@ -412,7 +419,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.300"
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
         "net9.0": {
@@ -420,7 +427,7 @@
           "dependencies": {
             "NotMediator": {
               "target": "Package",
-              "version": "[1.0.4, )"
+              "version": "[1.0.5, )"
             }
           },
           "imports": [
@@ -439,7 +446,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.100-rc.1.25451.107/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
@@ -472,8 +479,8 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "C:\\Users\\29617\\source\\repos\\MyService\\CommonsInitializer\\CommonsInitializer.csproj": {
-                "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\CommonsInitializer\\CommonsInitializer.csproj"
+              "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj": {
+                "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj"
               },
               "C:\\Users\\29617\\source\\repos\\MyService\\DomainInfrastructure\\DomainInfrastructure.csproj": {
                 "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainInfrastructure\\DomainInfrastructure.csproj"
@@ -500,7 +507,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.300"
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
         "net9.0": {
@@ -508,13 +515,13 @@
           "dependencies": {
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
-              "version": "[9.0.7, )"
+              "version": "[9.0.9, )"
             },
             "Microsoft.EntityFrameworkCore.Tools": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
               "target": "Package",
-              "version": "[9.0.7, )"
+              "version": "[9.0.9, )"
             },
             "NotMediator": {
               "target": "Package",
@@ -545,7 +552,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.100-rc.1.25451.107/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
@@ -581,6 +588,9 @@
               "C:\\Users\\29617\\source\\repos\\MyService\\CommonsInitializer\\CommonsInitializer.csproj": {
                 "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\CommonsInitializer\\CommonsInitializer.csproj"
               },
+              "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj": {
+                "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj"
+              },
               "C:\\Users\\29617\\source\\repos\\MyService\\Identity.Domain\\Identity.Domain.csproj": {
                 "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\Identity.Domain\\Identity.Domain.csproj"
               },
@@ -589,9 +599,6 @@
               },
               "C:\\Users\\29617\\source\\repos\\MyService\\JWToken\\Token.JWT.csproj": {
                 "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\JWToken\\Token.JWT.csproj"
-              },
-              "C:\\Users\\29617\\source\\repos\\MyService\\NotEmail\\NotEmail.csproj": {
-                "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\NotEmail\\NotEmail.csproj"
               }
             }
           }
@@ -606,7 +613,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.300"
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
         "net9.0": {
@@ -618,21 +625,21 @@
             },
             "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",
-              "version": "[9.0.7, )"
+              "version": "[9.0.9, )"
             },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
-              "version": "[9.0.7, )"
+              "version": "[9.0.9, )"
             },
             "Microsoft.EntityFrameworkCore.Tools": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
               "target": "Package",
-              "version": "[9.0.7, )"
+              "version": "[9.0.9, )"
             },
             "Microsoft.Extensions.DependencyInjection.Abstractions": {
               "target": "Package",
-              "version": "[9.0.7, )"
+              "version": "[9.0.9, )"
             },
             "NotMediator": {
               "target": "Package",
@@ -640,7 +647,7 @@
             },
             "Scalar.AspNetCore": {
               "target": "Package",
-              "version": "[2.6.8, )"
+              "version": "[2.8.1, )"
             }
           },
           "imports": [
@@ -662,7 +669,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.100-rc.1.25451.107/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
@@ -711,7 +718,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.300"
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
         "net9.0": {
@@ -754,7 +761,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.100-rc.1.25451.107/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
@@ -806,7 +813,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.300"
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
         "net9.0": {
@@ -814,15 +821,15 @@
           "dependencies": {
             "MailKit": {
               "target": "Package",
-              "version": "[4.7.1.1, )"
+              "version": "[4.13.0, )"
             },
             "Microsoft.Extensions.Configuration.Abstractions": {
               "target": "Package",
-              "version": "[9.0.4, )"
+              "version": "[9.0.9, )"
             },
             "Microsoft.Extensions.Options": {
               "target": "Package",
-              "version": "[9.0.4, )"
+              "version": "[9.0.9, )"
             }
           },
           "imports": [
@@ -841,7 +848,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.100-rc.1.25451.107/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

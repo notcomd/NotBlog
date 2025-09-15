@@ -7,13 +7,13 @@
 
             builder.ToTable("NotClient");
 
-            builder.Ignore(b => b.DomainEventbus);
+            builder.Ignore(b => b.DomainEvents);
 
             //builder.Property(x => x.Id).UseHiLo("NotClientseq");
 
             builder.HasKey(xn => xn.Id);
 
-            
+
             builder.Property(en => en.NotClientType).HasConversion<string>().HasMaxLength(50);
 
         }

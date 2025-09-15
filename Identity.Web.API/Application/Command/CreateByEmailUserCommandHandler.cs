@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography.Xml;
 
 using Identity.Domain.IdentiyResult;
-using Identity.Domain.Server;
+
 
 namespace Identity.Web.API.Application.Command;
 
@@ -43,8 +43,8 @@ public class CreateByEmailUserCommandHandler : IRequestHandler<CreateByEmailUser
                 _logger.LogWarning($"[(≧ ﹏ ≦){DateTime.UtcNow}]User Already Exists! {request.Email}");
                 return false;
             }
-            await _userRoleRepository.UnitOfWork.SavaEntitiesAsync(cancellationToken);            
-           // await _notMediator.SendAsync(new GenerateCodeCommand(request.Email, 9), cancellationToken);
+            await _userRoleRepository.UnitOfWork.SavaEntitiesAsync(cancellationToken);          
+           
             _logger.LogInformation($"[（*＾-＾*）{DateTime.UtcNow}]User Created! {request.Email}");
             return true;
         }

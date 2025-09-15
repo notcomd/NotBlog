@@ -1,12 +1,14 @@
 {
   "version": 2,
-  "dgSpecHash": "0SqNQi5obn4=",
+  "dgSpecHash": "3XQgV2Lq9Yw=",
   "success": true,
   "projectFilePath": "C:\\Users\\29617\\source\\repos\\MyService\\Message.Infrastructure\\Message.Infrastructure.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\29617\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\8.0.0\\microsoft.extensions.configuration.abstractions.8.0.0.nupkg.sha512",
-    "C:\\Users\\29617\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\8.0.1\\microsoft.extensions.dependencyinjection.abstractions.8.0.1.nupkg.sha512",
-    "C:\\Users\\29617\\.nuget\\packages\\microsoft.extensions.primitives\\8.0.0\\microsoft.extensions.primitives.8.0.0.nupkg.sha512"
+    "C:\\Users\\29617\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\9.0.9\\microsoft.extensions.configuration.abstractions.9.0.9.nupkg.sha512",
+    "C:\\Users\\29617\\.nuget\\packages\\microsoft.extensions.dependencyinjection\\9.0.5\\microsoft.extensions.dependencyinjection.9.0.5.nupkg.sha512",
+    "C:\\Users\\29617\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\9.0.9\\microsoft.extensions.dependencyinjection.abstractions.9.0.9.nupkg.sha512",
+    "C:\\Users\\29617\\.nuget\\packages\\microsoft.extensions.primitives\\9.0.9\\microsoft.extensions.primitives.9.0.9.nupkg.sha512",
+    "C:\\Users\\29617\\.nuget\\packages\\notmediator\\1.0.5\\notmediator.1.0.5.nupkg.sha512"
   ],
   "logs": []
 }

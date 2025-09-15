@@ -1,4 +1,4 @@
-namespace Notcomd.DomainCommand;
+﻿namespace Notcomd.DomainCommand;
 
 public static class IOHelper
 {

@@ -1,4 +1,5 @@
-using System.Reflection;
+﻿using System.Reflection;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -92,21 +93,22 @@ public static class EFCoreInitializerHelper
         foreach (var asmToLoad in assemblies)
         {
             Type[] typesInAsm = asmToLoad.GetTypes();
-            //Register DbContext
-            //GetTypes() include public/protected ones
-            //GetExportedTypes only include public ones
-            //so that XXDbContext in Agrregation can be internal to keep insulated
+
             foreach (var dbCtxType in typesInAsm
                          .Where(t => !t.IsAbstract && typeof(DbContext).IsAssignableFrom(t)))
             {
                 //similar to serviceCollection.AddDbContextPool<ECDictDbContext>(opt=>new DbContextOptionsBuilder(dbCtxOpt));
-                var methodGenericAddDbContext = methodAddDbContext.MakeGenericMethod(dbCtxType);
+                var methodGenericAddDbContext = methodAddDbContext!.MakeGenericMethod(dbCtxType);
                 methodGenericAddDbContext.Invoke(null, new object[]
                 {
                     services, builder, ServiceLifetime.Scoped, ServiceLifetime.Scoped
                 });
             }
         }
+
+
+
+
         return services;
     }
 }

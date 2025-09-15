@@ -1,4 +1,4 @@
-namespace Notcomd.DomainCommand;
+﻿namespace Notcomd.DomainCommand;
 
 public static class EnumerableExtensions
 {
@@ -6,7 +6,6 @@ public static class EnumerableExtensions
     {
         if (enumerable == enumerable2)
         {
-
         }
         else if (enumerable == null || enumerable2 == null)
         {

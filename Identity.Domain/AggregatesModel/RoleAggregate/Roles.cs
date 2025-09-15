@@ -1,6 +1,4 @@
-﻿using Identity.Domain.Events;
-
-namespace Identity.Domain.AggregatesModel.RoleAggregate;
+﻿namespace Identity.Domain.AggregatesModel.RoleAggregate;
 
 public class Roles : Entity, IAggregateRoot
 {
@@ -41,7 +39,7 @@ public class Roles : Entity, IAggregateRoot
 
     }
 
-    public static ValueTask<Roles> CreateByRoleAsyncTask(string roleName, DateTimeOffset dateTimeOffset,
+    public static ValueTask<Roles> CreateAsync(string roleName, DateTimeOffset dateTimeOffset,
         string? attribute = null, EnRoleAuthority roleAuthority = EnRoleAuthority.User, EnRoleStatus roleStatus = EnRoleStatus.Normal)
     {
         return new ValueTask<Roles>(new Roles(roleName, attribute, dateTimeOffset, roleAuthority, roleStatus));
@@ -50,6 +48,7 @@ public class Roles : Entity, IAggregateRoot
     public void ChangeByRoleAuthority(EnRoleAuthority roleAuthority)
     {
         RoleAuthority = roleAuthority;
+        AddDomainEvent(new RoleAuthorityChangedDomainEvent(Id, roleAuthority));
     }
 
     public void ChangeByRoleName(string roleName)
@@ -57,32 +56,25 @@ public class Roles : Entity, IAggregateRoot
         if (string.IsNullOrEmpty(roleName))
             throw new ArgumentNullException(nameof(roleName), "Role name cannot be null or empty");
         RoleName = roleName;
+        AddDomainEvent(new RoleNameChangedDomainEvent(Id, roleName));
     }
 
     public void AddRoleClaim(RoleClaim roleClaim)
     {
         if (roleClaim is null)
             throw new ArgumentNullException(nameof(roleClaim), "Role claim cannot be null");
+
+        if (_roleClaim.Any(rc => rc.ClaimType == roleClaim.ClaimType))
+            throw new InvalidOperationException($"Claim with type {roleClaim.ClaimType} already exists.");
+
         _roleClaim.Add(roleClaim);
+        AddDomainEvent(new RoleClaimAddedDomainEvent(Id, roleClaim.ClaimType, roleClaim.ClaimValue));
     }
 
-    public void ChangeByRoleStatus(EnRoleStatus roleStatus) => RoleStatus = roleStatus;
-
-    public IEnumerable<Claim>? RoleClaimToClaim(IEnumerable<RoleClaim> roleClaim)
+    public void ChangeByRoleStatus(EnRoleStatus roleStatus)
     {
-
-        if (roleClaim is null || !roleClaim.Any())
-            throw new ArgumentNullException(nameof(roleClaim), "Role claims cannot be null or empty");
-
-        var entity = roleClaim
-            .Where(en => string.IsNullOrEmpty(en.ClaimValue) || string.IsNullOrEmpty(en.ClaimType));
-
-        if (entity.Any())
-            throw new InvalidOperationException("ClaimType and ClaimValue cannot be null or empty");
-
-        return roleClaim.Select(en=>en.ToClaim());
-
-
+        RoleStatus = roleStatus;
+        AddDomainEvent(new RoleStatusChangedDomainEvent(Id, roleStatus));
     }
 
     public void ChangeByRoleClaim(IEnumerable<RoleClaim> roleClaims)
@@ -91,6 +83,7 @@ public class Roles : Entity, IAggregateRoot
             throw new ArgumentNullException(nameof(roleClaims), "Role claims cannot be null or empty");
         _roleClaim.Clear();
         _roleClaim.AddRange(roleClaims);
+        AddDomainEvent(new RoleClaimsChangedDomainEvent(Id, roleClaims));
     }
 
 }

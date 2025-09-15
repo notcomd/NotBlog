@@ -1,9 +1,8 @@
-﻿using Identity.Domain.Option;
-using Identity.Infrastructure;
-using Identity.Infrastructure.EntityFramework;
+﻿using Identity.Infrastructure.EntityFramework;
 using Identity.Web.API.APIs;
-using Identity.Web.API.Extensions;
 using Identity.Web.API.Infrastructure;
+
+using Notcomd.DomainCommand;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,17 +12,19 @@ builder.NotBlogConfigureExtraServices(new InitializerOptions
     LogFilePath = "E:/web.log"
 });
 
-builder.Services.AddIdentityDbContext(builder.Configuration.GetSection(nameof(DbContextOption)));
 
-builder.Services.AddMigration<IdentityDbContext,RoleContextSeed>();
-builder.Services.AddMigration<IdentityDbContext,UserDefullContextSeed>();
+//builder.Services.AddIdentityDbContext(builder.Configuration.GetSection(nameof(DbContextOption)));
+//builder.Services.AddMigration<IdentityDbContext, UserDefullContextSeed>();
+builder.Services.AddMigration<IdentityDbContext, SeederDataDbContext>();
+
+
 
 builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
 
 
 builder.Services.AddControllers(opt =>
 {
-    opt.Filters.Add(new UnitOfWorkFilter());
+    opt.Filters.Add(new Notcomd.DomainCommand.UnitOfWorkFilter());
     //opt.Filters.Add(new UserLimitsOfAuthorityFilter());
 });
 
@@ -46,7 +47,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 var identitySignUpWithLoginApis = app.MapGroup(("api/identity"));
-var identityManagerApis=app.MapGroup(("api/identity/manager"));
+var identityManagerApis = app.MapGroup(("api/identity/manager"));
 identitySignUpWithLoginApis.NotMapIdentityApi();
 identityManagerApis.NotMapIdentityManagerApi();
 

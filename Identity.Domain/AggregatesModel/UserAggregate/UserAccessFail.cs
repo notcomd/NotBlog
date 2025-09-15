@@ -1,4 +1,4 @@
-﻿using Identity.Domain.Events;
+﻿
 
 namespace Identity.Domain.AggregatesModel.UserAggregate;
 

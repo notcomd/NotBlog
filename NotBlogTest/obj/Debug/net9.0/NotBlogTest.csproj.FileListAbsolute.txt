@@ -1,0 +1,12 @@
+C:\Users\29617\source\repos\MyService\NotBlogTest\bin\Debug\net9.0\.msCoverageExtensionSourceRootsMapping_NotBlogTest
+C:\Users\29617\source\repos\MyService\NotBlogTest\bin\Debug\net9.0\.msCoverageSourceRootsMapping_NotBlogTest
+C:\Users\29617\source\repos\MyService\NotBlogTest\obj\Debug\net9.0\NotBlogTest.csproj.AssemblyReference.cache
+C:\Users\29617\source\repos\MyService\NotBlogTest\obj\Debug\net9.0\NotBlogTest.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\29617\source\repos\MyService\NotBlogTest\obj\Debug\net9.0\NotBlogTest.AssemblyInfoInputs.cache
+C:\Users\29617\source\repos\MyService\NotBlogTest\obj\Debug\net9.0\NotBlogTest.AssemblyInfo.cs
+C:\Users\29617\source\repos\MyService\NotBlogTest\obj\Debug\net9.0\NotBlogTest.csproj.CoreCompileInputs.cache
+C:\Users\29617\source\repos\MyService\NotBlogTest\obj\Debug\net9.0\NotBlogTest.gentestingplatformentrypointinputcache.cache
+C:\Users\29617\source\repos\MyService\NotBlogTest\obj\Debug\net9.0\NotBlogTest.genautoregisteredextensionsinputcache.cache
+C:\Users\29617\source\repos\MyService\NotBlogTest\obj\Debug\net9.0\AutoRegisteredExtensions.cs
+C:\Users\29617\source\repos\MyService\NotBlogTest\obj\Debug\net9.0\TestPlatformEntryPoint.cs
+C:\Users\29617\source\repos\MyService\NotBlogTest\obj\Debug\net9.0\NotBlogTest.sourcelink.json

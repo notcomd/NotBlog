@@ -7,9 +7,13 @@
 
             builder.ToTable("UserSafety");
 
-            builder.Ignore(b => b.DomainEventbus).Ignore("IsActive").Ignore("IsLockOut").Ignore("IsDeleted");
-           
-            builder.HasKey(en => en.Id);             
+            builder.Ignore(b => b.DomainEvents).Ignore("IsActive").Ignore("IsLockOut").Ignore("IsDeleted");
+
+            builder.HasKey(en => en.Id);
+
+            builder.Property("PasswordSalt").HasColumnType("varchar").HasMaxLength(256);
+
+            builder.Property("SecurityStamp").HasColumnType("varchar").HasMaxLength(256);
 
         }
     }

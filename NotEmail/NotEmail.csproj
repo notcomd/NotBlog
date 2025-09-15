@@ -8,14 +8,14 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="MailKit" Version="4.7.1.1"/>
-        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.4"/>
-        <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.4"/>
+        <PackageReference Include="MailKit" Version="4.13.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.9" />
+        <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.9" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\DomainCommonst\DomainCommonst.csproj"/>
-        <ProjectReference Include="..\Evenbus\Evenbus.csproj"/>
+        <ProjectReference Include="..\DomainCommonst\DomainCommonst.csproj" />
+        <ProjectReference Include="..\Evenbus\Evenbus.csproj" />
     </ItemGroup>
 
 </Project>

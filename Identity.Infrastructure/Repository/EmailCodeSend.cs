@@ -1,6 +1,4 @@
-﻿using Org.BouncyCastle.Asn1.Cms;
-
-namespace Identity.Infrastructure.Repository;
+﻿namespace Identity.Infrastructure.Repository;
 
 public class EmailCodeSend : IEmailCodeSend
 {
@@ -13,27 +11,27 @@ public class EmailCodeSend : IEmailCodeSend
         _logger = logger;
     }
 
-    public async ValueTask SendEmailCodeAsync(string subject,string toEmail, string code)
+    public async ValueTask SendEmailCodeAsync(string subject, string toEmail, string code)
     {
         ArgumentNullException.ThrowIfNull(toEmail, nameof(toEmail));
         ArgumentNullException.ThrowIfNull(code, nameof(code));
 
-        var mailpush = new MailPush("验证玛", toEmail,PushEmailTemplate(code));
+        var mailpush = new MailPush("验证玛", toEmail, PushEmailTemplate(code));
 
         var message = new MimeMessage
         {
             Subject = subject,
             Body = new BodyBuilder
             {
-                HtmlBody =mailpush.BodyEmail
-                    
+                HtmlBody = mailpush.BodyEmail
+
             }.ToMessageBody()
         };
 
         try
         {
             await _email.SendEmailValueTask(message, mailpush, SecureSocketOptions.SslOnConnect);
-            _logger.LogInformation($"[（*＾-＾*）{0}] 邮件发送成功，接收人：{toEmail}",DateTimeOffset.UtcNow);
+            _logger.LogInformation($"[（*＾-＾*）{0}] 邮件发送成功，接收人：{toEmail}", DateTimeOffset.UtcNow);
         }
         catch (Exception e)
         {
@@ -41,7 +39,7 @@ public class EmailCodeSend : IEmailCodeSend
             throw;
         }
 
-        
+
     }
 
     private string PushEmailTemplate(string code)

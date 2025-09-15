@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using RabbitMQ.Client;
-
-namespace Identity.Infrastructure.Configuration
+﻿namespace Identity.Infrastructure.Configuration
 {
     public class UserLoginEntityTypeConfiguration : IEntityTypeConfiguration<UserLoginHistory>
     {
@@ -15,10 +7,10 @@ namespace Identity.Infrastructure.Configuration
 
             builder.ToTable("UserLoginHistory");
 
-            builder.Ignore(en=>en.DomainEventbus);
+            builder.Ignore(en => en.DomainEvents);
 
             builder.HasKey(en => en.Id);
-           
+
         }
     }
 }

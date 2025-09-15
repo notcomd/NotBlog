@@ -1,4 +1,5 @@
 C:\Users\29617\source\repos\MyService\DomainInfrastructure\bin\Debug\net9.0\DomainInfrastructure.deps.json
+C:\Users\29617\source\repos\MyService\DomainInfrastructure\bin\Debug\net9.0\DomainInfrastructure.runtimeconfig.json
 C:\Users\29617\source\repos\MyService\DomainInfrastructure\bin\Debug\net9.0\DomainInfrastructure.dll
 C:\Users\29617\source\repos\MyService\DomainInfrastructure\bin\Debug\net9.0\DomainInfrastructure.pdb
 C:\Users\29617\source\repos\MyService\DomainInfrastructure\bin\Debug\net9.0\DomainCommonst.dll
@@ -13,4 +14,5 @@ C:\Users\29617\source\repos\MyService\DomainInfrastructure\obj\Debug\net9.0\Doma
 C:\Users\29617\source\repos\MyService\DomainInfrastructure\obj\Debug\net9.0\DomainInfrastructure.dll
 C:\Users\29617\source\repos\MyService\DomainInfrastructure\obj\Debug\net9.0\refint\DomainInfrastructure.dll
 C:\Users\29617\source\repos\MyService\DomainInfrastructure\obj\Debug\net9.0\DomainInfrastructure.pdb
+C:\Users\29617\source\repos\MyService\DomainInfrastructure\obj\Debug\net9.0\DomainInfrastructure.genruntimeconfig.cache
 C:\Users\29617\source\repos\MyService\DomainInfrastructure\obj\Debug\net9.0\ref\DomainInfrastructure.dll

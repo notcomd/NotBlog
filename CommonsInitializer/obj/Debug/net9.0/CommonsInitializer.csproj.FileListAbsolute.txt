@@ -1,3 +1,9 @@
+C:\Users\29617\source\repos\MyService\CommonsInitializer\obj\Debug\net9.0\CommonsInitializer.csproj.AssemblyReference.cache
+C:\Users\29617\source\repos\MyService\CommonsInitializer\obj\Debug\net9.0\CommonsInitializer.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\29617\source\repos\MyService\CommonsInitializer\obj\Debug\net9.0\CommonsInitializer.AssemblyInfoInputs.cache
+C:\Users\29617\source\repos\MyService\CommonsInitializer\obj\Debug\net9.0\CommonsInitializer.AssemblyInfo.cs
+C:\Users\29617\source\repos\MyService\CommonsInitializer\obj\Debug\net9.0\CommonsInitializer.csproj.CoreCompileInputs.cache
+C:\Users\29617\source\repos\MyService\CommonsInitializer\obj\Debug\net9.0\CommonsInitializer.sourcelink.json
 C:\Users\29617\source\repos\MyService\CommonsInitializer\bin\Debug\net9.0\CommonsInitializer.deps.json
 C:\Users\29617\source\repos\MyService\CommonsInitializer\bin\Debug\net9.0\CommonsInitializer.dll
 C:\Users\29617\source\repos\MyService\CommonsInitializer\bin\Debug\net9.0\CommonsInitializer.pdb
@@ -11,12 +17,6 @@ C:\Users\29617\source\repos\MyService\CommonsInitializer\bin\Debug\net9.0\Domain
 C:\Users\29617\source\repos\MyService\CommonsInitializer\bin\Debug\net9.0\NotEmail.pdb
 C:\Users\29617\source\repos\MyService\CommonsInitializer\bin\Debug\net9.0\Evenbus.pdb
 C:\Users\29617\source\repos\MyService\CommonsInitializer\bin\Debug\net9.0\Token.JWT.pdb
-C:\Users\29617\source\repos\MyService\CommonsInitializer\obj\Debug\net9.0\CommonsInitializer.csproj.AssemblyReference.cache
-C:\Users\29617\source\repos\MyService\CommonsInitializer\obj\Debug\net9.0\CommonsInitializer.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\29617\source\repos\MyService\CommonsInitializer\obj\Debug\net9.0\CommonsInitializer.AssemblyInfoInputs.cache
-C:\Users\29617\source\repos\MyService\CommonsInitializer\obj\Debug\net9.0\CommonsInitializer.AssemblyInfo.cs
-C:\Users\29617\source\repos\MyService\CommonsInitializer\obj\Debug\net9.0\CommonsInitializer.csproj.CoreCompileInputs.cache
-C:\Users\29617\source\repos\MyService\CommonsInitializer\obj\Debug\net9.0\CommonsInitializer.sourcelink.json
 C:\Users\29617\source\repos\MyService\CommonsInitializer\obj\Debug\net9.0\CommonsI.690B128C.Up2Date
 C:\Users\29617\source\repos\MyService\CommonsInitializer\obj\Debug\net9.0\CommonsInitializer.dll
 C:\Users\29617\source\repos\MyService\CommonsInitializer\obj\Debug\net9.0\refint\CommonsInitializer.dll

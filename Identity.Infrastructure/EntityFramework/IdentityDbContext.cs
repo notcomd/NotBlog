@@ -1,8 +1,8 @@
-﻿
+﻿using Notcomd.DomainCommand;
 
 namespace Identity.Infrastructure.EntityFramework;
 
-public class IdentityDbContext : DbContext, IUnitOfWork
+public class IdentityDbContext : BaseDbContext<IdentityDbContext>, IUnitOfWork
 {
 
     private readonly INotMediator _notMediator;
@@ -11,9 +11,9 @@ public class IdentityDbContext : DbContext, IUnitOfWork
 
     // public IdentityDbContext(DbContextOptions<IdentityDbContext> options) : base(options) { }
 
-    public IdentityDbContext(DbContextOptions<IdentityDbContext> options, INotMediator mediator) : base(options)
+    public IdentityDbContext(DbContextOptions<IdentityDbContext> options, INotMediator mediator) : base(options, mediator)
     {
-        _notMediator = mediator ?? throw new ArgumentNullException(nameof(mediator), "NotMediator cannot be null");
+        //_notMediator = mediator ?? throw new ArgumentNullException(nameof(mediator), "NotMediator cannot be null");
         Debug.WriteLine($"IdentityDbContext::Context->{GetHashCode()}");
     }
 
@@ -37,20 +37,20 @@ public class IdentityDbContext : DbContext, IUnitOfWork
 
     public bool HasActiveTransaction => _currentTransaction != null;
 
-    public async Task<int> SavaChangesAsync(CancellationToken cancellationToken = default)
-    {
-        //if (_notMediator is null) throw new ArgumentNullException(nameof(_notMediator), "Mediator cannot be null");
-        await _notMediator.DispatchDomainEventsAsync(this);
-        _ = await base.SaveChangesAsync(cancellationToken);
-        return 0;
-    }
+    //public async Task<int> SavaChangesAsync(CancellationToken cancellationToken = default)
+    //{
+    //    //if (_notMediator is null) throw new ArgumentNullException(nameof(_notMediator), "Mediator cannot be null");
+    //    await _notMediator.DispatchDomainEventsAsync(this);
+    //    _ = await base.SaveChangesAsync(cancellationToken);
+    //    return 0;
+    //}
 
-    public async Task<bool> SavaEntitiesAsync(CancellationToken cancellationToken = default)
-    {
-        await _notMediator.DispatchDomainEventsAsync(this);
-        _ = await base.SaveChangesAsync(cancellationToken);
-        return true;
-    }
+    //public async Task<bool> SavaEntitiesAsync(CancellationToken cancellationToken = default)
+    //{
+    //    await _notMediator.DispatchDomainEventsAsync(this);
+    //    _ = await base.SaveChangesAsync(cancellationToken);
+    //    return true;
+    //}
 
     public IDbContextTransaction GetContextTransaction() => _currentTransaction;
 
@@ -119,5 +119,6 @@ public class IdentityDbContext : DbContext, IUnitOfWork
 
         }
     }
+
 }
 #nullable enable

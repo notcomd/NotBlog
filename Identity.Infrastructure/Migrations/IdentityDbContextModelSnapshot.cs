@@ -17,7 +17,7 @@ namespace Identity.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.7")
+                .HasAnnotation("ProductVersion", "9.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -283,11 +283,13 @@ namespace Identity.Infrastructure.Migrations
 
                     b.Property<string>("PasswordSalt")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar");
 
                     b.Property<string>("SecurityStamp")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar");
 
                     b.Property<Guid>("UserGuid")
                         .HasColumnType("uuid");

@@ -2,7 +2,7 @@
   {
     "ContainingType": "Identity.Web.API.APIs.NotMapIdentityManagerApis",
     "Method": "ChangeWithUserInfomationAsync",
-    "RelativePath": "api/identity/manager/api/identity/manager/ChangeWithUserInfomation",
+    "RelativePath": "api/identity/manager/NotAuthorManager/ChangeWithUserInfomation",
     "HttpMethod": "POST",
     "IsController": false,
     "Order": 0,
@@ -31,7 +31,7 @@
   {
     "ContainingType": "Identity.Web.API.APIs.NotMapIdentityManagerApis",
     "Method": "ChangeWithUserPasswordAsync",
-    "RelativePath": "api/identity/manager/api/identity/manager/ChangeWithUserPasswordAsync",
+    "RelativePath": "api/identity/manager/NotAuthorManager/ChangeWithUserPasswordAsync",
     "HttpMethod": "POST",
     "IsController": false,
     "Order": 0,
@@ -60,7 +60,7 @@
   {
     "ContainingType": "Identity.Web.API.APIs.NotMapIdentityManagerApis",
     "Method": "ChangeWithUserSafetyAsync",
-    "RelativePath": "api/identity/manager/api/identity/manager/ChangeWithUserSafetyAsync",
+    "RelativePath": "api/identity/manager/NotAuthorManager/ChangeWithUserSafetyAsync",
     "HttpMethod": "POST",
     "IsController": false,
     "Order": 0,
@@ -88,9 +88,55 @@
   },
   {
     "ContainingType": "Identity.Web.API.APIs.NotMapIdentityManagerApis",
+    "Method": "GetAllRoleInforMetionAsync",
+    "RelativePath": "api/identity/manager/NotAuthorManager/GetAllRoleWithRole",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "Identity.Domain.Entities.IdentityResult\u00601[[System.Collections.Generic.IEnumerable\u00601[[Identity.Web.API.Application.Models.ResponseResultRoleManagerInformetionModel, Identity.Web.API, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "application/json"
+        ],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "IdentityManager"
+    ],
+    "EndpointName": "GetAllRoleWithRole",
+    "Description": "\u83B7\u53D6\u6240\u6709\u89D2\u8272\u8BE6\u60C5\u6570\u636E"
+  },
+  {
+    "ContainingType": "Identity.Web.API.APIs.NotMapIdentityManagerApis",
+    "Method": "GetAllUserInforMetionAsync",
+    "RelativePath": "api/identity/manager/NotAuthorManager/GetAllUserWithRole",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "Identity.Domain.Entities.IdentityResult\u00601[[System.Collections.Generic.IEnumerable\u00601[[Identity.Web.API.Application.Models.ResponseResultUserWithRoleInformetionModel, Identity.Web.API, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "application/json"
+        ],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "IdentityManager"
+    ],
+    "EndpointName": "GetAllUserWithRole",
+    "Description": "\u83B7\u53D6\u6240\u6709\u89D2\u8272\u8BE6\u60C5\u6570\u636E"
+  },
+  {
+    "ContainingType": "Identity.Web.API.APIs.NotMapIdentityManagerApis",
     "Method": "GetWithUserInforMetionAsync",
-    "RelativePath": "api/identity/manager/api/identity/manager/GetWithUserInforMetionAsync",
-    "HttpMethod": "POST",
+    "RelativePath": "api/identity/manager/NotAuthorManager/GetResultUserWithRole",
+    "HttpMethod": "GET",
     "IsController": false,
     "Order": 0,
     "Parameters": [
@@ -112,13 +158,13 @@
     "Tags": [
       "IdentityManager"
     ],
-    "EndpointName": "GetWithUserInforMetion",
-    "Description": "\u83B7\u53D6\u7528\u6237\u4FE1\u606F\u63A5\u53E3"
+    "EndpointName": "GetUserWithRole",
+    "Description": "\u83B7\u53D6\u89D2\u8272\u8BE6\u60C5\u6570\u636E"
   },
   {
     "ContainingType": "Identity.Web.API.APIs.NotMapIdentityManagerApis",
     "Method": "RegisterWithRoleAsync",
-    "RelativePath": "api/identity/manager/api/identity/manager/RegisterWithRoleAsync",
+    "RelativePath": "api/identity/manager/NotAuthorManager/RegisterWithRoleAsync",
     "HttpMethod": "POST",
     "IsController": false,
     "Order": 0,
@@ -170,6 +216,30 @@
   },
   {
     "ContainingType": "Identity.Web.API.APIs.NotMapIdentityApis",
+    "Method": "LogInByEmailWithGenerateCodeAsync",
+    "RelativePath": "api/identity/NotAuthor/LogInByEmailWithGenerateCode",
+    "HttpMethod": "POST",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "requestLogInWithEmailModel",
+        "Type": "Identity.Web.API.Application.Models.RequestLogInWithEmailModel",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Identity.Domain.Entities.IdentityResult\u00601[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "application/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Identity.Web.API.APIs.NotMapIdentityApis",
     "Method": "LogInWithEmailAsync",
     "RelativePath": "api/identity/NotAuthor/LogInWithEmail",
     "HttpMethod": "POST",
@@ -201,8 +271,8 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "requestLoginWithGenerateCodeModel",
-        "Type": "Identity.Web.API.Application.Models.RequestLoginWithGenerateCodeModel",
+        "Name": "requestGetLogInGenerateCodeModel",
+        "Type": "Identity.Web.API.Application.Models.RequestGetLogInGenerateCodeModel",
         "IsRequired": true
       }
     ],

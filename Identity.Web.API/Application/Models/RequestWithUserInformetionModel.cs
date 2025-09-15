@@ -1,12 +1,11 @@
-﻿namespace Identity.Web.API.Application.Models
-{
-    public class RequestWithUserInformetionModel
-    {
-        public RequestWithUserInformetionModel(string findByEmail)
-        {
-            FindByEmail = findByEmail;
-        }
+﻿namespace Identity.Web.API.Application.Models;
 
-        public string FindByEmail { get; }
+public class RequestWithUserInformetionModel
+{
+    public RequestWithUserInformetionModel(string findByEmail)
+    {
+        FindByEmail = findByEmail;
     }
+
+    public string FindByEmail { get; }
 }

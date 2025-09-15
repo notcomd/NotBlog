@@ -6,9 +6,9 @@
         {
             builder.ToTable("User");
 
-            builder.Ignore(b => b.DomainEventbus);
+            builder.Ignore(b => b.DomainEvents);
 
-           
+
             builder.HasKey(x => x.Id);
 
             //builder.Property(x => x.UserGuid).HasColumnName("UserGuid").IsRequired();
@@ -37,7 +37,7 @@
             builder.HasMany(on => on.UserClaims).WithOne()
                 .HasForeignKey(on => on.UserGuid);
 
-            builder.HasIndex(en => new {  en.UserEmail })
+            builder.HasIndex(en => new { en.UserEmail })
                 .HasDatabaseName("IX_User_UserGuid_UserEmail_UserPhone");
 
         }

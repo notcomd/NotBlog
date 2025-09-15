@@ -4,6 +4,8 @@ public interface IUserRoleRepository : IRepository<Roles>
 {
     ValueTask AddByUserRoleAsync(Roles userRole);
 
+    ValueTask<IEnumerable<Roles>> FindByUserRolesAsync();
+
     ValueTask<Roles?> FindByUserRoleAsync(Guid guid);
 
     ValueTask<Roles?> FindByUserRoleAsync(string roleName);

@@ -1,8 +1,4 @@
-﻿using DomainCommonst;
-
-using Identity.Domain.Server;
-using Identity.Infrastructure.NotMemoryCache;
-using Identity.Infrastructure.RequestManager;
+﻿using Identity.Infrastructure.RequestManager;
 
 namespace Identity.Infrastructure;
 
@@ -13,12 +9,13 @@ public class ModuleInitializer : IModuleInitializer
     {
         service.AddScoped<IUserRepository, UserRepository>();
         service.AddScoped<IUserRoleRepository, UserRoleRepository>();
+        service.AddScoped<IAuthor2Repository, Author2Repository>();
         service.AddScoped<IEmailCodeSend, EmailCodeSend>();
-        service.AddDistributedMemoryCache();    
-        service.AddScoped<INotMemoryCache, NotMemoryCache.NotMemoryCache>();
+        service.AddDistributedMemoryCache();
+        //service.AddScoped<INotMemoryCache, NotMemoryCache>();
         service.AddScoped<ISmsCodeSend, SmsCodeSend>();
         service.AddScoped<IRequestManager, RequestManager.RequestManager>();
-        service.AddScoped<INotDateTime, NotDateTime.NotDateTime>();
+        // service.AddScoped<Domain.INotDateTime.INotDateTime, NotDateTime.NotDateTime>();
         service.AddScoped<IdentityDomainCheckLogInServer>();
         service.AddScoped<IdentityDomainRegisterServer>();
         service.AddScoped<IdentityDomainUserManagerServer>();

@@ -1,5 +1,4 @@
-﻿
-namespace Identity.Domain.Events
+﻿namespace Identity.Infrastructure.Configuration
 {
     public class RoleClaimEntityTypeConfiguration : IEntityTypeConfiguration<RoleClaim>
     {
@@ -7,13 +6,13 @@ namespace Identity.Domain.Events
         {
 
             builder.ToTable("RoleClaims");
-            
+
             //builder.Property(o => o.Id).UseHiLo("RoleClaimseq");
-             builder.HasKey(e => e.Id);
+            builder.HasKey(e => e.Id);
             //builder.HasKey(x=>x.RoleClaimGuid)
 
-            builder.Ignore(x => x.DomainEventbus);
-                    
+            builder.Ignore(x => x.DomainEvents);
+
         }
     }
 }

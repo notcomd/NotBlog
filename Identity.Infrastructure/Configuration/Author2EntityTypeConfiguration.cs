@@ -7,9 +7,9 @@
 
             builder.ToTable("Author2");
 
-            builder.Ignore(b => b.DomainEventbus);
+            builder.Ignore(b => b.DomainEvents);
 
-            builder.HasKey(e => e.Id); 
+            builder.HasKey(e => e.Id);
 
         }
     }

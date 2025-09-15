@@ -5,38 +5,56 @@ namespace Notcomd.Token.JWT;
 
 public sealed class HashHelper
 {
-    public static ValueTask<string> CreateHash256Async(string hashString, byte[] salt)
+    public static string CreateHash256Async(string hashString, byte[] salt)
     {
         var data = Encoding.UTF8.GetBytes(hashString);
         using var myHash = new Rfc2898DeriveBytes(hashString, salt, 2000, HashAlgorithmName.SHA384);
         var hash = myHash.GetBytes(64);
-        return new ValueTask<string>(Convert.ToBase64String(hash));
+        return Convert.ToBase64String(hash);
     }
 
-    public static ValueTask<byte[]> GenerateSaltValueTask()
+    public static byte[] GenerateSaltValue(int size = 64)
     {
-        return new ValueTask<byte[]>(RandomNumberGenerator.GetBytes(64));
+        return RandomNumberGenerator.GetBytes(size);
     }
 
-    public static ValueTask<string> GenerateSecurityStamp()
+    public static string GenerateToString(byte[] bytes)
+    {
+        return Convert.ToBase64String(bytes) switch
+        {
+            string toString => toString,
+            _ => throw new InvalidOperationException("Not Byte to string")
+        };
+    }
+
+    public static byte[] ConvertStringToBytes(string byteString)
+    {
+        return Convert.FromBase64String(byteString) switch
+        {
+            byte[] toBytes => toBytes,
+            _ => throw new InvalidOperationException("Not String to Bytes")
+        };
+    }
+
+    public static string GenerateSecurityStamp()
     {
         var bytes = new byte[32];
         RandomNumberGenerator.Fill(bytes);
         return Convert.ToBase64String(bytes) switch
         {
-            string securityStamp => new ValueTask<string>(securityStamp),
+            string securityStamp => securityStamp,
             _ => throw new InvalidOperationException("Failed to generate security stamp.")
         };
     }
 
-    public async static ValueTask<bool> VerifyPasswordValueTask(string password, string hash, byte[] sart)
+    public static bool VerifyPasswordValueTask(string password, string hash, byte[] sart)
     {
         if (string.IsNullOrEmpty(password) || string.IsNullOrEmpty(hash) || sart is null || sart.Length == 0)
         {
             return false;
         }
-        var hashStr = await CreateHash256Async(password, sart);
-        return hashStr== hash;
+        var hashStr = CreateHash256Async(password, sart);
+        return hashStr == hash;
     }
 
     public static ValueTask<string> HexGenerateHaxCode(string hexStr, int length)

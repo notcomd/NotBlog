@@ -1,4 +1,6 @@
-﻿namespace Identity.Domain.IRepository;
+﻿using Microsoft.AspNetCore.Identity;
+
+namespace Identity.Domain.IRepository;
 
 public interface IUserRepository : IRepository<User>
 {
@@ -10,9 +12,14 @@ public interface IUserRepository : IRepository<User>
 
     ValueTask<User?> FindOneByUserAsync(string email);
 
+    //ValueTask<IEnumerable<User>> FindOneByUserAsync(string email, string phoneNumber);
+
+    ValueTask<IEnumerable<User>> FindAllByUserAsync();
+
     ValueTask AddOneByUserClaimAsync(UserClaim userClaim);
 
     ValueTask AddOneByUserAsync(User user);
+
 
     ValueTask UpdateByUserAsync(User user);
 

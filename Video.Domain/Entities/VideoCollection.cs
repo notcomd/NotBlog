@@ -8,7 +8,7 @@ namespace Video.Domain.Entities;
 public class VideoCollection : IAggregateRoot
 {
 
-    private VideoCollection() {}
+    
 
     public Guid VideoCollectionGuid { get; init; } = Guid.CreateVersion7();
 

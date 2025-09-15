@@ -1,4 +1,6 @@
-﻿namespace Identity.Infrastructure
+﻿using DomainCommonst;
+
+namespace Identity.Infrastructure
 {
     public static class NotMediatorExtension
     {
@@ -7,11 +9,11 @@
             if (mediator == null) throw new ArgumentNullException(nameof(mediator));
             if (context == null) throw new ArgumentNullException(nameof(context));
             var domainEntities = context.ChangeTracker.Entries<Entity>()
-                .Where(e => e.Entity.DomainEventbus != null && e.Entity.DomainEventbus.Any())
+                .Where(e => e.Entity.DomainEvents != null && e.Entity.DomainEvents.Any())
                 .Select(e => e.Entity);
             foreach (var entity in domainEntities)
             {
-                foreach (var domainEvent in entity.DomainEventbus)
+                foreach (var domainEvent in entity.DomainEvents)
                 {
                     await mediator.PublishAsync(domainEvent);
                 }

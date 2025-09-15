@@ -18,12 +18,13 @@ public static class AddIdentityServer
     public static IServiceCollection AddIdentityDbContext(this IServiceCollection serviceCollection,
         IConfiguration configuration)
     {
-        serviceCollection.AddDbContext<IdentityDbContext>(opt =>
+        var dbContextOption = configuration.Get<DbContextOption>()!.DbContextConnect ??
+            throw new ArgumentNullException(nameof(configuration));
+        serviceCollection.AddDbContextPool<IdentityDbContext>(opt =>
         {
-            opt.UseNpgsql(configuration.Get<DbContextOption>()!.DbContextConnect ??
-            throw new ArgumentNullException(nameof(configuration)),
+            opt.UseNpgsql(dbContextOption,
                 o => o.MigrationsAssembly("Identity.Infrastructure"));
-        });
+        }, 200);
         return serviceCollection;
     }
 }

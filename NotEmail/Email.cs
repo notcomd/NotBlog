@@ -12,9 +12,9 @@ public class Email : IEmail
 {
     private readonly ILogger<Email> _logger;
 
-    private readonly IOptionsSnapshot<EmailOptions> _optionsManager;
+    private readonly IOptionsSnapshot<EmailConfigurationOptions> _optionsManager;
 
-    public Email(IOptionsSnapshot<EmailOptions> optionsManager, ILogger<Email> logger)
+    public Email(IOptionsSnapshot<EmailConfigurationOptions> optionsManager, ILogger<Email> logger)
     {
         _optionsManager = optionsManager ?? throw new ArgumentNullException($"{optionsManager}不能为空", nameof(optionsManager));
         _logger = logger ?? throw new ArgumentNullException($"{logger}不能为空", nameof(logger));

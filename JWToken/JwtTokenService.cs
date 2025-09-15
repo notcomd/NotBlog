@@ -13,15 +13,15 @@ public class JwtTokenService : IJwtTokenService
     /// <summary>
     ///     通过直接读取配置文件密钥内容。
     /// </summary>
-    private readonly IOptionsSnapshot<JwtOptions> _optionsSnapshot;
+    private readonly IOptionsSnapshot<JwtConfigurationOptions> _optionsSnapshot;
 
-    public JwtTokenService(IOptionsSnapshot<JwtOptions> optionsSnapshot)
+    public JwtTokenService(IOptionsSnapshot<JwtConfigurationOptions> optionsSnapshot)
     {
         _optionsSnapshot = optionsSnapshot;
     }
 
 
-    public ValueTask<string> BuilderTokenAsync(IEnumerable<Claim> claims, JwtOptions configuration)
+    public ValueTask<string> BuilderTokenAsync(IEnumerable<Claim> claims, JwtConfigurationOptions configuration)
     {
         //var expiry = TimeSpan.FromSeconds(configuration.ExpirSeconds);
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration.PrivateKey));

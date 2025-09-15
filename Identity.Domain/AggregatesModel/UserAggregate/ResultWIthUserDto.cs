@@ -2,8 +2,8 @@
 
 public class ResultWIthUserDto
 {
-    public ResultWIthUserDto(string userName, string userEmail, Uri imageCoveer, Guid roleGuid, WithResultPhoneDto? withResultPhoneDto,
-        WIthResultSafetyDto wIthResultSafetyDto, IEnumerable<WithResultClaimDto> claims, DateTimeOffset createdTime)
+    public ResultWIthUserDto(string userName, string userEmail, Uri? imageCoveer, Guid roleGuid, WithResultPhoneDto? withResultPhoneDto,
+        WIthResultSafetyDto wIthResultSafetyDto, IEnumerable<WithResultClaimDto>? claims, DateTimeOffset createdTime)
     {
         UserName = userName;
         UserEmail = userEmail;
@@ -21,13 +21,13 @@ public class ResultWIthUserDto
                                                                      
     public Guid RoleGuid { get; }                     
 
-    public Uri ImageCoveer { get; }
+    public Uri? ImageCoveer { get; }
 
     public WithResultPhoneDto? WithResultPhoneDto { get; }
 
     public WIthResultSafetyDto WIthResultSafetyDto { get; }
 
-    public IEnumerable<WithResultClaimDto> Claims { get; } = Enumerable.Empty<WithResultClaimDto>();
+    public IEnumerable<WithResultClaimDto>? Claims { get; }
 
     public DateTimeOffset CreatedTime { get; }
 

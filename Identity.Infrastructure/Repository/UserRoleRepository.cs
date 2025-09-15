@@ -1,6 +1,4 @@
-﻿using System.Net.WebSockets;
-
-namespace Identity.Infrastructure.Repository;
+﻿namespace Identity.Infrastructure.Repository;
 
 public class UserRoleRepository : IUserRoleRepository
 {
@@ -105,7 +103,7 @@ public class UserRoleRepository : IUserRoleRepository
         try
         {
             var roleData = await FindByUserRoleAsync(roleGuid);
-            if(roleData is null) throw new ArgumentNullException(nameof(roleGuid), "Role GUID cannot be empty");
+            if (roleData is null) throw new ArgumentNullException(nameof(roleGuid), "Role GUID cannot be empty");
             await func(roleData);
             _logger.LogInformation($"[（*＾-＾*）{_notDateTime.UtcNow} 数据更新成功，更新了{roleData.Id}条目]");
         }
@@ -120,7 +118,7 @@ public class UserRoleRepository : IUserRoleRepository
     {
         try
         {
-            var roleData =await FindByUserRoleAsync(roleName);
+            var roleData = await FindByUserRoleAsync(roleName);
             if (roleData is null) throw new ArgumentNullException(nameof(roleName), "Role Name cannot be empty");
             await func(roleData);
             _logger.LogInformation($"[（*＾-＾*）{_notDateTime.UtcNow} 数据更新成功，更新了{roleData.Id}条目]");
@@ -134,7 +132,8 @@ public class UserRoleRepository : IUserRoleRepository
 
     public async ValueTask DeleteByUserRoleAsync(Guid roleGuid)
     {
-        try {
+        try
+        {
             var roleData = await FindByUserRoleAsync(roleGuid);
             if (roleData is null) throw new ArgumentNullException(nameof(roleGuid), "Role GUID cannot be empty");
             _userRoleDbContext.Roles.Remove(roleData);
@@ -142,6 +141,21 @@ public class UserRoleRepository : IUserRoleRepository
         catch (Exception ex)
         {
             _logger.LogError(ex, $"[ >_< {_notDateTime.UtcNow}]在删除数据时出现问题,无法删除{roleGuid}的数据!");
+            throw;
+        }
+    }
+
+    public async ValueTask<IEnumerable<Roles>> FindByUserRolesAsync()
+    {
+        try
+        {
+            return await _userRoleDbContext.Roles
+                .Include(en => en.RoleClaims)
+                .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"[ >_< {_notDateTime.UtcNow}]在查找角色时出现问题，无法找到指定角色集合的数据!");
             throw;
         }
     }

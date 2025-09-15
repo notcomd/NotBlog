@@ -1,6 +1,6 @@
-﻿using System.Text;
+﻿
 
-using Identity.Domain.Server;
+using Identity.Domain.IdentiyResult;
 
 namespace Identity.Web.API.Application.Command;
 
@@ -22,17 +22,19 @@ public class GenerateCodeCommandHandler : IRequestHandler<GenerateCodeCommand, s
         _notMediator = notMediator ?? throw new ArgumentNullException(nameof(notMediator));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-        _notDateTime = notDateTime??throw new ArgumentNullException(nameof(notDateTime));
-        _identityDomainToolServer = identityDomainToolServer?? throw new ArgumentNullException(nameof(identityDomainToolServer));
+        _notDateTime = notDateTime ?? throw new ArgumentNullException(nameof(notDateTime));
+        _identityDomainToolServer = identityDomainToolServer ?? throw new ArgumentNullException(nameof(identityDomainToolServer));
     }
 
     public async Task<string> Handler(GenerateCodeCommand request, CancellationToken cancellationToken)
     {
         try
         {
-            ArgumentNullException.ThrowIfNull(request);            
-            await _identityDomainToolServer.GenerateWithCodeAsync(request.Email, request.LenghtGenerate);
-            var code= await _identityDomainToolServer.GetCodeByMemoryCacheAsync(request.Email);
+            ArgumentNullException.ThrowIfNull(request);
+            var result = await _identityDomainToolServer.GenerateWithCodeAsync(request.Email, request.LenghtGenerate);
+            if (result != UserAccessResult.Success)
+                throw new InvalidOperationException("Generate code failed or code already exists.");
+            var code = await _identityDomainToolServer.GetCodeByMemoryCacheAsync(request.Email);
             _logger?.LogInformation($"[（*＾-＾*）{_notDateTime?.UtcNow}]Generate Code Success! {request.Email}");
             return code;
         }
