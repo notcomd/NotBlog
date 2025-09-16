@@ -309,5 +309,30 @@
         "StatusCode": 200
       }
     ]
+  },
+  {
+    "ContainingType": "Identity.Web.API.APIs.NotMapIdentityApis",
+    "Method": "TestRegisterWithEmailAsync",
+    "RelativePath": "api/identity/NotAuthor/TestRegister",
+    "HttpMethod": "POST",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "rquestRegisterWithEmail",
+        "Type": "Identity.Web.API.Application.Models.RquestRegisterWithEmailModel",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Identity.Domain.Entities.IdentityResult\u00601[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "application/json"
+        ],
+        "StatusCode": 200
+      }
+    ],
+    "Description": "\u6D4B\u8BD5\u6CE8\u518C\u63A5\u53E3"
   }
 ]

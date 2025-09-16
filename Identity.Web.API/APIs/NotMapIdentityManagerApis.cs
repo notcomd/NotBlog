@@ -12,7 +12,7 @@ public static class NotMapIdentityManagerApis
 
 
 
-        route.MapPost("/ChangeWithUserInfomation", ChangeWithUserInfomationAsync)
+        route.MapPost("/ChangeWithUserInfomation", ChangeWithUserInfomationAsync).RequireAuthorization()
             .WithName("ChangeWithUserInfomation")
             .WithHttpLogging(Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.All)
             .WithDisplayName("更新用户信息接口")

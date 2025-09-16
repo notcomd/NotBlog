@@ -182,11 +182,11 @@ public class IdentityDomainUserManagerServer
             await _userRepository.UpdateByUserSafetyAsync(changeEmail, async en =>
             {
                 var oldHashPasswod = HashHelper.CreateHash256Async(changeByUserPasswordDto.OldPassword,
-                    Encoding.UTF8.GetBytes(en.UserSafety.PasswordSalt));
+                    HashHelper.ConvertStringToBytes(en.UserSafety.PasswordSalt));
                 if (en.IsVerifyByPassword(oldHashPasswod))
                 {
                     en.ChangeByPassword(changeByUserPasswordDto.NewPassword,
-                       Encoding.UTF8.GetBytes(en.UserSafety.PasswordSalt), en.UserSafety.SecurityStamp);
+                       HashHelper.ConvertStringToBytes(en.UserSafety.PasswordSalt), en.UserSafety.SecurityStamp);
                     var stemp = HashHelper.GenerateSecurityStamp();
                     en.UserSafety.ChangeBySecurityStamp(stemp);
                 }

@@ -1,18 +1,70 @@
+﻿
+using DomainCommonst;
+
 using FileDev.Domain.IRepository;
-using File = FileDev.Domain.Entities.File;
+using FileDev.Infrastructres.DbContext;
 
-namespace ConsoleApp1.Repository;
+using NotFile = FileDev.Domain.Entities.NotFile;
 
-public class FileRepositoty : IFileRepository
+namespace FileDev.Infrastructres.Repository;
+
+public class FileRepositoty : INotFileRepository
 {
 
-    public async Task<File> FileByFileAllAsync()
+    private readonly FileDbContext _fileDbContext;
+
+    public IUnitOfWork  unitOfWork => _fileDbContext;
+
+
+    public async Task<NotFile> FileByFileAllAsync()
     {
         throw new NotImplementedException();
     }
 
-    public async Task<File> FileByFileIdAsync(int id)
+    public async Task<NotFile> FileByFileIdAsync(int id)
     {
         throw new NotImplementedException();
     }
+
+    public ValueTask AddWithNotFileAsync(NotFile notFile)
+    {
+        throw new NotImplementedException();
+    }
+
+    public ValueTask AddWithNotFileRangeAsync(IEnumerable<NotFile> notFiles)
+    {
+        throw new NotImplementedException();
+    }
+
+    public ValueTask<NotFile> GetWithNotFileAsync(object getObject)
+    {
+        throw new NotImplementedException();
+    }
+
+    public ValueTask<NotFile> GetWithNotFileAsync(string getObject)
+    {
+        throw new NotImplementedException();
+    }
+
+    public ValueTask<NotFile> GetWithNotFileAsync(Guid getObject)
+    {
+        throw new NotImplementedException();
+    }
+
+    public ValueTask UpDataWithNotFileAsync(object findKey, Func<NotFile, Task> UpdataFunc)
+    {
+        throw new NotImplementedException();
+    }
+
+    public ValueTask UpDataWithNotFileAsync(string findKey, Func<NotFile, Task> UpdataFunc)
+    {
+        throw new NotImplementedException();
+    }
+
+    public ValueTask UpDataWithNotFileAsync(Guid findKey, Func<NotFile, Task> UpdataFunc)
+    {
+        throw new NotImplementedException();
+    }
+
+    public IUnitOfWork UnitOfWork => throw new NotImplementedException();
 }

@@ -70,7 +70,7 @@ public class User : Entity, IAggregateRoot
         ImageCover = null;
         PhoneNumber = null;
         this.UserAccessFail = UserAccessFail.CreateByUserAccessFail(Id);
-        UserSafety = UserSafety.CreateByUserSafety(Id, Encoding.UTF8.GetString(salt), stamp);
+        UserSafety = UserSafety.CreateByUserSafety(Id, HashHelper.GenerateToString(salt), stamp);
         AddDomainEvent(new CreatedByUserDomainEvent(Id, userRoleGuid, userEmail, userEmail, null, dateTimeOffset));
 
     }
@@ -95,9 +95,9 @@ public class User : Entity, IAggregateRoot
             throw new ArgumentNullException(nameof(passwordHash), "Password hash cannot be null or empty");
 
         var stamp = HashHelper.GenerateSecurityStamp();
-        var salt = HashHelper.GenerateToString(HashHelper.GenerateSaltValue());
+        var salt = HashHelper.GenerateSaltValue();
 
-        passwordHash = HashHelper.CreateHash256Async(passwordHash, HashHelper.ConvertStringToBytes(salt)
+        passwordHash = HashHelper.CreateHash256Async(passwordHash, salt
             ?? throw new ArgumentNullException("salt is null!"));
 
 
@@ -110,7 +110,7 @@ public class User : Entity, IAggregateRoot
         ImageCover = null;
         PhoneNumber = phoneNumber;
         UserAccessFail = UserAccessFail.CreateByUserAccessFail(Id);
-        UserSafety = UserSafety.CreateByUserSafety(Id, salt, stamp);
+        UserSafety = UserSafety.CreateByUserSafety(Id, HashHelper.GenerateToString(salt), stamp);
 
         AddDomainEvent(new CreatedByUserDomainEvent(Id, userRoleGuid, phoneNumber.PhoneCode, string.Empty, phoneNumber, DateTimeOffset.UtcNow));
         //return UserResult;
@@ -183,9 +183,8 @@ public class User : Entity, IAggregateRoot
         }
         if (password.Length <= 8)
         {
-            throw new ArgumentOutOfRangeException(nameof(password));
-        }
-        //var str = Encoding.UTF8.GetString(salt);
+            throw new ArgumentOutOfRangeException(nameof(password));        }
+        
         PasswordHash = HashHelper.CreateHash256Async(password, salt
             ?? throw new ArgumentNullException(nameof(salt)));
     }
@@ -260,7 +259,8 @@ public class User : Entity, IAggregateRoot
     {
         if (string.IsNullOrEmpty(UserSafety.PasswordSalt))
             throw new AggregateException("passwordSalt is null");
-        return HashHelper.VerifyPasswordValueTask(passwordHash, PasswordHash, HashHelper.ConvertStringToBytes(UserSafety.PasswordSalt));
+        var sart = HashHelper.ConvertStringToBytes(UserSafety.PasswordSalt);
+        return HashHelper.VerifyPasswordValueTask(passwordHash, PasswordHash, sart);
     }
 
     public void ChangeByUserRole(Guid userRoleGuid)

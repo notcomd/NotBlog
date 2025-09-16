@@ -12,9 +12,6 @@ builder.NotBlogConfigureExtraServices(new InitializerOptions
     LogFilePath = "E:/web.log"
 });
 
-
-//builder.Services.AddIdentityDbContext(builder.Configuration.GetSection(nameof(DbContextOption)));
-//builder.Services.AddMigration<IdentityDbContext, UserDefullContextSeed>();
 builder.Services.AddMigration<IdentityDbContext, SeederDataDbContext>();
 
 

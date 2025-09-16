@@ -29,11 +29,14 @@ public static class NotMapIdentityApis
 
 
         route.MapPost("/LogInWithGenerateCode", LogInWithGenerateCodeAsync)
-            .WithHttpLogging(HttpLoggingFields.All)
-           ;
+            .WithHttpLogging(HttpLoggingFields.All);
 
         route.MapPost("/LogInByEmailWithGenerateCode", LogInByEmailWithGenerateCodeAsync)
             .WithHttpLogging(HttpLoggingFields.All);
+
+        route.MapPost("/TestRegister", TestRegisterWithEmailAsync)
+            .WithDisplayName("测试注册接口")
+            .WithDescription("测试注册接口");
 
         return route;
     }
@@ -146,6 +149,21 @@ public static class NotMapIdentityApis
         return await IdentityResult<string>.ResultAsync("登录失败", EnumStatusCode.Error, "操作失败");
     }
 
+
+
+    private static async Task<IdentityResult<string>> TestRegisterWithEmailAsync([AsParameters] IdentityService identityService, RquestRegisterWithEmailModel rquestRegisterWithEmail, CancellationToken cancellationToken)
+    {
+
+        if (rquestRegisterWithEmail is not null)
+        {
+            var signal = await identityService.NotMediator.SendAsync(new CreateByEmailUserCommand(rquestRegisterWithEmail.RegisterEmail,
+             rquestRegisterWithEmail.HashPassword, "User", "User", identityService.NotDateTime.UtcNow), cancellationToken);
+            return signal
+                ? await IdentityResult<string>.ResultAsync("注册成功，可以登录啦！", EnumStatusCode.Ok, "操作成功")
+                : await IdentityResult<string>.ResultAsync("注册失败，用户可能已存在", EnumStatusCode.Error, "操作失败");
+        }
+        return await IdentityResult<string>.ResultAsync("注册失败，验证码错误或已过期", EnumStatusCode.Error, "操作失败");
+    }
 
 
 

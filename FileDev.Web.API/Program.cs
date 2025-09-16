@@ -1,6 +1,33 @@
-﻿namespace FileDev.Web.API
+﻿
+using CommonsInitializer;
+
+using FileDev.Web.API.APIs;
+
+using Scalar.AspNetCore;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.NotBlogConfigureExtraServices(new InitializerOptions
 {
-    public class Program
-    {
-    }
+    EventBusQueueName = "FileDev.Web.Api",
+    LogFilePath = "F:/"
+});
+
+
+
+var app = builder.Build();
+
+app.NotBlogUseServer();
+
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+    app.MapScalarApiReference();
 }
+app.UseHttpsRedirection();
+
+var routeFileManager = app.MapGroup("FileManager");
+routeFileManager.FileDevManagerAPI();
+
+
+await app.RunAsync();

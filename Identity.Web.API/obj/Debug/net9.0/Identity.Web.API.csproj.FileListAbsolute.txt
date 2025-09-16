@@ -159,10 +159,10 @@ C:\Users\29617\source\repos\MyService\Identity.Web.API\obj\Debug\net9.0\staticwe
 C:\Users\29617\source\repos\MyService\Identity.Web.API\obj\Debug\net9.0\staticwebassets.development.json
 C:\Users\29617\source\repos\MyService\Identity.Web.API\obj\Debug\net9.0\staticwebassets.build.endpoints.json
 C:\Users\29617\source\repos\MyService\Identity.Web.API\obj\Debug\net9.0\swae.build.ex.cache
-C:\Users\29617\source\repos\MyService\Identity.Web.API\obj\Debug\net9.0\staticwebassets.upToDateCheck.txt
 C:\Users\29617\source\repos\MyService\Identity.Web.API\obj\Debug\net9.0\Identity.AEA762E2.Up2Date
 C:\Users\29617\source\repos\MyService\Identity.Web.API\obj\Debug\net9.0\Identity.Web.API.dll
 C:\Users\29617\source\repos\MyService\Identity.Web.API\obj\Debug\net9.0\refint\Identity.Web.API.dll
 C:\Users\29617\source\repos\MyService\Identity.Web.API\obj\Debug\net9.0\Identity.Web.API.pdb
 C:\Users\29617\source\repos\MyService\Identity.Web.API\obj\Debug\net9.0\Identity.Web.API.genruntimeconfig.cache
 C:\Users\29617\source\repos\MyService\Identity.Web.API\obj\Debug\net9.0\ref\Identity.Web.API.dll
+C:\Users\29617\source\repos\MyService\Identity.Web.API\obj\Debug\net9.0\staticwebassets.upToDateCheck.txt

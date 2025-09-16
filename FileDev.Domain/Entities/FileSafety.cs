@@ -1,6 +1,6 @@
-namespace FileDev.Domain.Entities;
+﻿namespace FileDev.Domain.Entities;
 
-public enum FileIdentity
+public enum FileSafety
 {
 
     FilePublic,
@@ -8,4 +8,5 @@ public enum FileIdentity
     FilePrivate,
 
     FilePrivatePublic
+
 }
