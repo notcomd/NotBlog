@@ -4,7 +4,7 @@ namespace FileDev.Domain.DomainEvent;
 
 public class CreateWithFileGroupDomainEvent : INotifications
 {
-    public string FileGroupName { get; set; }
+    public required string FileGroupName { get; set; }
 
     public Guid FileGroupBelongToUserGuid { get; set; }
 

@@ -2,7 +2,8 @@
 
 using DomainCommonst;
 
-using FileDev.Domain.Entities;
+using FileDev.Domain.DomainEntities;
+using FileDev.Infrastructres.EntityConfigurtion;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -23,9 +24,8 @@ public class FileDbContext : BaseDbContext<FileDbContext>, IUnitOfWork
     {
 
     }
-    public DbSet<NotFile> Files { get; set; }
-    public DbSet<FileGroup> FileGroup { get; set; }
-
+    
+    public DbSet<NotFileRepository> NotFileRepository { get; set; }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
@@ -35,6 +35,11 @@ public class FileDbContext : BaseDbContext<FileDbContext>, IUnitOfWork
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetEntryAssembly());
+        modelBuilder.ApplyConfiguration(new FileGroupEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new NotFileEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new NotFileRepositoryEntityConfiguration());
     }
+
+
+
 }

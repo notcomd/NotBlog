@@ -14,6 +14,13 @@ builder.NotBlogConfigureExtraServices(new InitializerOptions
 });
 
 
+builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddOpenApi();
+
+builder.Services.AddProblemDetails();
+
+builder.Services.AddDistributedMemoryCache();
 
 var app = builder.Build();
 

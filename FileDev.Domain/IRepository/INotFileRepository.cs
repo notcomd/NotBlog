@@ -1,29 +1,26 @@
 ﻿using DomainCommonst;
 
-using FileDev.Domain.Entities;
+using FileDev.Domain.DomainEntities;
 
 namespace FileDev.Domain.IRepository;
 
-public interface INotFileRepository : IRepository<NotFile>
+public interface INotFileRepository : IRepository<NotFileRepository>
 {
+    ValueTask<IEnumerable<NotFileRepository>?> GetNotFileRepositoryWithAllAsync();
 
-    ValueTask AddWithNotFileAsync(NotFile notFile);
+    ValueTask<NotFileRepository?> GetNotFileRepositoryAsync(Guid fileRepositoryGuid);
 
-    ValueTask AddWithNotFileRangeAsync(IEnumerable<NotFile> notFiles);
+    ValueTask<NotFileRepository?> GetNotFileRepositoryAsync(string fileRepositoryName);
 
-    Task<NotFile> FileByFileAllAsync();
+    ValueTask<NotFileRepository?> GetNotFileRepositoryAsync(object fileRepositoryObject);
 
-    Task<NotFile> FileByFileIdAsync(int id);
+    ValueTask AddNotFileRepositoryAsync(NotFileRepository repository);
 
-    ValueTask<NotFile> GetWithNotFileAsync(object getObject);
+    ValueTask RemoveNotFileRepositoryAsync(NotFileRepository repository);
 
-    ValueTask<NotFile> GetWithNotFileAsync(string getObject);
+    ValueTask UpdateNotFileRepositoryAsync(Guid fileRepositoryGuid, Func<NotFileRepository, Task> changeFunc);
 
-    ValueTask<NotFile> GetWithNotFileAsync(Guid getObject);
+    ValueTask UpdateNotFileRepositoryAsync(string fileRepositoryName, Func<NotFileRepository, Task> changeFunc);
 
-    ValueTask UpDataWithNotFileAsync(object findKey, Func<NotFile, Task> UpdataFunc);
-
-    ValueTask UpDataWithNotFileAsync(string findKey, Func<NotFile, Task> UpdataFunc);
-
-    ValueTask UpDataWithNotFileAsync(Guid findKey, Func<NotFile, Task> UpdataFunc);
+    ValueTask UpdateNotFileRepositoryAsync(Object fileRepositoryObject, Func<NotFileRepository, Task> changeFunc);
 }

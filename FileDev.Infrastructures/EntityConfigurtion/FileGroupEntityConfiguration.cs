@@ -1,4 +1,4 @@
-﻿using FileDev.Domain.Entities;
+﻿using FileDev.Domain.DomainEntities;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -14,7 +14,19 @@ namespace FileDev.Infrastructres.EntityConfigurtion
 
             builder.Ignore(en => en.DomainEvents);
 
-            builder.HasMany(en => en.ChlidrenFileGroup).WithMany();
+
+
+            builder.HasOne(fg => fg.Parent)
+                .WithMany(fg => fg.ChildredFileGroup)
+                .HasForeignKey(fg => fg.ParentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+            builder.HasMany(fg => fg.Files)
+                .WithOne()
+                .HasForeignKey(fg => fg.FileGroupGuid);
+
+            builder.Property("FileGroupTags");
 
         }
     }
