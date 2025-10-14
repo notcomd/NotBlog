@@ -1,4 +1,4 @@
-namespace Identity.Domain.Server;
+﻿namespace Identity.Domain.DomainServer;
 
 //public class UserRepositoryServer
 //{

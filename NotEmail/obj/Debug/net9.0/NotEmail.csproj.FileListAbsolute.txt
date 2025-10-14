@@ -1,9 +1,9 @@
 C:\Users\29617\source\repos\MyService\NotEmail\bin\Debug\net9.0\NotEmail.deps.json
 C:\Users\29617\source\repos\MyService\NotEmail\bin\Debug\net9.0\NotEmail.dll
 C:\Users\29617\source\repos\MyService\NotEmail\bin\Debug\net9.0\NotEmail.pdb
-C:\Users\29617\source\repos\MyService\NotEmail\bin\Debug\net9.0\DomainCommonst.dll
+C:\Users\29617\source\repos\MyService\NotEmail\bin\Debug\net9.0\DomainCommon.dll
 C:\Users\29617\source\repos\MyService\NotEmail\bin\Debug\net9.0\Evenbus.dll
-C:\Users\29617\source\repos\MyService\NotEmail\bin\Debug\net9.0\DomainCommonst.pdb
+C:\Users\29617\source\repos\MyService\NotEmail\bin\Debug\net9.0\DomainCommon.pdb
 C:\Users\29617\source\repos\MyService\NotEmail\bin\Debug\net9.0\Evenbus.pdb
 C:\Users\29617\source\repos\MyService\NotEmail\obj\Debug\net9.0\NotEmail.csproj.AssemblyReference.cache
 C:\Users\29617\source\repos\MyService\NotEmail\obj\Debug\net9.0\NotEmail.GeneratedMSBuildEditorConfig.editorconfig

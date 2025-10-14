@@ -50,4 +50,6 @@ identityManagerApis.NotMapIdentityManagerApi();
 
 app.MapControllers();
 
+PintIcon.PrintPng();
+
 app.Run();

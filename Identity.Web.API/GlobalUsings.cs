@@ -5,13 +5,13 @@ global using System.Reflection;
 
 global using CommonsInitializer;
 
-global using DomainCommonst;
+global using DomainCommon;
 
 global using EmailSendServer;
 
 global using Identity.Domain.AggregatesModel.RoleAggregate;
 global using Identity.Domain.AggregatesModel.UserAggregate;
-global using Identity.Domain.Entities;
+// global using Identity.Domain.Entities;
 global using Identity.Domain.DomainEvents;
 global using Identity.Domain.IRepository;
 global using Identity.Domain.DomainServer;

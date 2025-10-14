@@ -7,12 +7,23 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Compile Remove="Option\**" />
       <Compile Remove="Server\**" />
-      <EmbeddedResource Remove="Option\**" />
       <EmbeddedResource Remove="Server\**" />
-      <None Remove="Option\**" />
       <None Remove="Server\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\DomainCommon\DomainCommon.csproj" />
+      
+    </ItemGroup>
+
+    <ItemGroup>
+       <PackageReference Include="NotMediator" Version="1.0.5" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Option\" />
+      <Folder Include="IFastRepository\" />
     </ItemGroup>
 
 </Project>

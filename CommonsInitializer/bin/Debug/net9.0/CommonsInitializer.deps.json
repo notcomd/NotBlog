@@ -8,8 +8,8 @@
     ".NETCoreApp,Version=v9.0": {
       "CommonsInitializer/1.0.0": {
         "dependencies": {
-          "DomainCommonst": "1.0.0",
-          "DomainInfrastructure": "1.0.0",
+          "DomainCommon": "1.0.0",
+          "DomainInfrastructres": "1.0.0",
           "Evenbus": "1.0.0",
           "Microsoft.AspNetCore.Connections.Abstractions": "9.0.9",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.9",
@@ -396,22 +396,22 @@
           }
         }
       },
-      "DomainCommonst/1.0.0": {
+      "DomainCommon/1.0.0": {
         "dependencies": {
           "Microsoft.EntityFrameworkCore": "9.0.9",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.9",
           "NotMediator": "1.0.5"
         },
         "runtime": {
-          "DomainCommonst.dll": {
+          "DomainCommon.dll": {
             "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
       },
-      "DomainInfrastructure/1.0.0": {
+      "DomainInfrastructres/1.0.0": {
         "dependencies": {
-          "DomainCommonst": "1.0.0",
+          "DomainCommon": "1.0.0",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "9.0.9",
           "Microsoft.EntityFrameworkCore": "9.0.9",
           "Microsoft.EntityFrameworkCore.Abstractions": "9.0.9",
@@ -419,7 +419,7 @@
           "Npgsql.EntityFrameworkCore.PostgreSQL": "9.0.4"
         },
         "runtime": {
-          "DomainInfrastructure.dll": {
+          "DomainInfrastructres.dll": {
             "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
@@ -442,7 +442,7 @@
       },
       "NotEmail/1.0.0": {
         "dependencies": {
-          "DomainCommonst": "1.0.0",
+          "DomainCommon": "1.0.0",
           "Evenbus": "1.0.0",
           "MailKit": "4.13.0",
           "Microsoft.Extensions.Configuration.Abstractions": "9.0.9",
@@ -457,7 +457,7 @@
       },
       "Token.JWT/1.0.0": {
         "dependencies": {
-          "DomainCommonst": "1.0.0",
+          "DomainCommon": "1.0.0",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "9.0.9",
           "Microsoft.AspNetCore.Authentication.MicrosoftAccount": "8.0.6",
           "Microsoft.AspNetCore.SignalR.Client": "8.0.6",
@@ -724,12 +724,12 @@
       "path": "system.identitymodel.tokens.jwt/8.0.1",
       "hashPath": "system.identitymodel.tokens.jwt.8.0.1.nupkg.sha512"
     },
-    "DomainCommonst/1.0.0": {
+    "DomainCommon/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
     },
-    "DomainInfrastructure/1.0.0": {
+    "DomainInfrastructres/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

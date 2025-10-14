@@ -38,10 +38,6 @@ public static class WebApplicationBuilderExtension
 
 
 
-
-
-
-
         //开始:Authentication,Authorization
         //只要需要校验Authentication报文头的地方（非IdentityService.WebAPI项目）也需要启用这些
         //IdentityService项目还需要启用AddIdentityCore

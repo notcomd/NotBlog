@@ -534,7 +534,7 @@
           "buildTransitive/net6.0/_._": {}
         }
       },
-      "DomainCommonst/1.0.0": {
+      "DomainCommon/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
@@ -543,17 +543,17 @@
           "NotMediator": "1.0.5"
         },
         "compile": {
-          "bin/placeholder/DomainCommonst.dll": {}
+          "bin/placeholder/DomainCommon.dll": {}
         },
         "runtime": {
-          "bin/placeholder/DomainCommonst.dll": {}
+          "bin/placeholder/DomainCommon.dll": {}
         }
       },
       "Token.JWT/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
-          "DomainCommonst": "1.0.0",
+          "DomainCommon": "1.0.0",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.6",
           "Microsoft.AspNetCore.Authentication.MicrosoftAccount": "8.0.6",
           "Microsoft.AspNetCore.SignalR.Client": "8.0.6",
@@ -1357,10 +1357,10 @@
         "useSharedDesignerContext.txt"
       ]
     },
-    "DomainCommonst/1.0.0": {
+    "DomainCommon/1.0.0": {
       "type": "project",
-      "path": "../DomainCommonst/DomainCommonst.csproj",
-      "msbuildProject": "../DomainCommonst/DomainCommonst.csproj"
+      "path": "../DomainCommon/DomainCommon.csproj",
+      "msbuildProject": "../DomainCommon/DomainCommon.csproj"
     },
     "Token.JWT/1.0.0": {
       "type": "project",
@@ -1370,7 +1370,7 @@
   },
   "projectFileDependencyGroups": {
     "net9.0": [
-      "DomainCommonst >= 1.0.0",
+      "DomainCommon >= 1.0.0",
       "NotMediator >= 1.0.5",
       "Token.JWT >= 1.0.0"
     ]
@@ -1408,8 +1408,8 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj": {
-              "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj"
+            "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommon\\DomainCommon.csproj": {
+              "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommon\\DomainCommon.csproj"
             },
             "C:\\Users\\29617\\source\\repos\\MyService\\JWToken\\Token.JWT.csproj": {
               "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\JWToken\\Token.JWT.csproj"

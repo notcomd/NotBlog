@@ -1,9 +1,9 @@
 C:\Users\29617\source\repos\MyService\EmailSendServer\bin\Debug\net9.0\EmailSendServer.deps.json
 C:\Users\29617\source\repos\MyService\EmailSendServer\bin\Debug\net9.0\EmailSendServer.dll
 C:\Users\29617\source\repos\MyService\EmailSendServer\bin\Debug\net9.0\EmailSendServer.pdb
-C:\Users\29617\source\repos\MyService\EmailSendServer\bin\Debug\net9.0\DomainCommonst.dll
+C:\Users\29617\source\repos\MyService\EmailSendServer\bin\Debug\net9.0\DomainCommon.dll
 C:\Users\29617\source\repos\MyService\EmailSendServer\bin\Debug\net9.0\Evenbus.dll
-C:\Users\29617\source\repos\MyService\EmailSendServer\bin\Debug\net9.0\DomainCommonst.pdb
+C:\Users\29617\source\repos\MyService\EmailSendServer\bin\Debug\net9.0\DomainCommon.pdb
 C:\Users\29617\source\repos\MyService\EmailSendServer\bin\Debug\net9.0\Evenbus.pdb
 C:\Users\29617\source\repos\MyService\EmailSendServer\obj\Debug\net9.0\EmailSendServer.csproj.AssemblyReference.cache
 C:\Users\29617\source\repos\MyService\EmailSendServer\obj\Debug\net9.0\EmailSendServer.GeneratedMSBuildEditorConfig.editorconfig

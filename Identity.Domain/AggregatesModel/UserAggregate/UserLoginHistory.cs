@@ -1,5 +1,4 @@
-﻿
-namespace Identity.Domain.AggregatesModel.UserAggregate;
+﻿namespace Identity.Domain.AggregatesModel.UserAggregate;
 
 /// <summary>
 /// 登入事件

@@ -33,11 +33,11 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj": {
-                "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj"
+              "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommon\\DomainCommon.csproj": {
+                "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommon\\DomainCommon.csproj"
               },
-              "C:\\Users\\29617\\source\\repos\\MyService\\DomainInfrastructure\\DomainInfrastructure.csproj": {
-                "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainInfrastructure\\DomainInfrastructure.csproj"
+              "C:\\Users\\29617\\source\\repos\\MyService\\DomainInfrastructres\\DomainInfrastructres.csproj": {
+                "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainInfrastructres\\DomainInfrastructres.csproj"
               },
               "C:\\Users\\29617\\source\\repos\\MyService\\Evenbus\\Evenbus.csproj": {
                 "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\Evenbus\\Evenbus.csproj"
@@ -104,14 +104,14 @@
         }
       }
     },
-    "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj": {
+    "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommon\\DomainCommon.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj",
-        "projectName": "DomainCommonst",
-        "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj",
+        "projectUniqueName": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommon\\DomainCommon.csproj",
+        "projectName": "DomainCommon",
+        "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommon\\DomainCommon.csproj",
         "packagesPath": "C:\\Users\\29617\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\obj\\",
+        "outputPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommon\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -184,14 +184,14 @@
         }
       }
     },
-    "C:\\Users\\29617\\source\\repos\\MyService\\DomainInfrastructure\\DomainInfrastructure.csproj": {
+    "C:\\Users\\29617\\source\\repos\\MyService\\DomainInfrastructres\\DomainInfrastructres.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\29617\\source\\repos\\MyService\\DomainInfrastructure\\DomainInfrastructure.csproj",
-        "projectName": "DomainInfrastructure",
-        "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainInfrastructure\\DomainInfrastructure.csproj",
+        "projectUniqueName": "C:\\Users\\29617\\source\\repos\\MyService\\DomainInfrastructres\\DomainInfrastructres.csproj",
+        "projectName": "DomainInfrastructres",
+        "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainInfrastructres\\DomainInfrastructres.csproj",
         "packagesPath": "C:\\Users\\29617\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainInfrastructure\\obj\\",
+        "outputPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainInfrastructres\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -213,8 +213,8 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj": {
-                "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj"
+              "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommon\\DomainCommon.csproj": {
+                "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommon\\DomainCommon.csproj"
               }
             }
           }
@@ -403,8 +403,8 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj": {
-                "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj"
+              "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommon\\DomainCommon.csproj": {
+                "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommon\\DomainCommon.csproj"
               }
             }
           }
@@ -495,8 +495,8 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj": {
-                "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj"
+              "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommon\\DomainCommon.csproj": {
+                "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommon\\DomainCommon.csproj"
               },
               "C:\\Users\\29617\\source\\repos\\MyService\\Evenbus\\Evenbus.csproj": {
                 "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\Evenbus\\Evenbus.csproj"

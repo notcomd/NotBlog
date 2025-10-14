@@ -8,7 +8,7 @@
     ".NETCoreApp,Version=v9.0": {
       "NotEmail/1.0.0": {
         "dependencies": {
-          "DomainCommonst": "1.0.0",
+          "DomainCommon": "1.0.0",
           "Evenbus": "1.0.0",
           "MailKit": "4.13.0",
           "Microsoft.Extensions.Configuration.Abstractions": "9.0.9",
@@ -254,14 +254,14 @@
           }
         }
       },
-      "DomainCommonst/1.0.0": {
+      "DomainCommon/1.0.0": {
         "dependencies": {
           "Microsoft.EntityFrameworkCore": "9.0.9",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.9",
           "NotMediator": "1.0.5"
         },
         "runtime": {
-          "DomainCommonst.dll": {
+          "DomainCommon.dll": {
             "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
@@ -445,7 +445,7 @@
       "path": "system.security.cryptography.pkcs/8.0.1",
       "hashPath": "system.security.cryptography.pkcs.8.0.1.nupkg.sha512"
     },
-    "DomainCommonst/1.0.0": {
+    "DomainCommon/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

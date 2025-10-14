@@ -1,0 +1,13 @@
+C:\Users\29617\source\repos\MyService\DomainCommon\bin\Debug\net9.0\DomainCommon.deps.json
+C:\Users\29617\source\repos\MyService\DomainCommon\bin\Debug\net9.0\DomainCommon.dll
+C:\Users\29617\source\repos\MyService\DomainCommon\bin\Debug\net9.0\DomainCommon.pdb
+C:\Users\29617\source\repos\MyService\DomainCommon\obj\Debug\net9.0\DomainCommon.csproj.AssemblyReference.cache
+C:\Users\29617\source\repos\MyService\DomainCommon\obj\Debug\net9.0\DomainCommon.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\29617\source\repos\MyService\DomainCommon\obj\Debug\net9.0\DomainCommon.AssemblyInfoInputs.cache
+C:\Users\29617\source\repos\MyService\DomainCommon\obj\Debug\net9.0\DomainCommon.AssemblyInfo.cs
+C:\Users\29617\source\repos\MyService\DomainCommon\obj\Debug\net9.0\DomainCommon.csproj.CoreCompileInputs.cache
+C:\Users\29617\source\repos\MyService\DomainCommon\obj\Debug\net9.0\DomainCommon.sourcelink.json
+C:\Users\29617\source\repos\MyService\DomainCommon\obj\Debug\net9.0\DomainCommon.dll
+C:\Users\29617\source\repos\MyService\DomainCommon\obj\Debug\net9.0\refint\DomainCommon.dll
+C:\Users\29617\source\repos\MyService\DomainCommon\obj\Debug\net9.0\DomainCommon.pdb
+C:\Users\29617\source\repos\MyService\DomainCommon\obj\Debug\net9.0\ref\DomainCommon.dll

@@ -12,4 +12,4 @@ javascripts/bundles
 stylesheets/bundles
 /.vs/MyService/FileContentIndex/31ba432c-50fe-47c3-817c-b9c40dc91d73.vsidx
 /.vs
-/DomainCommonst/DomainCommonst.csproj
+/DomainCommon/DomainCommon.csproj

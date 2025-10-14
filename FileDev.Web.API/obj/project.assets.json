@@ -1436,8 +1436,8 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
-          "DomainCommonst": "1.0.0",
-          "DomainInfrastructure": "1.0.0",
+          "DomainCommon": "1.0.0",
+          "DomainInfrastructres": "1.0.0",
           "Evenbus": "1.0.0",
           "Microsoft.AspNetCore.Connections.Abstractions": "9.0.9",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.9",
@@ -1453,7 +1453,7 @@
           "bin/placeholder/CommonsInitializer.dll": {}
         }
       },
-      "DomainCommonst/1.0.0": {
+      "DomainCommon/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
@@ -1462,17 +1462,17 @@
           "NotMediator": "1.0.5"
         },
         "compile": {
-          "bin/placeholder/DomainCommonst.dll": {}
+          "bin/placeholder/DomainCommon.dll": {}
         },
         "runtime": {
-          "bin/placeholder/DomainCommonst.dll": {}
+          "bin/placeholder/DomainCommon.dll": {}
         }
       },
-      "DomainInfrastructure/1.0.0": {
+      "DomainInfrastructres/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
-          "DomainCommonst": "1.0.0",
+          "DomainCommon": "1.0.0",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "9.0.9",
           "Microsoft.EntityFrameworkCore": "9.0.9",
           "Microsoft.EntityFrameworkCore.Abstractions": "9.0.9",
@@ -1480,10 +1480,10 @@
           "Npgsql.EntityFrameworkCore.PostgreSQL": "9.0.4"
         },
         "compile": {
-          "bin/placeholder/DomainInfrastructure.dll": {}
+          "bin/placeholder/DomainInfrastructres.dll": {}
         },
         "runtime": {
-          "bin/placeholder/DomainInfrastructure.dll": {}
+          "bin/placeholder/DomainInfrastructres.dll": {}
         }
       },
       "Evenbus/1.0.0": {
@@ -1508,7 +1508,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
-          "DomainCommonst": "1.0.0",
+          "DomainCommon": "1.0.0",
           "Microsoft.Extensions.Configuration.Abstractions": "9.0.9",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.9",
           "NotMediator": "1.0.5"
@@ -1520,27 +1520,11 @@
           "bin/placeholder/FileDev.Domain.dll": {}
         }
       },
-      "FileDev.Infrastructures/1.0.0": {
-        "type": "project",
-        "framework": ".NETCoreApp,Version=v9.0",
-        "dependencies": {
-          "DomainCommonst": "1.0.0",
-          "DomainInfrastructure": "1.0.0",
-          "FileDev.Domain": "1.0.0",
-          "Microsoft.EntityFrameworkCore": "9.0.9"
-        },
-        "compile": {
-          "bin/placeholder/FileDev.Infrastructures.dll": {}
-        },
-        "runtime": {
-          "bin/placeholder/FileDev.Infrastructures.dll": {}
-        }
-      },
       "NotEmail/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
-          "DomainCommonst": "1.0.0",
+          "DomainCommon": "1.0.0",
           "Evenbus": "1.0.0",
           "MailKit": "4.13.0",
           "Microsoft.Extensions.Configuration.Abstractions": "9.0.9",
@@ -1557,7 +1541,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
-          "DomainCommonst": "1.0.0",
+          "DomainCommon": "1.0.0",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.6",
           "Microsoft.AspNetCore.Authentication.MicrosoftAccount": "8.0.6",
           "Microsoft.AspNetCore.SignalR.Client": "8.0.6",
@@ -4159,15 +4143,15 @@
       "path": "../CommonsInitializer/CommonsInitializer.csproj",
       "msbuildProject": "../CommonsInitializer/CommonsInitializer.csproj"
     },
-    "DomainCommonst/1.0.0": {
+    "DomainCommon/1.0.0": {
       "type": "project",
-      "path": "../DomainCommonst/DomainCommonst.csproj",
-      "msbuildProject": "../DomainCommonst/DomainCommonst.csproj"
+      "path": "../DomainCommon/DomainCommon.csproj",
+      "msbuildProject": "../DomainCommon/DomainCommon.csproj"
     },
-    "DomainInfrastructure/1.0.0": {
+    "DomainInfrastructres/1.0.0": {
       "type": "project",
-      "path": "../DomainInfrastructure/DomainInfrastructure.csproj",
-      "msbuildProject": "../DomainInfrastructure/DomainInfrastructure.csproj"
+      "path": "../DomainInfrastructres/DomainInfrastructres.csproj",
+      "msbuildProject": "../DomainInfrastructres/DomainInfrastructres.csproj"
     },
     "Evenbus/1.0.0": {
       "type": "project",
@@ -4178,11 +4162,6 @@
       "type": "project",
       "path": "../FileDev.Domain/FileDev.Domain.csproj",
       "msbuildProject": "../FileDev.Domain/FileDev.Domain.csproj"
-    },
-    "FileDev.Infrastructures/1.0.0": {
-      "type": "project",
-      "path": "../FileDev.Infrastructures/FileDev.Infrastructures.csproj",
-      "msbuildProject": "../FileDev.Infrastructures/FileDev.Infrastructures.csproj"
     },
     "NotEmail/1.0.0": {
       "type": "project",
@@ -4199,7 +4178,6 @@
     "net9.0": [
       "CommonsInitializer >= 1.0.0",
       "FileDev.Domain >= 1.0.0",
-      "FileDev.Infrastructures >= 1.0.0",
       "Microsoft.AspNetCore.OpenApi >= 9.0.9",
       "Microsoft.EntityFrameworkCore.Tools >= 9.0.9",
       "Scalar.AspNetCore >= 2.8.4"
@@ -4243,9 +4221,6 @@
             },
             "C:\\Users\\29617\\source\\repos\\MyService\\FileDev.Domain\\FileDev.Domain.csproj": {
               "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\FileDev.Domain\\FileDev.Domain.csproj"
-            },
-            "C:\\Users\\29617\\source\\repos\\MyService\\FileDev.Infrastructures\\FileDev.Infrastructures.csproj": {
-              "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\FileDev.Infrastructures\\FileDev.Infrastructures.csproj"
             }
           }
         }

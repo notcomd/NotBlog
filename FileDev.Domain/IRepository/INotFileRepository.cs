@@ -1,4 +1,4 @@
-﻿using DomainCommonst;
+﻿using DomainCommon;
 
 using FileDev.Domain.DomainEntities;
 

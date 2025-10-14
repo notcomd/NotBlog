@@ -1436,8 +1436,8 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
-          "DomainCommonst": "1.0.0",
-          "DomainInfrastructure": "1.0.0",
+          "DomainCommon": "1.0.0",
+          "DomainInfrastructres": "1.0.0",
           "Evenbus": "1.0.0",
           "Microsoft.AspNetCore.Connections.Abstractions": "9.0.9",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.9",
@@ -1453,7 +1453,7 @@
           "bin/placeholder/CommonsInitializer.dll": {}
         }
       },
-      "DomainCommonst/1.0.0": {
+      "DomainCommon/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
@@ -1462,17 +1462,17 @@
           "NotMediator": "1.0.5"
         },
         "compile": {
-          "bin/placeholder/DomainCommonst.dll": {}
+          "bin/placeholder/DomainCommon.dll": {}
         },
         "runtime": {
-          "bin/placeholder/DomainCommonst.dll": {}
+          "bin/placeholder/DomainCommon.dll": {}
         }
       },
-      "DomainInfrastructure/1.0.0": {
+      "DomainInfrastructres/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
-          "DomainCommonst": "1.0.0",
+          "DomainCommon": "1.0.0",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "9.0.9",
           "Microsoft.EntityFrameworkCore": "9.0.9",
           "Microsoft.EntityFrameworkCore.Abstractions": "9.0.9",
@@ -1480,10 +1480,10 @@
           "Npgsql.EntityFrameworkCore.PostgreSQL": "9.0.4"
         },
         "compile": {
-          "bin/placeholder/DomainInfrastructure.dll": {}
+          "bin/placeholder/DomainInfrastructres.dll": {}
         },
         "runtime": {
-          "bin/placeholder/DomainInfrastructure.dll": {}
+          "bin/placeholder/DomainInfrastructres.dll": {}
         }
       },
       "Evenbus/1.0.0": {
@@ -1508,7 +1508,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
-          "DomainCommonst": "1.0.0",
+          "DomainCommon": "1.0.0",
           "NotMediator": "1.0.5",
           "Token.JWT": "1.0.0"
         },
@@ -1523,8 +1523,8 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
-          "DomainCommonst": "1.0.0",
-          "DomainInfrastructure": "1.0.0",
+          "DomainCommon": "1.0.0",
+          "DomainInfrastructres": "1.0.0",
           "Identity.Domain": "1.0.0",
           "Microsoft.EntityFrameworkCore": "9.0.9",
           "NotEmail": "1.0.0",
@@ -1544,7 +1544,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
-          "DomainCommonst": "1.0.0",
+          "DomainCommon": "1.0.0",
           "Evenbus": "1.0.0",
           "MailKit": "4.13.0",
           "Microsoft.Extensions.Configuration.Abstractions": "9.0.9",
@@ -1561,7 +1561,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
-          "DomainCommonst": "1.0.0",
+          "DomainCommon": "1.0.0",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.6",
           "Microsoft.AspNetCore.Authentication.MicrosoftAccount": "8.0.6",
           "Microsoft.AspNetCore.SignalR.Client": "8.0.6",
@@ -4163,15 +4163,15 @@
       "path": "../CommonsInitializer/CommonsInitializer.csproj",
       "msbuildProject": "../CommonsInitializer/CommonsInitializer.csproj"
     },
-    "DomainCommonst/1.0.0": {
+    "DomainCommon/1.0.0": {
       "type": "project",
-      "path": "../DomainCommonst/DomainCommonst.csproj",
-      "msbuildProject": "../DomainCommonst/DomainCommonst.csproj"
+      "path": "../DomainCommon/DomainCommon.csproj",
+      "msbuildProject": "../DomainCommon/DomainCommon.csproj"
     },
-    "DomainInfrastructure/1.0.0": {
+    "DomainInfrastructres/1.0.0": {
       "type": "project",
-      "path": "../DomainInfrastructure/DomainInfrastructure.csproj",
-      "msbuildProject": "../DomainInfrastructure/DomainInfrastructure.csproj"
+      "path": "../DomainInfrastructres/DomainInfrastructres.csproj",
+      "msbuildProject": "../DomainInfrastructres/DomainInfrastructres.csproj"
     },
     "Evenbus/1.0.0": {
       "type": "project",
@@ -4185,8 +4185,8 @@
     },
     "Identity.Infrastructure/1.0.0": {
       "type": "project",
-      "path": "../Identity.Infrastructure/Identity.Infrastructure.csproj",
-      "msbuildProject": "../Identity.Infrastructure/Identity.Infrastructure.csproj"
+      "path": "../Identity.Infrastructres/Identity.Infrastructure.csproj",
+      "msbuildProject": "../Identity.Infrastructres/Identity.Infrastructure.csproj"
     },
     "NotEmail/1.0.0": {
       "type": "project",
@@ -4202,7 +4202,7 @@
   "projectFileDependencyGroups": {
     "net9.0": [
       "CommonsInitializer >= 1.0.0",
-      "DomainCommonst >= 1.0.0",
+      "DomainCommon >= 1.0.0",
       "Identity.Domain >= 1.0.0",
       "Identity.Infrastructure >= 1.0.0",
       "MailKit >= 4.13.0",
@@ -4251,14 +4251,14 @@
             "C:\\Users\\29617\\source\\repos\\MyService\\CommonsInitializer\\CommonsInitializer.csproj": {
               "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\CommonsInitializer\\CommonsInitializer.csproj"
             },
-            "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj": {
-              "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj"
+            "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommon\\DomainCommon.csproj": {
+              "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommon\\DomainCommon.csproj"
             },
             "C:\\Users\\29617\\source\\repos\\MyService\\Identity.Domain\\Identity.Domain.csproj": {
               "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\Identity.Domain\\Identity.Domain.csproj"
             },
-            "C:\\Users\\29617\\source\\repos\\MyService\\Identity.Infrastructure\\Identity.Infrastructure.csproj": {
-              "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\Identity.Infrastructure\\Identity.Infrastructure.csproj"
+            "C:\\Users\\29617\\source\\repos\\MyService\\Identity.Infrastructres\\Identity.Infrastructure.csproj": {
+              "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\Identity.Infrastructres\\Identity.Infrastructure.csproj"
             },
             "C:\\Users\\29617\\source\\repos\\MyService\\JWToken\\Token.JWT.csproj": {
               "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\JWToken\\Token.JWT.csproj"

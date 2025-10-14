@@ -11,9 +11,6 @@
         <PackageReference Include="NotMediator" Version="1.0.5" />
     </ItemGroup>
     <ItemGroup>
-      <ProjectReference Include="..\DomainCommonst\DomainCommonst.csproj" />
-    </ItemGroup>
-    <ItemGroup>
-      <Folder Include="DomainService\" />
+      <ProjectReference Include="..\DomainCommon\DomainCommon.csproj" />
     </ItemGroup>
 </Project>

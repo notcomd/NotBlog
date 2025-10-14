@@ -9,13 +9,13 @@ global using System.Text;
 global using System.Threading.Tasks;
 global using System.Xml.Serialization;
 
-global using DomainCommonst;
+global using DomainCommon;
 
 global using Identity.Domain.AggregatesModel.Author2Aggregate;
 global using Identity.Domain.AggregatesModel.RoleAggregate;
 global using Identity.Domain.AggregatesModel.UserAggregate;
 global using Identity.Domain.DomainEvents;
-global using Identity.Domain.Entities;
+global using Identity.Domain.DomainServer;
 global using Identity.Domain.IRepository;
 
 global using Microsoft.AspNetCore.Http;

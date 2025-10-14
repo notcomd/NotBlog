@@ -1,0 +1,8 @@
+C:\Users\29617\source\repos\MyService\Markdown.Web.API\obj\Debug\net9.0\Markdown.Web.API.csproj.AssemblyReference.cache
+C:\Users\29617\source\repos\MyService\Markdown.Web.API\obj\Debug\net9.0\rpswa.dswa.cache.json
+C:\Users\29617\source\repos\MyService\Markdown.Web.API\obj\Debug\net9.0\Markdown.Web.API.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\29617\source\repos\MyService\Markdown.Web.API\obj\Debug\net9.0\Markdown.Web.API.AssemblyInfoInputs.cache
+C:\Users\29617\source\repos\MyService\Markdown.Web.API\obj\Debug\net9.0\Markdown.Web.API.AssemblyInfo.cs
+C:\Users\29617\source\repos\MyService\Markdown.Web.API\obj\Debug\net9.0\Markdown.Web.API.csproj.CoreCompileInputs.cache
+C:\Users\29617\source\repos\MyService\Markdown.Web.API\obj\Debug\net9.0\Markdown.Web.API.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\29617\source\repos\MyService\Markdown.Web.API\obj\Debug\net9.0\Markdown.Web.API.sourcelink.json

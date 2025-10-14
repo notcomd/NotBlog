@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography.Xml;
 
-namespace Identity.Domain.Entities;
+namespace Identity.Domain.AggregatesModel.UserAggregate;
 
 public class PhoneNumber : Entity
 {
@@ -19,7 +19,7 @@ public class PhoneNumber : Entity
     {
         if(userGuid == Guid.Empty)
             throw new ArgumentNullException(nameof(userGuid));
-        if (string.IsNullOrWhiteSpace(phoneCode) || (phoneCode.Length <= 11 && phoneCode.Length >= 8))
+        if (string.IsNullOrWhiteSpace(phoneCode) || phoneCode.Length <= 11 && phoneCode.Length >= 8)
             throw new ArgumentException("Phone number must be exactly > 11 or 8 < digits.", nameof(phoneCode));
         return new PhoneNumber
         {
@@ -35,7 +35,7 @@ public class PhoneNumber : Entity
     public void UpdatePhoneNumber(long addressRegion, string phoneCode)
     {
 
-        if (string.IsNullOrWhiteSpace(phoneCode) || (phoneCode.Length <= 11 && phoneCode.Length >= 8))
+        if (string.IsNullOrWhiteSpace(phoneCode) || phoneCode.Length <= 11 && phoneCode.Length >= 8)
             throw new ArgumentException("Phone number must be exactly 11 digits.", nameof(phoneCode));
 
         AddressRegion = addressRegion;

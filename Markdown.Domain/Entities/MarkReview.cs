@@ -1,72 +1,89 @@
+﻿
+
+using System.Net.NetworkInformation;
+using DomainCommon;
+
 namespace Markdown.Domain.Entities;
 
-public class MarkReview
+/// <summary>
+/// 评论类，用于表示对文档的评论信息
+/// </summary>
+public class MarkReview : Entity, IAggregateRoot
 {
     /// <summary>
+    /// 初始化评论类的新实例，仅供ORM使用
     /// </summary>
-    private MarkReview() {}
+    private MarkReview() { }
+
     /// <summary>
+    /// 初始化评论类的新实例
     /// </summary>
-    /// <param name="markDown"></param>
-    /// <param name="userName"></param>
-    /// <param name="userImage"></param>
-    /// <param name="markReviewContent"></param>
-    public MarkReview(MarkDown markDown, string userName, string userImage, string markReviewContent)
+    /// <param name="markDown">关联的文档对象</param>
+    /// <param name="userName">评论用户的名称</param>
+    /// <param name="markReviewContent">评论内容</param>
+    /// <param name="parentReviewId">父评论ID，若为顶级评论则为 null</param>
+    /// <param name="auth">评论的权限设置，默认为公开</param>
+    public MarkReview(Guid userGuid, Guid markDownGuid, string markReviewContent,
+                     Guid? parentReviewId = null, MarkQuote? markQuote = null, MarkReviewType auth = MarkReviewType.ReviewAuthPublic)
     {
-        MarkReviewGuid = Guid.NewGuid();
-        MarkDownGuid = markDown.MarkDownGuid;
+        Id = Guid.CreateVersion7();
+        MarkDownGuid = markDownGuid;
+        UserGuid = userGuid;
         MarkReviewContent = markReviewContent;
-        UserName = userName;
-        UserImage = userImage;
-        MarkReviewTime = DateTime.Now;
-        MarkDown = markDown;
+        MarkReviewTime = DateTime.UtcNow;
+        MarkQuote = markQuote;
+        MarkAggregateRootGuid = parentReviewId;
+        MarkReviewType = auth;
     }
-    /// <summary>
-    ///     评论主键key
-    /// </summary>
-    public Guid MarkReviewGuid { get; init; }
-    /// <summary>
-    ///     文档的guid(外键）
-    /// </summary>
+
+
+
     public Guid MarkDownGuid { get; init; }
-    /// <summary>
-    ///     子评论
-    /// </summary>
-    public Guid? MarkAggregateRootGuid { get; private set; }
-    /// <summary>
-    ///     用户明
-    /// </summary>
-    public string UserName { get; private set; } = null!;
-    /// <summary>
-    ///     用户头像
-    /// </summary>
-    public string UserImage { get; private set; } = null!;
-    /// <summary>
-    ///     评论主体
-    /// </summary>
+
+    public Guid UserGuid { get; init; }
+
+    public MarkReviewType MarkReviewType { get; private set; }
+
     public string MarkReviewContent { get; private set; } = null!;
-    /// <summary>
-    ///     时间
-    /// </summary>
-    public DateTime MarkReviewTime { get; private set; } = DateTime.Now;
-    /// <summary>
-    ///     默认评论为公开
-    /// </summary>
-    public MarkReviewAuth MarkReviewAuth { get; private set; } = MarkReviewAuth.ReviewAuthPublic;
-    /// <summary>
-    ///     外键关联
-    /// </summary>
-    public MarkDown MarkDown { get; private set; }
 
-    private Task<MarkReview> AddToChildReviewAsync(Guid aggregateRootGuid, MarkReview markReview)
+    public MarkQuote? MarkQuote { get; private set; }    
+
+    public DateTime MarkReviewTime { get; private set; }
+
+    public Guid? MarkAggregateRootGuid { get; private set; }
+
+    public ICollection<MarkReview> MarkChildReviews { get; } = new List<MarkReview>();
+
+
+
+    /// <summary>
+    /// 添加子评论
+    /// </summary>
+    /// <param name="childReview">待添加的子评论</param>
+    /// <returns>添加了父评论ID的子评论对象</returns>
+    public MarkReview AddChildReview(MarkReview childReview)
     {
-        markReview.MarkAggregateRootGuid = aggregateRootGuid;
-        return Task.FromResult(markReview);
+        childReview.MarkAggregateRootGuid = this.Id;
+        return childReview;
     }
 
-    public Task<MarkReview> UpDataByMarkReviewAuthAsync(MarkReviewAuth markReviewAuth)
+    /// <summary>
+    /// 更新评论的权限设置
+    /// </summary>
+    /// <param name="markReviewAuth">新的评论权限设置</param>
+    public void UpdateReviewAuth(MarkReviewType markReviewAuth)
     {
-        MarkReviewAuth = markReviewAuth;
-        return Task.FromResult(this);
+        MarkReviewType = markReviewAuth;
     }
+
+
+    /// <summary>
+    /// 更新评论内容
+    /// </summary>
+    /// <param name="markReviewContent">新的评论内容</param>
+    public void UpdateReviewContent(string markReviewContent)
+    {
+        MarkReviewContent = markReviewContent;
+    }
+
 }

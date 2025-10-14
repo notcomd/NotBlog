@@ -1,0 +1,6 @@
+@Markdown.Web.API_HostAddress = http://localhost:5003
+
+GET {{Markdown.Web.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

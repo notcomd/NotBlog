@@ -8,28 +8,28 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Remove="Module\**"/>
-        <EmbeddedResource Remove="Module\**"/>
-        <None Remove="Module\**"/>
+        <Compile Remove="Module\**" />
+        <EmbeddedResource Remove="Module\**" />
+        <None Remove="Module\**" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.6"/>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.6" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="8.0.6">
             <TreatAsUsed>true</TreatAsUsed>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.6"/>
-        <PackageReference Include="Scalar.AspNetCore" Version="2.5.3"/>
-        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.6.0"/>
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.6" />
+        <PackageReference Include="Scalar.AspNetCore" Version="2.5.3" />
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.6.0" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\DomainCommonst\DomainCommonst.csproj"/>
+      <ProjectReference Include="..\DomainCommon\DomainCommon.csproj" />
     </ItemGroup>
 
     <ProjectExtensions>
         <VisualStudio>
-            <UserProperties/>
+            <UserProperties />
         </VisualStudio>
     </ProjectExtensions>
 

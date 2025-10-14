@@ -14,7 +14,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\DomainCommonst\DomainCommonst.csproj" />
+        <ProjectReference Include="..\DomainCommon\DomainCommon.csproj" />
         <ProjectReference Include="..\Evenbus\Evenbus.csproj" />
     </ItemGroup>
 

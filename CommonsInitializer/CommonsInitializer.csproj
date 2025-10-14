@@ -15,8 +15,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\DomainCommonst\DomainCommonst.csproj" />
-        <ProjectReference Include="..\DomainInfrastructure\DomainInfrastructure.csproj" />
+        <ProjectReference Include="..\DomainCommon\DomainCommon.csproj" />
+        <ProjectReference Include="..\DomainInfrastructres\DomainInfrastructres.csproj" />
         <ProjectReference Include="..\NotEmail\NotEmail.csproj" />
         <ProjectReference Include="..\Evenbus\Evenbus.csproj" />
         <ProjectReference Include="..\JWToken\Token.JWT.csproj" />

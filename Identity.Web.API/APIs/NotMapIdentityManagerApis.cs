@@ -1,4 +1,5 @@
-﻿using Identity.Web.API.Application.Command;
+﻿using Identity.Domain.IdentiyResult;
+using Identity.Web.API.Application.Command;
 using Identity.Web.API.Application.Models;
 
 namespace Identity.Web.API.APIs;

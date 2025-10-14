@@ -461,7 +461,7 @@
           "buildTransitive/net6.0/_._": {}
         }
       },
-      "DomainCommonst/1.0.0": {
+      "DomainCommon/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
@@ -470,10 +470,10 @@
           "NotMediator": "1.0.5"
         },
         "compile": {
-          "bin/placeholder/DomainCommonst.dll": {}
+          "bin/placeholder/DomainCommon.dll": {}
         },
         "runtime": {
-          "bin/placeholder/DomainCommonst.dll": {}
+          "bin/placeholder/DomainCommon.dll": {}
         }
       },
       "Evenbus/1.0.0": {
@@ -1251,10 +1251,10 @@
         "useSharedDesignerContext.txt"
       ]
     },
-    "DomainCommonst/1.0.0": {
+    "DomainCommon/1.0.0": {
       "type": "project",
-      "path": "../DomainCommonst/DomainCommonst.csproj",
-      "msbuildProject": "../DomainCommonst/DomainCommonst.csproj"
+      "path": "../DomainCommon/DomainCommon.csproj",
+      "msbuildProject": "../DomainCommon/DomainCommon.csproj"
     },
     "Evenbus/1.0.0": {
       "type": "project",
@@ -1264,7 +1264,7 @@
   },
   "projectFileDependencyGroups": {
     "net9.0": [
-      "DomainCommonst >= 1.0.0",
+      "DomainCommon >= 1.0.0",
       "Evenbus >= 1.0.0",
       "MailKit >= 4.13.0",
       "Microsoft.Extensions.Configuration.Abstractions >= 9.0.9",
@@ -1304,8 +1304,8 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj": {
-              "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj"
+            "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommon\\DomainCommon.csproj": {
+              "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommon\\DomainCommon.csproj"
             },
             "C:\\Users\\29617\\source\\repos\\MyService\\Evenbus\\Evenbus.csproj": {
               "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\Evenbus\\Evenbus.csproj"

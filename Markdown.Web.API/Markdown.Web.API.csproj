@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>ba708646-7c77-4eb0-ae8f-87b410f3cd0f</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.9" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.23.0" />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.5.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CommonsInitializer\CommonsInitializer.csproj" />
+    <ProjectReference Include="..\DomainCommon\DomainCommon.csproj" />
+    <ProjectReference Include="..\DomainInfrastructres\DomainInfrastructres.csproj" />
+    <ProjectReference Include="..\Markdown.Infrastructres\Markdown.Infrastructures.csproj" />
+    <ProjectReference Include="..\Message.Domain\Message.Domain.csproj" />
+    <ProjectReference Include="..\Message.Infrastructure\Message.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

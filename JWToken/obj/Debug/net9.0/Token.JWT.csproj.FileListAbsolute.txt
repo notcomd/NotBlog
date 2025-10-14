@@ -1,8 +1,8 @@
 C:\Users\29617\source\repos\MyService\JWToken\bin\Debug\net9.0\Token.JWT.deps.json
 C:\Users\29617\source\repos\MyService\JWToken\bin\Debug\net9.0\Token.JWT.dll
 C:\Users\29617\source\repos\MyService\JWToken\bin\Debug\net9.0\Token.JWT.pdb
-C:\Users\29617\source\repos\MyService\JWToken\bin\Debug\net9.0\DomainCommonst.dll
-C:\Users\29617\source\repos\MyService\JWToken\bin\Debug\net9.0\DomainCommonst.pdb
+C:\Users\29617\source\repos\MyService\JWToken\bin\Debug\net9.0\DomainCommon.dll
+C:\Users\29617\source\repos\MyService\JWToken\bin\Debug\net9.0\DomainCommon.pdb
 C:\Users\29617\source\repos\MyService\JWToken\obj\Debug\net9.0\Token.JWT.csproj.AssemblyReference.cache
 C:\Users\29617\source\repos\MyService\JWToken\obj\Debug\net9.0\Token.JWT.GeneratedMSBuildEditorConfig.editorconfig
 C:\Users\29617\source\repos\MyService\JWToken\obj\Debug\net9.0\Token.JWT.AssemblyInfoInputs.cache

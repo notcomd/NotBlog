@@ -16,15 +16,13 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Application\Command\" />
       <Folder Include="Application\DomainEvnet\" />
       <Folder Include="Application\Model\" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\CommonsInitializer\CommonsInitializer.csproj" />
-      <ProjectReference Include="..\FileDev.Domain\FileDev.Domain.csproj" />
-      <ProjectReference Include="..\FileDev.Infrastructures\FileDev.Infrastructures.csproj" />
+      <ProjectReference Include="..\FileDev.Domain\FileDev.Domain.csproj" />      
     </ItemGroup>
 
 </Project>

@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 
+using Identity.Domain.IdentiyResult;
 using Identity.Web.API.Application.Command;
 using Identity.Web.API.Application.Models;
 

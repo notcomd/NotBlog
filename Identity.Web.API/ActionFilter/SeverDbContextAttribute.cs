@@ -1,4 +1,4 @@
-﻿namespace Identity.Web.API;
+﻿namespace Identity.Web.API.ActionFilter;
 
 [AttributeUsage(AttributeTargets.Method)]
 public class SeverDbContextAttribute : Attribute, IFilterMetadata

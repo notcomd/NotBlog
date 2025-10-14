@@ -1,4 +1,4 @@
-﻿namespace Identity.Domain.Entities;
+﻿namespace Identity.Domain.AggregatesModel.UserAggregate;
 
 public enum EnBlackOrWhite
 {

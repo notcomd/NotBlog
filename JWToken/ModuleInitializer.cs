@@ -1,4 +1,4 @@
-using DomainCommonst;
+using DomainCommon;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Notcomd.Token.JWT;

@@ -1,6 +1,4 @@
-﻿
-
-namespace Identity.Domain.AggregatesModel.UserAggregate;
+﻿namespace Identity.Domain.AggregatesModel.UserAggregate;
 
 public class User : Entity, IAggregateRoot
 {

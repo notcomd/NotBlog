@@ -1,25 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FileDev.Domain.FileDevException
+﻿namespace FileDev.Domain.FileDevException
 {
-    public  class NotFileDevException : Exception
+    public class NotFileDevException : Exception
     {
-       public NotFileDevException() { }
+        // 使用空体构造函数的简化语法
+        public NotFileDevException() { }
 
-        public NotFileDevException(string message) : base(message)
-        {
-        }
+        // 使用空体构造函数的简化语法
+        public NotFileDevException(string message) : base(message) { }
 
-        public NotFileDevException(string? message, Exception? innerException) : base(message, innerException)
-        {
-        }
-
-       // public NotFileDevException() { }
+        // 使用空体构造函数的简化语法
+        public NotFileDevException(string? message, Exception? innerException) : base(message, innerException) { }
     }
 }
