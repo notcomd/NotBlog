@@ -9,7 +9,6 @@ namespace Video.Web.API.Controllers;
 [Route("api/[controller]")]
 public class GetByVideoController : ControllerBase
 {
-
     private readonly ILogger<IVideoRepository> _loggerVideoService;
 
     private readonly VideoService _videoRepository;
@@ -34,7 +33,6 @@ public class GetByVideoController : ControllerBase
         var videoModel = await _videoRepository.PagesByVideosAsync(index, pageSize);
         return new IVideoResult<List<Videos>>(VideoResultType.VideoResultOk, 200, "成功", videoModel);
     }
-
 
 
     [HttpGet("Findname/{videoName}")]

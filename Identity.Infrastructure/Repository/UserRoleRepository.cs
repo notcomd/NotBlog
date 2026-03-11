@@ -8,6 +8,7 @@ public class UserRoleRepository : IUserRoleRepository
     {
         _userRoleDbContext = userRoleDbContext;
     }
+
     public IUnitOfWork UnitOfWork => _userRoleDbContext;
 
 
@@ -27,7 +28,7 @@ public class UserRoleRepository : IUserRoleRepository
     {
         if (roleGuid is null || roleGuid.Count == 0)
             return new HashSet<Roles>();
-        var roles= await _userRoleDbContext.Roles
+        var roles = await _userRoleDbContext.Roles
             .Where(en => roleGuid.Contains(en.RoleGuid))
             .AsNoTracking().ToHashSetAsync();
         return roles;
@@ -35,9 +36,9 @@ public class UserRoleRepository : IUserRoleRepository
 
     public async ValueTask<Roles?> FindUserIdByRoleAsync(Guid userId)
     {
-        if(Guid.Empty==userId)
+        if (Guid.Empty == userId)
             return null;
-        
+
         var roleData = await _userRoleDbContext
             .Roles.Where(en => en.RoleGuid.Equals(userId))
             .FirstOrDefaultAsync();
@@ -46,9 +47,9 @@ public class UserRoleRepository : IUserRoleRepository
 
     public async ValueTask<Roles?> FindByUserRoleAsync(string roleName)
     {
-        var data =await 
+        var data = await
             _userRoleDbContext.Roles
-                .Include(en=>en.RolePermission)
+                .Include(en => en.RolePermission)
                 .Where(en => en.RoleName == roleName)
                 .SingleOrDefaultAsync();
         if (data is null) throw new ArgumentNullException("data is null!");

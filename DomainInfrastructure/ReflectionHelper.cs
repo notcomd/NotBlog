@@ -8,7 +8,6 @@ namespace Notcomd.DomainCommand;
 
 public static class ReflectionHelper
 {
-
     /// <summary>
     ///     据产品名称获取程序集
     /// </summary>
@@ -20,20 +19,15 @@ public static class ReflectionHelper
         foreach (var asm in asms)
         {
             var asmCompanyAttr = asm.GetCustomAttribute<AssemblyProductAttribute>();
-            if (asmCompanyAttr != null && asmCompanyAttr.Product == productName)
-            {
-                yield return asm;
-            }
+            if (asmCompanyAttr != null && asmCompanyAttr.Product == productName) yield return asm;
         }
     }
+
     //是否是微软等的官方Assembly
     private static bool IsSystemAssembly(Assembly asm)
     {
         var asmCompanyAttr = asm.GetCustomAttribute<AssemblyCompanyAttribute>();
-        if (asmCompanyAttr == null)
-        {
-            return false;
-        }
+        if (asmCompanyAttr == null) return false;
         var companyName = asmCompanyAttr.Company;
         return companyName.Contains("Microsoft");
     }
@@ -44,15 +38,9 @@ public static class ReflectionHelper
         {
             var asmName = AssemblyName.GetAssemblyName(asmPath);
             var asm = Assembly.Load(asmName);
-            if (asm == null)
-            {
-                return false;
-            }
+            if (asm == null) return false;
             var asmCompanyAttr = asm.GetCustomAttribute<AssemblyCompanyAttribute>();
-            if (asmCompanyAttr == null)
-            {
-                return false;
-            }
+            if (asmCompanyAttr == null) return false;
             var companyName = asmCompanyAttr.Company;
             return companyName.Contains("Microsoft");
         }
@@ -93,7 +81,6 @@ public static class ReflectionHelper
         }
 
         if (asm == null)
-        {
             try
             {
                 asm = Assembly.LoadFile(asmPath);
@@ -106,7 +93,7 @@ public static class ReflectionHelper
             {
                 Debug.WriteLine(ex);
             }
-        }
+
         return asm;
     }
 
@@ -117,43 +104,28 @@ public static class ReflectionHelper
     public static IEnumerable<Assembly> GetAllReferencedAssemblies(bool skipSystemAssemblies = true)
     {
         var rootAssembly = Assembly.GetEntryAssembly();
-        if (rootAssembly == null)
-        {
-            rootAssembly = Assembly.GetCallingAssembly();
-        }
+        if (rootAssembly == null) rootAssembly = Assembly.GetCallingAssembly();
         var returnAssemblies = new HashSet<Assembly>(new AssemblyEquality());
         var loadedAssemblies = new HashSet<string>();
         var assembliesToCheck = new Queue<Assembly>();
         assembliesToCheck.Enqueue(rootAssembly);
 
         if (skipSystemAssemblies && !IsSystemAssembly(rootAssembly))
-        {
             if (IsValid(rootAssembly))
-            {
                 returnAssemblies.Add(rootAssembly);
-            }
-        }
 
         while (assembliesToCheck.Any())
         {
             var assemblyToCheck = assembliesToCheck.Dequeue();
             foreach (var reference in assemblyToCheck.GetReferencedAssemblies())
-            {
                 if (!loadedAssemblies.Contains(reference.FullName))
                 {
                     var assembly = Assembly.Load(reference);
-                    if (skipSystemAssemblies && IsSystemAssembly(assembly))
-                    {
-                        continue;
-                    }
+                    if (skipSystemAssemblies && IsSystemAssembly(assembly)) continue;
                     assembliesToCheck.Enqueue(assembly);
                     loadedAssemblies.Add(reference.FullName);
-                    if (IsValid(assembly))
-                    {
-                        returnAssemblies.Add(assembly);
-                    }
+                    if (IsValid(assembly)) returnAssemblies.Add(assembly);
                 }
-            }
         }
 
         var asmsInBaseDir = Directory.EnumerateFiles(AppContext.BaseDirectory,
@@ -163,34 +135,17 @@ public static class ReflectionHelper
             });
         foreach (var asmPath in asmsInBaseDir)
         {
-            if (!IsManagedAssembly(asmPath))
-            {
-                continue;
-            }
+            if (!IsManagedAssembly(asmPath)) continue;
             var asmName = AssemblyName.GetAssemblyName(asmPath);
-            if (returnAssemblies.Any(x => AssemblyName.ReferenceMatchesDefinition(x.GetName(), asmName)))
-            {
-                continue;
-            }
-            if (skipSystemAssemblies && IsSystemAssembly(asmPath))
-            {
-                continue;
-            }
+            if (returnAssemblies.Any(x => AssemblyName.ReferenceMatchesDefinition(x.GetName(), asmName))) continue;
+            if (skipSystemAssemblies && IsSystemAssembly(asmPath)) continue;
             var asm = TryLoadAssembly(asmPath);
-            if (asm == null)
-            {
-                continue;
-            }
-            if (!IsValid(asm))
-            {
-                continue;
-            }
-            if (skipSystemAssemblies && IsSystemAssembly(asm))
-            {
-                continue;
-            }
+            if (asm == null) continue;
+            if (!IsValid(asm)) continue;
+            if (skipSystemAssemblies && IsSystemAssembly(asm)) continue;
             returnAssemblies.Add(asm);
         }
+
         return returnAssemblies.ToArray();
     }
 
@@ -217,7 +172,7 @@ public static class ReflectionHelper
             return AssemblyName.ReferenceMatchesDefinition(x.GetName(), y.GetName());
         }
 
-        public override int GetHashCode([DisallowNull]Assembly obj)
+        public override int GetHashCode([DisallowNull] Assembly obj)
         {
             return obj.GetName().FullName.GetHashCode();
         }

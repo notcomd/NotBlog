@@ -5,14 +5,10 @@ namespace Notcomd.DomainCommand;
 
 public static class HashHelper
 {
-
     private static Task<string> ToHashStringAsync(byte[] hash)
     {
         var hashString = new StringBuilder();
-        foreach (var itm in hash)
-        {
-            hashString.Append(itm.ToString("x2"));
-        }
+        foreach (var itm in hash) hashString.Append(itm.ToString("x2"));
         return Task.FromResult(hashString.ToString());
     }
 

@@ -2,8 +2,6 @@
 
 public class UserAccessFail : Entity
 {
-
-
     protected UserAccessFail()
     {
         UserAccessFailGuid = Guid.CreateVersion7();
@@ -18,10 +16,9 @@ public class UserAccessFail : Entity
     public int AccessFaildCount { get; private set; }
 
     /// <summary>
-    ///   锁定用户,如果LockOutEnd不为null且大于当前时间，则表示用户被锁定
+    ///     锁定用户,如果LockOutEnd不为null且大于当前时间，则表示用户被锁定
     /// </summary>
     public bool IsLockOut => LockOutEnd.HasValue && LockOutEnd.Value > DateTimeOffset.UtcNow;
-
 
 
     public static UserAccessFail CreateUserAccessFail(Guid userGuid)
@@ -33,8 +30,7 @@ public class UserAccessFail : Entity
                 UserAccessFailGuid = Guid.CreateVersion7(),
                 UserGuid = userGuid,
                 LockOutEnd = null,
-                AccessFaildCount = 0,
-
+                AccessFaildCount = 0
             };
             return userAccessFail;
         }
@@ -55,19 +51,17 @@ public class UserAccessFail : Entity
                     LockOutEnd = DateTimeOffset.UtcNow.AddMinutes(15);
                     return false; // 锁定用户
                 }
+
                 return true; // 继续允许访问
             }
-            else
-            {
-                AccessFaildCount = 0;
-                LockOutEnd = null;
-                return true; // 重置失败计数，允许访问
-            }
+
+            AccessFaildCount = 0;
+            LockOutEnd = null;
+            return true; // 重置失败计数，允许访问
         }
+
         return false; // 锁定用户
     }
-
-
 
 
     public void ResetFailAsync()

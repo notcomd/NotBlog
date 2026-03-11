@@ -4,9 +4,9 @@ namespace Video.Domain.Entities;
 
 public class Videos : IAggregateRoot
 {
-
-
-    private Videos() {}
+    private Videos()
+    {
+    }
 
     public Videos(List<Affiliated> affiliatedAuthorizes, string videoName, Uri videoCover
         , Uri videoFileUri, string briefIntroduction, List<string> videoTags)

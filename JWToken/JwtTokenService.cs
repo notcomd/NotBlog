@@ -9,7 +9,6 @@ namespace Notcomd.Token.JWT;
 
 public class JwtTokenService : IJwtTokenService
 {
-
     /// <summary>
     ///     通过直接读取配置文件密钥内容。
     /// </summary>
@@ -26,12 +25,14 @@ public class JwtTokenService : IJwtTokenService
         //var expiry = TimeSpan.FromSeconds(configuration.ExpirSeconds);
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration.PrivateKey));
         var signingCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature);
-        var tokenDescript = new JwtSecurityToken(configuration.Issuer, configuration.Audiencs, claims, DateTime.Now, DateTime.Now.AddDays(configuration.ExpirSeconds), signingCredentials);
+        var tokenDescript = new JwtSecurityToken(configuration.Issuer, configuration.Audiencs, claims, DateTime.Now,
+            DateTime.Now.AddDays(configuration.ExpirSeconds), signingCredentials);
         return new JwtSecurityTokenHandler().WriteToken(tokenDescript);
     }
 
 
-    public async Task<TokenValidationResult> JwtSecurityTokenHandlerAsync([Required(ErrorMessage = "privatekey is null!")]string PrivateKey, string AuthorizationString)
+    public async Task<TokenValidationResult> JwtSecurityTokenHandlerAsync(
+        [Required(ErrorMessage = "privatekey is null!")] string PrivateKey, string AuthorizationString)
     {
         JwtSecurityTokenHandler tokenHeandder = new();
         TokenValidationParameters tokenValidation = new();

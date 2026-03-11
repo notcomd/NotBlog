@@ -2,8 +2,6 @@
 
 public class SubscriptionsManager
 {
-
-
     private readonly Dictionary<string, List<Type>> _handlers = new();
 
 
@@ -21,14 +19,8 @@ public class SubscriptionsManager
 
     public void AddSubscription(string eventName, Type eventHandlerType)
     {
-        if (!HasSubscriptionForEvent(eventName))
-        {
-            _handlers.Add(eventName, new List<Type>());
-        }
-        if (_handlers[eventName].Contains(eventHandlerType))
-        {
-            throw new ArgumentNullException("");
-        }
+        if (!HasSubscriptionForEvent(eventName)) _handlers.Add(eventName, new List<Type>());
+        if (_handlers[eventName].Contains(eventHandlerType)) throw new ArgumentNullException("");
         _handlers[eventName].Add(eventHandlerType);
     }
 

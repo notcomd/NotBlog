@@ -6,7 +6,7 @@ public static class FormattableStringHelper
     {
         var initail = formattableString.GetArguments()
             .Select(en => FormattableString.Invariant($"{en}"));
-        object[] pro = initail.Select(en => (object)Uri.EscapeDataString(en)).ToArray();
+        var pro = initail.Select(en => (object)Uri.EscapeDataString(en)).ToArray();
         return string.Format(formattableString.Format, pro);
     }
 }

@@ -1,24 +1,21 @@
-﻿namespace Identity.Domain.AggregatesModel.UserAggregate
+﻿namespace Identity.Domain.AggregatesModel.UserAggregate;
+
+/// <summary>
+///     电话号码国家地区代码
+/// </summary>
+public enum AddressRegion
 {
-    /// <summary>
-    /// 电话号码国家地区代码
-    /// </summary>
-    public enum AddressRegion
-    {
+    China = 86,
 
-        China = 86,
+    UnitedStates = 1,
 
-        UnitedStates = 1,
+    Hongkong = 852,
 
-        Hongkong = 852,
+    Taiwan = 886,
 
-        Taiwan = 886,
+    Japan = 81,
 
-        Japan = 81,
+    SouthKorea = 82,
 
-        SouthKorea = 82,
-
-        Singapore = 65,
-
-    }
+    Singapore = 65
 }

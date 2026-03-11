@@ -13,10 +13,7 @@ public static class NVIDGenerator
         Encoding.UTF8.GetBytes(prefix);
         // 将字节转换为Base62编码的字符串
         var sb = new StringBuilder();
-        foreach (var b in randomBytes)
-        {
-            sb.Append(BaseChars[b % BaseChars.Length]);
-        }
+        foreach (var b in randomBytes) sb.Append(BaseChars[b % BaseChars.Length]);
         return $"NV{sb.ToString()[..length]}"; // 确保总长度为12（BV+10位）
     }
 
@@ -27,11 +24,9 @@ public static class NVIDGenerator
         {
             rng.GetBytes(randomBytes);
         }
+
         var sb = new StringBuilder();
-        foreach (var b in randomBytes)
-        {
-            sb.Append(BaseChars[b % BaseChars.Length]);
-        }
+        foreach (var b in randomBytes) sb.Append(BaseChars[b % BaseChars.Length]);
         return $"BV{sb.ToString()[..lenght]}";
     }
 
@@ -47,10 +42,7 @@ public static class NVIDGenerator
     private static string Base62Encode(byte[] bytes)
     {
         var sb = new StringBuilder();
-        foreach (var b in bytes)
-        {
-            sb.Append(BaseChars[b % BaseChars.Length]);
-        }
+        foreach (var b in bytes) sb.Append(BaseChars[b % BaseChars.Length]);
         return sb.ToString();
     }
 }

@@ -3,4 +3,4 @@ using NotMediator;
 
 namespace FileDev.Web.API.APIs;
 
-public record NotFileServiceDI(IFileRepository  FileRepository,INotMediator NotMediator);
+public record NotFileServiceDI(INotFileRepository FileRepository, INotMediator NotMediator);

@@ -20,10 +20,7 @@ public class RabbitMQConnection
     public IModel CreateModel()
     {
         if (!Isconnected)
-        {
             throw new InvalidOperationException("no RabbitMQ connections are available to perform this action");
-
-        }
         return _connection.CreateModel();
     }
 
@@ -46,6 +43,7 @@ public class RabbitMQConnection
                 _connection.ConnectionBlocked += OnConnectionBlocked;
                 return true;
             }
+
             return false;
         }
     }

@@ -69,7 +69,8 @@ public class VideoService
     public async Task UpdateByAffiliatedUserAsync(Guid videoGuid, Guid userGuid, VideoControl videoControl)
     {
         var videoModel = await GetByVideoAsync(videoGuid);
-        if (videoModel.Affiliated.Select(sdf => sdf.AffiliatedUserUuid == userGuid).Any() && videoModel.Affiliated.Select(en => en.AffiliatedAuthorize == AffiliatedAuthorize.AffiliatedAuthorizeAdmin).Any())
+        if (videoModel.Affiliated.Select(sdf => sdf.AffiliatedUserUuid == userGuid).Any() && videoModel.Affiliated
+                .Select(en => en.AffiliatedAuthorize == AffiliatedAuthorize.AffiliatedAuthorizeAdmin).Any())
         {
             if (videoModel.VideoControl.Equals(videoControl)) return;
             await _videoRepository.UpdateByControlAsync(videoModel.VideoControl);

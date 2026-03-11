@@ -8,7 +8,6 @@ namespace Video.Infrastructure.Repository;
 
 public class VideoCollectionRepository : IVideoCollectionRepository
 {
-
     private readonly ILogger<IVideoCollectionRepository> _logger;
 
     private readonly VideoDbContext _videoDbContext;
@@ -27,10 +26,7 @@ public class VideoCollectionRepository : IVideoCollectionRepository
             .Include(en => en.VideoQuote)
             .Include(v => v.VideoControl)
             .FirstOrDefaultAsync();
-        if (videoCollection is null)
-        {
-            throw new AggregateException($"[{DateTimeOffset.UtcNow}]无法查询到相关信息");
-        }
+        if (videoCollection is null) throw new AggregateException($"[{DateTimeOffset.UtcNow}]无法查询到相关信息");
         _logger.LogWarning($"[{DateTimeOffset.UtcNow}]查询数据{findVideoCollectionGuid}完成");
         return videoCollection;
     }
@@ -76,7 +72,6 @@ public class VideoCollectionRepository : IVideoCollectionRepository
     }
 
 
-
     public Task UpdateByVideoCollectionAsync(VideoCollection updataVideoCollection)
     {
         _videoDbContext.VideoCollections.Update(updataVideoCollection);
@@ -89,16 +84,15 @@ public class VideoCollectionRepository : IVideoCollectionRepository
         {
             var videoCollection = await FindByVideoCollectionAsync(item.VideoCollectionGuid);
             if (videoCollection != item)
-            {
                 await _videoDbContext.VideoCollections
                     .Where(en => en.VideoCollectionGuid == item.VideoCollectionGuid)
                     .ExecuteUpdateAsync(en1 =>
                         en1.SetProperty(en => en.VideoCollectionName, item.VideoCollectionName)
-                            .SetProperty(en => en.VideoCollectionBriefIntroduction, item.VideoCollectionBriefIntroduction)
+                            .SetProperty(en => en.VideoCollectionBriefIntroduction,
+                                item.VideoCollectionBriefIntroduction)
                             .SetProperty(en => en.VideoControl, item.VideoControl)
                             .SetProperty(en => en.AffiliatedUser, item.AffiliatedUser)
                     );
-            }
         }
     }
 

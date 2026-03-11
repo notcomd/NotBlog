@@ -1,16 +1,13 @@
-﻿namespace Identity.Infrastructure.Configuration
+﻿namespace Identity.Infrastructure.Configuration;
+
+public class UserAccessFailEntityTypeConfiguration : IEntityTypeConfiguration<UserAccessFail>
 {
-    public class UserAccessFailEntityTypeConfiguration : IEntityTypeConfiguration<UserAccessFail>
+    public void Configure(EntityTypeBuilder<UserAccessFail> builder)
     {
-        public void Configure(EntityTypeBuilder<UserAccessFail> builder)
-        {
+        builder.ToTable("UserAccessFail");
 
-            builder.ToTable("UserAccessFail");
+        builder.Ignore(b => b.DomainEventbus);
 
-            builder.Ignore(b => b.DomainEventbus);
-
-            builder.Property(o => o.Id).UseHiLo("UserAccessFailseq");
-
-        }
+        builder.Property(o => o.Id).UseHiLo("UserAccessFailseq");
     }
 }

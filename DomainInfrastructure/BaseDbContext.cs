@@ -5,8 +5,7 @@ namespace Notcomd.DomainCommand;
 
 public abstract class BaseDbContext : DbContext
 {
-
-    private IMediator? _mediator;
+    private readonly IMediator? _mediator;
 
     public BaseDbContext(DbContextOptions options, IMediator mediator) : base(options)
     {
@@ -18,12 +17,10 @@ public abstract class BaseDbContext : DbContext
         throw new NotImplementedException("Don not call SaveChanges, please call SaveChangesAsync instead.");
     }
 
-    public async override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new())
+    public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess,
+        CancellationToken cancellationToken = new())
     {
-        if (_mediator != null)
-        {
-            await _mediator.DispatchDomainEventsAsync(this);
-        }
+        if (_mediator != null) await _mediator.DispatchDomainEventsAsync(this);
 
         var result = await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
         return result;

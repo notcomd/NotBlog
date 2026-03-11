@@ -5,7 +5,6 @@ namespace Notcomd.DomainCommand;
 
 public class Initializer : IModuleInitializer
 {
-
     public void Initialize(IServiceCollection service)
     {
         // service.AddScoped<BaseDbContext>();

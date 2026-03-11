@@ -6,12 +6,12 @@ public static class EnumerableExtensions
     {
         if (enumerable == enumerable2)
         {
-
         }
         else if (enumerable == null || enumerable2 == null)
         {
             return false;
         }
+
         return enumerable.OrderBy(e => e).SequenceEqual(enumerable2.OrderBy(e => e));
     }
 }

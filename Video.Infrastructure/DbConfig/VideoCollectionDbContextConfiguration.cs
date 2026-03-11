@@ -8,7 +8,6 @@ public class VideoCollectionDbContextConfiguration : IEntityTypeConfiguration<Vi
 {
     public void Configure(EntityTypeBuilder<VideoCollection> builder)
     {
-
         builder.ToTable("VideoCollection");
         builder.HasKey(en => en.VideoCollectionGuid);
 
@@ -38,7 +37,6 @@ public class VideoCollectionDbContextConfiguration : IEntityTypeConfiguration<Vi
                 x.Property(s => s.StartTime).HasColumnName("StartTime");
                 x.Property(s => s.EndTime).HasColumnName("EndTime");
             });
-
         });
 
         builder.OwnsOne(en => en.TimeSpace, x =>

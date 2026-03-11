@@ -11,7 +11,8 @@ public class GrpcFileService : GrpcFile.GrpcFileBase
         _grpcLogger = grpcLogger;
     }
 
-    public override Task<FileResponse> UploadFileAsync(IAsyncStreamReader<FileRequest> requestStream, ServerCallContext context)
+    public override Task<FileResponse> UploadFileAsync(IAsyncStreamReader<FileRequest> requestStream,
+        ServerCallContext context)
     {
         return Task.FromResult(new FileResponse
         {

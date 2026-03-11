@@ -9,10 +9,10 @@ namespace Notcomd.Token.JWT;
 
 public static class AuthenticationExtensions
 {
-
     //#
     //这是jwtoken配置类,加载配置信息
-    public static AuthenticationBuilder AddJwtAuthentication(this IServiceCollection serviceDescriptors, JwtOptions wToke)
+    public static AuthenticationBuilder AddJwtAuthentication(this IServiceCollection serviceDescriptors,
+        JwtOptions wToke)
     {
         serviceDescriptors.AddScoped<IJwtTokenService, JwtTokenService>();
         return serviceDescriptors.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(x =>
@@ -30,14 +30,12 @@ public static class AuthenticationExtensions
         });
     }
 
-    public static AuthenticationBuilder AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
+    public static AuthenticationBuilder AddJwtAuthentication(this IServiceCollection services,
+        IConfiguration configuration)
     {
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         var configString = configuration.Get<JwtOptions>();
-        if (configString is null)
-        {
-            throw new ArgumentNullException("没有配置相关数据,请检查配置文件问题");
-        }
+        if (configString is null) throw new ArgumentNullException("没有配置相关数据,请检查配置文件问题");
         return services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(opt =>
             {

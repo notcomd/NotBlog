@@ -4,3 +4,15 @@ F:\NotBlog\Identity.Domain\obj\Debug\net9.0\Identity.Domain.AssemblyInfoInputs.c
 F:\NotBlog\Identity.Domain\obj\Debug\net9.0\Identity.Domain.AssemblyInfo.cs
 F:\NotBlog\Identity.Domain\obj\Debug\net9.0\Identity.Domain.csproj.CoreCompileInputs.cache
 F:\NotBlog\Identity.Domain\obj\Debug\net9.0\Identity.Domain.sourcelink.json
+F:\NotBlog\Identity.Domain\bin\Debug\net9.0\Identity.Domain.deps.json
+F:\NotBlog\Identity.Domain\bin\Debug\net9.0\Identity.Domain.dll
+F:\NotBlog\Identity.Domain\bin\Debug\net9.0\Identity.Domain.pdb
+F:\NotBlog\Identity.Domain\bin\Debug\net9.0\DomainCommons.dll
+F:\NotBlog\Identity.Domain\bin\Debug\net9.0\Token.JWT.dll
+F:\NotBlog\Identity.Domain\bin\Debug\net9.0\DomainCommons.pdb
+F:\NotBlog\Identity.Domain\bin\Debug\net9.0\Token.JWT.pdb
+F:\NotBlog\Identity.Domain\obj\Debug\net9.0\Identity.AFA9DB19.Up2Date
+F:\NotBlog\Identity.Domain\obj\Debug\net9.0\Identity.Domain.dll
+F:\NotBlog\Identity.Domain\obj\Debug\net9.0\refint\Identity.Domain.dll
+F:\NotBlog\Identity.Domain\obj\Debug\net9.0\Identity.Domain.pdb
+F:\NotBlog\Identity.Domain\obj\Debug\net9.0\ref\Identity.Domain.dll

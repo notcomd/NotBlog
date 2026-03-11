@@ -6,7 +6,8 @@ namespace Notcomd.DomainCommand;
 
 public static class ModuleInitializer
 {
-    public static IServiceCollection AddAutoAddInstance(this IServiceCollection service, IEnumerable<Assembly> assemblies)
+    public static IServiceCollection AddAutoAddInstance(this IServiceCollection service,
+        IEnumerable<Assembly> assemblies)
     {
         foreach (var itemAss in assemblies)
         {
@@ -16,13 +17,11 @@ public static class ModuleInitializer
             foreach (var itemModel in notcomdIModel)
             {
                 var initializer = (IModuleInitializer?)Activator.CreateInstance(itemModel);
-                if (initializer == null)
-                {
-                    throw new ArgumentNullException($"{itemModel.Name} is null!");
-                }
+                if (initializer == null) throw new ArgumentNullException($"{itemModel.Name} is null!");
                 initializer.Initialize(service);
             }
         }
+
         return service;
     }
 }

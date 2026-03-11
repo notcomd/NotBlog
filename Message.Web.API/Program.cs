@@ -11,14 +11,17 @@ string[] urls =
 {
     "http://localhost:4000", "http://localhost:8080"
 };
-builder.Services.AddCors(Options => Options.AddDefaultPolicy(builder => builder.WithOrigins(urls).AllowAnyMethod().AllowAnyHeader().AllowCredentials()));
+builder.Services.AddCors(Options =>
+    Options.AddDefaultPolicy(builder =>
+        builder.WithOrigins(urls).AllowAnyMethod().AllowAnyHeader().AllowCredentials()));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-  //
+    //
 }
+
 app.UseCors();
 app.UseHttpsRedirection();
 

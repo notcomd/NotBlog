@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿//using Microsoft.Extensions.Configuration;
+
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace EmailSendServer;
@@ -17,9 +19,8 @@ public static class NotEmailExtension
     {
         // 正确获取 EmailOptions 配置节并绑定
         serviceCollection.AddScoped<IEmail, Email>();
-        //var config=configuration.GetSection(nameof(EmailOptions));
-        serviceCollection.Configure<EmailOptions>
-            (configuration.GetSection(nameof(EmailOptions)));
+        serviceCollection.Configure<EmailOptions>(options =>
+            configuration.GetSection(nameof(EmailOptions)));
         return serviceCollection;
     }
 }

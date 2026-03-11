@@ -21,7 +21,8 @@ public interface IJwtTokenService
     /// <param name="PrivateKey">用户密钥</param>
     /// <param name="AuthorizationString">生成的jwttoken</param>
     /// <returns></returns>
-    Task<TokenValidationResult> JwtSecurityTokenHandlerAsync([Required(ErrorMessage = "privatekey is null!")]string PrivateKey, string AuthorizationString);
+    Task<TokenValidationResult> JwtSecurityTokenHandlerAsync(
+        [Required(ErrorMessage = "privatekey is null!")] string PrivateKey, string AuthorizationString);
 
     /// <summary>
     ///     解析token的重写方法

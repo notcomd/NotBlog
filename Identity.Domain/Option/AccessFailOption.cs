@@ -1,10 +1,8 @@
-﻿namespace Identity.Domain.Option
+﻿namespace Identity.Domain.Option;
+
+public abstract class AccessFailOption
 {
-    public abstract class AccessFailOption
-    {
+    public int MiximumAccessFailCount { get; set; } = 5;
 
-        public int MiximumAccessFailCount { get; set; } = 5;
-
-        public TimeSpan LockOutDuration { get; set; } = TimeSpan.FromMinutes(15);
-    }
+    public TimeSpan LockOutDuration { get; set; } = TimeSpan.FromMinutes(15);
 }

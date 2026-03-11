@@ -5,7 +5,6 @@ namespace CommonsInitializer;
 
 public static class ApplicationBuilderExtension
 {
-
     public static IApplicationBuilder NotBlogUseServer(this IApplicationBuilder app)
     {
         app.UseEventBus();

@@ -27,19 +27,19 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Compile Remove="Application\CommandHandler\**" />
+        <Compile Remove="Application\CommandHandler\**"/>
     </ItemGroup>
 
     <ItemGroup>
-      <EmbeddedResource Remove="Application\CommandHandler\**" />
+        <EmbeddedResource Remove="Application\CommandHandler\**"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Content Remove="Application\CommandHandler\**" />
+        <Content Remove="Application\CommandHandler\**"/>
     </ItemGroup>
 
     <ItemGroup>
-      <None Remove="Application\CommandHandler\**" />
+        <None Remove="Application\CommandHandler\**"/>
     </ItemGroup>
 
 </Project>

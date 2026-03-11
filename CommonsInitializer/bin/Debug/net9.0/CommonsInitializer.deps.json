@@ -397,14 +397,6 @@
           }
         }
       },
-      "Scalar.AspNetCore/2.5.3": {
-        "runtime": {
-          "lib/net9.0/Scalar.AspNetCore.dll": {
-            "assemblyVersion": "2.5.3.0",
-            "fileVersion": "2.5.3.0"
-          }
-        }
-      },
       "System.IdentityModel.Tokens.Jwt/7.6.0": {
         "dependencies": {
           "Microsoft.IdentityModel.JsonWebTokens": "7.6.0",
@@ -420,8 +412,7 @@
       "DomainCommons/1.0.0": {
         "dependencies": {
           "MediatR": "12.5.0",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.7",
-          "Scalar.AspNetCore": "2.5.3"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.7"
         },
         "runtime": {
           "DomainCommons.dll": {
@@ -466,6 +457,7 @@
           "Evenbus": "1.0.0",
           "MailKit": "4.7.1.1",
           "Microsoft.Extensions.Configuration.Abstractions": "9.0.4",
+          "Microsoft.Extensions.Logging.Abstractions": "9.0.4",
           "Microsoft.Extensions.Options": "9.0.4"
         },
         "runtime": {
@@ -481,7 +473,6 @@
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.6",
           "Microsoft.AspNetCore.Authentication.MicrosoftAccount": "8.0.6",
           "Microsoft.AspNetCore.SignalR.Client": "8.0.6",
-          "Scalar.AspNetCore": "2.5.3",
           "System.IdentityModel.Tokens.Jwt": "7.6.0"
         },
         "runtime": {
@@ -743,13 +734,6 @@
       "sha512": "sha512-jNsmGgmCNw2S/NzskeN2ijtGywtH4Sk/G6jWUTD5sY9SrC27Xz6BsLIiB8hdsfjeyWCa4j4GvCIGkpE8wrjU1Q==",
       "path": "rabbitmq.client/6.8.1",
       "hashPath": "rabbitmq.client.6.8.1.nupkg.sha512"
-    },
-    "Scalar.AspNetCore/2.5.3": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-GhMaITeqvKVDLH/RyAH93n1uSkrP/JNI7cRIPUr5bsHjSiVSmhM68Ni+0x1IORnU5O68YiZJX2DcdGbLuEe9aQ==",
-      "path": "scalar.aspnetcore/2.5.3",
-      "hashPath": "scalar.aspnetcore.2.5.3.nupkg.sha512"
     },
     "System.IdentityModel.Tokens.Jwt/7.6.0": {
       "type": "package",

@@ -2,8 +2,9 @@ namespace Video.Domain.Entities;
 
 public class VideoBarrage
 {
-
-    private VideoBarrage() {}
+    private VideoBarrage()
+    {
+    }
 
     public Guid VideoBarrageGuid { get; init; } = Guid.NewGuid();
 

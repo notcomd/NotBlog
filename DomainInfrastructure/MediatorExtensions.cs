@@ -13,7 +13,7 @@ public static class MediatorExtensions
         return service.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(assemblies.ToArray()));
     }
 
-    public async static Task DispatchDomainEventsAsync(this IMediator mediator, DbContext dbContext)
+    public static async Task DispatchDomainEventsAsync(this IMediator mediator, DbContext dbContext)
     {
         var domainEntities = dbContext.ChangeTracker
             .Entries<IDomainEvents>()
@@ -26,9 +26,6 @@ public static class MediatorExtensions
         domainEntities.ToList()
             .ForEach(entity => entity.Entity.ClearDomainEvents());
 
-        foreach (var domainEvent in domainEvents)
-        {
-            await mediator.Publish(domainEvent);
-        }
+        foreach (var domainEvent in domainEvents) await mediator.Publish(domainEvent);
     }
 }

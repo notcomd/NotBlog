@@ -6,10 +6,12 @@ public record VideoReview
     ///     主键
     /// </summary>
     public Guid VideoReviewGuid { get; init; } = Guid.NewGuid();
+
     /// <summary>
     ///     视频主键
     /// </summary>
     public required Guid VideoGuid { get; init; }
+
     /// <summary>
     ///     用户主键
     /// </summary>
@@ -30,7 +32,6 @@ public record VideoReview
     public VideoControl VideoControl { get; private set; } = VideoControl.VideoControlBuilder();
 
     public VideoQuote VideoQuote { get; private set; } = VideoQuote.VideoQuoteBuilder();
-
 
 
     public static VideoReview CreateVideoReview(Guid videoGuid, Guid userGuid, string? videoReviewBody)

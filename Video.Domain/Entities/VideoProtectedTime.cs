@@ -7,13 +7,9 @@ namespace Video.Domain.Entities;
 /// <param name="EndTime">有效结束时间</param>
 public record VideoProtectedTime
 {
-
     public VideoProtectedTime(DateTimeOffset startTime, DateTimeOffset endTime)
     {
-        if (endTime < startTime)
-        {
-            throw new ArgumentException("结束时间不能小于开始时间");
-        }
+        if (endTime < startTime) throw new ArgumentException("结束时间不能小于开始时间");
         StartTime = startTime;
         EndTime = endTime;
     }

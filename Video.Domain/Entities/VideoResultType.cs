@@ -2,7 +2,6 @@ namespace Video.Domain.Entities;
 
 public enum VideoResultType
 {
-
     VideoResultOk,
 
     VideoResultError,
@@ -28,5 +27,4 @@ public enum VideoResultType
     VideoResultUnavailable,
 
     VideoResultUnavailableForLegalReasons
-
 }

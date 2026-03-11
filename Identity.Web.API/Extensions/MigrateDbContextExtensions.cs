@@ -4,15 +4,17 @@ namespace Identity.Web.API.Extensions;
 
 internal static class MigrateDbContextExtensions
 {
-
     private static readonly string ActivitySourceName = "DbMigrations";
     private static readonly ActivitySource ActivitySource = new(ActivitySourceName);
 
     public static IServiceCollection AddMigration<TContext>(this IServiceCollection services)
         where TContext : DbContext
-        => services.AddMigration<TContext>((_, _) => Task.CompletedTask);
+    {
+        return services.AddMigration<TContext>((_, _) => Task.CompletedTask);
+    }
 
-    public static IServiceCollection AddMigration<TContext>(this IServiceCollection services, Func<TContext, IServiceProvider, Task> seeder)
+    public static IServiceCollection AddMigration<TContext>(this IServiceCollection services,
+        Func<TContext, IServiceProvider, Task> seeder)
         where TContext : DbContext
     {
         // Enable migration tracing
@@ -26,10 +28,12 @@ internal static class MigrateDbContextExtensions
         where TDbSeeder : class, IDbSeeder<TContext>
     {
         services.AddScoped<IDbSeeder<TContext>, TDbSeeder>();
-        return services.AddMigration<TContext>((context, sp) => sp.GetRequiredService<IDbSeeder<TContext>>().SeedAsync(context));
+        return services.AddMigration<TContext>((context, sp) =>
+            sp.GetRequiredService<IDbSeeder<TContext>>().SeedAsync(context));
     }
 
-    private static async Task MigrateDbContextAsync<TContext>(this IServiceProvider services, Func<TContext, IServiceProvider, Task> seeder) where TContext : DbContext
+    private static async Task MigrateDbContextAsync<TContext>(this IServiceProvider services,
+        Func<TContext, IServiceProvider, Task> seeder) where TContext : DbContext
     {
         using var scope = services.CreateScope();
         var scopeServices = scope.ServiceProvider;
@@ -48,7 +52,8 @@ internal static class MigrateDbContextExtensions
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "An error occurred while migrating the database used on context {DbContextName}", typeof(TContext).Name);
+            logger.LogError(ex, "An error occurred while migrating the database used on context {DbContextName}",
+                typeof(TContext).Name);
 
             // activity.SetExceptionTags(ex);
 
@@ -56,25 +61,19 @@ internal static class MigrateDbContextExtensions
         }
     }
 
-    private static async Task InvokeSeeder<TContext>(Func<TContext, IServiceProvider, Task> seeder, TContext context, IServiceProvider services)
+    private static async Task InvokeSeeder<TContext>(Func<TContext, IServiceProvider, Task> seeder, TContext context,
+        IServiceProvider services)
         where TContext : DbContext
     {
         using var activity = ActivitySource.StartActivity($"Migrating {typeof(TContext).Name}");
 
-        try
-        {
-            await context.Database.MigrateAsync();
-            await seeder(context, services);
-        }
-        catch (Exception ex)
-        {
-            //activity.SetExceptionTags(ex);
-
-            throw;
-        }
+        await context.Database.MigrateAsync();
+        await seeder(context, services);
     }
 
-    private class MigrationHostedService<TContext>(IServiceProvider serviceProvider, Func<TContext, IServiceProvider, Task> seeder)
+    private class MigrationHostedService<TContext>(
+        IServiceProvider serviceProvider,
+        Func<TContext, IServiceProvider, Task> seeder)
         : BackgroundService where TContext : DbContext
     {
         public override Task StartAsync(CancellationToken cancellationToken)

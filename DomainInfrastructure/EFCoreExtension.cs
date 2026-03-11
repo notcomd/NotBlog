@@ -15,7 +15,9 @@ public static class EFCoreExtension
         {
             var isDeletedProperty = entityType.FindProperty(nameof(ISoftDelete.IsDeleted));
             var parameter = Expression.Parameter(entityType.ClrType, "p");
-            var filter = Expression.Lambda(Expression.Not(Expression.Property(parameter, isDeletedProperty.PropertyInfo)), parameter);
+            var filter =
+                Expression.Lambda(Expression.Not(Expression.Property(parameter, isDeletedProperty.PropertyInfo)),
+                    parameter);
             entityType.SetQueryFilter(filter);
         }
     }

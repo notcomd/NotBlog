@@ -5,7 +5,7 @@ namespace Notcomd.Token.JWT;
 public static class JwtRandom
 {
     /// <summary>
-    /// 创建随机数
+    ///     创建随机数
     /// </summary>
     /// <returns></returns>
     public static ValueTask<long> CreateRandomValueTask()
@@ -15,7 +15,7 @@ public static class JwtRandom
     }
 
     /// <summary>
-    /// 创建随机字符串
+    ///     创建随机字符串
     /// </summary>
     /// <returns></returns>
     public static ValueTask<string> CreateRandomStringValueTask()
@@ -25,11 +25,9 @@ public static class JwtRandom
         {
             var random = new Random().Next(48, 122);
             if (random is >= 48 and <= 57 || random is >= 65 and <= 90 || random is >= 97 and <= 122)
-            {
                 codeString += Convert.ToChar(random);
-            }
-
         }
+
         return new ValueTask<string>(codeString);
     }
 

@@ -14,8 +14,6 @@ namespace DomainCommonst;
 
 public static class WebApplicationBuilderExtension
 {
-
-
     public static void NotBlogConfigureExtraServices(this WebApplicationBuilder builder, InitializerOptions initOptions)
     {
         var services = builder.Services;
@@ -38,7 +36,8 @@ public static class WebApplicationBuilderExtension
         //IdentityService项目还需要启用AddIdentityCore
         builder.Services.AddAuthorization();
         builder.Services.AddAuthentication();
-        var jwtOptions = configuration.GetSection(nameof(JwtOptions)).Get<JwtOptions>() ?? throw new ArgumentNullException($"没有配置JwtOptions{nameof(JwtOptions)}");
+        var jwtOptions = configuration.GetSection(nameof(JwtOptions)).Get<JwtOptions>() ??
+                         throw new ArgumentNullException($"没有配置JwtOptions{nameof(JwtOptions)}");
         builder.Services.AddJwtAuthentication(jwtOptions);
 
 
@@ -52,10 +51,7 @@ public static class WebApplicationBuilderExtension
         services.AddMediator(enumerable);
 
         //现在不用手动AddMVC了，因此把文档中的services.AddMvc(options =>{})改写成Configure<MvcOptions>(options=> {})这个问题很多都类似
-        services.Configure<MvcOptions>(options =>
-        {
-            options.Filters.Add<UnitOfWorkFilter>();
-        });
+        services.Configure<MvcOptions>(options => { options.Filters.Add<UnitOfWorkFilter>(); });
 
 
         // services.Configure<JsonOptions>(options =>
@@ -91,7 +87,8 @@ public static class WebApplicationBuilderExtension
         // });
 
         services.Configure<JwtOptions>(configuration.GetSection("PrivateKey"));
-        services.Configure<IntegrationEventRabbitMQOptions>(configuration.GetSection(nameof(IntegrationEventRabbitMQOptions)));
+        services.Configure<IntegrationEventRabbitMQOptions>(
+            configuration.GetSection(nameof(IntegrationEventRabbitMQOptions)));
         services.AddEventBus(initOptions.EventBusQueueName, enumerable);
 
         //Redis的配置

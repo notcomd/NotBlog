@@ -6,7 +6,6 @@ namespace Identity.Infrastructure.EntityFramework;
 
 public class IdentityDbContext : DbContext, IUnitOfWork
 {
-
     private readonly INotMediator _notMediator;
 
     private IDbContextTransaction _currentTransaction;
@@ -16,7 +15,7 @@ public class IdentityDbContext : DbContext, IUnitOfWork
     public IdentityDbContext(DbContextOptions<IdentityDbContext> options, INotMediator mediator) : base(options)
     {
         _notMediator = mediator ?? throw new ArgumentNullException(nameof(mediator), "Mediator cannot be null");
-        Debug.WriteLine($"IdentityDbContext::Context->{this.GetHashCode()}");
+        Debug.WriteLine($"IdentityDbContext::Context->{GetHashCode()}");
     }
 
     public DbSet<User> Users { get; set; }
@@ -46,8 +45,10 @@ public class IdentityDbContext : DbContext, IUnitOfWork
         return true;
     }
 
-    public IDbContextTransaction GetContextTransaction() => _currentTransaction;
-
+    public IDbContextTransaction GetContextTransaction()
+    {
+        return _currentTransaction;
+    }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -61,7 +62,6 @@ public class IdentityDbContext : DbContext, IUnitOfWork
         modelBuilder.ApplyConfiguration(new UserAccessFailEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new UserSafetyEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new NotClientEntityTypeConfiguration());
-
     }
 
     public async Task<IDbContextTransaction> BeginTransactionAsync()
@@ -110,7 +110,6 @@ public class IdentityDbContext : DbContext, IUnitOfWork
                 _currentTransaction.Dispose();
                 _currentTransaction = null;
             }
-
         }
     }
 }

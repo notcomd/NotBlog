@@ -1,5 +1,7 @@
-﻿namespace Identity.Domain.Events
-{
-    public record UserStartedByEmailDomainEvent(HashSet<Guid> userRoleGuid, string userEmail, string passwordHash, Uri imageCover) : INotifications;
+﻿namespace Identity.Domain.Events;
 
-}
+public record UserStartedByEmailDomainEvent(
+    HashSet<Guid> UserRoleGuid,
+    string UserEmail,
+    string PasswordHash,
+    Uri ImageCover) : INotifications;

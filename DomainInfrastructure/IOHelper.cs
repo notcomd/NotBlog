@@ -7,7 +7,7 @@ public static class IOHelper
     /// </summary>
     /// <param name="stream"></param>
     /// <returns></returns>
-    public async static Task<byte[]> ToArrayAsync(this Stream stream)
+    public static async Task<byte[]> ToArrayAsync(this Stream stream)
     {
         using var memory = new MemoryStream();
         await stream.CopyToAsync(memory);
@@ -34,9 +34,6 @@ public static class IOHelper
     /// <param name="fileInfo"></param>
     public static void CreateDir(FileInfo fileInfo)
     {
-        if (!fileInfo.Directory.Exists)
-        {
-            fileInfo.Directory.Create();
-        }
+        if (!fileInfo.Directory.Exists) fileInfo.Directory.Create();
     }
 }

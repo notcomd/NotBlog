@@ -1,23 +1,19 @@
-﻿namespace Identity.Infrastructure.Configuration
+﻿namespace Identity.Infrastructure.Configuration;
+
+public class NotClientEntityTypeConfiguration : IEntityTypeConfiguration<NotClient>
 {
-    public class NotClientEntityTypeConfiguration : IEntityTypeConfiguration<NotClient>
+    public void Configure(EntityTypeBuilder<NotClient> builder)
     {
-        public void Configure(EntityTypeBuilder<NotClient> builder)
-        {
+        builder.ToTable("NotClient");
 
-            builder.ToTable("NotClient");
+        builder.Ignore(b => b.DomainEventbus);
 
-            builder.Ignore(b => b.DomainEventbus);
+        builder.Property(x => x.Id).UseHiLo("NotClientseq");
 
-            builder.Property(x => x.Id).UseHiLo("NotClientseq");
+        builder.HasKey(xn => xn.NotClientId);
 
-            builder.HasKey(xn => xn.NotClientId);
+        builder.Property(x => x.NotClientId).HasColumnName("client_guid").IsRequired();
 
-            builder.Property(x => x.NotClientId).HasColumnName("client_guid").IsRequired();
-
-            builder.Property(en => en.NotClientType).HasConversion<string>().HasMaxLength(50);
-
-        }
+        builder.Property(en => en.NotClientType).HasConversion<string>().HasMaxLength(50);
     }
-
 }

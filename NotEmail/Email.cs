@@ -14,7 +14,8 @@ public class Email : IEmail
 
     public Email(IOptionsSnapshot<EmailOptions> optionsManager, ILogger<Email> logger)
     {
-        _optionsManager = optionsManager ?? throw new ArgumentNullException($"{optionsManager}不能为空", nameof(optionsManager));
+        _optionsManager = optionsManager ??
+                          throw new ArgumentNullException($"{optionsManager}不能为空", nameof(optionsManager));
         _logger = logger ?? throw new ArgumentNullException($"{logger}不能为空", nameof(logger));
     }
 
@@ -40,14 +41,12 @@ public class Email : IEmail
                 await mailClient.SendAsync(message);
                 await mailClient.DisconnectAsync(true);
             }
-
         }
         catch (SmtpCommandException e)
         {
             Console.WriteLine(e.Message);
             _logger.LogError(e.Message);
         }
-
     }
 
     public async ValueTask SendEmailValueTask(MimeMessage message, MailPush mailPush,
@@ -55,10 +54,7 @@ public class Email : IEmail
     {
         try
         {
-            if (_optionsManager.Value is null)
-            {
-                throw new ArgumentNullException(nameof(_optionsManager.Value.FromEmail));
-            }
+            if (_optionsManager.Value is null) throw new ArgumentNullException(nameof(_optionsManager.Value.FromEmail));
 
             message.From.Add(new MailboxAddress("Service", _optionsManager.Value.FromEmail));
             message.To.Add(new MailboxAddress("Client", mailPush.ToEmailAddress));
@@ -79,6 +75,5 @@ public class Email : IEmail
             Console.WriteLine($"Error>{e.ErrorCode}-{e.Message}");
             _logger.LogError(e.Message);
         }
-
     }
 }

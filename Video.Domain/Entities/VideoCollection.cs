@@ -7,8 +7,9 @@ namespace Video.Domain.Entities;
 /// </summary>
 public class VideoCollection : IAggregateRoot
 {
-
-    private VideoCollection() {}
+    private VideoCollection()
+    {
+    }
 
     public Guid VideoCollectionGuid { get; init; } = Guid.CreateVersion7();
 
@@ -26,7 +27,6 @@ public class VideoCollection : IAggregateRoot
     public VideoControl VideoControl { get; private set; } = VideoControl.VideoControlBuilder();
 
     public VideoQuote VideoQuote { get; private set; }
-
 
 
     public void AddByBelongs(List<Guid> videoBelongs)

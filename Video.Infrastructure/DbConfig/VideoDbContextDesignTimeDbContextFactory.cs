@@ -6,7 +6,6 @@ namespace Video.Infrastructure.DbConfig;
 
 public class VideoDbContextDesignTimeDbContextFactory : IDesignTimeDbContextFactory<VideoDbContext>
 {
-
     public VideoDbContext CreateDbContext(string[] args)
     {
         var builder = new DbContextOptionsBuilder<VideoDbContext>();

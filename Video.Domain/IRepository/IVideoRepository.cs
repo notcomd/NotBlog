@@ -4,7 +4,6 @@ namespace Video.Domain.IRepository;
 
 public interface IVideoRepository
 {
-
     public Task<List<Videos>> FindByVideoListAsync();
 
     public Task<Videos> FindByVideoAsync(Guid findVideoGuid);

@@ -224,14 +224,6 @@
           }
         }
       },
-      "Scalar.AspNetCore/2.5.3": {
-        "runtime": {
-          "lib/net9.0/Scalar.AspNetCore.dll": {
-            "assemblyVersion": "2.5.3.0",
-            "fileVersion": "2.5.3.0"
-          }
-        }
-      },
       "System.IdentityModel.Tokens.Jwt/6.10.0": {
         "dependencies": {
           "Microsoft.IdentityModel.JsonWebTokens": "6.10.0",
@@ -247,8 +239,7 @@
       "DomainCommons/1.0.0": {
         "dependencies": {
           "MediatR": "12.5.0",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.5",
-          "Scalar.AspNetCore": "2.5.3"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.5"
         },
         "runtime": {
           "DomainCommons.dll": {
@@ -397,13 +388,6 @@
       "sha512": "sha512-S7Mi7xMIxsGlPGYThCw+qTtsjiPHRC8xZxzfqL1dW44WocW9C7/uL+Yj9VJ1s/93eEaP25M+Ljja80S9cHdJiA==",
       "path": "notmediator/1.0.4",
       "hashPath": "notmediator.1.0.4.nupkg.sha512"
-    },
-    "Scalar.AspNetCore/2.5.3": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-GhMaITeqvKVDLH/RyAH93n1uSkrP/JNI7cRIPUr5bsHjSiVSmhM68Ni+0x1IORnU5O68YiZJX2DcdGbLuEe9aQ==",
-      "path": "scalar.aspnetcore/2.5.3",
-      "hashPath": "scalar.aspnetcore.2.5.3.nupkg.sha512"
     },
     "System.IdentityModel.Tokens.Jwt/6.10.0": {
       "type": "package",

@@ -6,7 +6,6 @@ namespace Video.Infrastructure.DbConfig;
 
 public class VideoReviewDbContextConfiguration : IEntityTypeConfiguration<VideoReview>
 {
-
     public void Configure(EntityTypeBuilder<VideoReview> builder)
     {
         builder.ToTable("VideoReview");

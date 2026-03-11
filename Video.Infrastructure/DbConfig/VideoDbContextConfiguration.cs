@@ -6,10 +6,8 @@ namespace Video.Infrastructure.DbConfig;
 
 public class VideoDbContextConfiguration : IEntityTypeConfiguration<Videos>
 {
-
     public void Configure(EntityTypeBuilder<Videos> builder)
     {
-
         builder.HasKey(en => en.VideoGuid);
 
         builder.HasIndex(en => en.VideoGuid);
@@ -58,7 +56,5 @@ public class VideoDbContextConfiguration : IEntityTypeConfiguration<Videos>
             x.Property(s => s.UpdateAt).HasColumnName("UpdateTime");
             x.Property(s => s.CreateAt).HasColumnName("CreateTime");
         });
-
-
     }
 }

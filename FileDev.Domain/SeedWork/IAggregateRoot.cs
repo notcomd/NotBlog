@@ -1,6 +1,5 @@
-﻿namespace Identity.Domain.SeedWork
+﻿namespace FileDev.Domain.SeedWork;
+
+public interface IAggregateRoot
 {
-    public interface IAggregateRoot
-    {
-    }
 }

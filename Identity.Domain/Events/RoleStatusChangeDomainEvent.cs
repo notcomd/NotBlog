@@ -1,6 +1,5 @@
-﻿namespace Identity.Domain.Events
+﻿namespace Identity.Domain.Events;
+
+public class RoleStatusChangeDomainEvent : INotifications
 {
-    public class RoleStatusChangeDomainEvent : INotifications
-    {
-    }
 }

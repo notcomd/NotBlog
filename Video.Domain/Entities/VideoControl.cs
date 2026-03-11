@@ -2,8 +2,9 @@ namespace Video.Domain.Entities;
 
 public record VideoControl
 {
-
-    private VideoControl() {}
+    private VideoControl()
+    {
+    }
 
     public bool VideoDelete { get; private set; }
 

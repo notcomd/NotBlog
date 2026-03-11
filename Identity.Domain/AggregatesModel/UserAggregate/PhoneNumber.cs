@@ -2,8 +2,9 @@
 
 public class PhoneNumber : Entity
 {
-
-    protected PhoneNumber() {} // EF Core needs a parameterless constructor
+    protected PhoneNumber()
+    {
+    } // EF Core needs a parameterless constructor
 
     public long AddressRegion { get; set; }
 

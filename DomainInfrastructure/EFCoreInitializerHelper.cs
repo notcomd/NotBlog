@@ -9,12 +9,16 @@ public static class EFCoreInitializerHelper
     public static IServiceCollection AutoAddDbContextBuilder(this IServiceCollection serviceCollection,
         Action<DbContextOptionsBuilder> optionsBuilder, IEnumerable<Assembly> assemblies)
     {
-        Type[] types = [typeof(IServiceCollection), typeof(Action<DbContextOptionsBuilder>), typeof(ServiceLifetime), typeof(ServiceLifetime)];
+        Type[] types =
+        [
+            typeof(IServiceCollection), typeof(Action<DbContextOptionsBuilder>), typeof(ServiceLifetime),
+            typeof(ServiceLifetime)
+        ];
         var dbContextMethod = typeof(EntityFrameworkServiceCollectionExtensions)
             .GetMethod(nameof(EntityFrameworkServiceCollectionExtensions.AddDbContext), 1, types);
         foreach (var item in assemblies)
         {
-            Type[] typesInAsm = item.GetTypes();
+            var typesInAsm = item.GetTypes();
             foreach (var type in typesInAsm.Where(t => !t.IsAbstract && typeof(DbContext).IsAssignableFrom(t)))
             {
                 var dbContextMethodAddDbContext = dbContextMethod?.MakeGenericMethod(type);
@@ -24,6 +28,7 @@ public static class EFCoreInitializerHelper
                 });
             }
         }
+
         return serviceCollection;
     }
 
@@ -44,7 +49,6 @@ public static class EFCoreInitializerHelper
                 .ToList();
 
             foreach (var type in dbContextTypes)
-            {
                 try
                 {
                     // 使用泛型方式注册 DbContext
@@ -55,10 +59,7 @@ public static class EFCoreInitializerHelper
                             m.IsGenericMethod &&
                             m.GetParameters().Length == 4);
 
-                    if (method == null)
-                    {
-                        throw new InvalidOperationException("无法找到 AddDbContext 方法。");
-                    }
+                    if (method == null) throw new InvalidOperationException("无法找到 AddDbContext 方法。");
 
                     var genericMethod = method.MakeGenericMethod(type);
                     genericMethod.Invoke(null, new object[]
@@ -72,26 +73,27 @@ public static class EFCoreInitializerHelper
                 {
                     Console.WriteLine($"注册 DbContext {type.FullName} 失败: {ex.InnerException?.Message}");
                 }
-            }
         }
 
         return services;
     }
 
 
-    public static IServiceCollection AddAllDbContexts(this IServiceCollection services, Action<DbContextOptionsBuilder> builder,
+    public static IServiceCollection AddAllDbContexts(this IServiceCollection services,
+        Action<DbContextOptionsBuilder> builder,
         IEnumerable<Assembly> assemblies)
     {
         //AddDbContextPool不支持DbContext注入其他对象，而且使用不当有内存暴涨的问题，因此不用AddDbContextPool
-        Type[] types = new Type[]
+        var types = new[]
         {
-            typeof(IServiceCollection), typeof(Action<DbContextOptionsBuilder>), typeof(ServiceLifetime), typeof(ServiceLifetime)
+            typeof(IServiceCollection), typeof(Action<DbContextOptionsBuilder>), typeof(ServiceLifetime),
+            typeof(ServiceLifetime)
         };
         var methodAddDbContext = typeof(EntityFrameworkServiceCollectionExtensions)
             .GetMethod(nameof(EntityFrameworkServiceCollectionExtensions.AddDbContext), 1, types);
         foreach (var asmToLoad in assemblies)
         {
-            Type[] typesInAsm = asmToLoad.GetTypes();
+            var typesInAsm = asmToLoad.GetTypes();
             //Register DbContext
             //GetTypes() include public/protected ones
             //GetExportedTypes only include public ones
@@ -107,6 +109,7 @@ public static class EFCoreInitializerHelper
                 });
             }
         }
+
         return services;
     }
 }

@@ -4,7 +4,6 @@ namespace Video.Domain.IRepository;
 
 public interface IVideoCollectionRepository
 {
-
     /// <summary>
     /// </summary>
     /// <param name="findVideoCollectionGuid"></param>

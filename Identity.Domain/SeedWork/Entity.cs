@@ -1,88 +1,79 @@
-﻿namespace Identity.Domain.SeedWork
+﻿namespace Identity.Domain.SeedWork;
+
+public abstract class Entity
 {
-    public abstract class Entity
+    private List<INotifications> _domainEventbus;
+
+    private int _id;
+    private int? _requestedHashCode;
+
+    public virtual int Id
     {
+        get => _id;
+        protected set => _id = value;
+    }
 
-        private List<INotifications> _domainEventbus;
+    public IReadOnlyCollection<INotifications> DomainEventbus =>
+        _domainEventbus?.AsReadOnly() ?? new List<INotifications>().AsReadOnly();
 
-        int _id;
-        int? _requestedHashCode;
+    public void AddDomainEvent(INotifications notification)
+    {
+        _domainEventbus = _domainEventbus ?? new List<INotifications>();
+        _domainEventbus.Add(notification);
+    }
 
-        public virtual int Id
+    public void RemoveDomainEvent(INotifications notification)
+    {
+        if (_domainEventbus is null) return;
+        _domainEventbus.Remove(notification);
+    }
+
+    public void ClearDomainEvents()
+    {
+        _domainEventbus?.Clear();
+    }
+
+    public bool IsTransient()
+    {
+        return _id == default;
+    }
+
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is null || !(obj is Entity))
+            return false;
+        if (ReferenceEquals(this, obj))
+            return true;
+        if (GetType() != obj.GetType())
+            return false;
+        var item = (Entity)obj;
+        if (item.IsTransient() || IsTransient())
+            return false;
+        return item.Id == Id;
+    }
+
+    public override int GetHashCode()
+    {
+        if (!IsTransient())
         {
-            get
-            {
-                return _id;
-            }
-            protected set
-            {
-                _id = value;
-            }
+            if (!_requestedHashCode.HasValue)
+                _requestedHashCode = Id.GetHashCode() ^ 31;
+            return _requestedHashCode.Value;
         }
 
-        public IReadOnlyCollection<INotifications> DomainEventbus => _domainEventbus?.AsReadOnly() ?? new List<INotifications>().AsReadOnly();
+        return base.GetHashCode();
+    }
 
-        public void AddDomainEvent(INotifications notification)
-        {
-            _domainEventbus = _domainEventbus ?? new List<INotifications>();
-            _domainEventbus.Add(notification);
-        }
+    public static bool operator ==(Entity left, Entity right)
+    {
+        if (Equals(left, null))
+            return Equals(right, null) ? true : false;
+        return left.Equals(right);
+    }
 
-        public void RemoveDomainEvent(INotifications notification)
-        {
-            if (_domainEventbus is null) return;
-            _domainEventbus.Remove(notification);
-        }
-
-        public void ClearDomainEvents()
-        {
-            _domainEventbus?.Clear();
-        }
-
-        public bool IsTransient()
-        {
-            return _id == default(int);
-        }
-
-
-        public override bool Equals(object? obj)
-        {
-            if (obj is null || !(obj is Entity))
-                return false;
-            if (ReferenceEquals(this, obj))
-                return true;
-            if (GetType() != obj.GetType())
-                return false;
-            Entity item = (Entity)obj;
-            if (item.IsTransient() || IsTransient())
-                return false;
-            else
-                return item.Id == Id;
-        }
-
-        public override int GetHashCode()
-        {
-            if (!IsTransient())
-            {
-                if (!_requestedHashCode.HasValue)
-                    _requestedHashCode = Id.GetHashCode() ^ 31;
-                return _requestedHashCode.Value;
-            }
-            else
-                return base.GetHashCode();
-        }
-
-        public static bool operator ==(Entity left, Entity right)
-        {
-            if (Equals(left, null))
-                return (Equals(right, null)) ? true : false;
-            else
-                return left.Equals(right);
-        }
-
-        public static bool operator !=(Entity left, Entity right)
-        {
-            return !(left == right);
-        }
+    public static bool operator !=(Entity left, Entity right)
+    {
+        return !(left == right);
     }
 }

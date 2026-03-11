@@ -7,7 +7,6 @@ namespace Notcomd.DomainCommand;
 
 public class UnitOfWorkFilter : IAsyncActionFilter
 {
-
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
         var result = await next();
@@ -17,9 +16,7 @@ public class UnitOfWorkFilter : IAsyncActionFilter
         var meth = action.MethodInfo.GetCustomAttribute<SaverDbContextAttribute>();
         if (meth is null) return;
         foreach (var itm in meth.DbContextTypes)
-        {
             if (context.HttpContext.RequestServices.GetService(itm) is DbContext dbser)
                 await dbser.SaveChangesAsync();
-        }
     }
 }

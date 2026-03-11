@@ -2,13 +2,12 @@ namespace Video.Domain.Entities;
 
 public record VideoQuote
 {
-
-    private readonly static object _lock = new();
+    private static readonly object _lock = new();
 
     private VideoQuote()
     {
-
     }
+
     public long Upvote { get; private set; }
 
     public long Stars { get; private set; }
@@ -40,7 +39,6 @@ public record VideoQuote
         {
             Upvote += 1;
         }
-
     }
 
     public void UpStars()
@@ -49,7 +47,6 @@ public record VideoQuote
         {
             Stars += 1;
         }
-
     }
 
     public void UpWatch()
@@ -58,7 +55,6 @@ public record VideoQuote
         {
             Watch += 1;
         }
-
     }
 
     public void UpDown()
@@ -67,7 +63,6 @@ public record VideoQuote
         {
             Down += 1;
         }
-
     }
 
     public void UpBallot()
@@ -76,7 +71,6 @@ public record VideoQuote
         {
             Ballot += 1;
         }
-
     }
 
     public void UpShare()
@@ -85,7 +79,6 @@ public record VideoQuote
         {
             Share += 1;
         }
-
     }
 
     public void DownUpvote()
@@ -95,7 +88,6 @@ public record VideoQuote
             if (Upvote == 0) return;
             Upvote -= 1;
         }
-
     }
 
     public void DownStars()
@@ -105,7 +97,6 @@ public record VideoQuote
             if (Upvote == 0) return;
             Stars -= 1;
         }
-
     }
 
     public void DownWatch()
@@ -115,7 +106,6 @@ public record VideoQuote
             if (Watch == 0) return;
             Watch -= 1;
         }
-
     }
 
     public void DownDown()
@@ -125,7 +115,6 @@ public record VideoQuote
             if (Down == 0) return;
             Down -= 1;
         }
-
     }
 
     public void DownBallot()
@@ -135,7 +124,6 @@ public record VideoQuote
             if (Ballot == 0) return;
             Ballot -= 1;
         }
-
     }
 
     public void DownShare()

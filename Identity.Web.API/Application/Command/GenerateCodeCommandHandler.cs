@@ -2,7 +2,6 @@ namespace Identity.Web.API.Application.Command;
 
 public class GenerateCodeCommandHandler : IRequestHandler<GenerateCodeCommand, string>
 {
-
     private readonly IEmail _email;
     private readonly IJwtTokenService _jwtTokenServer;
     private readonly INotMediator _notMediator;

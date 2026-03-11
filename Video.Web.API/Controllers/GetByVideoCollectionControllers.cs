@@ -8,12 +8,12 @@ namespace Video.Web.API.Controllers;
 [Route("api/[controller]")]
 public class GetByVideoCollectionControllers : ControllerBase
 {
-
     private readonly ILogger<IVideoCollectionRepository> _loggerVideoCollection;
 
     private readonly IVideoCollectionRepository _videoRepository;
 
-    public GetByVideoCollectionControllers(IVideoCollectionRepository videoRepository, ILogger<IVideoCollectionRepository> loggerVideoCollection)
+    public GetByVideoCollectionControllers(IVideoCollectionRepository videoRepository,
+        ILogger<IVideoCollectionRepository> loggerVideoCollection)
     {
         _videoRepository = videoRepository;
         _loggerVideoCollection = loggerVideoCollection;

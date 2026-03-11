@@ -1,6 +1,3 @@
-﻿namespace Identity.Domain.Events
-{
+﻿namespace Identity.Domain.Events;
 
-    public record AccountLockedEvent(Guid UserGuid) : INotifications;
-
-}
+public record AccountLockedEvent(Guid UserGuid) : INotifications;

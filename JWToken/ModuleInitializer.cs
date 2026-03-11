@@ -5,7 +5,6 @@ namespace Notcomd.Token.JWT;
 
 public class ModuleInitializer : IModuleInitializer
 {
-
     public void Initialize(IServiceCollection service)
     {
         service.AddScoped<IJwtTokenService, JwtTokenService>();

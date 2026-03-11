@@ -7,5 +7,6 @@ public class EvenBusNameAttribute : Attribute
     {
         EventName = eventBusName;
     }
+
     private string EventName { get; set; }
 }

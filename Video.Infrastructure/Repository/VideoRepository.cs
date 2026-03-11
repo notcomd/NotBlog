@@ -68,16 +68,14 @@ public class VideoRepository : IVideoRepository
     public async Task UpdateByQuoteAsync(VideoQuote videoQuote)
     {
         await _videoDbContext.Videos
-            .ExecuteUpdateAsync(
-                en => en.SetProperty(ens => ens.VideoQuote, videoQuote)
+            .ExecuteUpdateAsync(en => en.SetProperty(ens => ens.VideoQuote, videoQuote)
             );
     }
 
     public async Task UpdateByControlAsync(VideoControl videoControl)
     {
         await _videoDbContext.Videos
-            .ExecuteUpdateAsync(
-                en => en.SetProperty(ens => ens.VideoControl, videoControl)
+            .ExecuteUpdateAsync(en => en.SetProperty(ens => ens.VideoControl, videoControl)
             );
     }
 
@@ -85,8 +83,7 @@ public class VideoRepository : IVideoRepository
     public async Task UpdateByTimeSpaceAsync(TimeSpace timeSpace)
     {
         await _videoDbContext.Videos
-            .ExecuteUpdateAsync(
-                en => en.SetProperty(ens => ens.TimeSpace, timeSpace)
+            .ExecuteUpdateAsync(en => en.SetProperty(ens => ens.TimeSpace, timeSpace)
             );
     }
 
@@ -105,12 +102,11 @@ public class VideoRepository : IVideoRepository
     public async Task UpdateByVideoAsync(Videos videos)
     {
         await _videoDbContext.Videos
-            .ExecuteUpdateAsync(
-                en => en.SetProperty(ens => ens.VideoName, videos.VideoName)
-                    .SetProperty(ens => ens.VideoCover, videos.VideoCover)
-                    .SetProperty(ens => ens.VideoTags, videos.VideoTags)
-                    .SetProperty(ens => ens.BriefIntroduction, videos.BriefIntroduction)
-                    .SetProperty(ens => ens.VideoCover, videos.VideoCover)
+            .ExecuteUpdateAsync(en => en.SetProperty(ens => ens.VideoName, videos.VideoName)
+                .SetProperty(ens => ens.VideoCover, videos.VideoCover)
+                .SetProperty(ens => ens.VideoTags, videos.VideoTags)
+                .SetProperty(ens => ens.BriefIntroduction, videos.BriefIntroduction)
+                .SetProperty(ens => ens.VideoCover, videos.VideoCover)
             );
     }
 
@@ -136,22 +132,17 @@ public class VideoRepository : IVideoRepository
     public async Task DeleteByVideoControlAsync(VideoControl videoControl)
     {
         await _videoDbContext.Videos
-            .ExecuteUpdateAsync(
-                up => up.SetProperty(en => en.VideoControl.VideoDelete, videoControl.VideoDelete)
+            .ExecuteUpdateAsync(up => up.SetProperty(en => en.VideoControl.VideoDelete, videoControl.VideoDelete)
             );
-
     }
 
 
     public async Task DeleteByVideoControlRangeAsync(List<VideoControl> videoControl)
     {
         foreach (var item in videoControl)
-        {
             await _videoDbContext.Videos
-                .ExecuteUpdateAsync(
-                    up => up.SetProperty(en => en.VideoControl.VideoDelete, item.VideoDelete)
+                .ExecuteUpdateAsync(up => up.SetProperty(en => en.VideoControl.VideoDelete, item.VideoDelete)
                 );
-        }
     }
 
 
@@ -166,10 +157,8 @@ public class VideoRepository : IVideoRepository
     public async Task InDeleteByVideoRangeAsync(List<Videos> videosList)
     {
         foreach (var item in videosList)
-        {
             await _videoDbContext.Videos
                 .Where(en => en.VideoGuid == item.VideoGuid)
                 .ExecuteDeleteAsync();
-        }
     }
 }

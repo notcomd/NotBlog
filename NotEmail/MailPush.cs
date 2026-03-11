@@ -4,7 +4,6 @@ namespace EmailSendServer;
 
 public class MailPush
 {
-
     public MailPush(string titleEmail, string toEmailAddress)
     {
         TitleEmail = titleEmail;
@@ -15,6 +14,7 @@ public class MailPush
     ///     邮件主题
     /// </summary>
     public string TitleEmail { get; private set; }
+
     /// <summary>
     ///     邮件接收地址
     /// </summary>
