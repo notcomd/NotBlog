@@ -426,22 +426,6 @@
           }
         }
       },
-      "Scalar.AspNetCore/2.5.3": {
-        "type": "package",
-        "compile": {
-          "lib/net9.0/Scalar.AspNetCore.dll": {
-            "related": ".xml"
-          }
-        },
-        "runtime": {
-          "lib/net9.0/Scalar.AspNetCore.dll": {
-            "related": ".xml"
-          }
-        },
-        "frameworkReferences": [
-          "Microsoft.AspNetCore.App"
-        ]
-      },
       "System.IdentityModel.Tokens.Jwt/7.6.0": {
         "type": "package",
         "dependencies": {
@@ -491,30 +475,28 @@
           "buildTransitive/net6.0/_._": {}
         }
       },
-      "DomainCommonst/1.0.0": {
+      "DomainCommons/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
           "MediatR": "12.5.0",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0",
-          "Scalar.AspNetCore": "2.5.3"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0"
         },
         "compile": {
-          "bin/placeholder/DomainCommonst.dll": {}
+          "bin/placeholder/DomainCommons.dll": {}
         },
         "runtime": {
-          "bin/placeholder/DomainCommonst.dll": {}
+          "bin/placeholder/DomainCommons.dll": {}
         }
       },
       "Token.JWT/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
-          "DomainCommonst": "1.0.0",
+          "DomainCommons": "1.0.0",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.6",
           "Microsoft.AspNetCore.Authentication.MicrosoftAccount": "8.0.6",
           "Microsoft.AspNetCore.SignalR.Client": "8.0.6",
-          "Scalar.AspNetCore": "2.5.3",
           "System.IdentityModel.Tokens.Jwt": "7.6.0"
         },
         "compile": {
@@ -1160,23 +1142,6 @@
         "microsoft.identitymodel.tokens.nuspec"
       ]
     },
-    "Scalar.AspNetCore/2.5.3": {
-      "sha512": "GhMaITeqvKVDLH/RyAH93n1uSkrP/JNI7cRIPUr5bsHjSiVSmhM68Ni+0x1IORnU5O68YiZJX2DcdGbLuEe9aQ==",
-      "type": "package",
-      "path": "scalar.aspnetcore/2.5.3",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "README.md",
-        "icon.png",
-        "lib/net8.0/Scalar.AspNetCore.dll",
-        "lib/net8.0/Scalar.AspNetCore.xml",
-        "lib/net9.0/Scalar.AspNetCore.dll",
-        "lib/net9.0/Scalar.AspNetCore.xml",
-        "scalar.aspnetcore.2.5.3.nupkg.sha512",
-        "scalar.aspnetcore.nuspec"
-      ]
-    },
     "System.IdentityModel.Tokens.Jwt/7.6.0": {
       "sha512": "LIuEbv/kFpuw00yI/mPu+T9NAVdH/u7Y5ChCGzYQQeCg9Pft2C7HFWuO/P+Z7c2RcySNjVk1FmuAheKjYIbOkw==",
       "type": "package",
@@ -1263,10 +1228,10 @@
         "useSharedDesignerContext.txt"
       ]
     },
-    "DomainCommonst/1.0.0": {
+    "DomainCommons/1.0.0": {
       "type": "project",
-      "path": "../DomainCommonst/DomainCommonst.csproj",
-      "msbuildProject": "../DomainCommonst/DomainCommonst.csproj"
+      "path": "../DomainCommons/DomainCommons.csproj",
+      "msbuildProject": "../DomainCommons/DomainCommons.csproj"
     },
     "Token.JWT/1.0.0": {
       "type": "project",
@@ -1279,28 +1244,27 @@
       "Microsoft.Extensions.Configuration.Abstractions >= 9.0.0",
       "Microsoft.Extensions.DependencyInjection.Abstractions >= 9.0.1",
       "Microsoft.Extensions.Logging.Abstractions >= 9.0.0",
-      "Scalar.AspNetCore >= 2.5.3",
       "Token.JWT >= 1.0.0"
     ]
   },
   "packageFolders": {
-    "C:\\Users\\29617\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\notco\\.nuget\\packages\\": {},
+    "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\29617\\source\\repos\\MyService\\Video.Domain\\Video.Domain.csproj",
+      "projectUniqueName": "F:\\NotBlog\\Video.Domain\\Video.Domain.csproj",
       "projectName": "Video.Domain",
-      "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\Video.Domain\\Video.Domain.csproj",
-      "packagesPath": "C:\\Users\\29617\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\29617\\source\\repos\\MyService\\Video.Domain\\obj\\",
+      "projectPath": "F:\\NotBlog\\Video.Domain\\Video.Domain.csproj",
+      "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
+      "outputPath": "F:\\NotBlog\\Video.Domain\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\29617\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\notco\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -1316,8 +1280,8 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "C:\\Users\\29617\\source\\repos\\MyService\\JWToken\\Token.JWT.csproj": {
-              "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\JWToken\\Token.JWT.csproj"
+            "F:\\NotBlog\\JWToken\\Token.JWT.csproj": {
+              "projectPath": "F:\\NotBlog\\JWToken\\Token.JWT.csproj"
             }
           }
         }
@@ -1332,7 +1296,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "9.0.300"
+      "SdkAnalysisLevel": "10.0.100"
     },
     "frameworks": {
       "net9.0": {
@@ -1349,10 +1313,6 @@
           "Microsoft.Extensions.Logging.Abstractions": {
             "target": "Package",
             "version": "[9.0.0, )"
-          },
-          "Scalar.AspNetCore": {
-            "target": "Package",
-            "version": "[2.5.3, )"
           }
         },
         "imports": [
@@ -1366,12 +1326,26 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
+        "downloadDependencies": [
+          {
+            "name": "Microsoft.AspNetCore.App.Ref",
+            "version": "[9.0.12, 9.0.12]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Ref",
+            "version": "[9.0.12, 9.0.12]"
+          },
+          {
+            "name": "Microsoft.WindowsDesktop.App.Ref",
+            "version": "[9.0.12, 9.0.12]"
+          }
+        ],
         "frameworkReferences": {
           "Microsoft.NETCore.App": {
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.301/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.102/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

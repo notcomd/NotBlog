@@ -3,10 +3,13 @@ namespace FileDev.Domain.Entities;
 public enum FileType
 {
     /// <summary>
-    ///     视频
+    /// 视频文件 
     /// </summary>
     FileVideo,
 
+    /// <summary>
+    /// 音频文件
+    /// </summary>
     FileAudio,
 
     /// <summary>
@@ -20,12 +23,12 @@ public enum FileType
     FileFile,
 
     /// <summary>
-    ///     压缩文件
+    /// 压缩文件
     /// </summary>
     CompressFiles,
 
     /// <summary>
-    ///     表情
+    /// 表情
     /// </summary>
     Expression
 }

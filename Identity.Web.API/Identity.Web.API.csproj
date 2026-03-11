@@ -27,7 +27,19 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Application\CommandHandler\"/>
+      <Compile Remove="Application\CommandHandler\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Remove="Application\CommandHandler\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Remove="Application\CommandHandler\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Application\CommandHandler\**" />
     </ItemGroup>
 
 </Project>

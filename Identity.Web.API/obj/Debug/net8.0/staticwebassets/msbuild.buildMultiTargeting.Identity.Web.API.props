@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\build\Identity.Web.API.props" />
-</Project>

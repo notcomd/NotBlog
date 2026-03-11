@@ -1277,30 +1277,28 @@
           "buildTransitive/net6.0/_._": {}
         }
       },
-      "DomainCommonst/1.0.0": {
+      "DomainCommons/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
           "MediatR": "12.5.0",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0",
-          "Scalar.AspNetCore": "2.5.3"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0"
         },
         "compile": {
-          "bin/placeholder/DomainCommonst.dll": {}
+          "bin/placeholder/DomainCommons.dll": {}
         },
         "runtime": {
-          "bin/placeholder/DomainCommonst.dll": {}
+          "bin/placeholder/DomainCommons.dll": {}
         }
       },
       "Token.JWT/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
-          "DomainCommonst": "1.0.0",
+          "DomainCommons": "1.0.0",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.6",
           "Microsoft.AspNetCore.Authentication.MicrosoftAccount": "8.0.6",
           "Microsoft.AspNetCore.SignalR.Client": "8.0.6",
-          "Scalar.AspNetCore": "2.5.3",
           "System.IdentityModel.Tokens.Jwt": "7.6.0"
         },
         "compile": {
@@ -1317,7 +1315,6 @@
           "Microsoft.Extensions.Configuration.Abstractions": "9.0.0",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.1",
           "Microsoft.Extensions.Logging.Abstractions": "9.0.0",
-          "Scalar.AspNetCore": "2.5.3",
           "Token.JWT": "1.0.0"
         },
         "compile": {
@@ -1333,7 +1330,6 @@
         "dependencies": {
           "Microsoft.EntityFrameworkCore": "9.0.0",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "9.0.0",
-          "Scalar.AspNetCore": "2.5.3",
           "Video.Domain": "1.0.0"
         },
         "compile": {
@@ -3673,10 +3669,10 @@
         "useSharedDesignerContext.txt"
       ]
     },
-    "DomainCommonst/1.0.0": {
+    "DomainCommons/1.0.0": {
       "type": "project",
-      "path": "../DomainCommonst/DomainCommonst.csproj",
-      "msbuildProject": "../DomainCommonst/DomainCommonst.csproj"
+      "path": "../DomainCommons/DomainCommons.csproj",
+      "msbuildProject": "../DomainCommons/DomainCommons.csproj"
     },
     "Token.JWT/1.0.0": {
       "type": "project",
@@ -3706,23 +3702,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\29617\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\notco\\.nuget\\packages\\": {},
+    "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\29617\\source\\repos\\MyService\\Video.Web.API\\Video.Web.API.csproj",
+      "projectUniqueName": "F:\\NotBlog\\Video.Web.API\\Video.Web.API.csproj",
       "projectName": "Video.Web.API",
-      "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\Video.Web.API\\Video.Web.API.csproj",
-      "packagesPath": "C:\\Users\\29617\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\29617\\source\\repos\\MyService\\Video.Web.API\\obj\\",
+      "projectPath": "F:\\NotBlog\\Video.Web.API\\Video.Web.API.csproj",
+      "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
+      "outputPath": "F:\\NotBlog\\Video.Web.API\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\29617\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\notco\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -3738,11 +3734,11 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "C:\\Users\\29617\\source\\repos\\MyService\\Video.Domain\\Video.Domain.csproj": {
-              "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\Video.Domain\\Video.Domain.csproj"
+            "F:\\NotBlog\\Video.Domain\\Video.Domain.csproj": {
+              "projectPath": "F:\\NotBlog\\Video.Domain\\Video.Domain.csproj"
             },
-            "C:\\Users\\29617\\source\\repos\\MyService\\Video.Infrastructure\\Video.Infrastructure.csproj": {
-              "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\Video.Infrastructure\\Video.Infrastructure.csproj"
+            "F:\\NotBlog\\Video.Infrastructure\\Video.Infrastructure.csproj": {
+              "projectPath": "F:\\NotBlog\\Video.Infrastructure\\Video.Infrastructure.csproj"
             }
           }
         }
@@ -3757,7 +3753,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "9.0.300"
+      "SdkAnalysisLevel": "10.0.100"
     },
     "frameworks": {
       "net9.0": {
@@ -3797,6 +3793,24 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
+        "downloadDependencies": [
+          {
+            "name": "Microsoft.AspNetCore.App.Ref",
+            "version": "[9.0.12, 9.0.12]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Host.win-x64",
+            "version": "[9.0.12, 9.0.12]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Ref",
+            "version": "[9.0.12, 9.0.12]"
+          },
+          {
+            "name": "Microsoft.WindowsDesktop.App.Ref",
+            "version": "[9.0.12, 9.0.12]"
+          }
+        ],
         "frameworkReferences": {
           "Microsoft.AspNetCore.App": {
             "privateAssets": "none"
@@ -3805,7 +3819,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.301/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.102/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

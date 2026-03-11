@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 namespace Identity.Domain.Server;
 
 public class UserRepositoryServer
@@ -21,91 +23,87 @@ public class UserRepositoryServer
         _optionsSnapshot = optionsSnapshot;
     }
 
-    //public async Task FailAsync(User user)
-    //{
-    //    await user.
-    //}
-
     public async ValueTask<string> LogInByCheckPasswordAsync(PhoneNumber phoneNumber, string password, long code)
     {
         return await LogInByCheckPasswordCoreAsync(phoneNumber, password);
     }
 
-
     /// <summary>
     /// 登入验证
     /// </summary>
-    /// <param name="email"></param>
-    /// <param name="password"></param>
-    /// <param name="code"></param>
-    /// <returns></returns>
-    public async ValueTask<string> LogInByCheckPasswordAsync([EmailAddress(ErrorMessage = "无效邮件地址")]string email, string password, string code)
+    /// <param name="email">电子邮件地址</param>
+    /// <param name="password">密码</param>
+    /// <param name="code">验证码（当前未使用）</param>
+    /// <returns>成功返回 JWT 令牌，失败返回错误信息</returns>
+    public async ValueTask<string> LogInByCheckPasswordAsync(
+        [EmailAddress(ErrorMessage = "无效邮件地址")] string email, 
+        string password, 
+        string code)
     {
         var userData = await _userRepository.FindOneByUserAsync(email);
         if (userData is null)
         {
-            _loggerUser.LogError($" {DateTime.UtcNow}  find {email} is null return null ");
-            return $" {userData?.UserEmail}用户不存在！";
+            _loggerUser.LogError($"[{DateTime.UtcNow}] 用户 {email} 不存在");
+            return $"用户 {email} 不存在！";
         }
+        
         return await LogInByCheckPasswordCoreAsync(userData, password);
-
     }
 
-    public async ValueTask<bool> SigInByCreateUserAsync(string email, string password, long code)
+    public async ValueTask<bool> SigInByCreateUserAsync(string email, string password, string code)
     {
-        var usdata = await _userRepository.FindOneByUserAsync(email);
-        if (usdata != null)
+        var existingUser = await _userRepository.FindOneByUserAsync(email);
+        Debug.Assert(existingUser != null, nameof(existingUser) + " != null");
+        if (existingUser != null)
         {
-            _loggerUser.LogInformation($"[{DateTime.UtcNow}]存在该用户", nameof(usdata));
+            _loggerUser.LogInformation($"[{DateTime.UtcNow}] 已存在用户：{email}");
             return false;
         }
-        //var salt = await HashH256Tool.GenerateSValueTask();
-        var role = new Roles(usdata!.UserGuid, email);
+
+        var userRoleGuid = new HashSet<Guid>();
+        var role = new Roles(userRoleGuid, email);
         await _userRoleRepository.AddByUserRoleAsync(role);
-        //var passwordhash = await HashH256Tool.CreateHash256Async(password, );
-        // usdata = new User(role.RoleGuid, email, passwordhash, new Uri("https://www.baidu.com/img/PCtm_d9c8750bed0b3c7d089fa7d55720d6cf.png"));
-        var userdata = await User.CreateByEmailUser(userRoleGuid: usdata!.UserGuid, userEmail: email, passwordHash: password, imageCover: new Uri("https://www.baidu.com/img/PCtm_d9c8750bed0b3c7d089fa7d55720d6cf.png"));
-        await _userRepository.AddOneByUserAsync(usdata);
+        
+        var newUser = await User.CreateByEmailUser(
+            userRoleGuid: userRoleGuid,
+            userEmail: email,
+            passwordHash: password,
+            imageCover: new Uri("https://www.baidu.com/img/PCtm_d9c8750bed0b3c7d089fa7d55720d6cf.png"));
+        await _userRepository.AddOneByUserAsync(newUser);
         return true;
     }
 
     /// <summary>
-    ///  登入验证核心方法
+    /// 登入验证核心方法
     /// </summary>
-    /// <param name="userIdentifier">
-    ///  用户标识符，可以是手机号或电子邮件地址。
-    /// </param>
-    /// <param name="password">
-    ///  用户密码。
-    /// </param>
-    /// <returns>
-    /// 返回一个字符串，表示登录结果。如果登录成功，将返回 JWT 令牌；如果失败，将返回错误信息。
-    /// </returns>
-    /// <exception cref="ArgumentException"></exception>
+    /// <param name="userIdentifier">用户标识符，可以是手机号或电子邮件地址</param>
+    /// <param name="password">用户密码</param>
+    /// <returns>返回一个字符串，表示登录结果。成功返回 JWT 令牌，失败返回错误信息</returns>
+    /// <exception cref="ArgumentException">当用户标识符类型无效时抛出</exception>
+    /// <exception cref="ArgumentNullException">当用户不存在时抛出</exception>
     private async ValueTask<string> LogInByCheckPasswordCoreAsync(object userIdentifier, string password)
     {
-        User userData;
+        User? userData;
+        
         if (userIdentifier is PhoneNumber phoneNumber)
         {
             userData = await _userRepository.FindOneByUserAsync(phoneNumber);
+            if (userData is null)
+                throw new ArgumentNullException(nameof(userIdentifier), "用户不存在");
         }
         else if (userIdentifier is string email)
         {
             userData = await _userRepository.FindOneByUserAsync(email);
+            if (userData is null)
+                throw new ArgumentNullException(nameof(userIdentifier), "用户不存在");
         }
         else
         {
-            throw new ArgumentException("Invalid user identifier type");
+            throw new ArgumentException($"无效的用户标识符类型：{userIdentifier.GetType().Name}", nameof(userIdentifier));
         }
 
-        if (userData is null)
-        {
-            _loggerUser.LogError($"User {userIdentifier} not found");
-            return "111000";
-        }
-
-        var role = await _userRoleRepository.FindByUserRoleAsync(userData.UserRoleGuid);
-
+        var role = await _userRoleRepository.FindUserIdByRoleAsync(userData.UserGuid);
+        
         try
         {
             if (await userData.VerifyByPassword(password))
@@ -114,23 +112,40 @@ public class UserRepositoryServer
                 {
                     var listClaims = new List<Claim>
                     {
-                        new(ClaimTypes.Name, userData!.UserName),
-                        new(ClaimTypes.Email, userData!.UserEmail),
-                        new(ClaimTypes.Role, role!.RoleName),
-                        new(ClaimTypes.MobilePhone, userData.PhoneNumber!.PhoneCode),
-                        new(ClaimTypes.Authentication, role!.RoleAuthority.ToString())
+                        new(ClaimTypes.Name, userData.UserName),
+                        new(ClaimTypes.Email, userData.UserEmail),
+                        new(ClaimTypes.Role, role?.RoleName ?? "User"),
+                        new(ClaimTypes.MobilePhone, userData.PhoneNumber?.PhoneCode ?? string.Empty),
+                        new(ClaimTypes.Authentication, role?.RoleAuthority.ToString() ?? "0")
                     };
-                    _loggerUser.LogInformation($"date:[{userData.UserEmail}] 通验证，Token");
+                    
+                    _loggerUser.LogInformation($"[{DateTime.UtcNow}] 用户 {userData.UserEmail} 验证通过，生成 Token");
                     return _jwtTokenServer.BuilderTokenAsync(listClaims, _optionsSnapshot.Value);
                 }
             }
-            // await FailAsync(userData);
+            
+            _loggerUser.LogWarning($"[{DateTime.UtcNow}] 用户 {userData.UserEmail} 密码错误");
             return "密码错误";
         }
         catch (Exception ex)
         {
-            _loggerUser.LogError(ex, $"Error during login for user {userIdentifier}");
+            _loggerUser.LogError(ex, $"[{DateTime.UtcNow}] 用户 {userIdentifier} 登录过程中发生错误");
             return "登录失败";
         }
+    }
+
+    private static string SwitchRole(Roles roles)
+    {
+        if (roles is null)
+            throw new ArgumentNullException(nameof(roles));
+            
+        return roles.RoleAuthority switch
+        {
+            RoleAuthority.Root => "Root",
+            RoleAuthority.Admin => "Admin",
+            RoleAuthority.User => "User",
+            RoleAuthority.Guest => "Guest",
+            _ => "未知角色"
+        };
     }
 }

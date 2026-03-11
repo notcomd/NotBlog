@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\29617\\source\\repos\\MyService\\NotEmail\\NotEmail.csproj": {}
+    "F:\\NotBlog\\NotEmail\\NotEmail.csproj": {}
   },
   "projects": {
-    "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj": {
+    "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj",
-        "projectName": "DomainCommonst",
-        "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj",
-        "packagesPath": "C:\\Users\\29617\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\obj\\",
+        "projectUniqueName": "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj",
+        "projectName": "DomainCommons",
+        "projectPath": "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj",
+        "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
+        "outputPath": "F:\\NotBlog\\DomainCommons\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+          "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\29617\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\notco\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -45,7 +45,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.300"
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
         "net9.0": {
@@ -58,10 +58,6 @@
             "Microsoft.Extensions.DependencyInjection.Abstractions": {
               "target": "Package",
               "version": "[8.0.0, )"
-            },
-            "Scalar.AspNetCore": {
-              "target": "Package",
-              "version": "[2.5.3, )"
             }
           },
           "imports": [
@@ -75,29 +71,43 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[9.0.12, 9.0.12]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[9.0.12, 9.0.12]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Ref",
+              "version": "[9.0.12, 9.0.12]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.301/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.102/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Users\\29617\\source\\repos\\MyService\\Evenbus\\Evenbus.csproj": {
+    "F:\\NotBlog\\Evenbus\\Evenbus.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\29617\\source\\repos\\MyService\\Evenbus\\Evenbus.csproj",
+        "projectUniqueName": "F:\\NotBlog\\Evenbus\\Evenbus.csproj",
         "projectName": "Evenbus",
-        "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\Evenbus\\Evenbus.csproj",
-        "packagesPath": "C:\\Users\\29617\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\29617\\source\\repos\\MyService\\Evenbus\\obj\\",
+        "projectPath": "F:\\NotBlog\\Evenbus\\Evenbus.csproj",
+        "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
+        "outputPath": "F:\\NotBlog\\Evenbus\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+          "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\29617\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\notco\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -125,7 +135,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.300"
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
         "net9.0": {
@@ -167,29 +177,43 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[9.0.12, 9.0.12]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[9.0.12, 9.0.12]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Ref",
+              "version": "[9.0.12, 9.0.12]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.301/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.102/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Users\\29617\\source\\repos\\MyService\\NotEmail\\NotEmail.csproj": {
+    "F:\\NotBlog\\NotEmail\\NotEmail.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\29617\\source\\repos\\MyService\\NotEmail\\NotEmail.csproj",
+        "projectUniqueName": "F:\\NotBlog\\NotEmail\\NotEmail.csproj",
         "projectName": "NotEmail",
-        "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\NotEmail\\NotEmail.csproj",
-        "packagesPath": "C:\\Users\\29617\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\29617\\source\\repos\\MyService\\NotEmail\\obj\\",
+        "projectPath": "F:\\NotBlog\\NotEmail\\NotEmail.csproj",
+        "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
+        "outputPath": "F:\\NotBlog\\NotEmail\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+          "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\29617\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\notco\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -205,11 +229,11 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj": {
-                "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\DomainCommonst\\DomainCommonst.csproj"
+              "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj": {
+                "projectPath": "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj"
               },
-              "C:\\Users\\29617\\source\\repos\\MyService\\Evenbus\\Evenbus.csproj": {
-                "projectPath": "C:\\Users\\29617\\source\\repos\\MyService\\Evenbus\\Evenbus.csproj"
+              "F:\\NotBlog\\Evenbus\\Evenbus.csproj": {
+                "projectPath": "F:\\NotBlog\\Evenbus\\Evenbus.csproj"
               }
             }
           }
@@ -224,7 +248,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.300"
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
         "net9.0": {
@@ -237,6 +261,10 @@
             "Microsoft.Extensions.Configuration.Abstractions": {
               "target": "Package",
               "version": "[9.0.4, )"
+            },
+            "Microsoft.Extensions.Logging.Abstractions": {
+              "target": "Package",
+              "version": "[8.0.0, )"
             },
             "Microsoft.Extensions.Options": {
               "target": "Package",
@@ -254,12 +282,26 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[9.0.12, 9.0.12]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[9.0.12, 9.0.12]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Ref",
+              "version": "[9.0.12, 9.0.12]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.301/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.102/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

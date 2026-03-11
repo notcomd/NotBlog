@@ -7,8 +7,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Folder Include="Option\"/>
-        <Folder Include="Server\"/>
+      <Compile Remove="Option\**" />
+      <Compile Remove="Server\**" />
+      <EmbeddedResource Remove="Option\**" />
+      <EmbeddedResource Remove="Server\**" />
     </ItemGroup>
 
 </Project>

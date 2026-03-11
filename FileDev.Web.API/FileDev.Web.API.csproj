@@ -8,6 +8,19 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.2"/>
+        <PackageReference Include="NotMediator" Version="1.0.5" />
+        <PackageReference Include="Scalar.AspNetCore" Version="2.13.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="ActionFilter\" />
+      <Folder Include="EventBus\" />
+      <Folder Include="Extensions\" />
+      <Folder Include="ReponseEntity\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\FileDev.Domain\FileDev.Domain.csproj" />
     </ItemGroup>
 
 </Project>

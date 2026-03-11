@@ -19,7 +19,23 @@
 
         public bool IsLockedOut => LockOutEnd.HasValue && LockOutEnd.Value > DateTimeOffset.UtcNow;
 
+        private UserSafety()
+        {
+            this.UserSafetyGuid = Guid.CreateVersion7();
+            this.BlackOrWhite = BlackOrWhite.AuthorityWhite;
+            this.UserStatus = UserStatus.Normal;
+        }
 
+        public UserSafety(User user, string securityStamp, string passwordSalt) : this()
+        {
+            if (user is null)
+                throw new ArgumentNullException(nameof(user));
+            if (securityStamp == null)
+                throw new ArgumentNullException(nameof(securityStamp));
+            this.SecurityStamp = securityStamp;
+            this.PasswordSalt = passwordSalt;
+            this.UserGuid = Guid.NewGuid();
+        }
 
         public static UserSafety CreateByUserSafety(Guid UserGuid, string? securityStamp, string? passwordSalt,
             BlackOrWhite blackOrWhite = BlackOrWhite.AuthorityWhite, UserStatus userStatus = UserStatus.Normal)

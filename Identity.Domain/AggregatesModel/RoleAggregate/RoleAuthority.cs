@@ -13,11 +13,6 @@ public enum RoleAuthority
     Admin = 1,
 
     /// <summary>
-    /// 成员
-    /// </summary>
-    Member = 2,
-
-    /// <summary>
     /// 用户
     /// </summary>
     User = 3,

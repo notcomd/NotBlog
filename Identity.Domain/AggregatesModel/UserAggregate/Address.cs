@@ -2,21 +2,6 @@
 {
     public sealed class Address : ValueObject
     {
-
-
-        protected Address() {}
-
-
-        public Address(string country, string province, string city, string district, string street, string detail)
-        {
-            Country = country;
-            Province = province;
-            City = city;
-            District = district;
-            Street = street;
-            Detail = detail;
-        }
-
         public string Country { get; init; } // 国家
 
         public string Province { get; init; } // 省份
@@ -29,6 +14,18 @@
 
         public string Detail { get; init; } // 详细地址
 
+        protected Address() { }
+
+
+        public Address(string country, string province, string city, string district, string street, string detail)
+        {
+            Country = country;
+            Province = province;
+            City = city;
+            District = district;
+            Street = street;
+            Detail = detail;
+        }
 
         protected override IEnumerable<object> GetAtomicValues()
         {

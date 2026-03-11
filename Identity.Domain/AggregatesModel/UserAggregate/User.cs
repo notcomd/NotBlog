@@ -4,15 +4,9 @@ namespace Identity.Domain.AggregatesModel.UserAggregate;
 
 public class User : Entity, IAggregateRoot
 {
-
-    protected User()
-    {
-        UserGuid = Guid.CreateVersion7();
-    }
-
     public Guid UserGuid { get; init; }
 
-    public Guid UserRoleGuid { get; init; }
+    public HashSet<Guid> UserRoleGuid { get; init; }
 
     public string? UserName { get; private set; }
 
@@ -34,9 +28,38 @@ public class User : Entity, IAggregateRoot
 
 
 
-    public static async Task<User> CreateByEmailUser(Guid userRoleGuid, string userEmail, string passwordHash, Uri imageCover)
+    protected User()
     {
-        if (userRoleGuid == Guid.Empty)
+        UserGuid = Guid.CreateVersion7();
+        this.UserRoleGuid = new HashSet<Guid>();
+        CreateDatetime = DateTimeOffset.UtcNow;
+    }
+
+    public User(HashSet<Guid> roleId, string userEmail, string passwordHash, Uri? imageCover) : this()
+    {
+        if (roleId is null)
+            throw new ArgumentNullException(nameof(roleId), "User role cannot be null or empty");
+        if (string.IsNullOrEmpty(userEmail))
+            throw new ArgumentNullException(nameof(userEmail), "User email cannot be null or empty");
+        if (string.IsNullOrEmpty(passwordHash))
+            throw new ArgumentNullException(nameof(passwordHash), "Password hash cannot be null or empty");
+        if (imageCover == null)
+            throw new ArgumentNullException(nameof(imageCover), "Image cover cannot be null");
+
+        this.UserRoleGuid = roleId;
+        this.UserEmail = userEmail;
+        this.PasswordHash = passwordHash;
+        if (imageCover is not null)
+            this.ImageCover = imageCover;
+    }
+
+
+
+
+    public static async Task<User> CreateByEmailUser(HashSet<Guid> userRoleGuid, string userEmail,
+        string passwordHash, Uri imageCover)
+    {
+        if (userRoleGuid is null)
             throw new ArgumentNullException(nameof(userRoleGuid), "User role cannot be null or empty");
         if (string.IsNullOrEmpty(userEmail))
             throw new ArgumentNullException(nameof(userEmail), "User email cannot be null or empty");
@@ -49,7 +72,6 @@ public class User : Entity, IAggregateRoot
         var stamp = await JwtRandom.GenerateSecurityStamp() ?? throw new ArgumentNullException("security stamp is null");
         var UserResult = new User
         {
-            UserGuid = Guid.CreateVersion7(),
             UserRoleGuid = userRoleGuid,
             UserName = userEmail,
             PasswordHash = await HashH256Tool.CreateHash256Async(passwordHash, salt),
@@ -64,9 +86,9 @@ public class User : Entity, IAggregateRoot
     }
 
 
-    public static async Task<User> CreateByPhoneUser(Guid userRoleGuid, PhoneNumber phoneNumber, string passwordHash, Uri imageCover)
+    public static async Task<User> CreateByPhoneUser(HashSet<Guid> userRoleGuid, PhoneNumber phoneNumber, string passwordHash, Uri imageCover)
     {
-        if (userRoleGuid == Guid.Empty)
+        if (userRoleGuid is null)
             throw new ArgumentNullException(nameof(userRoleGuid), "User role cannot be null or empty");
         if (phoneNumber is null)
             throw new ArgumentNullException(nameof(phoneNumber), "User email cannot be null or empty");
@@ -144,7 +166,8 @@ public class User : Entity, IAggregateRoot
             throw new ArgumentOutOfRangeException("your are set password is short!");
         }
         var salt = await HashH256Tool.GenerateSValueTask() ?? throw new ArgumentNullException($"salt is null!");
-        UserSafety.ResetByPasswordSalt(salt.ToString());
+        var SaltStr = !string.IsNullOrEmpty(salt.ToString()) ? salt.ToString() : throw new ArgumentNullException("salt is null!");
+        UserSafety.ResetByPasswordSalt(SaltStr);
         PasswordHash = await HashH256Tool.CreateHash256Async(password, Encoding.UTF8.GetBytes(UserSafety.PasswordSalt));
     }
 
@@ -158,11 +181,9 @@ public class User : Entity, IAggregateRoot
     /// </returns>
     public void BandingByPhoneAsync(long region, string phoneNumber)
     {
-
-        PhoneNumber = PhoneNumber.CreatePhoneNumber(region, phoneNumber) ?? throw new ArgumentNullException(nameof(PhoneNumber), "phone number is null");
-
+        PhoneNumber = PhoneNumber.CreatePhoneNumber(region, phoneNumber) ??
+            throw new ArgumentNullException(nameof(PhoneNumber), "phone number is null");
         AddDomainEvent(new PhoneNumberBandingEvent(UserGuid, PhoneNumber.PhoneCode));
-
     }
 
     public bool VerifyByPhoneNumber(PhoneNumber phoneNumber)
@@ -172,6 +193,12 @@ public class User : Entity, IAggregateRoot
         return PhoneNumber?.PhoneCode == phoneNumber.PhoneCode && PhoneNumber.AddressRegion == phoneNumber.AddressRegion;
     }
 
+    /// <summary>
+    /// 验证邮箱是否正确
+    /// </summary>
+    /// <param name="email"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException"></exception>
     public bool VerifyByEmail(string email)
     {
         if (string.IsNullOrEmpty(email))
@@ -208,33 +235,9 @@ public class User : Entity, IAggregateRoot
     {
         if (UserEmail == newEmail)
             throw new ArgumentException("需要不同的邮箱");
-        UserEmail = newEmail;
+        UserEmail = string.IsNullOrEmpty(newEmail) ?
+            throw new ArgumentNullException("change eamil is null！") : newEmail;
 
-    }
-
-    /// <summary>
-    /// 设置新密码
-    /// </summary>
-    /// <param name="phoneNumber"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentException"></exception>
-    public void ChangeByPhoneAsync(PhoneNumber phoneNumber)
-    {
-        if (phoneNumber.PhoneCode == PhoneNumber!.PhoneCode)
-            throw new ArgumentException("需要不要一样的号码");
-        PhoneNumber = phoneNumber;
-    }
-
-    /// <summary>
-    /// 重新设置邮箱
-    /// </summary>
-    /// <param name="emailAddress"> 邮箱地址 </param>
-    /// <returns></returns>
-    public void RestartByEmailAsync([EmailAddress(ErrorMessage = "your set email is error ,pleas set again your email address!")]string emailAddress)
-    {
-        if (UserEmail == emailAddress)
-            throw new ArgumentException("需要不同的邮箱");
-        UserEmail = emailAddress;
     }
 
     /// <summary>
@@ -248,6 +251,11 @@ public class User : Entity, IAggregateRoot
     /// </returns>
     private async Task<bool> CheckByPasswordAsync(string hashPassword, string password)
     {
-        return await HashH256Tool.VerifyPasswordValueTask(password, hashPassword, Encoding.UTF8.GetBytes(UserSafety.PasswordSalt));
+        var Salt = string.IsNullOrEmpty(UserSafety.PasswordSalt) ?
+            throw new ArgumentNullException("PasswordSalt is null") : UserSafety.PasswordSalt;
+        return await HashH256Tool
+            .VerifyPasswordValueTask(password, hashPassword, Encoding.UTF8.GetBytes(Salt));
     }
+
+
 }

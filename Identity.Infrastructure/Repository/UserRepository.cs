@@ -95,7 +95,7 @@ public class UserRepository : IUserRepository
     }
 
     /// <summary>
-    ///     验证过后直接删除
+    /// 验证过后直接删除
     /// </summary>
     /// <param name="phoneNumber"></param>
     /// <returns></returns>

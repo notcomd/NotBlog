@@ -18,10 +18,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Protos\"/>
-    </ItemGroup>
-
-    <ItemGroup>
         <ProjectReference Include="..\Video.Domain\Video.Domain.csproj"/>
         <ProjectReference Include="..\Video.Infrastructure\Video.Infrastructure.csproj"/>
     </ItemGroup>

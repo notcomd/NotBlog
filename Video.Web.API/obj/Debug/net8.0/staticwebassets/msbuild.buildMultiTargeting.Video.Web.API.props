@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\build\Video.Web.API.props" />
-</Project>
