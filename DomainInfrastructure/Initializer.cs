@@ -1,4 +1,4 @@
-using DomainCommonst;
+using DomainCommons;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Notcomd.DomainCommand;

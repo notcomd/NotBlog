@@ -3,11 +3,11 @@
     <PropertyGroup>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="NotMediator" Version="1.0.4"/>
+        <PackageReference Include="NotMediator" Version="1.0.5" />
     </ItemGroup>
 
     <ItemGroup>

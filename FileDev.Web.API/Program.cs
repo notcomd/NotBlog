@@ -1,10 +1,15 @@
 using System.Reflection;
+using FileDev.Infrastructure.EntityFramework;
 using FileDev.Web.API.APIs;
 using NotMediator;
+using Npgsql.EntityFrameworkCore.PostgreSQL;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
+
+builder.Services.AddNpgsql<NotFileDbContext>("PostgresSQL");
 /*builder.Services.AddDbContext<FileDevDbContext>(opt
     => opt.UseNpgsql(builder.Configuration.GetConnectionString(nameof(DbContextOptions)),
         o => o.MigrationsAssembly("FileDev.Infrastructure"))
@@ -19,6 +24,8 @@ builder.Services.AddProblemDetails();
 
 
 var app = builder.Build();
+
+app.MapDefaultEndpoints();
 
 
 if (app.Environment.IsDevelopment())

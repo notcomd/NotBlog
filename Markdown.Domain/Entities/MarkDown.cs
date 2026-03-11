@@ -1,51 +1,132 @@
+using Markdown.Domain.SeedWork;
+
 namespace Markdown.Domain.Entities;
 
 /// <summary>
 ///     文档
 /// </summary>
-public class MarkDown : IAggregateRoot
+public class MarkDown : Entity, IAggregateRoot
 {
     private MarkDown()
     {
-        MarkReview = new List<MarkReview>();
         MarkDownGuid = Guid.CreateVersion7();
-        //this.
+        MarkDownTagboard = new HashSet<string>();
+        MarkReview = new List<MarkReview>();
         CreateAt = DateTime.UtcNow;
         UplaodAt = DateTime.UtcNow;
     }
 
-    public MarkDown(MarkDown markDown) : this()
+    // 私有全参数构造函数，供 Builder 调用
+    private MarkDown(Guid markUserGuid, string markDownName, string markDownContent, string markDownHash,
+        Guid markReviewGuid, HashSet<string> markDownTagboard, MarkOption markOption) : this()
     {
-        MarkDownGuid = markDown.MarkDownGuid;
-        MarkReview = new HashSet<MarkReview>();
+        MarkUserGuid = markUserGuid;
+        MarkDownName = markDownName;
+        MarkDownContent = markDownContent;
+        MarkDownHash = markDownHash;
+        MarkReviewGuid = markReviewGuid;
+        MarkDownTagboard = markDownTagboard;
+        MarkOption = markOption;
+        IsDelete = false;
+    }
+
+    // 公有简化构造函数，使用默认值调用私有构造函数
+    public MarkDown(Guid markUserGuid, string markDownName, string markDownContent, string markDownHash)
+        : this(markUserGuid, markDownName, markDownContent, markDownHash, Guid.Empty, new HashSet<string>(), MarkOption.Default)
+    {
     }
 
     public Guid MarkDownGuid { get; init; }
-
     public Guid MarkReviewGuid { get; init; }
-
     public Guid MarkUserGuid { get; init; }
-
     public string MarkDownName { get; private set; } = null!;
-
-    public List<string>? MarkDownTagboard { get; private set; } = new();
-
+    public HashSet<string> MarkDownTagboard { get; private set; }
     public MarkOption MarkOption { get; private set; } = MarkOption.Default;
-
-    public string MarkDownHash { get; private set; }
-
+    public string MarkDownHash { get; private set; } = null!;
     public DateTime CreateAt { get; init; }
-
-    public string MarkDownContent { get; private set; }
-
+    public string MarkDownContent { get; private set; } = null!;
+    
+    public bool IsDelete { get; private set; }
     public DateTime UplaodAt { get; private set; }
 
-    ///关系外键
-    public ICollection<MarkReview> MarkReview { get; }
+    // 关系外键
+    public ICollection<MarkReview> MarkReview { get; private set; }
 
     public Task<MarkDown> AddByMarkReviewAsync(MarkReview markReview)
     {
         MarkReview.Add(markReview);
         return Task.FromResult(this);
+    }
+
+    public Task<MarkDown> UpDataByMarkDownAsync(string markDownName, string markDownContent, string markDownHash)
+    {
+        MarkDownName = markDownName;
+        MarkDownContent = markDownContent;
+        MarkDownHash = markDownHash;
+        UplaodAt = DateTime.Now;
+        return Task.FromResult(this);
+    }
+
+    public bool IsMarkDownEques(string markMd5)=> MarkDownHash == markMd5;
+
+    
+    /// <summary>
+    ///     MarkDown 构建器（创建者类）
+    /// </summary>
+    public class Builder
+    {
+        private readonly Guid _markUserGuid;
+        private readonly string _markDownName;
+        private readonly string _markDownContent;
+        private readonly string _markDownHash;
+        private Guid _markReviewGuid;
+        private readonly HashSet<string> _tags = new();
+        private MarkOption _markOption = MarkOption.Default;
+
+        public Builder(Guid markUserGuid, string markDownName, string markDownContent, string markDownHash)
+        {
+            _markUserGuid = markUserGuid;
+            _markDownName = markDownName;
+            _markDownContent = markDownContent;
+            _markDownHash = markDownHash;
+        }
+
+        public Builder WithMarkReviewGuid(Guid markReviewGuid)
+        {
+            _markReviewGuid = markReviewGuid;
+            return this;
+        }
+
+        public Builder WithTag(string tag)
+        {
+            if (!string.IsNullOrWhiteSpace(tag))
+                _tags.Add(tag);
+            return this;
+        }
+
+        public Builder WithTags(IEnumerable<string> tags)
+        {
+            foreach (var tag in tags.Where(t => !string.IsNullOrWhiteSpace(t)))
+                _tags.Add(tag);
+            return this;
+        }
+
+        public Builder WithMarkOption(MarkOption option)
+        {
+            _markOption = option;
+            return this;
+        }
+
+        public MarkDown Build()
+        {
+            return new MarkDown(
+                _markUserGuid,
+                _markDownName,
+                _markDownContent,
+                _markDownHash,
+                _markReviewGuid,
+                _tags,
+                _markOption);
+        }
     }
 }

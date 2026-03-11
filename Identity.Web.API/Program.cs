@@ -3,6 +3,8 @@ using Identity.Web.API.APIs;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
+
 builder.NotBlogConfigureExtraServices(new InitializerOptions
 {
     EventBusQueueName = "Identity.Web.API",
@@ -24,6 +26,8 @@ builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
 
 var app = builder.Build();
+
+app.MapDefaultEndpoints();
 
 app.NotBlogUseServer();
 

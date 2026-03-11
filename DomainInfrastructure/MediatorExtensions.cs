@@ -1,5 +1,5 @@
 using System.Reflection;
-using DomainCommonst;
+using DomainCommons;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;

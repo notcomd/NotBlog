@@ -1,4 +1,5 @@
 using Markdown.Domain.Entities;
+using Markdown.Domain.SeedWork;
 
 namespace Markdown.Domain.IRepository;
 

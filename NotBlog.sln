@@ -60,6 +60,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainCommons", "DomainComm
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommonsInitializer", "CommonsInitializer\CommonsInitializer.csproj", "{3817FCD3-313A-486F-B23C-ADA796F6EB0E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotBlog.AppHost", "NotBlog.AppHost\NotBlog.AppHost.csproj", "{7A278E94-78C5-4C0C-A003-260E11821283}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotBlog.ServiceDefaults", "NotBlog.ServiceDefaults\NotBlog.ServiceDefaults.csproj", "{87FD2A4E-56BB-4915-9349-AF858E2A9FC3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -158,6 +162,14 @@ Global
 		{3817FCD3-313A-486F-B23C-ADA796F6EB0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3817FCD3-313A-486F-B23C-ADA796F6EB0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3817FCD3-313A-486F-B23C-ADA796F6EB0E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A278E94-78C5-4C0C-A003-260E11821283}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A278E94-78C5-4C0C-A003-260E11821283}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A278E94-78C5-4C0C-A003-260E11821283}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A278E94-78C5-4C0C-A003-260E11821283}.Release|Any CPU.Build.0 = Release|Any CPU
+		{87FD2A4E-56BB-4915-9349-AF858E2A9FC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{87FD2A4E-56BB-4915-9349-AF858E2A9FC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{87FD2A4E-56BB-4915-9349-AF858E2A9FC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{87FD2A4E-56BB-4915-9349-AF858E2A9FC3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

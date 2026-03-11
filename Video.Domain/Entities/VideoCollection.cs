@@ -2,9 +2,6 @@ using Notcomd.Token.JWT;
 
 namespace Video.Domain.Entities;
 
-/// <summary>
-///     视频合集
-/// </summary>
 public class VideoCollection : IAggregateRoot
 {
     private VideoCollection()

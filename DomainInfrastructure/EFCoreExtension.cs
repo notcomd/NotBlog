@@ -1,5 +1,5 @@
 using System.Linq.Expressions;
-using DomainCommonst;
+using DomainCommons;
 using Microsoft.EntityFrameworkCore;
 
 namespace Notcomd.DomainCommand;

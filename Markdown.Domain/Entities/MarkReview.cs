@@ -1,6 +1,8 @@
+using Markdown.Domain.SeedWork;
+
 namespace Markdown.Domain.Entities;
 
-public class MarkReview
+public class MarkReview:Entity
 {
     /// <summary>
     /// </summary>
@@ -8,6 +10,8 @@ public class MarkReview
     {
         MarkReviewGuid = Guid.CreateVersion7();
         MarkReviewTime = DateTime.UtcNow;
+        MarkReviewAuth = MarkReviewAuth.ReviewAuthPublic;
+        MarkReviews = new List<MarkReview>();
     }
 
     /// <summary>
@@ -16,66 +20,33 @@ public class MarkReview
     /// <param name="userName"></param>
     /// <param name="userImage"></param>
     /// <param name="markReviewContent"></param>
-    public MarkReview(MarkDown markDown, string userName, string userImage, string markReviewContent) : this()
+    public MarkReview(Guid markDownGuid,Guid userGuid,string markReviewContent) : this()
     {
-        MarkDownGuid = markDown.MarkDownGuid;
+        MarkDownGuid = markDownGuid;
+        UserId = userGuid;
         MarkReviewContent = markReviewContent;
-        UserName = userName;
-        UserImage = userImage;
         MarkReviewTime = DateTime.Now;
-        MarkDown = markDown;
+        MarkAggregateRootGuid = Guid.Empty;
     }
 
-    /// <summary>
-    ///     评论主键key
-    /// </summary>
-    public Guid MarkReviewGuid { get; init; }
 
-    /// <summary>
-    ///     文档的guid(外键）
-    /// </summary>
+    public Guid MarkReviewGuid { get; init; }
+    
     public Guid MarkDownGuid { get; init; }
 
-    /// <summary>
-    ///     用户Id
-    /// </summary>
     public Guid UserId { get; init; }
-
-    /// <summary>
-    ///     子评论
-    /// </summary>
+ 
     public Guid? MarkAggregateRootGuid { get; private set; }
 
-    /// <summary>
-    ///     用户明
-    /// </summary>
-    public string UserName { get; private set; } = null!;
-
-    /// <summary>
-    ///     用户头像
-    /// </summary>
-    public string UserImage { get; private set; } = null!;
-
-    /// <summary>
-    ///     评论主体
-    /// </summary>
     public string MarkReviewContent { get; private set; } = null!;
 
-    /// <summary>
-    ///     时间
-    /// </summary>
     public DateTime MarkReviewTime { get; private set; } = DateTime.Now;
 
-    /// <summary>
-    ///     默认评论为公开
-    /// </summary>
     public MarkReviewAuth MarkReviewAuth { get; private set; } = MarkReviewAuth.ReviewAuthPublic;
-
-    /// <summary>
-    ///     外键关联
-    /// </summary>
+    
     public MarkDown MarkDown { get; private set; }
 
+    public ICollection<MarkReview> MarkReviews { get; private set; }
 
     private Task<MarkReview> AddToChildReviewAsync(Guid aggregateRootGuid, MarkReview markReview)
     {
