@@ -4,22 +4,17 @@ namespace Markdown.Domain.Entities;
 
 public class MarkReview:Entity
 {
-    /// <summary>
-    /// </summary>
+
     private MarkReview()
     {
         MarkReviewGuid = Guid.CreateVersion7();
         MarkReviewTime = DateTime.UtcNow;
         MarkReviewAuth = MarkReviewAuth.ReviewAuthPublic;
         MarkReviews = new List<MarkReview>();
+        MarkQuote = new MarkQuote();
     }
 
-    /// <summary>
-    /// </summary>
-    /// <param name="markDown"></param>
-    /// <param name="userName"></param>
-    /// <param name="userImage"></param>
-    /// <param name="markReviewContent"></param>
+
     public MarkReview(Guid markDownGuid,Guid userGuid,string markReviewContent) : this()
     {
         MarkDownGuid = markDownGuid;
@@ -40,13 +35,15 @@ public class MarkReview:Entity
 
     public string MarkReviewContent { get; private set; } = null!;
 
-    public DateTime MarkReviewTime { get; private set; } = DateTime.Now;
+    public DateTime MarkReviewTime { get; private set; }
 
-    public MarkReviewAuth MarkReviewAuth { get; private set; } = MarkReviewAuth.ReviewAuthPublic;
+    public MarkReviewAuth MarkReviewAuth { get; private set; }
     
     public MarkDown MarkDown { get; private set; }
 
     public ICollection<MarkReview> MarkReviews { get; private set; }
+    
+    public MarkQuote MarkQuote { get; private set; }
 
     private Task<MarkReview> AddToChildReviewAsync(Guid aggregateRootGuid, MarkReview markReview)
     {

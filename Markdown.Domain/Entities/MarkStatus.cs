@@ -34,11 +34,32 @@ public enum MarkStatus
     /// 等待推送取消成功
     /// </summary>
     MarkPushWaitingCancel,
+    /// <summary>
+    ///  等待推送取消超时
+    /// </summary>
     MarkPushWaitingTimeout,
+    /// <summary>
+    ///  等待推送取消失败
+    /// </summary>
     MarkPushWaitingError,
+    /// <summary>
+    ///  等待推送成功
+    /// </summary>
     MarkPushWaitingSuccess,
+    /// <summary>
+    ///  等待推送失败
+    /// </summary>
     MarkPushWaitingFail,
+    /// <summary>
+    /// 推送等待取消成功
+    /// </summary>
     MarkPushWaitingCancelSuccess,
+    /// <summary>
+    /// 推送等待取消失败
+    /// </summary>
     MarkPushWaitingCancelFail,
+    /// <summary>
+    /// 推送等待取消超时
+    /// </summary>
     MarkPushWaitingCancelTimeout,
 }

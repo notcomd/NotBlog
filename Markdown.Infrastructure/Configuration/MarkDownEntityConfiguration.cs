@@ -8,8 +8,13 @@ public class MarkDownEntityConfiguration : IEntityTypeConfiguration<MarkDown>
 {
     public void Configure(EntityTypeBuilder<MarkDown> builder)
     {
-        builder.ToTable("MarkDown");
         builder.Ignore(en => en.DomainEventbus);
-        builder.Property(en => en.Id).UseHiLo("MarkDownseq");
+        builder.ToTable("NotFileGroup");
+        builder.Property(x => x.Id).UseHiLo("NotFileGroupGuid");
+        builder.HasKey(x => x.Id);
+
+        builder.HasMany(en => en.MarkReview)
+            .WithOne(en => en.MarkDown)
+            .HasForeignKey(en => en.MarkDownGuid);
     }
 }
