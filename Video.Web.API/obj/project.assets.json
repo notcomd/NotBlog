@@ -2,6 +2,68 @@
   "version": 3,
   "targets": {
     "net10.0": {
+      "Aspire.StackExchange.Redis/13.1.2": {
+        "type": "package",
+        "dependencies": {
+          "AspNetCore.HealthChecks.Redis": "9.0.0",
+          "Microsoft.Extensions.DependencyInjection.AutoActivation": "10.1.0",
+          "OpenTelemetry.Extensions.Hosting": "1.14.0",
+          "StackExchange.Redis": "2.9.32"
+        },
+        "compile": {
+          "lib/net10.0/Aspire.StackExchange.Redis.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Aspire.StackExchange.Redis.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net10.0/Aspire.StackExchange.Redis.targets": {}
+        }
+      },
+      "Aspire.StackExchange.Redis.DistributedCaching/13.1.2": {
+        "type": "package",
+        "dependencies": {
+          "AspNetCore.HealthChecks.Redis": "9.0.0",
+          "Aspire.StackExchange.Redis": "13.1.2",
+          "Microsoft.Extensions.Caching.StackExchangeRedis": "10.0.1",
+          "Microsoft.Extensions.DependencyInjection.AutoActivation": "10.1.0",
+          "OpenTelemetry.Extensions.Hosting": "1.14.0",
+          "StackExchange.Redis": "2.9.32"
+        },
+        "compile": {
+          "lib/net10.0/Aspire.StackExchange.Redis.DistributedCaching.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Aspire.StackExchange.Redis.DistributedCaching.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net10.0/Aspire.StackExchange.Redis.DistributedCaching.targets": {}
+        }
+      },
+      "AspNetCore.HealthChecks.Redis/9.0.0": {
+        "type": "package",
+        "dependencies": {
+          "StackExchange.Redis": "2.7.4"
+        },
+        "compile": {
+          "lib/net8.0/HealthChecks.Redis.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/HealthChecks.Redis.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "Humanizer.Core/2.14.1": {
         "type": "package",
         "compile": {
@@ -583,6 +645,22 @@
           "buildTransitive/net8.0/_._": {}
         }
       },
+      "Microsoft.Extensions.Caching.StackExchangeRedis/10.0.1": {
+        "type": "package",
+        "dependencies": {
+          "StackExchange.Redis": "2.7.27"
+        },
+        "compile": {
+          "lib/net10.0/Microsoft.Extensions.Caching.StackExchangeRedis.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Extensions.Caching.StackExchangeRedis.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "Microsoft.Extensions.Compliance.Abstractions/10.4.0": {
         "type": "package",
         "compile": {
@@ -1066,6 +1144,19 @@
           }
         }
       },
+      "Pipelines.Sockets.Unofficial/2.2.8": {
+        "type": "package",
+        "compile": {
+          "lib/net5.0/Pipelines.Sockets.Unofficial.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net5.0/Pipelines.Sockets.Unofficial.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "Polly.Core/8.4.2": {
         "type": "package",
         "compile": {
@@ -1126,6 +1217,22 @@
         "frameworkReferences": [
           "Microsoft.AspNetCore.App"
         ]
+      },
+      "StackExchange.Redis/2.9.32": {
+        "type": "package",
+        "dependencies": {
+          "Pipelines.Sockets.Unofficial": "2.2.8"
+        },
+        "compile": {
+          "lib/net8.0/StackExchange.Redis.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/StackExchange.Redis.dll": {
+            "related": ".xml"
+          }
+        }
       },
       "System.CodeDom/6.0.0": {
         "type": "package",
@@ -1358,6 +1465,70 @@
     }
   },
   "libraries": {
+    "Aspire.StackExchange.Redis/13.1.2": {
+      "sha512": "zFM5TRuz44cjU/epvHjv+F+QLQSXTnq/IQvUC3b55/rXdSCbeDRJ8UBl95LstudRlHr+DrqvHcv1TbotmLQusg==",
+      "type": "package",
+      "path": "aspire.stackexchange.redis/13.1.2",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "ConfigurationSchema.json",
+        "Icon.png",
+        "README.md",
+        "THIRD-PARTY-NOTICES.TXT",
+        "aspire.stackexchange.redis.13.1.2.nupkg.sha512",
+        "aspire.stackexchange.redis.nuspec",
+        "buildTransitive/net10.0/Aspire.StackExchange.Redis.targets",
+        "buildTransitive/net8.0/Aspire.StackExchange.Redis.targets",
+        "buildTransitive/net9.0/Aspire.StackExchange.Redis.targets",
+        "lib/net10.0/Aspire.StackExchange.Redis.dll",
+        "lib/net10.0/Aspire.StackExchange.Redis.xml",
+        "lib/net8.0/Aspire.StackExchange.Redis.dll",
+        "lib/net8.0/Aspire.StackExchange.Redis.xml",
+        "lib/net9.0/Aspire.StackExchange.Redis.dll",
+        "lib/net9.0/Aspire.StackExchange.Redis.xml"
+      ]
+    },
+    "Aspire.StackExchange.Redis.DistributedCaching/13.1.2": {
+      "sha512": "zT3rV/HqBbB0Ybkt7CCU1k7PKwpQlT3H0B9K3OTNgVXyRYXH3JaBUtawSqvK9J7jvGm2ql1V13ALvYveU6BStQ==",
+      "type": "package",
+      "path": "aspire.stackexchange.redis.distributedcaching/13.1.2",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "ConfigurationSchema.json",
+        "Icon.png",
+        "README.md",
+        "THIRD-PARTY-NOTICES.TXT",
+        "aspire.stackexchange.redis.distributedcaching.13.1.2.nupkg.sha512",
+        "aspire.stackexchange.redis.distributedcaching.nuspec",
+        "buildTransitive/net10.0/Aspire.StackExchange.Redis.DistributedCaching.targets",
+        "buildTransitive/net8.0/Aspire.StackExchange.Redis.DistributedCaching.targets",
+        "buildTransitive/net9.0/Aspire.StackExchange.Redis.DistributedCaching.targets",
+        "lib/net10.0/Aspire.StackExchange.Redis.DistributedCaching.dll",
+        "lib/net10.0/Aspire.StackExchange.Redis.DistributedCaching.xml",
+        "lib/net8.0/Aspire.StackExchange.Redis.DistributedCaching.dll",
+        "lib/net8.0/Aspire.StackExchange.Redis.DistributedCaching.xml",
+        "lib/net9.0/Aspire.StackExchange.Redis.DistributedCaching.dll",
+        "lib/net9.0/Aspire.StackExchange.Redis.DistributedCaching.xml"
+      ]
+    },
+    "AspNetCore.HealthChecks.Redis/9.0.0": {
+      "sha512": "yNH0h8GLRbAf+PU5HNVLZ5hNeyq9mDVmRKO9xuZsme/znUYoBJlQvI0gq45gaZNlLncCHkMhR4o90MuT+gxxPw==",
+      "type": "package",
+      "path": "aspnetcore.healthchecks.redis/9.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "aspnetcore.healthchecks.redis.9.0.0.nupkg.sha512",
+        "aspnetcore.healthchecks.redis.nuspec",
+        "icon.png",
+        "lib/net8.0/HealthChecks.Redis.dll",
+        "lib/net8.0/HealthChecks.Redis.xml",
+        "lib/netstandard2.0/HealthChecks.Redis.dll",
+        "lib/netstandard2.0/HealthChecks.Redis.xml"
+      ]
+    },
     "Humanizer.Core/2.14.1": {
       "sha512": "lQKvtaTDOXnoVJ20ibTuSIOf2i0uO0MPbDhd1jm238I+U/2ZnRENj0cktKZhtchBMtCUSRQ5v4xBCUbKNmyVMw==",
       "type": "package",
@@ -2622,6 +2793,26 @@
         "microsoft.extensions.ambientmetadata.application.nuspec"
       ]
     },
+    "Microsoft.Extensions.Caching.StackExchangeRedis/10.0.1": {
+      "sha512": "M7+349/EtaszydCxz/vtj4fUgbwE6NfDAfh98+oeWHPdBthgWKDCdnFV92p9UtyFN8Ln0e0w1ZzJvvbNzpMtaQ==",
+      "type": "package",
+      "path": "microsoft.extensions.caching.stackexchangeredis/10.0.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "PACKAGE.md",
+        "THIRD-PARTY-NOTICES.TXT",
+        "lib/net10.0/Microsoft.Extensions.Caching.StackExchangeRedis.dll",
+        "lib/net10.0/Microsoft.Extensions.Caching.StackExchangeRedis.xml",
+        "lib/net462/Microsoft.Extensions.Caching.StackExchangeRedis.dll",
+        "lib/net462/Microsoft.Extensions.Caching.StackExchangeRedis.xml",
+        "lib/netstandard2.0/Microsoft.Extensions.Caching.StackExchangeRedis.dll",
+        "lib/netstandard2.0/Microsoft.Extensions.Caching.StackExchangeRedis.xml",
+        "microsoft.extensions.caching.stackexchangeredis.10.0.1.nupkg.sha512",
+        "microsoft.extensions.caching.stackexchangeredis.nuspec"
+      ]
+    },
     "Microsoft.Extensions.Compliance.Abstractions/10.4.0": {
       "sha512": "4WkknDbVrHNf+S6fwSt1OAXlGJ/G/QrtJlqx4aNzOLmeT3GRyxpGLZn+Q3UV+RMRAF6FfsijEZBg2ZAW8bTAkg==",
       "type": "package",
@@ -3343,6 +3534,29 @@
         "opentelemetry.instrumentation.runtime.nuspec"
       ]
     },
+    "Pipelines.Sockets.Unofficial/2.2.8": {
+      "sha512": "zG2FApP5zxSx6OcdJQLbZDk2AVlN2BNQD6MorwIfV6gVj0RRxWPEp2LXAxqDGZqeNV1Zp0BNPcNaey/GXmTdvQ==",
+      "type": "package",
+      "path": "pipelines.sockets.unofficial/2.2.8",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net461/Pipelines.Sockets.Unofficial.dll",
+        "lib/net461/Pipelines.Sockets.Unofficial.xml",
+        "lib/net472/Pipelines.Sockets.Unofficial.dll",
+        "lib/net472/Pipelines.Sockets.Unofficial.xml",
+        "lib/net5.0/Pipelines.Sockets.Unofficial.dll",
+        "lib/net5.0/Pipelines.Sockets.Unofficial.xml",
+        "lib/netcoreapp3.1/Pipelines.Sockets.Unofficial.dll",
+        "lib/netcoreapp3.1/Pipelines.Sockets.Unofficial.xml",
+        "lib/netstandard2.0/Pipelines.Sockets.Unofficial.dll",
+        "lib/netstandard2.0/Pipelines.Sockets.Unofficial.xml",
+        "lib/netstandard2.1/Pipelines.Sockets.Unofficial.dll",
+        "lib/netstandard2.1/Pipelines.Sockets.Unofficial.xml",
+        "pipelines.sockets.unofficial.2.2.8.nupkg.sha512",
+        "pipelines.sockets.unofficial.nuspec"
+      ]
+    },
     "Polly.Core/8.4.2": {
       "sha512": "BpE2I6HBYYA5tF0Vn4eoQOGYTYIK1BlF5EXVgkWGn3mqUUjbXAr13J6fZVbp7Q3epRR8yshacBMlsHMhpOiV3g==",
       "type": "package",
@@ -3444,6 +3658,30 @@
         "lib/net9.0/Scalar.AspNetCore.xml",
         "scalar.aspnetcore.2.13.5.nupkg.sha512",
         "scalar.aspnetcore.nuspec"
+      ]
+    },
+    "StackExchange.Redis/2.9.32": {
+      "sha512": "j5Rjbf7gWz5izrn0UWQy9RlQY4cQDPkwJfVqATnVsOa/+zzJrps12LOgacMsDl/Vit2f01cDiDkG/Rst8v2iGw==",
+      "type": "package",
+      "path": "stackexchange.redis/2.9.32",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "lib/net461/StackExchange.Redis.dll",
+        "lib/net461/StackExchange.Redis.xml",
+        "lib/net472/StackExchange.Redis.dll",
+        "lib/net472/StackExchange.Redis.xml",
+        "lib/net6.0/StackExchange.Redis.dll",
+        "lib/net6.0/StackExchange.Redis.xml",
+        "lib/net8.0/StackExchange.Redis.dll",
+        "lib/net8.0/StackExchange.Redis.xml",
+        "lib/netcoreapp3.1/StackExchange.Redis.dll",
+        "lib/netcoreapp3.1/StackExchange.Redis.xml",
+        "lib/netstandard2.0/StackExchange.Redis.dll",
+        "lib/netstandard2.0/StackExchange.Redis.xml",
+        "stackexchange.redis.2.9.32.nupkg.sha512",
+        "stackexchange.redis.nuspec"
       ]
     },
     "System.CodeDom/6.0.0": {
@@ -3679,6 +3917,7 @@
   },
   "projectFileDependencyGroups": {
     "net10.0": [
+      "Aspire.StackExchange.Redis.DistributedCaching >= 13.1.2",
       "Microsoft.AspNetCore.OpenApi >= 9.0.2",
       "Microsoft.EntityFrameworkCore >= 9.0.4",
       "Microsoft.EntityFrameworkCore.Tools >= 9.0.4",
@@ -3751,6 +3990,10 @@
       "net10.0": {
         "targetAlias": "net10.0",
         "dependencies": {
+          "Aspire.StackExchange.Redis.DistributedCaching": {
+            "target": "Package",
+            "version": "[13.1.2, )"
+          },
           "Microsoft.AspNetCore.OpenApi": {
             "target": "Package",
             "version": "[9.0.2, )"

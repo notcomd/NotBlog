@@ -1,11 +1,19 @@
 {
   "version": 2,
-  "dgSpecHash": "gr9hJH03xKQ=",
+  "dgSpecHash": "daeq6nwscrA=",
   "success": true,
   "projectFilePath": "F:\\NotBlog\\Message.Web.API\\Message.Web.API.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\notco\\.nuget\\packages\\aspire.stackexchange.redis\\13.1.2\\aspire.stackexchange.redis.13.1.2.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\aspire.stackexchange.redis.distributedcaching\\13.1.2\\aspire.stackexchange.redis.distributedcaching.13.1.2.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\aspnetcore.healthchecks.redis\\9.0.0\\aspnetcore.healthchecks.redis.9.0.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.aspnetcore.openapi\\10.0.4\\microsoft.aspnetcore.openapi.10.0.4.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.entityframeworkcore\\10.0.5\\microsoft.entityframeworkcore.10.0.5.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.entityframeworkcore.abstractions\\10.0.5\\microsoft.entityframeworkcore.abstractions.10.0.5.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.entityframeworkcore.analyzers\\10.0.5\\microsoft.entityframeworkcore.analyzers.10.0.5.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.entityframeworkcore.relational\\10.0.4\\microsoft.entityframeworkcore.relational.10.0.4.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.ambientmetadata.application\\10.4.0\\microsoft.extensions.ambientmetadata.application.10.4.0.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.caching.stackexchangeredis\\10.0.1\\microsoft.extensions.caching.stackexchangeredis.10.0.1.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.compliance.abstractions\\10.4.0\\microsoft.extensions.compliance.abstractions.10.4.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.dependencyinjection.autoactivation\\10.4.0\\microsoft.extensions.dependencyinjection.autoactivation.10.4.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.diagnostics.exceptionsummarization\\10.4.0\\microsoft.extensions.diagnostics.exceptionsummarization.10.4.0.nupkg.sha512",
@@ -18,6 +26,8 @@
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.telemetry.abstractions\\10.4.0\\microsoft.extensions.telemetry.abstractions.10.4.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.openapi\\2.0.0\\microsoft.openapi.2.0.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\notmediator\\1.0.5\\notmediator.1.0.5.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\npgsql\\10.0.2\\npgsql.10.0.2.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\npgsql.entityframeworkcore.postgresql\\10.0.1\\npgsql.entityframeworkcore.postgresql.10.0.1.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\opentelemetry\\1.14.0\\opentelemetry.1.14.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\opentelemetry.api\\1.14.0\\opentelemetry.api.1.14.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\opentelemetry.api.providerbuilderextensions\\1.14.0\\opentelemetry.api.providerbuilderextensions.1.14.0.nupkg.sha512",
@@ -26,10 +36,12 @@
     "C:\\Users\\notco\\.nuget\\packages\\opentelemetry.instrumentation.aspnetcore\\1.14.0\\opentelemetry.instrumentation.aspnetcore.1.14.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\opentelemetry.instrumentation.http\\1.14.0\\opentelemetry.instrumentation.http.1.14.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\opentelemetry.instrumentation.runtime\\1.14.0\\opentelemetry.instrumentation.runtime.1.14.0.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\pipelines.sockets.unofficial\\2.2.8\\pipelines.sockets.unofficial.2.2.8.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\polly.core\\8.4.2\\polly.core.8.4.2.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\polly.extensions\\8.4.2\\polly.extensions.8.4.2.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\polly.ratelimiting\\8.4.2\\polly.ratelimiting.8.4.2.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\scalar.aspnetcore\\2.13.6\\scalar.aspnetcore.2.13.6.nupkg.sha512"
+    "C:\\Users\\notco\\.nuget\\packages\\scalar.aspnetcore\\2.13.6\\scalar.aspnetcore.2.13.6.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\stackexchange.redis\\2.9.32\\stackexchange.redis.2.9.32.nupkg.sha512"
   ],
   "logs": []
 }

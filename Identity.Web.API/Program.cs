@@ -10,10 +10,15 @@ builder.NotBlogConfigureExtraServices(new InitializerOptions
     EventBusQueueName = "Identity.Web.API",
     LogFilePath = "E:/web.log"
 });
-builder.Services.AddDbContext<IdentityDbContext>(opt
-    => opt.UseNpgsql(builder.Configuration.GetConnectionString(nameof(DbContextOptions)),
-        o => o.MigrationsAssembly("Identity.Infrastructure"))
-);
+
+builder.Services.AddNpgsql<IdentityDbContext>("IdentityPostgres");
+builder.AddRedisDistributedCache("Redis");
+
+// builder.Services.AddDbContext<IdentityDbContext>(opt
+//     => opt.UseNpgsql(builder.Configuration.GetConnectionString(nameof(DbContextOptions)),
+//         o => o.MigrationsAssembly("Identity.Infrastructure"))
+// );
+
 builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
 builder.Services.AddControllers(opt =>
 {

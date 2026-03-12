@@ -1,16 +1,25 @@
+using System.Reflection;
+using Message.Infrastructure.EntityFramework;
+using NotMediator;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
-// Add services to the container.
+builder.AddRedisDistributedCache("Redis");
+builder.Services.AddNpgsql<MessageDbContext>("PostgresSQL");
+builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
+builder.AddRedisDistributedCache("Redis");
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
 builder.Services.AddEndpointsApiExplorer();
+
 //builder.Services.AddSwaggerGen();
+
 builder.Services.AddSignalR();
+
 string[] urls =
 {
     "http://localhost:4000", "http://localhost:8080"
@@ -25,7 +34,6 @@ app.MapDefaultEndpoints();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    //
     app.MapOpenApi();
     app.MapScalarApiReference();
 }

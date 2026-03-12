@@ -2,6 +2,68 @@
   "version": 3,
   "targets": {
     "net10.0": {
+      "Aspire.StackExchange.Redis/13.1.2": {
+        "type": "package",
+        "dependencies": {
+          "AspNetCore.HealthChecks.Redis": "9.0.0",
+          "Microsoft.Extensions.DependencyInjection.AutoActivation": "10.1.0",
+          "OpenTelemetry.Extensions.Hosting": "1.14.0",
+          "StackExchange.Redis": "2.9.32"
+        },
+        "compile": {
+          "lib/net10.0/Aspire.StackExchange.Redis.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Aspire.StackExchange.Redis.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net10.0/Aspire.StackExchange.Redis.targets": {}
+        }
+      },
+      "Aspire.StackExchange.Redis.DistributedCaching/13.1.2": {
+        "type": "package",
+        "dependencies": {
+          "AspNetCore.HealthChecks.Redis": "9.0.0",
+          "Aspire.StackExchange.Redis": "13.1.2",
+          "Microsoft.Extensions.Caching.StackExchangeRedis": "10.0.1",
+          "Microsoft.Extensions.DependencyInjection.AutoActivation": "10.1.0",
+          "OpenTelemetry.Extensions.Hosting": "1.14.0",
+          "StackExchange.Redis": "2.9.32"
+        },
+        "compile": {
+          "lib/net10.0/Aspire.StackExchange.Redis.DistributedCaching.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Aspire.StackExchange.Redis.DistributedCaching.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net10.0/Aspire.StackExchange.Redis.DistributedCaching.targets": {}
+        }
+      },
+      "AspNetCore.HealthChecks.Redis/9.0.0": {
+        "type": "package",
+        "dependencies": {
+          "StackExchange.Redis": "2.7.4"
+        },
+        "compile": {
+          "lib/net8.0/HealthChecks.Redis.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/HealthChecks.Redis.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "Microsoft.AspNetCore.OpenApi/10.0.4": {
         "type": "package",
         "dependencies": {
@@ -24,6 +86,58 @@
           "build/Microsoft.AspNetCore.OpenApi.targets": {}
         }
       },
+      "Microsoft.EntityFrameworkCore/10.0.5": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore.Abstractions": "10.0.5",
+          "Microsoft.EntityFrameworkCore.Analyzers": "10.0.5"
+        },
+        "compile": {
+          "lib/net10.0/Microsoft.EntityFrameworkCore.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.EntityFrameworkCore.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net10.0/Microsoft.EntityFrameworkCore.props": {}
+        }
+      },
+      "Microsoft.EntityFrameworkCore.Abstractions/10.0.5": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Microsoft.EntityFrameworkCore.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.EntityFrameworkCore.Abstractions.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.EntityFrameworkCore.Analyzers/10.0.5": {
+        "type": "package"
+      },
+      "Microsoft.EntityFrameworkCore.Relational/10.0.4": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore": "10.0.4"
+        },
+        "compile": {
+          "lib/net10.0/Microsoft.EntityFrameworkCore.Relational.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.EntityFrameworkCore.Relational.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "Microsoft.Extensions.AmbientMetadata.Application/10.4.0": {
         "type": "package",
         "compile": {
@@ -38,6 +152,22 @@
         },
         "build": {
           "buildTransitive/net8.0/_._": {}
+        }
+      },
+      "Microsoft.Extensions.Caching.StackExchangeRedis/10.0.1": {
+        "type": "package",
+        "dependencies": {
+          "StackExchange.Redis": "2.7.27"
+        },
+        "compile": {
+          "lib/net10.0/Microsoft.Extensions.Caching.StackExchangeRedis.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Extensions.Caching.StackExchangeRedis.dll": {
+            "related": ".xml"
+          }
         }
       },
       "Microsoft.Extensions.Compliance.Abstractions/10.4.0": {
@@ -238,6 +368,37 @@
           "lib/net9.0/NotMediator.dll": {}
         }
       },
+      "Npgsql/10.0.2": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Npgsql.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Npgsql.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Npgsql.EntityFrameworkCore.PostgreSQL/10.0.1": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore": "[10.0.4, 11.0.0)",
+          "Microsoft.EntityFrameworkCore.Relational": "[10.0.4, 11.0.0)",
+          "Npgsql": "10.0.2"
+        },
+        "compile": {
+          "lib/net10.0/Npgsql.EntityFrameworkCore.PostgreSQL.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Npgsql.EntityFrameworkCore.PostgreSQL.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "OpenTelemetry/1.14.0": {
         "type": "package",
         "dependencies": {
@@ -366,6 +527,19 @@
           }
         }
       },
+      "Pipelines.Sockets.Unofficial/2.2.8": {
+        "type": "package",
+        "compile": {
+          "lib/net5.0/Pipelines.Sockets.Unofficial.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net5.0/Pipelines.Sockets.Unofficial.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "Polly.Core/8.4.2": {
         "type": "package",
         "compile": {
@@ -427,6 +601,50 @@
           "Microsoft.AspNetCore.App"
         ]
       },
+      "StackExchange.Redis/2.9.32": {
+        "type": "package",
+        "dependencies": {
+          "Pipelines.Sockets.Unofficial": "2.2.8"
+        },
+        "compile": {
+          "lib/net8.0/StackExchange.Redis.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/StackExchange.Redis.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Message.Domain/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "dependencies": {
+          "NotMediator": "1.0.5"
+        },
+        "compile": {
+          "bin/placeholder/Message.Domain.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Message.Domain.dll": {}
+        }
+      },
+      "Message.Infrastructure/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Message.Domain": "1.0.0",
+          "Microsoft.EntityFrameworkCore": "10.0.5",
+          "NotMediator": "1.0.5"
+        },
+        "compile": {
+          "bin/placeholder/Message.Infrastructure.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Message.Infrastructure.dll": {}
+        }
+      },
       "NotBlog.ServiceDefaults/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v10.0",
@@ -453,6 +671,70 @@
     }
   },
   "libraries": {
+    "Aspire.StackExchange.Redis/13.1.2": {
+      "sha512": "zFM5TRuz44cjU/epvHjv+F+QLQSXTnq/IQvUC3b55/rXdSCbeDRJ8UBl95LstudRlHr+DrqvHcv1TbotmLQusg==",
+      "type": "package",
+      "path": "aspire.stackexchange.redis/13.1.2",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "ConfigurationSchema.json",
+        "Icon.png",
+        "README.md",
+        "THIRD-PARTY-NOTICES.TXT",
+        "aspire.stackexchange.redis.13.1.2.nupkg.sha512",
+        "aspire.stackexchange.redis.nuspec",
+        "buildTransitive/net10.0/Aspire.StackExchange.Redis.targets",
+        "buildTransitive/net8.0/Aspire.StackExchange.Redis.targets",
+        "buildTransitive/net9.0/Aspire.StackExchange.Redis.targets",
+        "lib/net10.0/Aspire.StackExchange.Redis.dll",
+        "lib/net10.0/Aspire.StackExchange.Redis.xml",
+        "lib/net8.0/Aspire.StackExchange.Redis.dll",
+        "lib/net8.0/Aspire.StackExchange.Redis.xml",
+        "lib/net9.0/Aspire.StackExchange.Redis.dll",
+        "lib/net9.0/Aspire.StackExchange.Redis.xml"
+      ]
+    },
+    "Aspire.StackExchange.Redis.DistributedCaching/13.1.2": {
+      "sha512": "zT3rV/HqBbB0Ybkt7CCU1k7PKwpQlT3H0B9K3OTNgVXyRYXH3JaBUtawSqvK9J7jvGm2ql1V13ALvYveU6BStQ==",
+      "type": "package",
+      "path": "aspire.stackexchange.redis.distributedcaching/13.1.2",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "ConfigurationSchema.json",
+        "Icon.png",
+        "README.md",
+        "THIRD-PARTY-NOTICES.TXT",
+        "aspire.stackexchange.redis.distributedcaching.13.1.2.nupkg.sha512",
+        "aspire.stackexchange.redis.distributedcaching.nuspec",
+        "buildTransitive/net10.0/Aspire.StackExchange.Redis.DistributedCaching.targets",
+        "buildTransitive/net8.0/Aspire.StackExchange.Redis.DistributedCaching.targets",
+        "buildTransitive/net9.0/Aspire.StackExchange.Redis.DistributedCaching.targets",
+        "lib/net10.0/Aspire.StackExchange.Redis.DistributedCaching.dll",
+        "lib/net10.0/Aspire.StackExchange.Redis.DistributedCaching.xml",
+        "lib/net8.0/Aspire.StackExchange.Redis.DistributedCaching.dll",
+        "lib/net8.0/Aspire.StackExchange.Redis.DistributedCaching.xml",
+        "lib/net9.0/Aspire.StackExchange.Redis.DistributedCaching.dll",
+        "lib/net9.0/Aspire.StackExchange.Redis.DistributedCaching.xml"
+      ]
+    },
+    "AspNetCore.HealthChecks.Redis/9.0.0": {
+      "sha512": "yNH0h8GLRbAf+PU5HNVLZ5hNeyq9mDVmRKO9xuZsme/znUYoBJlQvI0gq45gaZNlLncCHkMhR4o90MuT+gxxPw==",
+      "type": "package",
+      "path": "aspnetcore.healthchecks.redis/9.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "aspnetcore.healthchecks.redis.9.0.0.nupkg.sha512",
+        "aspnetcore.healthchecks.redis.nuspec",
+        "icon.png",
+        "lib/net8.0/HealthChecks.Redis.dll",
+        "lib/net8.0/HealthChecks.Redis.xml",
+        "lib/netstandard2.0/HealthChecks.Redis.dll",
+        "lib/netstandard2.0/HealthChecks.Redis.xml"
+      ]
+    },
     "Microsoft.AspNetCore.OpenApi/10.0.4": {
       "sha512": "OsEhbmT4Xenukau5YCR867gr/HmuAJ9DqMBPQGTcmdNU/TqBqdcnB+yLNwD/mTdkHzLBB+XG7cI4H1L5B1jx+Q==",
       "type": "package",
@@ -469,6 +751,66 @@
         "lib/net10.0/Microsoft.AspNetCore.OpenApi.xml",
         "microsoft.aspnetcore.openapi.10.0.4.nupkg.sha512",
         "microsoft.aspnetcore.openapi.nuspec"
+      ]
+    },
+    "Microsoft.EntityFrameworkCore/10.0.5": {
+      "sha512": "9tNBmK3EpYVGRQLiqP+bqK2m+TD0Gv//4vCzR7ZOgl4FWzCFyOpYdIVka13M4kcBdPdSJcs3wbHr3rmzOqbIMA==",
+      "type": "package",
+      "path": "microsoft.entityframeworkcore/10.0.5",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "PACKAGE.md",
+        "buildTransitive/net10.0/Microsoft.EntityFrameworkCore.props",
+        "lib/net10.0/Microsoft.EntityFrameworkCore.dll",
+        "lib/net10.0/Microsoft.EntityFrameworkCore.xml",
+        "microsoft.entityframeworkcore.10.0.5.nupkg.sha512",
+        "microsoft.entityframeworkcore.nuspec"
+      ]
+    },
+    "Microsoft.EntityFrameworkCore.Abstractions/10.0.5": {
+      "sha512": "32c58Rnm47Qvhimawf67KO9PytgPz3QoWye7Abapt0Yocw/JnzMiSNj/pRoIKyn8Jxypkv86zxKD4Q/zNTc0Ag==",
+      "type": "package",
+      "path": "microsoft.entityframeworkcore.abstractions/10.0.5",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "PACKAGE.md",
+        "lib/net10.0/Microsoft.EntityFrameworkCore.Abstractions.dll",
+        "lib/net10.0/Microsoft.EntityFrameworkCore.Abstractions.xml",
+        "microsoft.entityframeworkcore.abstractions.10.0.5.nupkg.sha512",
+        "microsoft.entityframeworkcore.abstractions.nuspec"
+      ]
+    },
+    "Microsoft.EntityFrameworkCore.Analyzers/10.0.5": {
+      "sha512": "ipC4u1VojgEfoIZhtbS2Sx5IluJTP/Jf1hz3yGsxGBgSukYY/CquI6rAjxn5H58CZgVn36qcuPPtNMwZ0AUzMg==",
+      "type": "package",
+      "path": "microsoft.entityframeworkcore.analyzers/10.0.5",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "analyzers/dotnet/cs/Microsoft.EntityFrameworkCore.Analyzers.dll",
+        "docs/PACKAGE.md",
+        "microsoft.entityframeworkcore.analyzers.10.0.5.nupkg.sha512",
+        "microsoft.entityframeworkcore.analyzers.nuspec"
+      ]
+    },
+    "Microsoft.EntityFrameworkCore.Relational/10.0.4": {
+      "sha512": "DOTjTHy93W3TwpMLM4SCm0n57Sc0Jj3+m2S6LSTstKyBB34eT1UouaMS19mpWwvtj42+sRiEjA3+rOTNoNzXFQ==",
+      "type": "package",
+      "path": "microsoft.entityframeworkcore.relational/10.0.4",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "PACKAGE.md",
+        "lib/net10.0/Microsoft.EntityFrameworkCore.Relational.dll",
+        "lib/net10.0/Microsoft.EntityFrameworkCore.Relational.xml",
+        "microsoft.entityframeworkcore.relational.10.0.4.nupkg.sha512",
+        "microsoft.entityframeworkcore.relational.nuspec"
       ]
     },
     "Microsoft.Extensions.AmbientMetadata.Application/10.4.0": {
@@ -494,6 +836,26 @@
         "lib/netstandard2.0/Microsoft.Extensions.AmbientMetadata.Application.xml",
         "microsoft.extensions.ambientmetadata.application.10.4.0.nupkg.sha512",
         "microsoft.extensions.ambientmetadata.application.nuspec"
+      ]
+    },
+    "Microsoft.Extensions.Caching.StackExchangeRedis/10.0.1": {
+      "sha512": "M7+349/EtaszydCxz/vtj4fUgbwE6NfDAfh98+oeWHPdBthgWKDCdnFV92p9UtyFN8Ln0e0w1ZzJvvbNzpMtaQ==",
+      "type": "package",
+      "path": "microsoft.extensions.caching.stackexchangeredis/10.0.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "PACKAGE.md",
+        "THIRD-PARTY-NOTICES.TXT",
+        "lib/net10.0/Microsoft.Extensions.Caching.StackExchangeRedis.dll",
+        "lib/net10.0/Microsoft.Extensions.Caching.StackExchangeRedis.xml",
+        "lib/net462/Microsoft.Extensions.Caching.StackExchangeRedis.dll",
+        "lib/net462/Microsoft.Extensions.Caching.StackExchangeRedis.xml",
+        "lib/netstandard2.0/Microsoft.Extensions.Caching.StackExchangeRedis.dll",
+        "lib/netstandard2.0/Microsoft.Extensions.Caching.StackExchangeRedis.xml",
+        "microsoft.extensions.caching.stackexchangeredis.10.0.1.nupkg.sha512",
+        "microsoft.extensions.caching.stackexchangeredis.nuspec"
       ]
     },
     "Microsoft.Extensions.Compliance.Abstractions/10.4.0": {
@@ -777,6 +1139,40 @@
         "notmediator.nuspec"
       ]
     },
+    "Npgsql/10.0.2": {
+      "sha512": "q5RfBI+wywJSFUNDE1L4ZbHEHCFTblo8Uf6A6oe4feOUFYiUQXyAf9GBh5qEZpvJaHiEbpBPkQumjEhXCJxdrg==",
+      "type": "package",
+      "path": "npgsql/10.0.2",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "lib/net10.0/Npgsql.dll",
+        "lib/net10.0/Npgsql.xml",
+        "lib/net8.0/Npgsql.dll",
+        "lib/net8.0/Npgsql.xml",
+        "lib/net9.0/Npgsql.dll",
+        "lib/net9.0/Npgsql.xml",
+        "npgsql.10.0.2.nupkg.sha512",
+        "npgsql.nuspec",
+        "postgresql.png"
+      ]
+    },
+    "Npgsql.EntityFrameworkCore.PostgreSQL/10.0.1": {
+      "sha512": "P6EwH0Q4xkaA264iNZDqCPhWt8pscfUGxXazDQg4noBfqjoOlk4hKWfvBjF9ZX3R/9JybRmmJfmxr2iBMj0EpA==",
+      "type": "package",
+      "path": "npgsql.entityframeworkcore.postgresql/10.0.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "lib/net10.0/Npgsql.EntityFrameworkCore.PostgreSQL.dll",
+        "lib/net10.0/Npgsql.EntityFrameworkCore.PostgreSQL.xml",
+        "npgsql.entityframeworkcore.postgresql.10.0.1.nupkg.sha512",
+        "npgsql.entityframeworkcore.postgresql.nuspec",
+        "postgresql.png"
+      ]
+    },
     "OpenTelemetry/1.14.0": {
       "sha512": "aiPBAr1+0dPDItH++MQQr5UgMf4xiybruzNlAoYYMYN3UUk+mGRcoKuZy4Z4rhhWUZIpK2Xhe7wUUXSTM32duQ==",
       "type": "package",
@@ -997,6 +1393,29 @@
         "opentelemetry.instrumentation.runtime.nuspec"
       ]
     },
+    "Pipelines.Sockets.Unofficial/2.2.8": {
+      "sha512": "zG2FApP5zxSx6OcdJQLbZDk2AVlN2BNQD6MorwIfV6gVj0RRxWPEp2LXAxqDGZqeNV1Zp0BNPcNaey/GXmTdvQ==",
+      "type": "package",
+      "path": "pipelines.sockets.unofficial/2.2.8",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net461/Pipelines.Sockets.Unofficial.dll",
+        "lib/net461/Pipelines.Sockets.Unofficial.xml",
+        "lib/net472/Pipelines.Sockets.Unofficial.dll",
+        "lib/net472/Pipelines.Sockets.Unofficial.xml",
+        "lib/net5.0/Pipelines.Sockets.Unofficial.dll",
+        "lib/net5.0/Pipelines.Sockets.Unofficial.xml",
+        "lib/netcoreapp3.1/Pipelines.Sockets.Unofficial.dll",
+        "lib/netcoreapp3.1/Pipelines.Sockets.Unofficial.xml",
+        "lib/netstandard2.0/Pipelines.Sockets.Unofficial.dll",
+        "lib/netstandard2.0/Pipelines.Sockets.Unofficial.xml",
+        "lib/netstandard2.1/Pipelines.Sockets.Unofficial.dll",
+        "lib/netstandard2.1/Pipelines.Sockets.Unofficial.xml",
+        "pipelines.sockets.unofficial.2.2.8.nupkg.sha512",
+        "pipelines.sockets.unofficial.nuspec"
+      ]
+    },
     "Polly.Core/8.4.2": {
       "sha512": "BpE2I6HBYYA5tF0Vn4eoQOGYTYIK1BlF5EXVgkWGn3mqUUjbXAr13J6fZVbp7Q3epRR8yshacBMlsHMhpOiV3g==",
       "type": "package",
@@ -1100,6 +1519,40 @@
         "scalar.aspnetcore.nuspec"
       ]
     },
+    "StackExchange.Redis/2.9.32": {
+      "sha512": "j5Rjbf7gWz5izrn0UWQy9RlQY4cQDPkwJfVqATnVsOa/+zzJrps12LOgacMsDl/Vit2f01cDiDkG/Rst8v2iGw==",
+      "type": "package",
+      "path": "stackexchange.redis/2.9.32",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "lib/net461/StackExchange.Redis.dll",
+        "lib/net461/StackExchange.Redis.xml",
+        "lib/net472/StackExchange.Redis.dll",
+        "lib/net472/StackExchange.Redis.xml",
+        "lib/net6.0/StackExchange.Redis.dll",
+        "lib/net6.0/StackExchange.Redis.xml",
+        "lib/net8.0/StackExchange.Redis.dll",
+        "lib/net8.0/StackExchange.Redis.xml",
+        "lib/netcoreapp3.1/StackExchange.Redis.dll",
+        "lib/netcoreapp3.1/StackExchange.Redis.xml",
+        "lib/netstandard2.0/StackExchange.Redis.dll",
+        "lib/netstandard2.0/StackExchange.Redis.xml",
+        "stackexchange.redis.2.9.32.nupkg.sha512",
+        "stackexchange.redis.nuspec"
+      ]
+    },
+    "Message.Domain/1.0.0": {
+      "type": "project",
+      "path": "../Message.Domain/Message.Domain.csproj",
+      "msbuildProject": "../Message.Domain/Message.Domain.csproj"
+    },
+    "Message.Infrastructure/1.0.0": {
+      "type": "project",
+      "path": "../Message.Infrastructure/Message.Infrastructure.csproj",
+      "msbuildProject": "../Message.Infrastructure/Message.Infrastructure.csproj"
+    },
     "NotBlog.ServiceDefaults/1.0.0": {
       "type": "project",
       "path": "../NotBlog.ServiceDefaults/NotBlog.ServiceDefaults.csproj",
@@ -1108,9 +1561,12 @@
   },
   "projectFileDependencyGroups": {
     "net10.0": [
+      "Aspire.StackExchange.Redis.DistributedCaching >= 13.1.2",
+      "Message.Infrastructure >= 1.0.0",
       "Microsoft.AspNetCore.OpenApi >= 10.0.4",
       "NotBlog.ServiceDefaults >= 1.0.0",
       "NotMediator >= 1.0.5",
+      "Npgsql.EntityFrameworkCore.PostgreSQL >= 10.0.1",
       "Scalar.AspNetCore >= 2.13.6"
     ]
   },
@@ -1147,6 +1603,9 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "projectReferences": {
+            "F:\\NotBlog\\Message.Infrastructure\\Message.Infrastructure.csproj": {
+              "projectPath": "F:\\NotBlog\\Message.Infrastructure\\Message.Infrastructure.csproj"
+            },
             "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj": {
               "projectPath": "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj"
             }
@@ -1169,6 +1628,10 @@
       "net10.0": {
         "targetAlias": "net10.0",
         "dependencies": {
+          "Aspire.StackExchange.Redis.DistributedCaching": {
+            "target": "Package",
+            "version": "[13.1.2, )"
+          },
           "Microsoft.AspNetCore.OpenApi": {
             "target": "Package",
             "version": "[10.0.4, )"
@@ -1176,6 +1639,10 @@
           "NotMediator": {
             "target": "Package",
             "version": "[1.0.5, )"
+          },
+          "Npgsql.EntityFrameworkCore.PostgreSQL": {
+            "target": "Package",
+            "version": "[10.0.1, )"
           },
           "Scalar.AspNetCore": {
             "target": "Package",

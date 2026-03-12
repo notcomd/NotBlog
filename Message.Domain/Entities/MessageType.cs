@@ -1,4 +1,4 @@
-namespace Notcomd.Meaage.Server.Entities;
+namespace Message.Domain.Entities;
 
 public enum MessageType
 {
