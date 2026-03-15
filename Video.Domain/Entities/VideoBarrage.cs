@@ -9,6 +9,8 @@ public class VideoBarrage
         VideoBarrageGuid = Guid.CreateVersion7();
         TimeSpace = new(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
         VideoControl = VideoControl.VideoControlBuilder();
+        VideoImage= VideoImage.VideoImageBuilder();
+        VideoQuote = VideoQuote.VideoQuoteBuilder();
     }
 
     public Guid VideoBarrageGuid { get; init; }
@@ -22,6 +24,10 @@ public class VideoBarrage
     public TimeSpace TimeSpace { get; private set; }
 
     public required VideoControl VideoControl { get; init; }
+    
+    public VideoQuote VideoQuote { get; private set; }
+    
+    public VideoImage? VideoImage { get; init; }
     
     public VideoBarrage( Guid userGuid, string videoBarrageBody):this()
     {

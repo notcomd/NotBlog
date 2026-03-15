@@ -10,7 +10,11 @@ public class VideoReviewDbContextConfiguration : IEntityTypeConfiguration<VideoR
     {
         builder.ToTable("VideoReview");
         builder.HasIndex(en => en.VideoReviewGuid);
-        builder.HasKey(en => en.VideoReviewGuid);
+        builder.HasIndex(en => en.VideoGuid);
+        builder.HasIndex(en => en.UserGuid);
+        builder.HasIndex(en => en.RootReview);
+        builder.Ignore(en => en.DomainEventbus);
+        builder.Property(en => en.Id).UseHiLo("Reviewq");
         builder.Property(en => en.VideoGuid).IsRequired();
         builder.OwnsOne(en => en.VideoControl, x =>
         {
@@ -44,6 +48,19 @@ public class VideoReviewDbContextConfiguration : IEntityTypeConfiguration<VideoR
             x.ToJson();
             x.Property(s => s.UpdateAt).HasColumnName("UpdateTime");
             x.Property(s => s.CreateAt).HasColumnName("CreateTime");
+        });
+        
+        builder.HasMany(e => e.VideoReviews)
+            .WithOne()
+            .HasForeignKey(e => e.VideoGuid)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        builder.OwnsMany(e => e.VideoImages, x =>
+        {
+            x.ToJson();
+            x.Property(s => s.Description);
+            x.Property(s => s.ImageUrl);
+            x.Property(s => s.SortOrder);
         });
     }
 }

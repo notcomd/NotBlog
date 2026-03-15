@@ -4,13 +4,13 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Markdown.Infrastructure.Configuration;
 
-public class MarkHositoryEntityConfiguration: IEntityTypeConfiguration<MarkHository>
+public class MarkHositoryEntityConfiguration: IEntityTypeConfiguration<MarkHistory>
 {
-    public void Configure(EntityTypeBuilder<MarkHository> builder)
+    public void Configure(EntityTypeBuilder<MarkHistory> builder)
     {
         builder.Ignore(en => en.DomainEventbus);
 
-        builder.ToTable("MarkHository");
+        builder.ToTable("MarkHistory");
         
         builder.Property(x => x.Id).UseHiLo("MarkHositoryseq");
         

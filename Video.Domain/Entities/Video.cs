@@ -1,4 +1,3 @@
-using Notcomd.Token.JWT;
 using Video.Domain.SeedWork;
 using Video.Domain.ValueObjects;
 
@@ -12,6 +11,8 @@ public class Videos : Entity, IAggregateRoot
         VideoQuote = VideoQuote.VideoQuoteBuilder();
         VideoControl = VideoControl.VideoControlBuilder();
         VideoTags = [];
+        VideoBarrageList = [];
+        VideoReviews = [];
         TimeSpace = new TimeSpace(DateTime.UtcNow, DateTime.UtcNow);
     }
 
@@ -25,82 +26,39 @@ public class Videos : Entity, IAggregateRoot
         BriefIntroduction = briefIntroduction;
         AddVideoTags(videoTags);
     }
-
-
-    /// <summary>
-    ///     视频主键id
-    /// </summary>
+    
     public Guid VideoGuid { get; init; }
 
-    /// <summary>
-    ///     所属用户
-    /// </summary>
-    public HashSet<Guid> Affiliated;
+    public HashSet<Guid> Affiliated { get; private set; }
 
-    /// <summary>
-    ///     封面的uri
-    /// </summary>
     public Uri VideoCover { get; private set; } = null!;
 
-    /// <summary>
-    ///     标题
-    /// </summary>
     public string VideoName { get; private set; } = null!;
 
-    /// <summary>
-    ///     简介
-    /// </summary>
     public string BriefIntroduction { get; private set; }
 
-    /// <summary>
-    ///     标签
-    /// </summary>
     public HashSet<string> VideoTags { get; private set; }
-
-    /// <summary>
-    ///     视频的uri
-    /// </summary>
+    
     public Uri VideoFileUri { get; private set; } = null!;
-
-    /// <summary>
-    ///  视频的nvid
-    /// </summary>
+    
     public string VideoNvid { get; init; }
-
-
-    /// <summary>
-    ///     评论点赞等的数量
-    /// </summary>
+    
     public VideoQuote VideoQuote { get; private set; }
-
-    /// <summary>
-    ///     弹幕
-    /// </summary>
+    
     public List<VideoBarrage>? VideoBarrageList { get; private set; }
-
-    /// <summary>
-    ///     视频评论
-    /// </summary>
+    
     public List<VideoReview>? VideoReviews { get; }
-
-    /// <summary>
-    ///     创建时间
-    /// </summary>
+    
     public TimeSpace TimeSpace { get; private set; }
-
-    /// <summary>
-    ///     权限管理
-    /// </summary>
+    
     public VideoControl VideoControl { get; private set; }
-
 
     private void AddByUser(HashSet<Guid> affiliated)
     {
         Affiliated = affiliated ?? throw new ArgumentNullException($"{affiliated}不为空");
         TimeSpace.ResetUpdateAt(DateTimeOffset.UtcNow);
     }
-
-
+    
     public void SetProtectedTime(DateTimeOffset startTime, DateTimeOffset endTime)
     {
         if (VideoControl.AuthorVideo != AuthorVideo.VideoProtected)
@@ -111,16 +69,28 @@ public class Videos : Entity, IAggregateRoot
         TimeSpace.ResetUpdateAt(DateTimeOffset.UtcNow);
     }
 
-    public void AddByVideoBarrage(List<VideoBarrage>? videoBarrage)
+    public void AddByVideoBarrage(VideoBarrage videoBarrage)
     {
         if (videoBarrage is null) return;
         VideoBarrageList?.AddRange(videoBarrage);
     }
 
-
-    public void AddByVideoReview(Guid userGuid, string? videoReviewBody)
+    
+    /// <summary>
+    /// 添加视频评论
+    /// </summary>
+    /// <param name="userGuid">用户Guid</param>
+    /// <param name="rootReview">是否为回复</param>
+    /// <param name="videoReviewBody">评论内容</param>
+    /// <param name="videoImage">图片</param>
+    public void AddByVideoReview(Guid userGuid, Guid? rootReview, string? videoReviewBody, List<VideoImage>? videoImage)
     {
-        VideoReviews!.Add(VideoReview.CreateVideoReview(VideoGuid, userGuid, videoReviewBody));
+        if(rootReview!=Guid.Empty||rootReview!=null)
+            //这里会触发一个事件，通知被回复用户
+        
+        
+        VideoReviews!.Add(new VideoReview(VideoGuid, userGuid, rootReview, videoReviewBody,
+            videoImage is { Count: < 9 and > 0 } ? videoImage : null));
     }
 
     private void AddVideoTags(HashSet<string> videoTags)
@@ -137,12 +107,19 @@ public class Videos : Entity, IAggregateRoot
     }
 
     public void UpDataVideo(string videoName, string briefIntroduction, Uri videoCover, Uri videoFileUri,
-        HashSet<string> videoTags)
+        HashSet<string> videoTags,VideoControl videoControl)
     {
         VideoName = videoName;
         BriefIntroduction = briefIntroduction;
         VideoCover = videoCover;
         VideoFileUri = videoFileUri;
         AddVideoTags(videoTags);
+        VideoControl.ChangeByVideoController(videoControl);
     }
+    
+    public void ChangeByQuote(VideoQuote videoQuote)
+    {
+        VideoQuote = videoQuote;
+    }
+    
 }

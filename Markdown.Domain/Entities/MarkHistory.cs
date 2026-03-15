@@ -5,9 +5,9 @@ namespace Markdown.Domain.Entities;
 /// <summary>
 ///     MarkDown 阅读历史记录
 /// </summary>
-public class MarkHository : Entity, IAggregateRoot
+public class MarkHistory : Entity, IAggregateRoot
 {
-    private MarkHository()
+    private MarkHistory()
     {
         MarkHositoryGuid = Guid.CreateVersion7();
         ReadTime = DateTime.UtcNow;
@@ -15,7 +15,7 @@ public class MarkHository : Entity, IAggregateRoot
         ReadingProgress = 0;
     }
 
-    private MarkHository(Guid userGuid, 
+    private MarkHistory(Guid userGuid, 
         Guid markDownGuid, int readingProgress, string? note) : this()
     {
         UserGuid = userGuid;
@@ -64,7 +64,7 @@ public class MarkHository : Entity, IAggregateRoot
     // 导航属性
     public MarkDown? MarkDown { get; private set; }
 
-    public Task<MarkHository> UpdateReadingProgressAsync(int progress)
+    public Task<MarkHistory> UpdateReadingProgressAsync(int progress)
     {
         if (progress < 0 || progress > 100)
             throw new ArgumentOutOfRangeException(nameof(progress), "阅读进度必须在 0-100 之间");
@@ -74,22 +74,22 @@ public class MarkHository : Entity, IAggregateRoot
         return Task.FromResult(this);
     }
 
-    public Task<MarkHository> AddReadCountAsync()
+    public Task<MarkHistory> AddReadCountAsync()
     {
         ReadCount++;
         LastReadTime = DateTime.UtcNow;
         return Task.FromResult(this);
     }
 
-    public Task<MarkHository> UpdateNoteAsync(string? note)
+    public Task<MarkHistory> UpdateNoteAsync(string? note)
     {
         Note = note;
         return Task.FromResult(this);
     }
 
-    public static MarkHository Create(Guid userGuid, Guid markDownGuid, int readingProgress = 0, string? note = null)
+    public static MarkHistory Create(Guid userGuid, Guid markDownGuid, int readingProgress = 0, string? note = null)
     {
-        return new MarkHository(userGuid, markDownGuid, readingProgress, note);
+        return new MarkHistory(userGuid, markDownGuid, readingProgress, note);
     }
 
     /// <summary>
@@ -123,9 +123,9 @@ public class MarkHository : Entity, IAggregateRoot
             return this;
         }
 
-        public MarkHository Build()
+        public MarkHistory Build()
         {
-            return new MarkHository(_userGuid, _markDownGuid, _readingProgress, _note);
+            return new MarkHistory(_userGuid, _markDownGuid, _readingProgress, _note);
         }
     }
 }

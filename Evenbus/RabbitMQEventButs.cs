@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
@@ -12,7 +12,7 @@ public class RabbitMqEventButs : IEventBus, IDisposable
 {
     private readonly IModel _consumerChannel;
 
-    private readonly string _exchangeNmae;
+    private readonly string _exchangeName;
 
     private readonly RabbitMqConnection _rabbitMqConnection;
 
@@ -25,12 +25,12 @@ public class RabbitMqEventButs : IEventBus, IDisposable
     private string _queueName;
 
 
-    public RabbitMqEventButs(RabbitMqConnection rabbitMqConnection, string excechangeName, string queueName,
+    public RabbitMqEventButs(RabbitMqConnection rabbitMqConnection, string exchangeName, string queueName,
         IServiceScopeFactory serviceScopeFactory)
     {
         _rabbitMqConnection = rabbitMqConnection ?? throw new ArgumentNullException(nameof(rabbitMqConnection));
         _subscriptionsManager = new SubscriptionsManager();
-        _exchangeNmae = excechangeName;
+        _exchangeName = exchangeName;
         _queueName = queueName;
 
 
@@ -54,7 +54,7 @@ public class RabbitMqEventButs : IEventBus, IDisposable
         if (!_rabbitMqConnection.Isconnected) _rabbitMqConnection.TryConnect();
 
         using var channel = _rabbitMqConnection.CreateModel();
-        channel.ExchangeDeclare(_exchangeNmae, ExchangeType.Direct);
+        channel.ExchangeDeclare(_exchangeName, ExchangeType.Direct);
         byte[] body;
         if (eventData == null)
         {
@@ -71,7 +71,7 @@ public class RabbitMqEventButs : IEventBus, IDisposable
 
         var properties = channel.CreateBasicProperties();
         properties.DeliveryMode = 2;
-        channel.BasicPublish(_exchangeNmae, eventName, true, properties, body);
+        channel.BasicPublish(_exchangeName, eventName, true, properties, body);
     }
 
 
@@ -93,7 +93,7 @@ public class RabbitMqEventButs : IEventBus, IDisposable
     {
         if (!_rabbitMqConnection.Isconnected) _rabbitMqConnection.TryConnect();
         using var channel = _rabbitMqConnection.CreateModel();
-        channel.QueueUnbind(_queueName, _exchangeNmae, e);
+        channel.QueueUnbind(_queueName, _exchangeName, e);
         if (_subscriptionsManager.IsEmpty)
         {
             _queueName = string.Empty;
@@ -111,7 +111,7 @@ public class RabbitMqEventButs : IEventBus, IDisposable
     {
         if (!_rabbitMqConnection.Isconnected) _rabbitMqConnection.TryConnect();
         var channel = _rabbitMqConnection.CreateModel();
-        channel.ExchangeDeclare(_exchangeNmae, ExchangeType.Direct);
+        channel.ExchangeDeclare(_exchangeName, ExchangeType.Direct);
         channel.QueueDeclare(_queueName, true, false, false, null);
         channel.CallbackException += (sender, ea) => { Debug.Fail(ea.ToString()); };
         return channel;
@@ -184,7 +184,7 @@ public class RabbitMqEventButs : IEventBus, IDisposable
         if (!cont)
         {
             if (!_rabbitMqConnection.Isconnected) _rabbitMqConnection.TryConnect();
-            _consumerChannel.QueueBind(_queueName, _exchangeNmae, eventName);
+            _consumerChannel.QueueBind(_queueName, _exchangeName, eventName);
         }
     }
 
