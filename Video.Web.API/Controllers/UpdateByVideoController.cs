@@ -51,28 +51,28 @@ public class UpdateByVideoController : ControllerBase
     }
 
 
-    [HttpPut("protected")]
-    public async Task<IVideoResult<string>> UpDateByControlAsync(DtoByUpControl updateVideo)
-    {
-        var videoModel = await _videoService.GetByVideoAsync(updateVideo.VideoGuid);
-
-        var model = new Videos(videoModel.Affiliated, videoModel.VideoName, videoModel.VideoCover,
-            videoModel.VideoFileUri, videoModel.BriefIntroduction, videoModel.VideoTags);
-
-        model.VideoControl.Author(AuthorVideo.VideoProtected);
-
-        if (model.VideoControl.GetAuthorVideo() == AuthorVideo.VideoProtected)
-        {
-            model.VideoControl.SetProtectedTime(updateVideo.StartTime, updateVideo.EndTime);
-            _loggerVideoService.LogInformation("设置视频保护时间成功");
-        }
-
-        if (model.VideoControl.GetAuthorVideo() == AuthorVideo.VideoPrivate)
-        {
-            model.VideoControl.Display(true);
-            _loggerVideoService.LogInformation("设置视频私有成功");
-        }
-
-        return new IVideoResult<string>(VideoResultType.VideoResultOk, 200, "更新成功", "UP!");
-    }
+    // [HttpPut("protected")]
+    // public async Task<IVideoResult<string>> UpDateByControlAsync(DtoByUpControl updateVideo)
+    // {
+    //     var videoModel = await _videoService.GetByVideoAsync(updateVideo.VideoGuid);
+    //
+    //     var model = new Videos(videoModel.Affiliated, videoModel.VideoName, videoModel.VideoCover,
+    //         videoModel.VideoFileUri, videoModel.BriefIntroduction, videoModel.VideoTags);
+    //
+    //     model.VideoControl.Author(AuthorVideo.VideoProtected);
+    //
+    //     if (model.VideoControl.GetAuthorVideo() == AuthorVideo.VideoProtected)
+    //     {
+    //         model.VideoControl.SetProtectedTime(updateVideo.StartTime, updateVideo.EndTime);
+    //         _loggerVideoService.LogInformation("设置视频保护时间成功");
+    //     }
+    //
+    //     if (model.VideoControl.GetAuthorVideo() == AuthorVideo.VideoPrivate)
+    //     {
+    //         model.VideoControl.Display(true);
+    //         _loggerVideoService.LogInformation("设置视频私有成功");
+    //     }
+    //
+    //     return new IVideoResult<string>(VideoResultType.VideoResultOk, 200, "更新成功", "UP!");
+    // }
 }

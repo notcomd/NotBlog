@@ -1,36 +1,27 @@
-﻿using System.Diagnostics;
-using Identity.Infrastructure.Configuration;
+using ConsoleApp1;
+using FileDev.Domain.Entities;
+using FileDev.Domain.SeedWork;
+using FileDev.Infrastructure.EntityConfig;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using NotMediator;
 
-namespace Identity.Infrastructure.EntityFramework;
+namespace FileDev.Infrastructure.EntityFramework;
 
-public class IdentityDbContext : DbContext, IUnitOfWork
+public class NotFileDbContext(DbContextOptions<NotFileDbContext> options, INotMediator mediator)
+    : DbContext(options), IUnitOfWork
 {
-    private readonly INotMediator _notMediator;
-
+    private readonly INotMediator _notMediator = mediator ?? throw new ArgumentNullException(nameof(mediator), "Mediator cannot be null");
+    
     private IDbContextTransaction _currentTransaction;
 
-    // public IdentityDbContext(DbContextOptions<IdentityDbContext> options) : base(options) { }
 
-    public IdentityDbContext(DbContextOptions<IdentityDbContext> options, INotMediator mediator) : base(options)
-    {
-        _notMediator = mediator ?? throw new ArgumentNullException(nameof(mediator), "Mediator cannot be null");
-        Debug.WriteLine($"IdentityDbContext::Context->{GetHashCode()}");
-    }
-
-    public sealed override int GetHashCode()
-    {
-        return base.GetHashCode();
-    }
-
-    public DbSet<User> Users { get; set; }
+    public DbSet<NotFile> Files { get; set; }
     
-    public DbSet<Roles> Roles { get; set; }
-
-    public DbSet<NotClient> NotClients { get; set; }
-
+    public DbSet<NotFileGroup> FileGroups { get; set; }
+    
     public bool HasActiveTransaction => _currentTransaction != null;
-
+    
     public async Task<int> SavaChangesAsync(CancellationToken cancellationToken = default)
     {
         //if (_notMediator is null) throw new ArgumentNullException(nameof(_notMediator), "Mediator cannot be null");
@@ -39,6 +30,11 @@ public class IdentityDbContext : DbContext, IUnitOfWork
         return 0;
     }
 
+    public IDbContextTransaction GetContextTransaction()
+    {
+        return _currentTransaction;
+    }
+    
     public async Task<bool> SavaEntitiesAsync(CancellationToken cancellationToken = default)
     {
         await _notMediator.DispatchDomainEventsAsync(this);
@@ -46,25 +42,7 @@ public class IdentityDbContext : DbContext, IUnitOfWork
         return true;
     }
 
-    public IDbContextTransaction GetContextTransaction()
-    {
-        return _currentTransaction;
-    }
-
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        base.OnModelCreating(modelBuilder);
-        modelBuilder.HasDefaultSchema("Identity");
-
-        modelBuilder.ApplyConfiguration(new UserEntityTypeConfiguration());
-        modelBuilder.ApplyConfiguration(new RoleEntityTypeConfiguration());
-        modelBuilder.ApplyConfiguration(new Author2EntityTypeConfiguration());
-        modelBuilder.ApplyConfiguration(new UserAccessFailEntityTypeConfiguration());
-        modelBuilder.ApplyConfiguration(new UserSafetyEntityTypeConfiguration());
-        modelBuilder.ApplyConfiguration(new NotClientEntityTypeConfiguration());
-    }
-
+    
     public async Task<IDbContextTransaction> BeginTransactionAsync()
     {
         if (_currentTransaction is not null) return null;
@@ -113,5 +91,12 @@ public class IdentityDbContext : DbContext, IUnitOfWork
             }
         }
     }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+        modelBuilder.ApplyConfiguration(new NotFileEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new NotFileGroupEntityConfiguration());
+    }
+    
 }
-#nullable enable

@@ -4,11 +4,11 @@ namespace Notcomd.Evenbus;
 
 public abstract class JsonIntegrationEventHandler<T> : IIntegrationEventHandler
 {
-    public Task Handler(string EventName, string EventData)
+    public Task Handler(string eventName, string eventData)
     {
-        var eventData = JsonSerializer.Deserialize<T>(EventData);
-        return EventDlerJson(EventName, eventData);
+        var data = JsonSerializer.Deserialize<T>(eventData);
+        return EventDlerJson(eventName, data);
     }
 
-    public abstract Task EventDlerJson(string eventName, T? eventData);
+    protected abstract Task EventDlerJson(string eventName, T? eventData);
 }

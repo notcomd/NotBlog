@@ -1,17 +1,14 @@
-﻿namespace Identity.Infrastructure;
+using Message.Domain.SeedWork;
+using Message.Infrastructure.EntityFramework;
+using NotMediator;
+
+namespace Message.Infrastructure;
 
 public static class NotMediatorExtension
 {
-    /// <summary>
-    /// 分发领域事件，支持并发发布和异常隔离
-    /// </summary>
-    /// <param name="mediator">消息中介</param>
-    /// <param name="context">DbContext 实例</param>
-    /// <param name="cancellationToken">取消令牌</param>
-    /// <param name="parallel">是否并发发布（默认 false 顺序发布）</param>
     public static async Task DispatchDomainEventsAsync(
         this INotMediator mediator,
-        IdentityDbContext context,
+        MessageDbContext context,
         CancellationToken cancellationToken = default,
         bool parallel = false)
     {
@@ -25,7 +22,6 @@ public static class NotMediatorExtension
             .Select(e => e.Entity)
             .ToList();
 
-        // 如果没有事件，则直接返回
         if (!domainEventEntries.Any())
             return;
 

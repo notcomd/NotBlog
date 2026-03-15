@@ -1,6 +1,6 @@
 ﻿namespace Notcomd.Evenbus;
 
-public class IntegrationEventRabbitMQOptions
+public class IntegrationEventRabbitMqOptions
 {
     public string HostName { get; set; } = null!;
     public string ExchangeName { get; set; } = null!;

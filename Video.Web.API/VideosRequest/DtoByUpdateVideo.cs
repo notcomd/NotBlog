@@ -5,5 +5,5 @@ public record DtoByUpdateVideo(
     Guid AffiliatedUserGuid,
     string VideoName,
     Uri VideoCover,
-    List<string> Tags,
+    HashSet<string> Tags,
     string BriefIntroduction);

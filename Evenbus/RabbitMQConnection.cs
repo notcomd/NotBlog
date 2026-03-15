@@ -3,17 +3,11 @@ using RabbitMQ.Client.Events;
 
 namespace Notcomd.Evenbus;
 
-public class RabbitMQConnection
+public class RabbitMqConnection(IConnectionFactory connectionFactory)
 {
-    private readonly IConnectionFactory _connectionFactory;
-    private readonly object sync_root = new();
+    private readonly Lock _syncRoot = new();
     private IConnection _connection;
     private bool _disposed;
-
-    public RabbitMQConnection(IConnectionFactory connectionFactory)
-    {
-        _connectionFactory = connectionFactory;
-    }
 
     public bool Isconnected => _connection != null && _connection.IsOpen && !_disposed;
 
@@ -33,9 +27,9 @@ public class RabbitMQConnection
 
     public bool TryConnect()
     {
-        lock (sync_root)
+        lock (_syncRoot)
         {
-            _connection = _connectionFactory.CreateConnection();
+            _connection = connectionFactory.CreateConnection();
             if (Isconnected)
             {
                 _connection.ConnectionShutdown += OnConnectionShutdown;

@@ -7,54 +7,61 @@ namespace Notcomd.Evenbus;
 
 public static class ServicesCollectionExtensions
 {
-    public static IServiceCollection AddEventBus(this IServiceCollection services, string queueName
-        , params Assembly[] assemblies)
+    extension(IServiceCollection services)
     {
-        return services.AddEventBus(queueName, assemblies.ToList());
-    }
-
-    public static IServiceCollection AddEventBus(this IServiceCollection service, string queueName,
-        IEnumerable<Assembly> assemblies)
-    {
-        var eventHandlers = new List<Type>();
-        foreach (var asm in assemblies)
+        public IServiceCollection AddEventBus(string queueName
+            , params Assembly[] assemblies)
         {
-            var types = asm.GetTypes().Where(T => !T.IsAbstract && T.IsAssignableTo(typeof(IIntegrationEventHandler)));
-            eventHandlers.AddRange(types);
+            return services.AddEventBus(queueName, assemblies.ToList());
         }
 
-        return service.AddEventBus(queueName, eventHandlers);
-    }
-
-    public static IServiceCollection AddEventBus(this IServiceCollection services, string queueName,
-        IEnumerable<Type> eventHandler)
-    {
-        foreach (var type in eventHandler) services.AddScoped(type, type);
-        services.AddSingleton<IEventBus>(sp =>
+        private IServiceCollection AddEventBus(string queueName,
+            IEnumerable<Assembly> assemblies)
         {
-            var optionMQ = sp.GetRequiredService<IOptions<IntegrationEventRabbitMQOptions>>().Value;
-            var factoy = new ConnectionFactory
+            var eventHandlers = new List<Type>();
+            foreach (var asm in assemblies)
             {
-                HostName = optionMQ.HostName,
-                DispatchConsumersAsync = true
-            };
-            if (optionMQ.UserName != null) factoy.UserName = optionMQ.UserName;
-            if (optionMQ.Password != null) factoy.Password = optionMQ.Password;
-            var rabbitMQConnection = new RabbitMQConnection(factoy);
-            var serviceScopeFactory = sp.GetRequiredService<IServiceScopeFactory>();
-            var eventbus = new RabbitMQEventButs(rabbitMQConnection, optionMQ.ExchangeName, queueName,
-                serviceScopeFactory);
-
-            foreach (var type in eventHandler)
-            {
-                var eventNameAttrs = type.GetCustomAttributes<EvenBusNameAttribute>();
-                if (!eventNameAttrs.Any())
-                    throw new ApplicationException($"There shoule be at least one EventNameAttribute on {type}");
-                foreach (var eventNameAttr in eventNameAttrs) eventbus.Subscribe(eventNameAttr.GetType().Name, type);
+                var types =
+                    asm.GetTypes().Where(T => !T.IsAbstract && T.IsAssignableTo(typeof(IIntegrationEventHandler)));
+                eventHandlers.AddRange(types);
             }
 
-            return eventbus;
-        });
-        return services;
+            return services.AddEventBus(queueName, eventHandlers);
+        }
+
+        private IServiceCollection AddEventBus(string queueName,
+            IEnumerable<Type> eventHandler)
+        {
+            var enumerable = eventHandler as Type[] ?? eventHandler.ToArray();
+            foreach (var type in enumerable) services.AddScoped(type, type);
+            services.AddSingleton<IEventBus>(sp =>
+            {
+                var optionMq = sp.GetRequiredService<IOptions<IntegrationEventRabbitMqOptions>>().Value;
+                var factoy = new ConnectionFactory
+                {
+                    HostName = optionMq.HostName,
+                    DispatchConsumersAsync = true
+                };
+                if (optionMq.UserName != null) factoy.UserName = optionMq.UserName;
+                if (optionMq.Password != null) factoy.Password = optionMq.Password;
+                var rabbitMqConnection = new RabbitMqConnection(factoy);
+                var serviceScopeFactory = sp.GetRequiredService<IServiceScopeFactory>();
+                var eventbus = new RabbitMqEventButs(rabbitMqConnection, optionMq.ExchangeName, queueName,
+                    serviceScopeFactory);
+
+                foreach (var type in enumerable)
+                {
+                    var eventNameAttrs = type.GetCustomAttributes<EvenBusNameAttribute>();
+                    var evenBusNameAttributes = eventNameAttrs as EvenBusNameAttribute[] ?? eventNameAttrs.ToArray();
+                    if (!evenBusNameAttributes.Any())
+                        throw new ApplicationException($"There should be at least one EventNameAttribute on {type}");
+                    foreach (var eventNameAttr in evenBusNameAttributes)
+                        eventbus.Subscribe(eventNameAttr.GetType().Name, type);
+                }
+
+                return eventbus;
+            });
+            return services;
+        }
     }
 }

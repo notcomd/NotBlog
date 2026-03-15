@@ -1,4 +1,9 @@
-﻿namespace Identity.Infrastructure;
+using Microsoft.EntityFrameworkCore;
+using NotMediator;
+using Video.Domain.SeedWork;
+using Video.Infrastructure.EntityFramework;
+
+namespace Video.Infrastructure;
 
 public static class NotMediatorExtension
 {
@@ -11,7 +16,7 @@ public static class NotMediatorExtension
     /// <param name="parallel">是否并发发布（默认 false 顺序发布）</param>
     public static async Task DispatchDomainEventsAsync(
         this INotMediator mediator,
-        IdentityDbContext context,
+        VideoDbContext context,
         CancellationToken cancellationToken = default,
         bool parallel = false)
     {
@@ -25,7 +30,6 @@ public static class NotMediatorExtension
             .Select(e => e.Entity)
             .ToList();
 
-        // 如果没有事件，则直接返回
         if (!domainEventEntries.Any())
             return;
 
@@ -43,19 +47,15 @@ public static class NotMediatorExtension
         // 发布事件（根据 parallel 参数选择策略）
         if (parallel)
         {
-            // 并发发布所有事件
             var publishTasks = allEvents
                 .Select(evt => mediator.PublishAsync(evt, cancellationToken))
                 .ToList();
-
             try
             {
                 await Task.WhenAll(publishTasks);
             }
             catch (Exception ex)
             {
-                // 记录日志，抛出聚合异常或根据需要处理
-                // 这里简单抛出，实际应考虑部分失败处理策略
                 throw new AggregateException(
                     "One or more domain events failed to publish.",
                     publishTasks.Where(t => t.IsFaulted).Select(t => t.Exception!.InnerException!)
@@ -64,7 +64,6 @@ public static class NotMediatorExtension
         }
         else
         {
-            // 顺序发布
             foreach (var domainEvent in allEvents)
             {
                 await mediator.PublishAsync(domainEvent, cancellationToken);

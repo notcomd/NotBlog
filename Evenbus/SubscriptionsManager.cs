@@ -5,10 +5,10 @@ public class SubscriptionsManager
     private readonly Dictionary<string, List<Type>> _handlers = new();
 
 
-    public bool IsEmpty => !_handlers.Keys.Any();
+    public bool IsEmpty => _handlers.Keys.Count == 0;
 
 
-    public event EventHandler<string> OnEventRemoved;
+    public event EventHandler<string>? OnEventRemoved;
 
 
     public void Clear()
@@ -31,7 +31,7 @@ public class SubscriptionsManager
         if (!_handlers[eventName].Any())
         {
             _handlers.Remove(eventName);
-            OnEventRemoved.Invoke(this, eventName);
+            OnEventRemoved?.Invoke(this, eventName);
         }
     }
 

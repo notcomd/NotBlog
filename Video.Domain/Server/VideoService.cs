@@ -64,7 +64,7 @@ public class VideoService(IVideoRepository videoRepository, ILogger<IVideoReposi
         if(data.Affiliated.Overlaps(userGuid))
         {
             if(data.VideoControl.Equals(videoControl)) return;
-            data.
+           // data.
         }
     }
 

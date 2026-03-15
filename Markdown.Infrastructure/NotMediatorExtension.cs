@@ -1,4 +1,12 @@
-﻿namespace Identity.Infrastructure;
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Markdown.Domain.SeedWork;
+using Markdown.Infrastructure.EntityFramework;
+using NotMediator;
+
+namespace Markdown.Infrastructure;
 
 public static class NotMediatorExtension
 {
@@ -11,7 +19,7 @@ public static class NotMediatorExtension
     /// <param name="parallel">是否并发发布（默认 false 顺序发布）</param>
     public static async Task DispatchDomainEventsAsync(
         this INotMediator mediator,
-        IdentityDbContext context,
+        MarkDownDbContext context,
         CancellationToken cancellationToken = default,
         bool parallel = false)
     {
@@ -25,7 +33,6 @@ public static class NotMediatorExtension
             .Select(e => e.Entity)
             .ToList();
 
-        // 如果没有事件，则直接返回
         if (!domainEventEntries.Any())
             return;
 

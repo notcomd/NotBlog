@@ -21,7 +21,7 @@ public class EmailSendBus : JsonIntegrationEventHandler<EmailSendRecord>
         _logger.LogInformation($"date:{DateTime.UtcNow},邮件发送{notification.ToEmail}");
     }
 
-    public override async Task EventDlerJson(string eventName, EmailSendRecord? eventData)
+    protected override async Task EventDlerJson(string eventName, EmailSendRecord? eventData)
     {
         await _emailCodeSend.SendEmailCodeAsync(eventData?.ToEmail, eventData?.Code.ToString());
         _logger.LogInformation($"date:{DateTime.UtcNow},邮件发送{eventData.ToEmail}");

@@ -8,13 +8,13 @@ using RabbitMQ.Client.Events;
 
 namespace Notcomd.Evenbus;
 
-public class RabbitMQEventButs : IEventBus, IDisposable
+public class RabbitMqEventButs : IEventBus, IDisposable
 {
     private readonly IModel _consumerChannel;
 
     private readonly string _exchangeNmae;
 
-    private readonly RabbitMQConnection _rabbitMQConnection;
+    private readonly RabbitMqConnection _rabbitMqConnection;
 
     private readonly IServiceProvider _serviceProvider;
 
@@ -25,55 +25,53 @@ public class RabbitMQEventButs : IEventBus, IDisposable
     private string _queueName;
 
 
-    public RabbitMQEventButs(RabbitMQConnection rabbitMQConnection, string exechangeName, string queueName,
+    public RabbitMqEventButs(RabbitMqConnection rabbitMqConnection, string excechangeName, string queueName,
         IServiceScopeFactory serviceScopeFactory)
     {
-        _rabbitMQConnection = rabbitMQConnection ?? throw new ArgumentNullException(nameof(rabbitMQConnection));
+        _rabbitMqConnection = rabbitMqConnection ?? throw new ArgumentNullException(nameof(rabbitMqConnection));
         _subscriptionsManager = new SubscriptionsManager();
-        _exchangeNmae = exechangeName;
+        _exchangeNmae = excechangeName;
         _queueName = queueName;
 
 
         _serviceScope = serviceScopeFactory.CreateScope() ??
                         throw new ArgumentNullException($"无法创建{serviceScopeFactory.CreateScope()}");
         _serviceProvider = _serviceScope.ServiceProvider;
-        _consumerChannel = CreateConsumerChannel() ?? throw new ArgumentNullException("无法创建链接");
+        _consumerChannel = CreateConsumerChannel() ?? throw new ArgumentNullException(nameof(rabbitMqConnection));
         _subscriptionsManager.OnEventRemoved += SubsManager_OnEventRemoved;
     }
 
     public void Dispose()
     {
-        if (_consumerChannel != null) _consumerChannel.Dispose();
+        _consumerChannel.Dispose();
         _subscriptionsManager.Clear();
-        _rabbitMQConnection.Dispose();
+        _rabbitMqConnection.Dispose();
         _serviceScope.Dispose();
     }
 
     public void Publish(string eventName, object? eventData)
     {
-        if (!_rabbitMQConnection.Isconnected) _rabbitMQConnection.TryConnect();
+        if (!_rabbitMqConnection.Isconnected) _rabbitMqConnection.TryConnect();
 
-        using (var channel = _rabbitMQConnection.CreateModel())
+        using var channel = _rabbitMqConnection.CreateModel();
+        channel.ExchangeDeclare(_exchangeNmae, ExchangeType.Direct);
+        byte[] body;
+        if (eventData == null)
         {
-            channel.ExchangeDeclare(_exchangeNmae, ExchangeType.Direct);
-            byte[] body;
-            if (eventData == null)
-            {
-                body = new byte[0];
-            }
-            else
-            {
-                var jsonSerializerOptions = new JsonSerializerOptions
-                {
-                    WriteIndented = true
-                };
-                body = JsonSerializer.SerializeToUtf8Bytes(eventData, eventData.GetType(), jsonSerializerOptions);
-            }
-
-            var properties = channel.CreateBasicProperties();
-            properties.DeliveryMode = 2;
-            channel.BasicPublish(_exchangeNmae, eventName, true, properties, body);
+            body = [];
         }
+        else
+        {
+            var jsonSerializerOptions = new JsonSerializerOptions
+            {
+                WriteIndented = true
+            };
+            body = JsonSerializer.SerializeToUtf8Bytes(eventData, eventData.GetType(), jsonSerializerOptions);
+        }
+
+        var properties = channel.CreateBasicProperties();
+        properties.DeliveryMode = 2;
+        channel.BasicPublish(_exchangeNmae, eventName, true, properties, body);
     }
 
 
@@ -93,39 +91,48 @@ public class RabbitMQEventButs : IEventBus, IDisposable
 
     private void SubsManager_OnEventRemoved(object? sender, string e)
     {
-        if (!_rabbitMQConnection.Isconnected) _rabbitMQConnection.TryConnect();
-        using (var channel = _rabbitMQConnection.CreateModel())
+        if (!_rabbitMqConnection.Isconnected) _rabbitMqConnection.TryConnect();
+        using var channel = _rabbitMqConnection.CreateModel();
+        channel.QueueUnbind(_queueName, _exchangeNmae, e);
+        if (_subscriptionsManager.IsEmpty)
         {
-            channel.QueueUnbind(_queueName, _exchangeNmae, e);
-            if (_subscriptionsManager.IsEmpty)
-            {
-                _queueName = string.Empty;
-                _consumerChannel.Close();
-            }
+            _queueName = string.Empty;
+            _consumerChannel.Close();
         }
     }
 
 
+    
+    /// <summary>
+    /// 创建消费者通道
+    /// </summary>
+    /// <returns></returns>
     private IModel? CreateConsumerChannel()
     {
-        if (!_rabbitMQConnection.Isconnected) _rabbitMQConnection.TryConnect();
-        var channel = _rabbitMQConnection.CreateModel();
+        if (!_rabbitMqConnection.Isconnected) _rabbitMqConnection.TryConnect();
+        var channel = _rabbitMqConnection.CreateModel();
         channel.ExchangeDeclare(_exchangeNmae, ExchangeType.Direct);
         channel.QueueDeclare(_queueName, true, false, false, null);
         channel.CallbackException += (sender, ea) => { Debug.Fail(ea.ToString()); };
         return channel;
     }
 
+    /// <summary>
+    /// 启动消费者
+    /// </summary>
     private void StartBasic()
     {
-        if (_consumerChannel != null)
-        {
-            var consumer = new AsyncEventingBasicConsumer(_consumerChannel);
-            consumer.Received += Consumer_Received;
-            _consumerChannel.BasicConsume(_queueName, false, consumer);
-        }
+        if (_consumerChannel is null) return;
+        var consumer = new AsyncEventingBasicConsumer(_consumerChannel);
+        consumer.Received += Consumer_Received;
+        _consumerChannel.BasicConsume(_queueName, false, consumer);
     }
 
+    /// <summary>
+    /// 消费者接收消息
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="event"></param>
     private async Task Consumer_Received(object sender, BasicDeliverEventArgs @event)
     {
         var eventName = @event.RoutingKey;
@@ -141,6 +148,12 @@ public class RabbitMQEventButs : IEventBus, IDisposable
         }
     }
 
+    /// <summary>
+    /// 处理事件
+    /// </summary>
+    /// <param name="eventName"></param>
+    /// <param name="message"></param>
+    /// <exception cref="ApplicationException"></exception>
     private async Task ProcessEvent(string eventName, string message)
     {
         if (_subscriptionsManager.HasSubscriptionForEvent(eventName))
@@ -156,21 +169,30 @@ public class RabbitMQEventButs : IEventBus, IDisposable
         }
         else
         {
-            var entryAsm = Assembly.GetEntryAssembly().GetName().Name;
+            var entryAsm = Assembly.GetEntryAssembly()!.GetName().Name;
             Debug.WriteLine($"找不到可以处理evenName={eventName}的处理程序，entryAsmc:{entryAsm}");
         }
     }
 
+    /// <summary>
+    /// 订阅内部事件
+    /// </summary>
+    /// <param name="eventName"></param>
     private void DoInternalSubscription(string eventName)
     {
         var cont = _subscriptionsManager.HasSubscriptionForEvent(eventName);
         if (!cont)
         {
-            if (!_rabbitMQConnection.Isconnected) _rabbitMQConnection.TryConnect();
+            if (!_rabbitMqConnection.Isconnected) _rabbitMqConnection.TryConnect();
             _consumerChannel.QueueBind(_queueName, _exchangeNmae, eventName);
         }
     }
 
+    /// <summary>
+    /// 检查处理器类型
+    /// </summary>
+    /// <param name="handlerType"></param>
+    /// <exception cref="ArgumentException"></exception>
     private void CheckHandlerType(Type handlerType)
     {
         if (!typeof(IIntegrationEventHandler).IsAssignableFrom(handlerType))

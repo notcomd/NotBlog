@@ -14,5 +14,5 @@ public abstract class DynamicIntegrationEventHandler : IIntegrationEventHandler
         return HandleDynamic(eventName, dynamicEventData);
     }
 
-    public abstract Task HandleDynamic(string eventName, dynamic eventData);
+    protected abstract Task HandleDynamic(string eventName, dynamic eventData);
 }

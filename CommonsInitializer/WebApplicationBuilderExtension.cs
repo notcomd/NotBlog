@@ -87,8 +87,8 @@ public static class WebApplicationBuilderExtension
         // });
 
         services.Configure<JwtOptions>(configuration.GetSection("PrivateKey"));
-        services.Configure<IntegrationEventRabbitMQOptions>(
-            configuration.GetSection(nameof(IntegrationEventRabbitMQOptions)));
+        services.Configure<IntegrationEventRabbitMqOptions>(
+            configuration.GetSection(nameof(IntegrationEventRabbitMqOptions)));
         services.AddEventBus(initOptions.EventBusQueueName, enumerable);
 
         //Redis的配置

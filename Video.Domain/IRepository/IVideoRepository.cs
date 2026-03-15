@@ -1,9 +1,9 @@
 using Video.Domain.Entities;
 using Video.Domain.ValueObjects;
-
+using Video.Domain.SeedWork;
 namespace Video.Domain.IRepository;
 
-public interface IVideoRepository
+public interface IVideoRepository:IRepository<Videos>
 {
     public Task<List<Videos>> FindByVideoListAsync();
 
