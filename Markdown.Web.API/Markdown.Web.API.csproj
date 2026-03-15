@@ -1,0 +1,45 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Remove="Protos\**"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Remove="Protos\**"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Remove="Protos\**"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Remove="Protos\**"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Markdown.Domain\Markdown.Domain.csproj"/>
+        <ProjectReference Include="..\Markdown.Infrastructure\Markdown.Infrastructure.csproj" />
+        <ProjectReference Include="..\NotBlog.ServiceDefaults\NotBlog.ServiceDefaults.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.4" />
+        <PackageReference Include="NotMediator" Version="1.0.5" />
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
+        <PackageReference Include="Scalar.AspNetCore" Version="2.13.5" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Apis\" />
+      <Folder Include="Dto\Request\" />
+      <Folder Include="Dto\Response\" />
+      <Folder Include="EventBus\" />
+    </ItemGroup>
+
+</Project>
