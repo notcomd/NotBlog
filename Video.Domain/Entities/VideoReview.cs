@@ -1,3 +1,5 @@
+using Video.Domain.ValueObjects;
+
 namespace Video.Domain.Entities;
 
 public record VideoReview
@@ -27,9 +29,9 @@ public record VideoReview
     /// </summary>
     public string? VideoReviewBody { get; init; }
 
-    public TimeSpace TimeSpace { get; private set; } = new(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
+    public TimeSpace TimeSpace { get; private set; } 
 
-    public VideoControl VideoControl { get; private set; } = VideoControl.VideoControlBuilder();
+    public VideoControl VideoControl { get; private set; }
 
     public VideoQuote VideoQuote { get; private set; } = VideoQuote.VideoQuoteBuilder();
 

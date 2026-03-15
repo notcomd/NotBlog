@@ -1,4 +1,4 @@
-namespace Video.Domain.Entities;
+﻿namespace Video.Domain.SeedWork;
 
 public interface IAggregateRoot
 {

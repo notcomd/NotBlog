@@ -1,6 +1,8 @@
+using Message.Domain.SeedWork;
+
 namespace Message.Domain.Entities;
 
-public record Message
+public class Message : Entity, IAggregateRoot
 {
     public MessageType MessageType { get; set; }
 

@@ -1,27 +1,33 @@
 using Notcomd.Token.JWT;
+using Video.Domain.SeedWork;
+using Video.Domain.ValueObjects;
 
 namespace Video.Domain.Entities;
 
-public class VideoCollection : IAggregateRoot
+public class VideoCollection : Entity, IAggregateRoot
 {
     private VideoCollection()
     {
+        VideoGuid = new();
+        AffiliatedUser = new();
+        TimeSpace = new(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
+        VideoControl =  VideoControl.VideoControlBuilder();
     }
 
     public Guid VideoCollectionGuid { get; init; } = Guid.CreateVersion7();
 
     public string VideoNvid { get; init; } = NVIDGenerator.GenerateNvStyleIdWithUuid();
-    public List<Guid> AffiliatedUser { get; } = new();
+    public List<Guid> AffiliatedUser { get;  } 
 
     public string VideoCollectionName { get; private set; }
 
     public string VideoCollectionBriefIntroduction { get; private set; }
 
-    public List<Guid> VideoGuid { get; } = new();
+    public List<Guid> VideoGuid { get; } 
 
-    public TimeSpace TimeSpace { get; } = new(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
+    public TimeSpace TimeSpace { get; }
 
-    public VideoControl VideoControl { get; private set; } = VideoControl.VideoControlBuilder();
+    public VideoControl VideoControl { get; private set; }
 
     public VideoQuote VideoQuote { get; private set; }
 

@@ -46,7 +46,7 @@ internal static class MigrateDbContextExtensions
         {
             logger.LogInformation("Migrating database associated with context {DbContextName}", typeof(TContext).Name);
 
-            var strategy = context.Database.CreateExecutionStrategy();
+            var strategy = context!.Database.CreateExecutionStrategy();
 
             await strategy.ExecuteAsync(() => InvokeSeeder(seeder, context, scopeServices));
         }

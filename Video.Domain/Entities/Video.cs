@@ -1,15 +1,22 @@
 using Notcomd.Token.JWT;
+using Video.Domain.SeedWork;
+using Video.Domain.ValueObjects;
 
 namespace Video.Domain.Entities;
 
-public class Videos : IAggregateRoot
+public class Videos : Entity, IAggregateRoot
 {
     private Videos()
     {
+        Affiliated = [];
+        VideoQuote = VideoQuote.VideoQuoteBuilder();
+        VideoControl = VideoControl.VideoControlBuilder();
+        VideoTags = [];
+        TimeSpace = new TimeSpace(DateTime.UtcNow, DateTime.UtcNow);
     }
 
-    public Videos(List<Affiliated> affiliatedAuthorizes, string videoName, Uri videoCover
-        , Uri videoFileUri, string briefIntroduction, List<string> videoTags)
+    public Videos(HashSet<Guid> affiliatedAuthorizes, string videoName, Uri videoCover
+        , Uri videoFileUri, string briefIntroduction, HashSet<string> videoTags) : this()
     {
         AddByUser(affiliatedAuthorizes);
         VideoName = videoName;
@@ -23,12 +30,12 @@ public class Videos : IAggregateRoot
     /// <summary>
     ///     视频主键id
     /// </summary>
-    public Guid VideoGuid { get; init; } = Guid.CreateVersion7();
+    public Guid VideoGuid { get; init; }
 
     /// <summary>
     ///     所属用户
     /// </summary>
-    public List<Affiliated> Affiliated { get; } = new();
+    public HashSet<Guid> Affiliated;
 
     /// <summary>
     ///     封面的uri
@@ -48,7 +55,7 @@ public class Videos : IAggregateRoot
     /// <summary>
     ///     标签
     /// </summary>
-    public List<string> VideoTags { get; } = new();
+    public HashSet<string> VideoTags { get; private set; }
 
     /// <summary>
     ///     视频的uri
@@ -56,45 +63,40 @@ public class Videos : IAggregateRoot
     public Uri VideoFileUri { get; private set; } = null!;
 
     /// <summary>
-    ///     视频的nvid
+    ///  视频的nvid
     /// </summary>
-    public string VideoNvid { get; init; } = NVIDGenerator.GenerateNvStyleIdWithUuid();
+    public string VideoNvid { get; init; }
 
-    /// <summary>
-    ///     子视频或集数
-    /// </summary>
-    public List<Guid>? ChildVideosList { get; private set; } = new();
 
     /// <summary>
     ///     评论点赞等的数量
     /// </summary>
-    public VideoQuote VideoQuote { get; private set; } = VideoQuote.VideoQuoteBuilder();
+    public VideoQuote VideoQuote { get; private set; }
 
     /// <summary>
     ///     弹幕
     /// </summary>
-    public List<VideoBarrage>? VideoBarrageList { get; } = new();
+    public List<VideoBarrage>? VideoBarrageList { get; private set; }
 
     /// <summary>
     ///     视频评论
     /// </summary>
-    public List<VideoReview>? VideoReviews { get; } = new();
+    public List<VideoReview>? VideoReviews { get; }
 
     /// <summary>
     ///     创建时间
     /// </summary>
-    public TimeSpace TimeSpace { get; } = new(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
+    public TimeSpace TimeSpace { get; private set; }
 
     /// <summary>
     ///     权限管理
     /// </summary>
-    public VideoControl VideoControl { get; } = VideoControl.VideoControlBuilder();
+    public VideoControl VideoControl { get; private set; }
 
 
-    private void AddByUser(List<Affiliated> affiliated)
+    private void AddByUser(HashSet<Guid> affiliated)
     {
-        if (affiliated == null) throw new ArgumentNullException($"{affiliated}不为空");
-        Affiliated.AddRange(affiliated);
+        Affiliated = affiliated ?? throw new ArgumentNullException($"{affiliated}不为空");
         TimeSpace.ResetUpdateAt(DateTimeOffset.UtcNow);
     }
 
@@ -109,26 +111,21 @@ public class Videos : IAggregateRoot
         TimeSpace.ResetUpdateAt(DateTimeOffset.UtcNow);
     }
 
-    public void AddByChild(List<Guid> childVideosList)
+    public void AddByVideoBarrage(List<VideoBarrage>? videoBarrage)
     {
-        ChildVideosList = childVideosList;
-        TimeSpace.ResetUpdateAt(DateTimeOffset.UtcNow);
+        if (videoBarrage is null) return;
+        VideoBarrageList?.AddRange(videoBarrage);
     }
 
-
-    public void AddByVideoBarrage(Guid userGuid, string? videoBarrageBody)
-    {
-        VideoBarrageList!.Add(VideoBarrage.CreateVideoBarrage(VideoGuid, userGuid, videoBarrageBody));
-    }
 
     public void AddByVideoReview(Guid userGuid, string? videoReviewBody)
     {
         VideoReviews!.Add(VideoReview.CreateVideoReview(VideoGuid, userGuid, videoReviewBody));
     }
 
-    private void AddVideoTags(List<string> videoTags)
+    private void AddVideoTags(HashSet<string> videoTags)
     {
-        VideoTags.AddRange(videoTags);
+        VideoTags = videoTags ?? throw new ArgumentNullException($"{videoTags}不为空");
         TimeSpace.ResetUpdateAt(DateTimeOffset.UtcNow);
     }
 
@@ -137,5 +134,15 @@ public class Videos : IAggregateRoot
         if (VideoControl.VideoProtectedTime!.StartTime >= timeOffset)
             throw new ArgumentException("结束时间不能小于开始时间");
         VideoControl.VideoProtectedTime!.SetEndTime(timeOffset);
+    }
+
+    public void UpDataVideo(string videoName, string briefIntroduction, Uri videoCover, Uri videoFileUri,
+        HashSet<string> videoTags)
+    {
+        VideoName = videoName;
+        BriefIntroduction = briefIntroduction;
+        VideoCover = videoCover;
+        VideoFileUri = videoFileUri;
+        AddVideoTags(videoTags);
     }
 }

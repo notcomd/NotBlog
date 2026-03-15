@@ -44,4 +44,9 @@
         <None Remove="Application\CommandHandler\**"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Dto\Request\" />
+      <Folder Include="Dto\Response\" />
+    </ItemGroup>
+
 </Project>

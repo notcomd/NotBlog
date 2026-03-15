@@ -1,9 +1,23 @@
-namespace Video.Domain.Entities;
+
+using Video.Domain.Entities;
+
+namespace Video.Domain.ValueObjects;
 
 public record VideoControl
 {
     private VideoControl()
     {
+        VideoDelete = false;
+        VideoDisplay = false;
+        AuthorVideo = AuthorVideo.VideoPublic;
+        BarrageControl = BarrageControl.BarrageOn;
+        TimeSpace = new(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
+        VideoProtectedTime = VideoProtectedTime.Crate(null, null);
+    }
+    
+    public static VideoControl VideoControlBuilder()
+    {
+        return new VideoControl();
     }
 
     public bool VideoDelete { get; private set; }
@@ -14,20 +28,17 @@ public record VideoControl
 
     public BarrageControl BarrageControl { get; private set; }
 
-    public VideoProtectedTime? VideoProtectedTime { get; private set; } = VideoProtectedTime.Crate(null, null);
+    public VideoProtectedTime? VideoProtectedTime { get; private set; }
 
-    public TimeSpace TimeSpace { get; private set; } = new(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
+    public TimeSpace TimeSpace { get; private set; }
 
-
-    public static VideoControl VideoControlBuilder()
-    {
-        return new VideoControl
-        {
-            VideoDelete = false,
-            VideoDisplay = true,
-            AuthorVideo = AuthorVideo.VideoPublic
-        };
+    
+    public void ChangeByVideoController(VideoControl videoControl)
+    { 
+        
     }
+    
+    
 
     public void Barrage(BarrageControl barrageControl)
     {
@@ -39,9 +50,10 @@ public record VideoControl
         VideoDelete = delete;
     }
 
-    public void Display(bool display)
+    public void Push()
     {
-        VideoDisplay = display;
+        if(!IsVideoDisplay())
+            VideoDisplay = true;
     }
 
     public void Author(AuthorVideo author)
@@ -65,8 +77,4 @@ public record VideoControl
         return VideoDisplay;
     }
 
-    public AuthorVideo GetAuthorVideo()
-    {
-        return AuthorVideo;
-    }
 }

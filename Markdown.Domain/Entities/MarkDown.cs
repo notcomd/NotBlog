@@ -12,6 +12,7 @@ public class MarkDown : Entity, IAggregateRoot
         MarkDownGuid = Guid.CreateVersion7();
         MarkDownTagboard = new HashSet<string>();
         MarkReview = new List<MarkReview>();
+        MarkDowns = new List<MarkDown>();
         CreateAt = DateTime.UtcNow;
         UplaodAt = DateTime.UtcNow;
     }
@@ -37,6 +38,8 @@ public class MarkDown : Entity, IAggregateRoot
     }
 
     public Guid MarkDownGuid { get; init; }
+    
+    public Guid MarkHistoryGuid { get; private set; }
     public Guid MarkReviewGuid { get; init; }
     public Guid MarkUserGuid { get; init; }
     public string MarkDownName { get; private set; } = null!;
@@ -47,6 +50,9 @@ public class MarkDown : Entity, IAggregateRoot
     public string MarkDownContent { get; private set; } = null!;
     
     public bool IsDelete { get; private set; }
+    
+    public ICollection<MarkDown> MarkDowns { get; private set; }
+    
     public DateTime UplaodAt { get; private set; }
 
     // 关系外键
