@@ -16,7 +16,7 @@ public class VideoCollection : Entity, IAggregateRoot
 
     public Guid VideoCollectionGuid { get; init; } = Guid.CreateVersion7();
 
-    public string VideoNvid { get; init; } = NVIDGenerator.GenerateNvStyleIdWithUuid();
+    public string VideoNvid { get; init; } = NvidGenerator.GenerateNvStyleIdWithUuid();
     public List<Guid> AffiliatedUser { get;  } 
 
     public string VideoCollectionName { get; private set; }

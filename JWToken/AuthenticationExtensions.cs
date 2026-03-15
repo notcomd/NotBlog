@@ -35,7 +35,7 @@ public static class AuthenticationExtensions
     {
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         var configString = configuration.Get<JwtOptions>();
-        if (configString is null) throw new ArgumentNullException("没有配置相关数据,请检查配置文件问题");
+        if (configString is null) throw new ArgumentNullException(nameof(configuration));
         return services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(opt =>
             {

@@ -7,17 +7,12 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Notcomd.Token.JWT;
 
-public class JwtTokenService : IJwtTokenService
+public class JwtTokenService(IOptionsSnapshot<JwtOptions> optionsSnapshot) : IJwtTokenService
 {
     /// <summary>
     ///     通过直接读取配置文件密钥内容。
     /// </summary>
-    private readonly IOptionsSnapshot<JwtOptions> _optionsSnapshot;
-
-    public JwtTokenService(IOptionsSnapshot<JwtOptions> optionsSnapshot)
-    {
-        _optionsSnapshot = optionsSnapshot;
-    }
+    private readonly IOptionsSnapshot<JwtOptions> _optionsSnapshot = optionsSnapshot;
 
 
     public string BuilderTokenAsync(IEnumerable<Claim> claims, JwtOptions configuration)
@@ -32,15 +27,15 @@ public class JwtTokenService : IJwtTokenService
 
 
     public async Task<TokenValidationResult> JwtSecurityTokenHandlerAsync(
-        [Required(ErrorMessage = "privatekey is null!")] string PrivateKey, string AuthorizationString)
+        [Required(ErrorMessage = "privatekey is null!")] string privateKey, string authorizationString)
     {
         JwtSecurityTokenHandler tokenHeandder = new();
         TokenValidationParameters tokenValidation = new();
-        var securikey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(PrivateKey));
+        var securikey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(privateKey));
         tokenValidation.IssuerSigningKey = securikey;
         tokenValidation.ValidateIssuer = true;
         tokenValidation.ValidateAudience = true;
-        var claimsPrincipal = await tokenHeandder.ValidateTokenAsync(AuthorizationString, tokenValidation);
+        var claimsPrincipal = await tokenHeandder.ValidateTokenAsync(authorizationString, tokenValidation);
         return claimsPrincipal;
     }
 

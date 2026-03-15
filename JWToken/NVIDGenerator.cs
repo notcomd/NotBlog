@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Notcomd.Token.JWT;
 
-public static class NVIDGenerator
+public static class NvidGenerator
 {
     private const string BaseChars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"; // 62种字符
 

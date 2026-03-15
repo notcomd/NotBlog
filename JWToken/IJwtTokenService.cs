@@ -7,27 +7,26 @@ namespace Notcomd.Token.JWT;
 public interface IJwtTokenService
 {
     /// <summary>
-    ///     构建token
+    /// 构建token
     /// </summary>
-    /// <typeparam name="T">需要声明Claim数据</typeparam>
-    /// <param name="Redname"></param>
+    /// <param name="claims"> 用户声明 </param>
+    /// <param name="configuration"> Jwt配置类 </param>
     /// <returns></returns>
     string BuilderTokenAsync(IEnumerable<Claim> claims, JwtOptions configuration);
 
 
     /// <summary>
-    ///     解析jwt
+    /// 解析jwt
     /// </summary>
-    /// <param name="PrivateKey">用户密钥</param>
-    /// <param name="AuthorizationString">生成的jwttoken</param>
+    /// <param name="privateKey">用户密钥</param>
+    /// <param name="authorizationString">生成的token</param>
     /// <returns></returns>
     Task<TokenValidationResult> JwtSecurityTokenHandlerAsync(
-        [Required(ErrorMessage = "privatekey is null!")] string PrivateKey, string AuthorizationString);
+        [Required(ErrorMessage = "privateKey is null!")] string privateKey, string authorizationString);
 
     /// <summary>
-    ///     解析token的重写方法
+    /// 解析token的重写方法
     /// </summary>
-    /// <param name="authorizetionString">get/post/put/delete所有请求的请求报文头的token</param>
     /// <returns></returns>
-    Task<TokenValidationResult> JwtSecurityTokenHandlerAsync(string authorizetionString);
+    Task<TokenValidationResult> JwtSecurityTokenHandlerAsync(string authorizationString);
 }
