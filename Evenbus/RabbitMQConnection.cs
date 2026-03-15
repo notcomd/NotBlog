@@ -6,7 +6,7 @@ namespace Notcomd.Evenbus;
 public class RabbitMqConnection(IConnectionFactory connectionFactory)
 {
     private readonly Lock _syncRoot = new();
-    private IConnection _connection;
+    private IConnection? _connection;
     private bool _disposed;
 
     public bool Isconnected => _connection != null && _connection.IsOpen && !_disposed;
@@ -15,14 +15,14 @@ public class RabbitMqConnection(IConnectionFactory connectionFactory)
     {
         if (!Isconnected)
             throw new InvalidOperationException("no RabbitMQ connections are available to perform this action");
-        return _connection.CreateModel();
+        return _connection?.CreateModel();
     }
 
     public void Dispose()
     {
         if (_disposed) return;
         _disposed = true;
-        _connection.Dispose();
+        _connection?.Dispose();
     }
 
     public bool TryConnect()
