@@ -1,5 +1,6 @@
 using System.Reflection;
 using Message.Infrastructure.EntityFramework;
+using NotBlog.ServiceDefaults;
 using NotMediator;
 using Scalar.AspNetCore;
 
@@ -14,9 +15,11 @@ builder.AddRedisDistributedCache("Redis");
 
 builder.Services.AddControllers();
 
+builder.Services.AddOpenApi();
+
 builder.Services.AddEndpointsApiExplorer();
 
-//builder.Services.AddSwaggerGen();
+builder.Services.AddProblemDetails();
 
 builder.Services.AddSignalR();
 
@@ -27,6 +30,7 @@ string[] urls =
 builder.Services.AddCors(Options =>
     Options.AddDefaultPolicy(builder =>
         builder.WithOrigins(urls).AllowAnyMethod().AllowAnyHeader().AllowCredentials()));
+
 var app = builder.Build();
 
 app.MapDefaultEndpoints();

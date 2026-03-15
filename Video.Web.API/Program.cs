@@ -1,8 +1,8 @@
 using System.Reflection;
+using NotBlog.ServiceDefaults;
 using NotMediator;
 using Scalar.AspNetCore;
 using Video.Infrastructure.EntityFramework;
-using Video.Web.API.Apis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,9 +12,12 @@ builder.Services.AddNpgsql<VideoDbContext>("VideoPostgres");
 
 builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddProblemDetails();
 builder.Services.AddControllers();
+
+builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddProblemDetails();
 
 var app = builder.Build();
 

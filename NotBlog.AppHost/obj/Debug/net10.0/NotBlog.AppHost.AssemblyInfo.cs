@@ -25,7 +25,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("NotBlog.AppHost")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+184806956e76ec80a5d6c1bd56562a7171707640")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cbe7c27552dae43cd51e7d51e747a280343418f0")]
 [assembly: System.Reflection.AssemblyProductAttribute("NotBlog.AppHost")]
 [assembly: System.Reflection.AssemblyTitleAttribute("NotBlog.AppHost")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

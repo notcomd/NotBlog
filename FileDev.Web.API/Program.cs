@@ -2,6 +2,7 @@ using System.Reflection;
 using CommonsInitializer;
 using DomainCommonst;
 using FileDev.Infrastructure.EntityFramework;
+using NotBlog.ServiceDefaults;
 using NotMediator;
 using Scalar.AspNetCore;
 

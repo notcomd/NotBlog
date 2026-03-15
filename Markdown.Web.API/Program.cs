@@ -1,5 +1,6 @@
 using System.Reflection;
 using Markdown.Infrastructure.EntityFramework;
+using NotBlog.ServiceDefaults;
 using NotMediator;
 using Scalar.AspNetCore;
 
@@ -13,7 +14,11 @@ builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
 
 builder.Services.AddControllers();
 
+builder.Services.AddOpenApi();
+
 builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddProblemDetails();
 
 
 var app = builder.Build();

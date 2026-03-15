@@ -1,5 +1,6 @@
 using Identity.Infrastructure.EntityFramework;
 using Identity.Web.API.APIs;
+using NotBlog.ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,20 +15,20 @@ builder.NotBlogConfigureExtraServices(new InitializerOptions
 builder.Services.AddNpgsql<IdentityDbContext>("IdentityPostgres");
 builder.AddRedisDistributedCache("Redis");
 
-// builder.Services.AddDbContext<IdentityDbContext>(opt
-//     => opt.UseNpgsql(builder.Configuration.GetConnectionString(nameof(DbContextOptions)),
-//         o => o.MigrationsAssembly("Identity.Infrastructure"))
-// );
+
 
 builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
 builder.Services.AddControllers(opt =>
 {
     opt.Filters.Add(new UnitOfWorkFilter());
-    //opt.Filters.Add(new UserLimitsOfAuthorityFilter());
 });
 
-builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddControllers();
+
 builder.Services.AddOpenApi();
+
+builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddProblemDetails();
 
 var app = builder.Build();
@@ -36,11 +37,13 @@ app.MapDefaultEndpoints();
 
 app.NotBlogUseServer();
 
-// Configure the HTTP request pipeline.
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.MapScalarApiReference();
 }
+
+app.MapGroup("api/Identity").NotMapIdentityApi();
 app.MapControllers();
 app.Run();
