@@ -1,0 +1,13 @@
+F:\NotBlog\NotBlog.ServiceDefaults\bin\Debug\net10.0\NotBlog.ServiceDefaults.deps.json
+F:\NotBlog\NotBlog.ServiceDefaults\bin\Debug\net10.0\NotBlog.ServiceDefaults.dll
+F:\NotBlog\NotBlog.ServiceDefaults\bin\Debug\net10.0\NotBlog.ServiceDefaults.pdb
+F:\NotBlog\NotBlog.ServiceDefaults\obj\Debug\net10.0\NotBlog.ServiceDefaults.csproj.AssemblyReference.cache
+F:\NotBlog\NotBlog.ServiceDefaults\obj\Debug\net10.0\NotBlog.ServiceDefaults.GeneratedMSBuildEditorConfig.editorconfig
+F:\NotBlog\NotBlog.ServiceDefaults\obj\Debug\net10.0\NotBlog.ServiceDefaults.AssemblyInfoInputs.cache
+F:\NotBlog\NotBlog.ServiceDefaults\obj\Debug\net10.0\NotBlog.ServiceDefaults.AssemblyInfo.cs
+F:\NotBlog\NotBlog.ServiceDefaults\obj\Debug\net10.0\NotBlog.ServiceDefaults.csproj.CoreCompileInputs.cache
+F:\NotBlog\NotBlog.ServiceDefaults\obj\Debug\net10.0\NotBlog.ServiceDefaults.sourcelink.json
+F:\NotBlog\NotBlog.ServiceDefaults\obj\Debug\net10.0\NotBlog.ServiceDefaults.dll
+F:\NotBlog\NotBlog.ServiceDefaults\obj\Debug\net10.0\refint\NotBlog.ServiceDefaults.dll
+F:\NotBlog\NotBlog.ServiceDefaults\obj\Debug\net10.0\NotBlog.ServiceDefaults.pdb
+F:\NotBlog\NotBlog.ServiceDefaults\obj\Debug\net10.0\ref\NotBlog.ServiceDefaults.dll
