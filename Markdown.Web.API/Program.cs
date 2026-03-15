@@ -1,4 +1,6 @@
+using System.Reflection;
 using Markdown.Infrastructure.EntityFramework;
+using NotMediator;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -6,6 +8,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 
 builder.Services.AddNpgsql<MarkDownDbContext>("MarkDownPostgres");
+
+builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
 
 builder.Services.AddControllers();
 

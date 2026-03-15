@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Markdown.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e3addb65e9b1ecd3bedc28bba1237b31678567c8")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+184806956e76ec80a5d6c1bd56562a7171707640")]
 [assembly: System.Reflection.AssemblyProductAttribute("Markdown.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Markdown.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

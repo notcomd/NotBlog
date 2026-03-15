@@ -1,20 +1,21 @@
-using Microsoft.EntityFrameworkCore;
+using System.Reflection;
+using NotMediator;
 using Scalar.AspNetCore;
 using Video.Infrastructure.EntityFramework;
+using Video.Web.API.Apis;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddNpgsql<VideoDbContext>("VideoPostgres");
+
+builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
+
 builder.Services.AddEndpointsApiExplorer();
-//builder.Services.AddSwaggerGen();
+builder.Services.AddProblemDetails();
 builder.Services.AddControllers();
-builder.Services.AddDbContext<VideoDbContext>(op =>
-{
-    op.UseNpgsql("Host=localhost;Database=video;Username=notcomd;Password=makefile");
-});
+
 var app = builder.Build();
 
 app.MapDefaultEndpoints();
@@ -27,5 +28,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
 app.MapControllers();
 app.Run();

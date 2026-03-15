@@ -1,6 +1,6 @@
-namespace Video.Web.API.VideosRequest;
+namespace Video.Web.API.Dto.Request;
 
-public record DtoByUpdateVideo(
+public record RequestUpdateByVideo(
     Guid VideoGuid,
     Guid AffiliatedUserGuid,
     string VideoName,

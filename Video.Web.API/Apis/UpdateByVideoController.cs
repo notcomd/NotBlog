@@ -2,24 +2,15 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Video.Domain.Entities;
 using Video.Domain.Server;
-using Video.Web.API.VideosRequest;
+using Video.Web.API.Dto.Request;
 
-namespace Video.Web.API.Controllers;
+namespace Video.Web.API.Apis;
 
 [ApiController]
 [Route("api/[controller]")]
-public class UpdateByVideoController : ControllerBase
+public class UpdateByVideoController(VideoService videoRepository, ILogger<VideoService> loggerVideoService)
+    :ControllerBase
 {
-    private readonly ILogger<VideoService> _loggerVideoService;
-
-    private readonly VideoService _videoService;
-
-    public UpdateByVideoController(VideoService videoRepository, ILogger<VideoService> loggerVideoService)
-    {
-        _videoService = videoRepository;
-        _loggerVideoService = loggerVideoService;
-    }
-
     /// <summary>
     ///     管理员无法更新视频信息
     /// </summary>
@@ -28,15 +19,15 @@ public class UpdateByVideoController : ControllerBase
     /// <exception cref="ArgumentNullException"></exception>
     [Authorize]
     [HttpPut]
-    public async Task<IVideoResult<string>> UpdateByVideoAsync([FromBody] DtoByUpdateVideo updateVideo)
+    public async Task<IVideoResult<string>> UpdateByVideoAsync([FromBody] RequestUpdateByVideo updateVideo)
     {
         if (updateVideo is null)
         {
-            _loggerVideoService.LogError("updateVideo is null");
+            loggerVideoService.LogError("updateVideo is null");
             throw new ArgumentNullException(nameof(updateVideo));
         }
 
-        var videoModel = await _videoService.GetByVideoAsync(updateVideo.VideoGuid);
+        var videoModel = await videoRepository.GetByVideoAsync(updateVideo.VideoGuid);
         //发送一个消息-我要更新数据了 {AffiliatedUserGuid}
 
         if (videoModel.VideoGuid != updateVideo.AffiliatedUserGuid)
@@ -45,7 +36,7 @@ public class UpdateByVideoController : ControllerBase
         var model = new Videos(videoModel.Affiliated, updateVideo.VideoName, updateVideo.VideoCover,
             updateVideo.VideoCover,
             updateVideo.BriefIntroduction, updateVideo.Tags);
-        await _videoService.UpdateByVideoAsync(model);
+        await videoRepository.UpdateByVideoAsync(model);
 
         return new IVideoResult<string>(VideoResultType.VideoResultOk, 200, "更新成功", "UP!");
     }

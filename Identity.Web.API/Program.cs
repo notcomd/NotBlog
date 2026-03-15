@@ -42,9 +42,5 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.MapScalarApiReference();
 }
-
-app.UseHttpsRedirection();
-var identityService = app.MapGroup("api/identity");
-identityService.NotMapIdentityApi();
 app.MapControllers();
 app.Run();
