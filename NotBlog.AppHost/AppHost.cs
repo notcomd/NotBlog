@@ -15,6 +15,8 @@ var mark=builder
 var redis = builder
     .AddConnectionString("Redis");
 
+// var rabbitmq = builder
+//     .AddConnectionString("RabbitMQ");
 # else
 var postgres = builder.AddPostgres("PostgresSQL")
     .WithDataVolume();

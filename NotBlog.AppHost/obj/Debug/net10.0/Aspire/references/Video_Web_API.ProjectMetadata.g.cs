@@ -15,7 +15,7 @@ public class Video_Web_API : global::Aspire.Hosting.IProjectMetadata
     /// <summary>
     /// The path to the Video_Web_API project.
     /// </summary>
-    public string ProjectPath => """F:\NotBlog\Video.Web.API\Video.Web.API.csproj""";
+    public string ProjectPath => """f:\NotBlog\Video.Web.API\Video.Web.API.csproj""";
 
     /// <summary>
     /// Gets a value indicating whether building the project before running it should be suppressed.

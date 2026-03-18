@@ -1,7 +1,7 @@
 ﻿namespace Identity.Domain.Events;
 
 public record UserStartedByPhoneDomainEvent(
-    HashSet<Guid> userRoleGuid,
-    PhoneNumber phoneNumber,
-    string passwordHash,
-    Uri imageCover) : INotifications;
+    HashSet<Guid> UserRoleGuid,
+    PhoneNumber PhoneNumber,
+    string PasswordHash,
+    Uri ImageCover,HashSet<Guid> AuthorGuid) : INotifications;

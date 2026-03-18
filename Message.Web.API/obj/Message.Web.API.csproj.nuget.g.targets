@@ -6,5 +6,6 @@
     <Import Project="$(NuGetPackageRoot)microsoft.aspnetcore.openapi\10.0.4\build\Microsoft.AspNetCore.OpenApi.targets" Condition="Exists('$(NuGetPackageRoot)microsoft.aspnetcore.openapi\10.0.4\build\Microsoft.AspNetCore.OpenApi.targets')" />
     <Import Project="$(NuGetPackageRoot)aspire.stackexchange.redis\13.1.2\buildTransitive\net10.0\Aspire.StackExchange.Redis.targets" Condition="Exists('$(NuGetPackageRoot)aspire.stackexchange.redis\13.1.2\buildTransitive\net10.0\Aspire.StackExchange.Redis.targets')" />
     <Import Project="$(NuGetPackageRoot)aspire.stackexchange.redis.distributedcaching\13.1.2\buildTransitive\net10.0\Aspire.StackExchange.Redis.DistributedCaching.targets" Condition="Exists('$(NuGetPackageRoot)aspire.stackexchange.redis.distributedcaching\13.1.2\buildTransitive\net10.0\Aspire.StackExchange.Redis.DistributedCaching.targets')" />
+    <Import Project="$(NuGetPackageRoot)aspire.rabbitmq.client\13.1.2\buildTransitive\net10.0\Aspire.RabbitMQ.Client.targets" Condition="Exists('$(NuGetPackageRoot)aspire.rabbitmq.client\13.1.2\buildTransitive\net10.0\Aspire.RabbitMQ.Client.targets')" />
   </ImportGroup>
 </Project>

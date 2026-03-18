@@ -2,24 +2,67 @@
 
 public class Author2 : Entity, IAggregateRoot
 {
+    public Guid AuthorId { get; init; }
+
+    public Guid UserId { get; private set; }
+
+    public string LoginProvider { get; private set; }=null!;
+
+    public string ProviderKey { get; private set; }=null!;
+
+    public string ProviderDisplayName { get; private set; }
+
+    public string? AccessToken { get; private set; }
+
+    public DateTimeOffset? AccessTokenExpiration { get; private set; }
+
+    public string? RefreshToken { get; private set; }
+
+    public DateTimeOffset CreatedDate { get; private set; }
+
+    public DateTimeOffset? LastUsedAt { get; private set; }
+
     protected Author2()
     {
+        AuthorId = Guid.CreateVersion7();
+        CreatedDate=DateTimeOffset.UtcNow;
+        LastUsedAt=DateTimeOffset.UtcNow;
     }
 
-
-    protected Author2(string authorName, string authorDescription, string authorPrivateKey, string authorSecret)
+    public Author2(Guid authorId, string loginProvider, 
+        string providerKey, string providerDisplayName):this()
     {
-        AuthorName = authorName ?? throw new ArgumentNullException(nameof(authorName));
-        AuthorDescription = authorDescription ?? throw new ArgumentNullException(nameof(authorDescription));
-        AuthorPrivateKey = authorPrivateKey ?? throw new ArgumentNullException(nameof(authorPrivateKey));
-        AuthorSecret = authorSecret ?? throw new ArgumentNullException(nameof(authorSecret));
+        AuthorId=authorId;
+        LoginProvider=loginProvider;
+        ProviderKey=providerKey;
+        ProviderDisplayName=providerDisplayName;
+    }
+    
+    public static Author2 Create(Guid authorId, string loginProvider, 
+        string providerKey, string providerDisplayName)
+    {
+        return new Author2(authorId, loginProvider, providerKey, providerDisplayName);
     }
 
-    public string AuthorName { get; private set; } = string.Empty;
+    public void UpdateTokens(string? accessToken, string? refreshToken, 
+        DateTimeOffset? accessTokenExpiration)
+    {
+        AccessToken=accessToken;
+        RefreshToken=refreshToken;
+        AccessTokenExpiration=accessTokenExpiration;
+        LastUsedAt=DateTimeOffset.UtcNow;
+    }
+    
+    public void LinkUser(Guid userId)
+    {
+        UserId=userId;
+    }
+    
+    public void UnlinkUser()
+    {
+        UserId=Guid.Empty;
+    }
+    
+    
 
-    public string AuthorDescription { get; private set; } = string.Empty;
-
-    public string AuthorPrivateKey { get; private set; } = string.Empty;
-
-    public string AuthorSecret { get; private set; } = string.Empty;
 }

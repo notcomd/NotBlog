@@ -1,9 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "0CWr6ppXXOE=",
+  "dgSpecHash": "OULMIY56pNU=",
   "success": true,
   "projectFilePath": "F:\\NotBlog\\Markdown.Web.API\\Markdown.Web.API.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\notco\\.nuget\\packages\\aspire.rabbitmq.client\\13.1.2\\aspire.rabbitmq.client.13.1.2.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\aspnetcore.healthchecks.rabbitmq\\9.0.0\\aspnetcore.healthchecks.rabbitmq.9.0.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.aspnetcore.openapi\\10.0.4\\microsoft.aspnetcore.openapi.10.0.4.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.entityframeworkcore\\10.0.4\\microsoft.entityframeworkcore.10.0.4.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.entityframeworkcore.abstractions\\10.0.4\\microsoft.entityframeworkcore.abstractions.10.0.4.nupkg.sha512",
@@ -32,9 +34,10 @@
     "C:\\Users\\notco\\.nuget\\packages\\opentelemetry.instrumentation.aspnetcore\\1.14.0\\opentelemetry.instrumentation.aspnetcore.1.14.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\opentelemetry.instrumentation.http\\1.14.0\\opentelemetry.instrumentation.http.1.14.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\opentelemetry.instrumentation.runtime\\1.14.0\\opentelemetry.instrumentation.runtime.1.14.0.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\polly.core\\8.4.2\\polly.core.8.4.2.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\polly.core\\8.6.4\\polly.core.8.6.4.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\polly.extensions\\8.4.2\\polly.extensions.8.4.2.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\polly.ratelimiting\\8.4.2\\polly.ratelimiting.8.4.2.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\rabbitmq.client\\7.1.2\\rabbitmq.client.7.1.2.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\scalar.aspnetcore\\2.13.5\\scalar.aspnetcore.2.13.5.nupkg.sha512"
   ],
   "logs": []

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "I/JBhN7TrNE=",
+  "dgSpecHash": "u4j9OyPiNMI=",
   "success": true,
   "projectFilePath": "F:\\NotBlog\\NotBlog.AppHost\\NotBlog.AppHost.csproj",
   "expectedPackageFiles": [
@@ -9,8 +9,10 @@
     "C:\\Users\\notco\\.nuget\\packages\\aspire.hosting.apphost\\13.1.2\\aspire.hosting.apphost.13.1.2.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\aspire.hosting.orchestration.win-x64\\13.1.2\\aspire.hosting.orchestration.win-x64.13.1.2.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\aspire.hosting.postgresql\\13.1.2\\aspire.hosting.postgresql.13.1.2.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\aspire.hosting.rabbitmq\\13.1.2\\aspire.hosting.rabbitmq.13.1.2.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\aspire.hosting.redis\\13.1.2\\aspire.hosting.redis.13.1.2.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\aspnetcore.healthchecks.npgsql\\9.0.0\\aspnetcore.healthchecks.npgsql.9.0.0.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\aspnetcore.healthchecks.rabbitmq\\9.0.0\\aspnetcore.healthchecks.rabbitmq.9.0.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\aspnetcore.healthchecks.redis\\9.0.0\\aspnetcore.healthchecks.redis.9.0.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\aspnetcore.healthchecks.uris\\9.0.0\\aspnetcore.healthchecks.uris.9.0.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\fractions\\7.3.0\\fractions.7.3.0.nupkg.sha512",
@@ -68,11 +70,13 @@
     "C:\\Users\\notco\\.nuget\\packages\\npgsql\\8.0.3\\npgsql.8.0.3.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\pipelines.sockets.unofficial\\2.2.8\\pipelines.sockets.unofficial.2.2.8.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\polly.core\\8.6.4\\polly.core.8.6.4.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\rabbitmq.client\\7.1.2\\rabbitmq.client.7.1.2.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\semver\\3.0.0\\semver.3.0.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\stackexchange.redis\\2.9.32\\stackexchange.redis.2.9.32.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\streamjsonrpc\\2.22.23\\streamjsonrpc.2.22.23.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\system.diagnostics.eventlog\\10.0.1\\system.diagnostics.eventlog.10.0.1.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\system.io.hashing\\9.0.10\\system.io.hashing.9.0.10.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\system.threading.ratelimiting\\8.0.0\\system.threading.ratelimiting.8.0.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\yamldotnet\\16.3.0\\yamldotnet.16.3.0.nupkg.sha512"
   ],
   "logs": []

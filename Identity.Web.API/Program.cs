@@ -13,11 +13,11 @@ builder.NotBlogConfigureExtraServices(new InitializerOptions
 });
 
 builder.Services.AddNpgsql<IdentityDbContext>("IdentityPostgres");
+
 builder.AddRedisDistributedCache("Redis");
 
-
-
 builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
+
 builder.Services.AddControllers(opt =>
 {
     opt.Filters.Add(new UnitOfWorkFilter());
@@ -45,5 +45,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapGroup("api/Identity").NotMapIdentityApi();
+
 app.MapControllers();
+
 app.Run();

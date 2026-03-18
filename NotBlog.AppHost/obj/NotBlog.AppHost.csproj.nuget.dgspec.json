@@ -70,6 +70,10 @@
               "target": "Package",
               "version": "[13.1.2, )"
             },
+            "Aspire.Hosting.RabbitMQ": {
+              "target": "Package",
+              "version": "[13.1.2, )"
+            },
             "Aspire.Hosting.Redis": {
               "target": "Package",
               "version": "[13.1.2, )"

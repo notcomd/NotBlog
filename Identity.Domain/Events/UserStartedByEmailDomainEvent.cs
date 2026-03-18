@@ -4,4 +4,4 @@ public record UserStartedByEmailDomainEvent(
     HashSet<Guid> UserRoleGuid,
     string UserEmail,
     string PasswordHash,
-    Uri ImageCover) : INotifications;
+    Uri ImageCover,HashSet<Guid>? RoleGuid) : INotifications;

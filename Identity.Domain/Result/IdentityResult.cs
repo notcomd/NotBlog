@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace Identity.Domain.Entities;
+namespace Identity.Domain.Result;
 
 public sealed class IdentityResult<TResponse> : IActionResult where TResponse : class
 {

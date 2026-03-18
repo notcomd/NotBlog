@@ -69,7 +69,7 @@ public class UserRepositoryServer
             userRoleGuid,
             email,
             password,
-            new Uri("https://www.baidu.com/img/PCtm_d9c8750bed0b3c7d089fa7d55720d6cf.png"));
+            new Uri("https://www.baidu.com/img/PCtm_d9c8750bed0b3c7d089fa7d55720d6cf.png"),null);
         await _userRepository.AddOneByUserAsync(newUser);
         return true;
     }
@@ -107,7 +107,7 @@ public class UserRepositoryServer
 
         try
         {
-            if (await userData.VerifyByPassword(password))
+            if (await userData.VerifyByPasswordAsync(password))
                 if (userData.UserAccessFail.CloseLockAsync())
                 {
                     var listClaims = new List<Claim>
