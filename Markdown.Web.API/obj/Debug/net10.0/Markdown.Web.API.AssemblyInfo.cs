@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Markdown.Web.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+dc7f7f3640dd4e1d443cfafd41d63358745ca3ea")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+934572cdda40989003f3ba5ea5faa5ca8e947cb1")]
 [assembly: System.Reflection.AssemblyProductAttribute("Markdown.Web.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Markdown.Web.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

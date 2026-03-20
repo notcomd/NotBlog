@@ -104,9 +104,5 @@ public class NotFileRepository(NotFileDbContext notFileDbContext) : INotFileRepo
             .Where(en => en.UserId.Equals(userId) && !en.IsDeleted)
             .ToListAsync();
     }
-
-    public Task<NotFile> FileByFileIdAsync(int id)
-    {
-        throw new NotImplementedException();
-    }
+    
 }
