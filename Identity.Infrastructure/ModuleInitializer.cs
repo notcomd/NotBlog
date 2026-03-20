@@ -1,5 +1,7 @@
 using DomainCommons;
 using DomainCommonst;
+using Identity.Domain.IService;
+using Identity.Infrastructure.Services;
 
 namespace Identity.Infrastructure;
 
@@ -12,6 +14,6 @@ public class ModuleInitializer : IModuleInitializer
         service.AddScoped<IEmailCodeSend, EmailCodeSend>();
         service.AddDistributedMemoryCache();
         service.AddScoped<ISmsCodeSend, SmsCodeSend>();
-        service.AddScoped<UserRepositoryServer>();
+        service.AddScoped<UserService>();
     }
 }

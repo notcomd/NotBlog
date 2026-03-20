@@ -8,7 +8,6 @@ global using DomainCommonst;
 global using EmailSendServer;
 global using Identity.Domain.Entities;
 global using Identity.Domain.IRepository;
-global using Identity.Domain.Server;
 global using Identity.Web.API.ActionFilter;
 global using Identity.Web.API.Application.Command;
 global using Microsoft.AspNetCore.Mvc;

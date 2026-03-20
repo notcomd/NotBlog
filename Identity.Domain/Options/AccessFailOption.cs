@@ -1,4 +1,4 @@
-﻿namespace Identity.Domain.Option;
+﻿namespace Identity.Domain.Options;
 
 public abstract class AccessFailOption
 {

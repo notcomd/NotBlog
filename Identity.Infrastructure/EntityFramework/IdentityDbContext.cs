@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using Identity.Infrastructure.Configuration;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -29,6 +29,8 @@ public class IdentityDbContext : DbContext, IUnitOfWork
 
     public DbSet<NotClient> NotClients { get; set; }
 
+    public DbSet<Author2> UserExternalLogins { get; set; }
+
     public bool HasActiveTransaction => _currentTransaction != null;
 
     public async Task<int> SavaChangesAsync(CancellationToken cancellationToken = default)
@@ -55,7 +57,7 @@ public class IdentityDbContext : DbContext, IUnitOfWork
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        modelBuilder.HasDefaultSchema("Identity");
+        modelBuilder.HasDefaultSchema("identity");
 
         modelBuilder.ApplyConfiguration(new UserEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new RoleEntityTypeConfiguration());
@@ -63,6 +65,7 @@ public class IdentityDbContext : DbContext, IUnitOfWork
         modelBuilder.ApplyConfiguration(new UserAccessFailEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new UserSafetyEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new NotClientEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new UserExternalLoginEntityTypeConfiguration());
     }
 
     public async Task<IDbContextTransaction> BeginTransactionAsync()

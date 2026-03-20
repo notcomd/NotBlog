@@ -1,4 +1,4 @@
-namespace Identity.Web.API.Options;
+namespace Identity.Domain.Options;
 
 public class GitHubOptions
 {

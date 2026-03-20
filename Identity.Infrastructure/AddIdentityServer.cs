@@ -1,4 +1,8 @@
-﻿namespace Identity.Infrastructure;
+﻿using Identity.Domain.IService;
+using Identity.Domain.Options;
+using Identity.Infrastructure.Services;
+
+namespace Identity.Infrastructure;
 
 public static class AddIdentityServer
 {
@@ -10,7 +14,7 @@ public static class AddIdentityServer
         serviceCollection.AddSingleton<IEmailCodeSend, EmailCodeSend>();
         serviceCollection.AddDistributedMemoryCache();
         serviceCollection.AddScoped<ISmsCodeSend, SmsCodeSend>();
-        serviceCollection.AddScoped<UserRepositoryServer>();
+        serviceCollection.AddScoped<UserService>();
         serviceCollection.AddEmailServer();
         serviceCollection.AddJwtAuthentication(configuration);
         return serviceCollection;

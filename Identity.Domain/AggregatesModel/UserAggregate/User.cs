@@ -19,7 +19,7 @@ public class User : Entity, IAggregateRoot
     public HashSet<Guid> UserRoleGuid { get; private set; }
 
     public HashSet<Guid> AuthorGuids { get; private set; }
-
+    
     public string? UserName { get; private set; }
 
     public Uri ImageCover { get; private set; }
@@ -39,13 +39,13 @@ public class User : Entity, IAggregateRoot
     public DateTimeOffset CreateDatetime { get; init; }
 
     public static async Task<User> CreateByEmailUser(
-        HashSet<Guid> userRoleGuid, 
+        Guid userRoleGuid, 
         string userEmail,
         string passwordHash, 
-        Uri imageCover, 
+        Uri? imageCover, 
         HashSet<Guid>? authorGuids)
     {
-        if (userRoleGuid is null)
+        if (userRoleGuid == Guid.Empty)
             throw new ArgumentNullException(nameof(userRoleGuid), "User role cannot be null or empty");
         if (string.IsNullOrEmpty(userEmail))
             throw new ArgumentNullException(nameof(userEmail), "User email cannot be null or empty");
@@ -60,7 +60,7 @@ public class User : Entity, IAggregateRoot
         
         var user = new User
         {
-            UserRoleGuid = userRoleGuid,
+            UserRoleGuid = [userRoleGuid],
             UserName = userEmail,
             PasswordHash = await HashH256Tool.CreateHash256Async(passwordHash, salt),
             ImageCover = imageCover,
@@ -71,7 +71,7 @@ public class User : Entity, IAggregateRoot
             CreateDatetime = DateTimeOffset.UtcNow
         };
         
-        user.AddDomainEvent(new UserStartedByEmailDomainEvent(userRoleGuid, userEmail, passwordHash, imageCover, authorGuids));
+        user.AddDomainEvent(new UserStartedByEmailDomainEvent([userRoleGuid], userEmail, passwordHash, imageCover, authorGuids));
         return user;
     }
 
@@ -185,6 +185,28 @@ public class User : Entity, IAggregateRoot
             throw new ArgumentNullException(nameof(authorGuid), "authorGuid is empty");
         AuthorGuids.Add(authorGuid);
     }
+    
+    public void UnLinkAuthority(Guid authorGuid)
+    {
+        if (authorGuid == Guid.Empty)
+            throw new ArgumentNullException(nameof(authorGuid), "authorGuid is empty");
+        AuthorGuids.Remove(authorGuid);
+    }
+
+    // public void AddExternalLogin(UserExternalLogin externalLogin)
+    // {
+    //     if (_externalLogins.Any(e => e.LoginProvider == externalLogin.LoginProvider && 
+    //                                   e.ProviderKey == externalLogin.ProviderKey))
+    //         throw new InvalidOperationException("External login already exists");
+    //     
+    //     _externalLogins.Add(externalLogin);
+    //     AddDomainEvent(new ExternalLoginAddedEvent(UserGuid, externalLogin.LoginProvider));
+    // }
+    //
+    // public bool HasExternalLogin(string provider, string providerKey)
+    // {
+    //     return _externalLogins.Any(e => e.LoginProvider == provider && e.ProviderKey == providerKey);
+    // }
 
     private async Task<bool> CheckByPasswordAsync(string password)
     {

@@ -15,15 +15,15 @@ public enum RoleAuthority
     /// <summary>
     ///     用户
     /// </summary>
-    User = 3,
+    User = 2,
 
     /// <summary>
     ///     游客
     /// </summary>
-    Guest = 4,
+    Guest = 3,
 
     /// <summary>
-    ///     无权限
+    ///  无权限
     /// </summary>
-    Unknown = 5
+    Unknown = 4
 }
