@@ -11,10 +11,6 @@
         <PackageReference Include="NotMediator" Version="1.0.5"/>
     </ItemGroup>
     <ItemGroup>
-      <Folder Include="Dto\Request\" />
-      <Folder Include="Dto\Response\" />
-    </ItemGroup>
-    <ItemGroup>
       <Content Include="bin\Debug\net9.0\FileDev.Domain.deps.json" />
       <Content Include="bin\Debug\net9.0\FileDev.Domain.dll" />
       <Content Include="bin\Debug\net9.0\FileDev.Domain.pdb" />

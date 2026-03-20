@@ -1,6 +1,6 @@
 using FileDev.Domain.Entities;
 using FileDev.Domain.IRepository;
-using FileDev.Domain.Services;
+using FileDev.Domain.IServices;
 using Microsoft.Extensions.Logging;
 
 namespace FileDev.Infrastructure.Service;

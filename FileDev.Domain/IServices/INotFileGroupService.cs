@@ -1,6 +1,6 @@
 using FileDev.Domain.Entities;
 
-namespace FileDev.Domain.Services;
+namespace FileDev.Domain.IServices;
 
 public interface INotFileGroupService
 {
