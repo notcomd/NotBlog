@@ -18,7 +18,7 @@ builder.NotBlogConfigureExtraServices(new InitializerOptions
 
 builder.Services.AddNpgsql<NotFileDbContext>("PostgresSQL");
 
-builder.AddRedisDistributedCache("Redis");
+//builder.AddRedisDistributedCache("Redis");
 
 builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
 builder.Services.AddControllers();

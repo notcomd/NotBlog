@@ -1,4 +1,4 @@
-﻿namespace Identity.Infrastructure.Repository;
+namespace Identity.Infrastructure.Repository;
 
 public class UserRepository(IdentityDbContext userDbContext, IDistributedCache distributedCache)
     : IUserRepository

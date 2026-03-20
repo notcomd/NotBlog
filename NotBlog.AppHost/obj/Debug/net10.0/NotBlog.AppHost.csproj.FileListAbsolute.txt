@@ -108,3 +108,6 @@ F:\NotBlog\NotBlog.AppHost\obj\Debug\net10.0\refint\NotBlog.AppHost.dll
 F:\NotBlog\NotBlog.AppHost\obj\Debug\net10.0\NotBlog.AppHost.pdb
 F:\NotBlog\NotBlog.AppHost\obj\Debug\net10.0\NotBlog.AppHost.genruntimeconfig.cache
 F:\NotBlog\NotBlog.AppHost\obj\Debug\net10.0\ref\NotBlog.AppHost.dll
+F:\NotBlog\NotBlog.AppHost\bin\Debug\net10.0\Aspire.Hosting.RabbitMQ.dll
+F:\NotBlog\NotBlog.AppHost\bin\Debug\net10.0\HealthChecks.Rabbitmq.dll
+F:\NotBlog\NotBlog.AppHost\bin\Debug\net10.0\RabbitMQ.Client.dll

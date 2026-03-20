@@ -39,8 +39,7 @@ public static class ServicesCollectionExtensions
                 var optionMq = sp.GetRequiredService<IOptions<IntegrationEventRabbitMqOptions>>().Value;
                 var factoy = new ConnectionFactory
                 {
-                    HostName = optionMq.HostName,
-                    DispatchConsumersAsync = true
+                    HostName = optionMq.HostName
                 };
                 if (optionMq.UserName != null) factoy.UserName = optionMq.UserName;
                 if (optionMq.Password != null) factoy.Password = optionMq.Password;

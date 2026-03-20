@@ -15,7 +15,7 @@ public class Markdown_Web_API : global::Aspire.Hosting.IProjectMetadata
     /// <summary>
     /// The path to the Markdown_Web_API project.
     /// </summary>
-    public string ProjectPath => """f:\NotBlog\Markdown.Web.API\Markdown.Web.API.csproj""";
+    public string ProjectPath => """F:\NotBlog\Markdown.Web.API\Markdown.Web.API.csproj""";
 
     /// <summary>
     /// Gets a value indicating whether building the project before running it should be suppressed.

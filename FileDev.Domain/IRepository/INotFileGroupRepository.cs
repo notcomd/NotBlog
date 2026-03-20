@@ -5,7 +5,7 @@ namespace FileDev.Domain.IRepository;
 public interface INotFileGroupRepository: IRepository<NotFileGroup>
 {
     
-    Task InsetNotFileGroupAsync(NotFileGroup notFileGroup);
+    Task InsertNotFileGroupAsync(NotFileGroup notFileGroup);
     
     Task<NotFileGroup> GetNotFileGroupByIdAsync(Guid notFileGroupId);
     
@@ -16,5 +16,11 @@ public interface INotFileGroupRepository: IRepository<NotFileGroup>
     Task<IEnumerable<NotFileGroup>> GetPublicNotFileGroupsAsync();
     
     Task<IEnumerable<NotFileGroup>> GetNotFileGroupsByTypeAsync(FileType fileType);
+    
+    Task<NotFileGroup?> GetNotFileGroupByNameAsync(string fileGroupName);
+    
+    Task<NotFileGroup?> UpdateNotFileGroupAsync(NotFileGroup notFileGroup);
+    
+    Task DeleteNotFileGroupAsync(Guid notFileGroupId);
     
 }

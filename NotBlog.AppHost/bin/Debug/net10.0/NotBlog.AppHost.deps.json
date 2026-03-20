@@ -10,6 +10,7 @@
         "dependencies": {
           "Aspire.Hosting.AppHost": "13.1.2",
           "Aspire.Hosting.PostgreSQL": "13.1.2",
+          "Aspire.Hosting.RabbitMQ": "13.1.2",
           "Aspire.Hosting.Redis": "13.1.2"
         },
         "runtime": {
@@ -126,6 +127,31 @@
           }
         }
       },
+      "Aspire.Hosting.RabbitMQ/13.1.2": {
+        "dependencies": {
+          "AspNetCore.HealthChecks.Rabbitmq": "9.0.0",
+          "AspNetCore.HealthChecks.Uris": "9.0.0",
+          "Aspire.Hosting": "13.1.2",
+          "Google.Protobuf": "3.33.0",
+          "Grpc.AspNetCore": "2.71.0",
+          "Grpc.Net.ClientFactory": "2.71.0",
+          "Humanizer.Core": "2.14.1",
+          "JsonPatch.Net": "3.3.0",
+          "KubernetesClient": "18.0.5",
+          "Newtonsoft.Json": "13.0.4",
+          "Polly.Core": "8.6.4",
+          "RabbitMQ.Client": "7.1.2",
+          "Semver": "3.0.0",
+          "StreamJsonRpc": "2.22.23",
+          "System.IO.Hashing": "9.0.10"
+        },
+        "runtime": {
+          "lib/net8.0/Aspire.Hosting.RabbitMQ.dll": {
+            "assemblyVersion": "13.1.2.0",
+            "fileVersion": "13.100.226.12513"
+          }
+        }
+      },
       "Aspire.Hosting.Redis/13.1.2": {
         "dependencies": {
           "AspNetCore.HealthChecks.Redis": "9.0.0",
@@ -157,6 +183,17 @@
         },
         "runtime": {
           "lib/net8.0/HealthChecks.NpgSql.dll": {
+            "assemblyVersion": "9.0.0.0",
+            "fileVersion": "9.0.0.0"
+          }
+        }
+      },
+      "AspNetCore.HealthChecks.Rabbitmq/9.0.0": {
+        "dependencies": {
+          "RabbitMQ.Client": "7.1.2"
+        },
+        "runtime": {
+          "lib/net8.0/HealthChecks.Rabbitmq.dll": {
             "assemblyVersion": "9.0.0.0",
             "fileVersion": "9.0.0.0"
           }
@@ -491,6 +528,14 @@
           }
         }
       },
+      "RabbitMQ.Client/7.1.2": {
+        "runtime": {
+          "lib/net8.0/RabbitMQ.Client.dll": {
+            "assemblyVersion": "7.0.0.0",
+            "fileVersion": "7.1.2.0"
+          }
+        }
+      },
       "Semver/3.0.0": {
         "runtime": {
           "lib/net5.0/Semver.dll": {
@@ -611,6 +656,13 @@
       "path": "aspire.hosting.postgresql/13.1.2",
       "hashPath": "aspire.hosting.postgresql.13.1.2.nupkg.sha512"
     },
+    "Aspire.Hosting.RabbitMQ/13.1.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-kkEOp9OfgBvB3vxSMdP8X0oR7xt8Uw1Yx1Zcib3paZyrvZr2FOnLvpQXqEgG4I+fMgv9pEh6GvwpHSYIpBlKeQ==",
+      "path": "aspire.hosting.rabbitmq/13.1.2",
+      "hashPath": "aspire.hosting.rabbitmq.13.1.2.nupkg.sha512"
+    },
     "Aspire.Hosting.Redis/13.1.2": {
       "type": "package",
       "serviceable": true,
@@ -624,6 +676,13 @@
       "sha512": "sha512-npc58/AD5zuVxERdhCl2Kb7WnL37mwX42SJcXIwvmEig0/dugOLg3SIwtfvvh3TnvTwR/sk5LYNkkPaBdks61A==",
       "path": "aspnetcore.healthchecks.npgsql/9.0.0",
       "hashPath": "aspnetcore.healthchecks.npgsql.9.0.0.nupkg.sha512"
+    },
+    "AspNetCore.HealthChecks.Rabbitmq/9.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-7WSQ7EwioA5niakzzLtGVcZMEOh+42fSwrI24vnNsT7gZuVGOViNekyz38G6wBPYKcpL/lUkMdg3ZaCiZTi/Dw==",
+      "path": "aspnetcore.healthchecks.rabbitmq/9.0.0",
+      "hashPath": "aspnetcore.healthchecks.rabbitmq.9.0.0.nupkg.sha512"
     },
     "AspNetCore.HealthChecks.Redis/9.0.0": {
       "type": "package",
@@ -806,6 +865,13 @@
       "sha512": "sha512-4AWqYnQ2TME0E+Mzovt1Uu+VyvpR84ymUldMcPw7Mbj799Phaag14CKrMtlJGx5jsvYP+S3oR1QmysgmXoD5cw==",
       "path": "polly.core/8.6.4",
       "hashPath": "polly.core.8.6.4.nupkg.sha512"
+    },
+    "RabbitMQ.Client/7.1.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-y3c6ulgULScWthHw5PLM1ShHRLhxg0vCtzX/hh61gRgNecL3ZC3WoBW2HYHoXOVRqTl99Br9E7CZEytGZEsCyQ==",
+      "path": "rabbitmq.client/7.1.2",
+      "hashPath": "rabbitmq.client.7.1.2.nupkg.sha512"
     },
     "Semver/3.0.0": {
       "type": "package",

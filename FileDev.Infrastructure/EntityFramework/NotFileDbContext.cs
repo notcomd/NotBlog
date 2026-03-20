@@ -16,9 +16,9 @@ public class NotFileDbContext(DbContextOptions<NotFileDbContext> options, INotMe
     private IDbContextTransaction _currentTransaction;
 
 
-    public DbSet<NotFile> Files { get; set; }
+    public DbSet<NotFile> NotFiles { get; set; }
     
-    public DbSet<NotFileGroup> FileGroups { get; set; }
+    public DbSet<NotFileGroup> NotFileGroups { get; set; }
     
     public bool HasActiveTransaction => _currentTransaction != null;
     

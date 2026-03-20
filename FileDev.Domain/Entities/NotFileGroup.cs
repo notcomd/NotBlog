@@ -68,7 +68,7 @@ public class NotFileGroup : Entity, IAggregateRoot
         FileIds.Remove(fileId);
     }
 
-    public void Delete()
+    public void SoftDelete()
     {
         IsDeleted = true;
     }
@@ -92,6 +92,15 @@ public class NotFileGroup : Entity, IAggregateRoot
         private FileType _fileType;
         private Guid _userId;
 
+        public NotFileGroupBuilder()
+        {
+            _fileGroupName = string.Empty;
+            _fileGroupTags = new HashSet<string>();
+            _fileGroupDescription = string.Empty;
+            _fileIdentity = FileIdentity.FilePublic;
+            _fileType = FileType.CompressFiles;
+        }
+        
         public NotFileGroupBuilder WithUserId(Guid userId)
         {
             _userId = userId;

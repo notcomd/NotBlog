@@ -15,11 +15,11 @@ public class NotFileGroupRepository(NotFileDbContext notFileDbContext) : INotFil
     public IUnitOfWork UnitOfWork => notFileDbContext;
 
 
-    public async Task InsetNotFileGroupAsync(NotFileGroup notFileGroup)
+    public async Task InsertNotFileGroupAsync(NotFileGroup notFileGroup)
     {
         if(notFileGroup is null)
             throw new NotFileException("NotFileGroup is null");
-        await _notFileDbContext.FileGroups.AddAsync(notFileGroup);
+        await _notFileDbContext.NotFileGroups.AddAsync(notFileGroup);
     }
 
     public async Task<NotFileGroup> GetNotFileGroupByIdAsync(Guid notFileGroupId)
@@ -27,7 +27,7 @@ public class NotFileGroupRepository(NotFileDbContext notFileDbContext) : INotFil
         if (Guid.Empty == notFileGroupId)
             throw new NotFileException("notFileGroupId is null");
         var data = await _notFileDbContext
-            .FileGroups
+            .NotFileGroups
             .FirstOrDefaultAsync(x =>
                 x.NotFileGroupId.Equals(notFileGroupId) || x.IsDeleted ||
                 (x.FileIdentity.Equals(FileIdentity.FilePrivate)));
@@ -38,7 +38,7 @@ public class NotFileGroupRepository(NotFileDbContext notFileDbContext) : INotFil
     public async Task<IEnumerable<NotFileGroup>> GetAllNotFileGroupsAsync()
     {
         var data = await _notFileDbContext
-            .FileGroups
+            .NotFileGroups
             .ToListAsync();
         return data.AsEnumerable();
     }
@@ -47,7 +47,7 @@ public class NotFileGroupRepository(NotFileDbContext notFileDbContext) : INotFil
     {
         if (userId == Guid.Empty)
             throw new NotFileException("userId is null");
-        var data = await _notFileDbContext.FileGroups
+        var data = await _notFileDbContext.NotFileGroups
             .Where(x => x.UserId == userId)
             .ToListAsync();
         return data.AsEnumerable();
@@ -55,7 +55,7 @@ public class NotFileGroupRepository(NotFileDbContext notFileDbContext) : INotFil
 
     public async Task<IEnumerable<NotFileGroup>> GetPublicNotFileGroupsAsync()
     {
-        return await _notFileDbContext.FileGroups
+        return await _notFileDbContext.NotFileGroups
             .Where(x => x.FileIdentity == FileIdentity.FilePublic)
             .ToListAsync();
     }
@@ -63,10 +63,29 @@ public class NotFileGroupRepository(NotFileDbContext notFileDbContext) : INotFil
     public async Task<IEnumerable<NotFileGroup>> GetNotFileGroupsByTypeAsync(FileType fileType)
     {
         
-        return await _notFileDbContext.FileGroups
+        return await _notFileDbContext.NotFileGroups
             .Where(x => x.FileType == fileType)
             .ToListAsync();
     }
-    
-    
+
+    public async Task<NotFileGroup?> GetNotFileGroupByNameAsync(string fileGroupName)
+    {
+        return await _notFileDbContext.NotFileGroups
+            .FirstOrDefaultAsync(x => x.FileGroupName == fileGroupName);
+    }
+
+    public async Task<NotFileGroup?> UpdateNotFileGroupAsync(NotFileGroup notFileGroup)
+    {
+        return await _notFileDbContext.NotFileGroups
+            .FirstOrDefaultAsync(x => x.NotFileGroupId == notFileGroup.NotFileGroupId);
+    }
+
+    public async Task DeleteNotFileGroupAsync(Guid notFileGroupId)
+    {
+        var data = await _notFileDbContext.NotFileGroups
+            .FirstOrDefaultAsync(x => x.NotFileGroupId == notFileGroupId);
+        if (data is null)
+            throw new NotFileException("NotFileGroup is null");
+        _notFileDbContext.NotFileGroups.Remove(data);
+    }
 }

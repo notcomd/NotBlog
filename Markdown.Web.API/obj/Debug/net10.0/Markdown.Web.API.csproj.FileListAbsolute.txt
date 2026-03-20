@@ -67,3 +67,6 @@ F:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\Npgsql.EntityFrameworkCore.Postgre
 F:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\Markdown.Infrastructure.dll
 F:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\Markdown.Infrastructure.pdb
 F:\NotBlog\Markdown.Web.API\obj\Debug\net10.0\Markdown.Web.API.MvcApplicationPartsAssemblyInfo.cs
+F:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\Aspire.RabbitMQ.Client.dll
+F:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\HealthChecks.Rabbitmq.dll
+F:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\RabbitMQ.Client.dll

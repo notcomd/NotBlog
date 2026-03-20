@@ -21,8 +21,6 @@
 
     <ItemGroup>
         <Folder Include="ActionFilter\"/>
-        <Folder Include="Dto\Request\" />
-        <Folder Include="Dto\Response\" />
         <Folder Include="EventBus\"/>
         <Folder Include="Extensions\"/>
     </ItemGroup>

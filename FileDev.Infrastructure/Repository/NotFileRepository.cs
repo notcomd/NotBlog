@@ -28,14 +28,14 @@ public class NotFileRepository(NotFileDbContext notFileDbContext) : INotFileRepo
     {
         if (Guid.Empty == userId)
             throw new NotFileException("userId is null");
-        return await _notFileDbContext.Files
+        return await _notFileDbContext.NotFiles
             .Where(x => x.UserId.Equals(userId))
             .ToListAsync();
     }
 
     public async Task<IEnumerable<NotFile>> GetPublicFilesAsync()
     {
-        return await _notFileDbContext.Files
+        return await _notFileDbContext.NotFiles
             .Where(x => x.FileIdentity.Equals(FileIdentity.FilePublic) && !x.IsDeleted)
             .ToListAsync();
     }

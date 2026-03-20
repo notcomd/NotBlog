@@ -1,4 +1,4 @@
-﻿namespace Identity.Domain.IRepository;
+namespace Identity.Domain.IRepository;
 
 public interface IUserRepository : IRepository<User>
 {

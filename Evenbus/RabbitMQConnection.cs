@@ -1,4 +1,4 @@
-﻿using RabbitMQ.Client;
+using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
 namespace Notcomd.Evenbus;
@@ -11,11 +11,11 @@ public class RabbitMqConnection(IConnectionFactory connectionFactory)
 
     public bool Isconnected => _connection != null && _connection.IsOpen && !_disposed;
 
-    public IModel CreateModel()
+    public async Task<IChannel> CreateModel()
     {
         if (!Isconnected)
             throw new InvalidOperationException("no RabbitMQ connections are available to perform this action");
-        return _connection?.CreateModel();
+        return  await _connection!.CreateChannelAsync() ?? throw new InvalidOperationException();
     }
 
     public void Dispose()
@@ -29,12 +29,12 @@ public class RabbitMqConnection(IConnectionFactory connectionFactory)
     {
         lock (_syncRoot)
         {
-            _connection = connectionFactory.CreateConnection();
+            _connection = connectionFactory.CreateConnectionAsync().GetAwaiter().GetResult();
             if (Isconnected)
             {
-                _connection.ConnectionShutdown += OnConnectionShutdown;
-                _connection.CallbackException += OnCallbackException;
-                _connection.ConnectionBlocked += OnConnectionBlocked;
+                _connection.ConnectionShutdownAsync += OnConnectionShutdown;
+                _connection.CallbackExceptionAsync += OnCallbackException;
+                _connection.ConnectionBlockedAsync += OnConnectionBlocked;
                 return true;
             }
 
@@ -42,21 +42,25 @@ public class RabbitMqConnection(IConnectionFactory connectionFactory)
         }
     }
 
-    private void OnConnectionBlocked(object? sender, ConnectionBlockedEventArgs e)
+    private Task OnConnectionBlocked(object? sender, ConnectionBlockedEventArgs e)
     {
-        if (_disposed) return;
+        if (_disposed)
+            return Task.CompletedTask;
         TryConnect();
+        return Task.CompletedTask;
     }
 
-    private void OnCallbackException(object? sender, CallbackExceptionEventArgs e)
+    private Task OnCallbackException(object? sender, CallbackExceptionEventArgs e)
     {
-        if (_disposed) return;
+        if (_disposed) return Task.CompletedTask;
         TryConnect();
+        return Task.CompletedTask;
     }
 
-    private void OnConnectionShutdown(object? sender, ShutdownEventArgs e)
+    private Task OnConnectionShutdown(object? sender, ShutdownEventArgs e)
     {
-        if (_disposed) return;
+        if (_disposed) return Task.CompletedTask;
         TryConnect();
+        return Task.CompletedTask;
     }
 }
