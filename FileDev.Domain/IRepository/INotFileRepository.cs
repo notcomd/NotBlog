@@ -4,21 +4,21 @@ namespace FileDev.Domain.IRepository;
 
 public interface INotFileRepository:IRepository<NotFile>
 {
-    Task<NotFile> GetFileByIdAsync(Guid fileId);
+    Task<NotFile?> GetFileByIdAsync(Guid fileId);
 
-    Task<IEnumerable<NotFile>> GetAllFilesAsync();
+    Task<IEnumerable<NotFile>?> GetAllFilesAsync();
 
     Task<IEnumerable<NotFile>> GetFilesByUserIdAsync(Guid userId);
 
     Task<IEnumerable<NotFile>> GetPublicFilesAsync();
 
-    Task<IEnumerable<NotFile>> GetFilesByTypeAsync(FileType fileType);
+    Task<IEnumerable<NotFile>?> GetFilesByTypeAsync(FileType fileType);
 
-    Task<IEnumerable<NotFile>> GetFilesByTagsAsync(HashSet<string> tags);
+    Task<IEnumerable<NotFile>?> GetFilesByTagsAsync(HashSet<string> tags);
 
-    Task<NotFile> AddFileAsync(NotFile file);
+    Task InsertFileAsync(NotFile file);
 
-    Task<NotFile> UpdateFileAsync(NotFile file);
+    Task<bool> UpdateFileAsync(NotFile file);
 
     Task DeleteFileAsync(Guid fileId);
 

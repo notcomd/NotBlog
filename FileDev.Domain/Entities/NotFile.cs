@@ -111,7 +111,7 @@ public class NotFile : Entity, IAggregateRoot
     }
 
 
-    public void Delete()
+    public void SoftDelete()
     {
         if (IsDeleted)
             throw new InvalidOperationException("文件已经被删除");

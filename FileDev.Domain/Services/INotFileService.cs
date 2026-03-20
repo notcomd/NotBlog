@@ -33,7 +33,7 @@ public interface INotFileService
     /// </summary>
     /// <param name="fileId"></param>
     /// <returns></returns>
-    Task<NotFile> GetFileByIdAsync(Guid fileId);
+    Task<NotFile?> GetFileByIdAsync(Guid fileId);
     
     /// <summary>
     ///  更新文件

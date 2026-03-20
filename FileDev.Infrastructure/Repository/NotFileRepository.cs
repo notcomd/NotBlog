@@ -14,14 +14,16 @@ public class NotFileRepository(NotFileDbContext notFileDbContext) : INotFileRepo
 
     public IUnitOfWork UnitOfWork => notFileDbContext;
 
-    public Task<NotFile> GetFileByIdAsync(Guid fileId)
+    public async Task<NotFile?> GetFileByIdAsync(Guid fileId)
     {
-        throw new NotImplementedException();
+        return await _notFileDbContext.NotFiles
+            .FirstOrDefaultAsync(x => x.FileId.Equals(fileId));
     }
 
-    public Task<IEnumerable<NotFile>> GetAllFilesAsync()
+    public async Task<IEnumerable<NotFile>?> GetAllFilesAsync()
     {
-        throw new NotImplementedException();
+        return await _notFileDbContext.NotFiles
+            .Where(en => !en.IsDeleted).ToListAsync();
     }
 
     public async Task<IEnumerable<NotFile>> GetFilesByUserIdAsync(Guid userId)
@@ -40,49 +42,67 @@ public class NotFileRepository(NotFileDbContext notFileDbContext) : INotFileRepo
             .ToListAsync();
     }
 
-    public Task<IEnumerable<NotFile>> GetFilesByTypeAsync(FileType fileType)
+    public async Task<IEnumerable<NotFile>?> GetFilesByTypeAsync(FileType fileType)
     {
-        throw new NotImplementedException();
+        return await _notFileDbContext.NotFiles
+            .Where(x => x.FileType.Equals(fileType) && !x.IsDeleted)
+            .ToListAsync();
     }
 
-    public Task<IEnumerable<NotFile>> GetFilesByTagsAsync(HashSet<string> tags)
+    public async Task<IEnumerable<NotFile>?> GetFilesByTagsAsync(HashSet<string> tags)
     {
-        throw new NotImplementedException();
+        return await _notFileDbContext.NotFiles
+            .Where(x => x.FileTags.Intersect(tags).Any() && !x.IsDeleted)
+            .ToListAsync();
     }
 
-    public Task<NotFile> AddFileAsync(NotFile file)
+    public async Task InsertFileAsync(NotFile file)
     {
-        throw new NotImplementedException();
+        await notFileDbContext.NotFiles.AddAsync(file);
     }
 
-    public Task<NotFile> UpdateFileAsync(NotFile file)
+    public Task<bool> UpdateFileAsync(NotFile file)
     {
-        throw new NotImplementedException();
+        _notFileDbContext.NotFiles.Update(file);
+        return Task.FromResult(true);
     }
 
-    public Task DeleteFileAsync(Guid fileId)
+    public async Task DeleteFileAsync(Guid fileId)
     {
-        throw new NotImplementedException();
+        var data = await _notFileDbContext.NotFiles
+            .FirstOrDefaultAsync(x => x.FileId.Equals(fileId));
+        if (data is null)
+            throw new NotFileException("文件不存在");
+        _notFileDbContext.NotFiles.Remove(data);
     }
 
-    public Task<bool> FileExistsAsync(Guid fileId)
+    public async Task<bool> FileExistsAsync(Guid fileId)
     {
-        throw new NotImplementedException();
+        var data =await _notFileDbContext.NotFiles
+            .FirstOrDefaultAsync(x => x.FileId.Equals(fileId));
+        return data != null;
     }
 
-    public Task<long> GetFileCountByUserIdAsync(Guid userId)
+    public async Task<long> GetFileCountByUserIdAsync(Guid userId)
     {
-        throw new NotImplementedException();
+        var count =await _notFileDbContext.NotFiles
+            .Where(x => x.UserId.Equals(userId) && !x.IsDeleted).CountAsync();
+        return count;
     }
 
-    public Task<double> GetTotalFileSizeByUserIdAsync(Guid userId)
+    public async Task<double> GetTotalFileSizeByUserIdAsync(Guid userId)
     {
-        throw new NotImplementedException();
+        return await _notFileDbContext.NotFiles
+            .Where(x => x.UserId.Equals(userId) && !x.IsDeleted)
+            .SumAsync(x => x.FileSize);
     }
 
-    public Task<NotFile> FileByFileAllAsync()
+    public async Task<IEnumerable<NotFile>?> FileByFileAllAsync(Guid userId)
     {
-        throw new NotImplementedException();
+        return await _notFileDbContext
+            .NotFiles
+            .Where(en => en.UserId.Equals(userId) && !en.IsDeleted)
+            .ToListAsync();
     }
 
     public Task<NotFile> FileByFileIdAsync(int id)
