@@ -23,7 +23,7 @@ public interface INotFileStorageService
     /// <summary>
     /// 检查文件是否存在
     /// </summary>
-    protected Task<bool> ExistsAsync(string fileRelativePath);
+    Task<bool> ExistsAsync(string fileRelativePath);
 
     /// <summary>
     /// 上传单个分片

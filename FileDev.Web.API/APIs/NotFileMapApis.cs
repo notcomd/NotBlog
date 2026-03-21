@@ -41,7 +41,7 @@ public static class NotFileMapApis
         IFormFile file, CancellationToken cancellationToken = default)
     {
         var response =
-            notFileStorageService.GetTotalChunkCount(file.Length);
+            notFileStorageService.GetTotalChunkCountAsync(file.Length);
         return Results.Json(response);
     }
 }

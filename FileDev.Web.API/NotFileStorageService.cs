@@ -10,7 +10,7 @@ namespace FileDev.Web.API;
 
 public class NotFileStorageService(
     INotFileStorageService storageProvider,
-    IOptions<NotFileStorageOptions> configOptions)
+    IOptionsSnapshot<NotFileStorageOptions> configOptions)
 {
     private readonly NotFileStorageOptions _config = configOptions.Value;
 
@@ -19,7 +19,8 @@ public class NotFileStorageService(
     /// <summary>
     /// 保存文本文件（带哈希校验）
     /// </summary>
-    public NotFileStorageResponse SaveTextFile(string fileRelativePath, string content, string? expectedHash = null,
+    public async Task<NotFileStorageResponse> SaveTextFileAsync(string fileRelativePath, string content,
+        string? expectedHash = null,
         string? encoding = null, bool overwrite = true)
     {
         var encode = encoding ?? _config.DefaultEncoding;
@@ -32,13 +33,14 @@ public class NotFileStorageService(
             Encoding = encode,
             ExpectedHash = expectedHash
         };
-        return storageProvider.SaveAsync(request);
+        return await storageProvider.SaveAsync(request);
     }
 
     /// <summary>
     /// 保存二进制文件（带哈希校验）
     /// </summary>
-    public NotFileStorageResponse SaveBinaryFile(string fileRelativePath, byte[] content, string expectedHash = null,
+    public async Task<NotFileStorageResponse> SaveBinaryFileAsync(string fileRelativePath, byte[] content,
+        string? expectedHash = null,
         bool overwrite = true)
     {
         var request = new NotFileStorageRequest
@@ -48,25 +50,27 @@ public class NotFileStorageService(
             Overwrite = overwrite,
             ExpectedHash = expectedHash
         };
-        return storageProvider.SaveAsync(request);
+        return await storageProvider.SaveAsync(request);
     }
 
-    public NotFileStorageResponse DeleteFile(string fileRelativePath) => storageProvider.DeleteAsync(fileRelativePath);
+    public async Task<NotFileStorageResponse> DeleteFileAsync(string fileRelativePath) =>
+        await storageProvider.DeleteAsync(fileRelativePath); // Changed from return to await return
 
     /// <summary>
     /// 获取文件信息
     /// </summary>
     /// <param name="fileRelativePath"></param>
     /// <returns></returns>
-    public (byte[] Content, NotFileStorageResponse Response) GetFileContent(string fileRelativePath) =>
-        storageProvider.GetContentAsync(fileRelativePath);
+    public async Task<(byte[] Content, NotFileStorageResponse Response)> GetFileContentAsync(string fileRelativePath) =>
+        await storageProvider.GetContentAsync(fileRelativePath);
 
     /// <summary>
     /// 判断文件是否存在
     /// </summary>
     /// <param name="fileRelativePath"></param>
     /// <returns></returns>
-    public bool FileExists(string fileRelativePath) => storageProvider.Exists(fileRelativePath);
+    public async Task<bool> FileExistsAsync(string fileRelativePath) =>
+        await storageProvider.ExistsAsync(fileRelativePath);
 
     #endregion
 
@@ -75,34 +79,36 @@ public class NotFileStorageService(
     /// <summary>
     /// 获取文件总分片数
     /// </summary>
-    public int GetTotalChunkCount(long fileSize)
+    public async Task<int> GetTotalChunkCountAsync(long fileSize)
     {
-        return storageProvider.GetTotalChunkCountAsync(fileSize);
+        return await storageProvider.GetTotalChunkCountAsync(fileSize);
     }
 
     /// <summary>
     /// 上传单个分片（自动计算分片哈希）
     /// </summary>
-    public NotFileStorageResponse UploadChunk(string fileKey, int chunkIndex, byte[] chunkContent,
+    public async Task<NotFileStorageResponse> UploadChunkAsync(string fileKey, int chunkIndex, byte[] chunkContent,
         bool autoVerify = true)
     {
         // 自动计算分片哈希并校验
         string chunkHash = (autoVerify ? HashHelper.ComputeHash(chunkContent, _config.HashAlgorithm) : null) ??
                            throw new InvalidOperationException();
-        return storageProvider.UploadChunkAsync(fileKey, chunkIndex, chunkContent, chunkHash);
+        return await storageProvider.UploadChunkAsync(fileKey, chunkIndex, chunkContent, chunkHash);
     }
 
     /// <summary>
     /// 合并分片（自动校验整体文件哈希）
     /// </summary>
-    public NotFileStorageResponse MergeChunks(string fileKey, int totalChunks, byte[] originalFileContent = null,
+    public async Task<NotFileStorageResponse> MergeChunksAsync(string fileKey, int totalChunks,
+        byte[] originalFileContent = null,
         bool overwrite = true)
     {
         // 如果传入原文件内容，自动计算整体哈希并校验
-        string expectedFileHash = originalFileContent != null
+        var expectedFileHash = originalFileContent != null
             ? HashHelper.ComputeHash(originalFileContent, _config.HashAlgorithm)
             : null;
-        return storageProvider.MergeChunksAsync(fileKey, totalChunks, expectedFileHash, overwrite);
+        return await storageProvider.MergeChunksAsync(fileKey, totalChunks, expectedFileHash ?? string.Empty,
+            overwrite);
     }
 
     /// <summary>
@@ -112,14 +118,16 @@ public class NotFileStorageService(
     /// <param name="fileContent">大文件字节内容</param>
     /// <param name="overwrite">是否覆盖</param>
     /// <returns>最终结果</returns>
-    public NotFileStorageResponse UploadBigFileByChunk(string fileKey, byte[] fileContent, bool overwrite = true)
+    public async Task<NotFileStorageResponse> UploadBigFileByChunkAsync(string fileKey, byte[] fileContent,
+        bool overwrite = true)
     {
         // 1. 获取总分片数
-        int totalChunks = GetTotalChunkCount(fileContent.Length);
+        int totalChunks = await GetTotalChunkCountAsync(fileContent.Length);
         if (totalChunks == 1)
         {
             // 小于分片大小，直接保存
-            return SaveBinaryFile(fileKey, fileContent, HashHelper.ComputeHash(fileContent, _config.HashAlgorithm),
+            return await SaveBinaryFileAsync(fileKey, fileContent,
+                HashHelper.ComputeHash(fileContent, _config.HashAlgorithm),
                 overwrite);
         }
 
@@ -137,7 +145,7 @@ public class NotFileStorageService(
             Array.Copy(fileContent, start, chunkContent, 0, chunkLength);
 
             // 上传分片（自动校验）
-            var chunkResult = UploadChunk(fileKey, i, chunkContent, true);
+            var chunkResult = await UploadChunkAsync(fileKey, i, chunkContent, true);
             if (!chunkResult.Success)
             {
                 return new NotFileStorageResponse
@@ -149,7 +157,7 @@ public class NotFileStorageService(
         }
 
         // 3. 合并分片
-        return MergeChunks(fileKey, totalChunks, fileContent, overwrite);
+        return await MergeChunksAsync(fileKey, totalChunks, fileContent, overwrite);
     }
 
     #endregion
