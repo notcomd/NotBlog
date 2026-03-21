@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace FileDev.Infrastructure.Service;
 
-public class NotFileService(INotFileRepository notFileRepository, ILogger<NotFileService> logger) : INotFileService
+public class NotFileService(INotFileRepository notFileRepository, ILogger<INotFileService> logger) : INotFileService
 {
     public async Task CreateFileAsync(Guid userId, string fileName, HashSet<string>? fileTags, string? fileDescription,
         FileType fileType,
@@ -14,7 +14,7 @@ public class NotFileService(INotFileRepository notFileRepository, ILogger<NotFil
         var file = new NotFile.NotFileBuilder()
             .WithFileName(fileName)
             .WithFileTags(fileTags ?? [])
-            .WithFileDescription(fileDescription??string.Empty)
+            .WithFileDescription(fileDescription ?? string.Empty)
             .WithFileType(fileType)
             .WithFileSize(fileSize)
             .WithFileUri(fileUri)
@@ -27,18 +27,19 @@ public class NotFileService(INotFileRepository notFileRepository, ILogger<NotFil
 
     public async Task<IEnumerable<NotFile>> GetFilesByUserIdAsync(Guid userId)
     {
-        var fileData=await notFileRepository.GetFilesByUserIdAsync(userId);
+        var fileData = await notFileRepository.GetFilesByUserIdAsync(userId);
         return fileData.Where(en => !en.IsDeleted);
     }
 
     public async Task<NotFile?> GetFileByIdAsync(Guid fileId)
     {
-        var fileData=await notFileRepository.GetFileByIdAsync(fileId);
-        if (fileData.IsDeleted)
+        var fileData = await notFileRepository.GetFileByIdAsync(fileId);
+        if (fileData is { IsDeleted: true })
         {
             logger.LogError("File not found {FileId}", fileId);
             return null;
         }
+
         return fileData;
     }
 
@@ -52,6 +53,7 @@ public class NotFileService(INotFileRepository notFileRepository, ILogger<NotFil
             logger.LogError("File not found {FileId}", fileId);
             return;
         }
+
         file.UpdateFileData(fileName, fileTags, fileDescription, fileIdentity, fileMd5);
         await notFileRepository.UpdateFileAsync(file);
     }
@@ -70,6 +72,7 @@ public class NotFileService(INotFileRepository notFileRepository, ILogger<NotFil
             logger.LogError("User not authorized to delete file {FileId}", fileId);
             throw new UnauthorizedAccessException();
         }
+
         file.SoftDelete();
         await notFileRepository.UpdateFileAsync(file);
         logger.LogInformation("File deleted {FileId}", fileId);

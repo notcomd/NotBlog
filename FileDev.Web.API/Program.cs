@@ -1,7 +1,11 @@
 using System.Reflection;
 using CommonsInitializer;
 using DomainCommonst;
+using FileDev.Domain.IServices;
 using FileDev.Infrastructure.EntityFramework;
+using FileDev.Infrastructure.Service;
+using FileDev.Web.API.APIs;
+using Microsoft.AspNetCore.Http.Features;
 using NotBlog.ServiceDefaults;
 using NotMediator;
 using Scalar.AspNetCore;
@@ -18,7 +22,7 @@ builder.NotBlogConfigureExtraServices(new InitializerOptions
 
 builder.Services.AddNpgsql<NotFileDbContext>("PostgresSQL");
 
-//builder.AddRedisDistributedCache("Redis");
+builder.Services.AddScoped<INotFileService, NotFileService>();
 
 builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
 builder.Services.AddControllers();
@@ -27,12 +31,20 @@ builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddProblemDetails();
+builder.Services.AddAntiforgery();
 
+builder.Services.Configure<FormOptions>(ope => { ope.MultipartBoundaryLengthLimit = 1024 * 1024 * 1024; });
+builder.WebHost.ConfigureKestrel(options => { options.Limits.MaxRequestBodySize = 1024 * 1024 * 1024; });
+//builder.Services.AddAntiforgery(options =>
+//{
+//    options.HeaderName = "X-CSRF-TOKEN";
+//});
 
 var app = builder.Build();
 app.NotBlogUseServer();
 app.MapDefaultEndpoints();
-
+app.UseRouting();
+app.UseAntiforgery();
 
 if (app.Environment.IsDevelopment())
 {
@@ -40,6 +52,7 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 
+app.MapGroup("/api/filestorage").NotFileApis();
 
 app.MapControllers();
 app.Run();

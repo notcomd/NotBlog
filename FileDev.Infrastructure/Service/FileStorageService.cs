@@ -6,9 +6,9 @@ using FileDev.Domain.Options;
 using Microsoft.Extensions.Options;
 using Notcomd.Token.JWT;
 
-namespace FileDev.Web.API;
+namespace FileDev.Infrastructure.Service;
 
-public class NotFileStorageService(
+public class FileStorageService(
     INotFileStorageService storageProvider,
     IOptionsSnapshot<NotFileStorageOptions> configOptions)
 {
