@@ -21,30 +21,21 @@ builder.NotBlogConfigureExtraServices(new InitializerOptions
 });
 
 builder.Services.AddNpgsql<NotFileDbContext>("PostgresSQL");
-
 builder.Services.AddScoped<INotFileService, NotFileService>();
-
 builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
 builder.Services.AddControllers();
-
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
-
 builder.Services.AddProblemDetails();
-builder.Services.AddAntiforgery();
 
 builder.Services.Configure<FormOptions>(ope => { ope.MultipartBoundaryLengthLimit = 1024 * 1024 * 1024; });
 builder.WebHost.ConfigureKestrel(options => { options.Limits.MaxRequestBodySize = 1024 * 1024 * 1024; });
-//builder.Services.AddAntiforgery(options =>
-//{
-//    options.HeaderName = "X-CSRF-TOKEN";
-//});
+
 
 var app = builder.Build();
 app.NotBlogUseServer();
 app.MapDefaultEndpoints();
-app.UseRouting();
-app.UseAntiforgery();
+
 
 if (app.Environment.IsDevelopment())
 {
