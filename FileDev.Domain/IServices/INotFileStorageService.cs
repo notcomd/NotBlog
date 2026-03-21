@@ -8,35 +8,37 @@ public interface INotFileStorageService
     /// <summary>
     /// 保存文件
     /// </summary>
-    NotFileStorageResponse Save(NotFileStorageRequest request);
-    
+    Task<NotFileStorageResponse> SaveAsync(NotFileStorageRequest request);
+
     /// <summary>
     /// 删除文件
     /// </summary>
-    NotFileStorageResponse Delete(string fileRelativePath);
-    
+    Task<NotFileStorageResponse> DeleteAsync(string fileRelativePath);
+
     /// <summary>
     /// 获取文件内容
     /// </summary>
-    (byte[] Content, NotFileStorageResponse Response) GetContent(string fileRelativePath);
-    
+    Task<(byte[] Content, NotFileStorageResponse Response)> GetContentAsync(string fileRelativePath);
+
     /// <summary>
     /// 检查文件是否存在
     /// </summary>
-    bool Exists(string fileRelativePath);
+    protected Task<bool> ExistsAsync(string fileRelativePath);
 
     /// <summary>
     /// 上传单个分片
     /// </summary>
-    NotFileStorageResponse UploadChunk(string fileKey, int chunkIndex, byte[] chunkContent, string chunkHash = null);
+    Task<NotFileStorageResponse> UploadChunkAsync(string fileKey, int chunkIndex, byte[] chunkContent,
+        string chunkHash = null);
 
     /// <summary>
     /// 合并分片为完整文件
     /// </summary>
-    NotFileStorageResponse MergeChunks(string fileKey, int totalChunks, string expectedFileHash = null, bool overwrite = true);
+    Task<NotFileStorageResponse> MergeChunksAsync(string fileKey, int totalChunks, string expectedFileHash = null,
+        bool overwrite = true);
 
     /// <summary>
     /// 获取总分片数
     /// </summary>
-    int GetTotalChunkCount(long fileSize);
+    Task<int> GetTotalChunkCountAsync(long fileSize);
 }

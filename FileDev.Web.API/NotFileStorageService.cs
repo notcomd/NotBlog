@@ -1,3 +1,4 @@
+using System.Text;
 using FileDev.Domain.Dto.Request;
 using FileDev.Domain.Dto.Response;
 using FileDev.Domain.IServices;
@@ -22,7 +23,7 @@ public class NotFileStorageService(
         string? encoding = null, bool overwrite = true)
     {
         var encode = encoding ?? _config.DefaultEncoding;
-        var bytes = System.Text.Encoding.GetEncoding(encode).GetBytes(content);
+        var bytes = Encoding.GetEncoding(encode).GetBytes(content);
         var request = new NotFileStorageRequest
         {
             FileRelativePath = fileRelativePath,
@@ -31,7 +32,7 @@ public class NotFileStorageService(
             Encoding = encode,
             ExpectedHash = expectedHash
         };
-        return storageProvider.Save(request);
+        return storageProvider.SaveAsync(request);
     }
 
     /// <summary>
@@ -47,10 +48,10 @@ public class NotFileStorageService(
             Overwrite = overwrite,
             ExpectedHash = expectedHash
         };
-        return storageProvider.Save(request);
+        return storageProvider.SaveAsync(request);
     }
 
-    public NotFileStorageResponse DeleteFile(string fileRelativePath) => storageProvider.Delete(fileRelativePath);
+    public NotFileStorageResponse DeleteFile(string fileRelativePath) => storageProvider.DeleteAsync(fileRelativePath);
 
     /// <summary>
     /// 获取文件信息
@@ -58,7 +59,7 @@ public class NotFileStorageService(
     /// <param name="fileRelativePath"></param>
     /// <returns></returns>
     public (byte[] Content, NotFileStorageResponse Response) GetFileContent(string fileRelativePath) =>
-        storageProvider.GetContent(fileRelativePath);
+        storageProvider.GetContentAsync(fileRelativePath);
 
     /// <summary>
     /// 判断文件是否存在
@@ -76,7 +77,7 @@ public class NotFileStorageService(
     /// </summary>
     public int GetTotalChunkCount(long fileSize)
     {
-        return storageProvider.GetTotalChunkCount(fileSize);
+        return storageProvider.GetTotalChunkCountAsync(fileSize);
     }
 
     /// <summary>
@@ -86,8 +87,9 @@ public class NotFileStorageService(
         bool autoVerify = true)
     {
         // 自动计算分片哈希并校验
-        string chunkHash = (autoVerify ? HashHelper.ComputeHash(chunkContent, _config.HashAlgorithm) : null) ?? throw new InvalidOperationException();
-        return storageProvider.UploadChunk(fileKey, chunkIndex, chunkContent, chunkHash);
+        string chunkHash = (autoVerify ? HashHelper.ComputeHash(chunkContent, _config.HashAlgorithm) : null) ??
+                           throw new InvalidOperationException();
+        return storageProvider.UploadChunkAsync(fileKey, chunkIndex, chunkContent, chunkHash);
     }
 
     /// <summary>
@@ -100,7 +102,7 @@ public class NotFileStorageService(
         string expectedFileHash = originalFileContent != null
             ? HashHelper.ComputeHash(originalFileContent, _config.HashAlgorithm)
             : null;
-        return storageProvider.MergeChunks(fileKey, totalChunks, expectedFileHash, overwrite);
+        return storageProvider.MergeChunksAsync(fileKey, totalChunks, expectedFileHash, overwrite);
     }
 
     /// <summary>
