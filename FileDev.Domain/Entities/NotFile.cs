@@ -1,3 +1,4 @@
+using FileDev.Domain.Events;
 using FileDev.Domain.SeedWork;
 
 namespace FileDev.Domain.Entities;
@@ -5,7 +6,7 @@ namespace FileDev.Domain.Entities;
 public class NotFile : Entity, IAggregateRoot
 {
     public NotFile(Guid userId, string fileName, HashSet<string>? fileTags, string fileDescription,
-        FileType fileType, double fileSize, Uri fileUri, string fileMd5,
+        FileType fileType, long fileSize, Uri fileUri, string fileMd5,
         FileIdentity fileIdentity = FileIdentity.FilePrivate) : this()
     {
         if (userId == Guid.Empty) throw new ArgumentNullException(nameof(userId), "用户ID不能为空");
@@ -22,6 +23,8 @@ public class NotFile : Entity, IAggregateRoot
         FileMd5 = fileMd5;
         FileUri = fileUri;
         FileIdentity = fileIdentity;
+        /// 添加领域事件
+        AddDomainEvent(userId, fileName, fileUri, fileSize, fileMd5, fileIdentity, fileType);
     }
 
     private NotFile()
@@ -45,7 +48,7 @@ public class NotFile : Entity, IAggregateRoot
 
     public FileType FileType { get; private set; }
 
-    public double FileSize { get; private set; }
+    public long FileSize { get; private set; }
 
     public Uri FileUri { get; private set; } = null!;
 
@@ -130,6 +133,14 @@ public class NotFile : Entity, IAggregateRoot
         UpdateTime = DateTime.UtcNow;
     }
 
+    private void AddDomainEvent(Guid userId, string fileName, Uri fileUri, long fileSize, string fileMd5,
+        FileIdentity fileIdentity, FileType fileType)
+    {
+        var domainEvent =
+            new CreateNotFileEvent(this, userId, fileName, fileUri, fileSize, fileMd5, fileIdentity, fileType);
+        AddDomainEvent(domainEvent);
+    }
+
 
     public class NotFileBuilder
     {
@@ -137,7 +148,7 @@ public class NotFile : Entity, IAggregateRoot
         private FileIdentity _fileIdentity = FileIdentity.FilePrivate;
         private string _fileMd5 = string.Empty;
         private string _fileName = null!;
-        private double _fileSize;
+        private long _fileSize;
         private HashSet<string> _fileTags = new();
         private FileType _fileType;
         private Uri _fileUri = null!;
@@ -173,7 +184,7 @@ public class NotFile : Entity, IAggregateRoot
             return this;
         }
 
-        public NotFileBuilder WithFileSize(double fileSize)
+        public NotFileBuilder WithFileSize(long fileSize)
         {
             _fileSize = fileSize;
             return this;

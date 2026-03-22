@@ -20,7 +20,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="ActionFilter\"/>
+        <Folder Include="ActionFilter\Command\"/>
+        <Folder Include="ActionFilter\DomainEventHandlers\"/>
         <Folder Include="EventBus\"/>
         <Folder Include="Extensions\"/>
     </ItemGroup>

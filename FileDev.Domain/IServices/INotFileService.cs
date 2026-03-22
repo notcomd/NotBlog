@@ -18,23 +18,23 @@ public interface INotFileService
     /// <param name="fileIdentity"></param>
     /// <returns></returns>
     Task CreateFileAsync(Guid userId, string fileName, HashSet<string>? fileTags,
-        string fileDescription, FileType fileType, double fileSize, Uri fileUri, string fileMd5,
+        string fileDescription, FileType fileType, long fileSize, Uri fileUri, string fileMd5,
         FileIdentity fileIdentity = FileIdentity.FilePrivate);
-    
+
     /// <summary>
     ///  获取用户所有文件
     /// </summary>
     /// <param name="userId"></param>
     /// <returns></returns>
     Task<IEnumerable<NotFile>> GetFilesByUserIdAsync(Guid userId);
-    
+
     /// <summary>
     ///  获取文件
     /// </summary>
     /// <param name="fileId"></param>
     /// <returns></returns>
     Task<NotFile?> GetFileByIdAsync(Guid fileId);
-    
+
     /// <summary>
     ///  更新文件
     /// </summary>
@@ -47,7 +47,7 @@ public interface INotFileService
     /// <returns></returns>
     Task UpdateFileAsync(Guid fileId, string fileName, HashSet<string>? fileTags,
         string fileDescription, FileIdentity fileIdentity, string fileMd5);
-    
+
     /// <summary>
     ///  删除文件
     /// </summary>
@@ -55,5 +55,4 @@ public interface INotFileService
     /// <param name="userId"></param>
     /// <returns></returns>
     Task DeleteFileAsync(Guid fileId, Guid userId);
-    
 }

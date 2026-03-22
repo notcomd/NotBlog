@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Identity.Infrastructure.Configuration;
+using Identity.Infrastructure.Idempotent;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Identity.Infrastructure.EntityFramework;
@@ -18,13 +19,9 @@ public class IdentityDbContext : DbContext, IUnitOfWork
         Debug.WriteLine($"IdentityDbContext::Context->{GetHashCode()}");
     }
 
-    public sealed override int GetHashCode()
-    {
-        return base.GetHashCode();
-    }
-
     public DbSet<User> Users { get; set; }
-    
+
+    public DbSet<ClientRequest> ClientRequests { get; set; }
     public DbSet<Roles> Roles { get; set; }
 
     public DbSet<NotClient> NotClients { get; set; }
@@ -46,6 +43,11 @@ public class IdentityDbContext : DbContext, IUnitOfWork
         await _notMediator.DispatchDomainEventsAsync(this);
         _ = await base.SaveChangesAsync(cancellationToken);
         return true;
+    }
+
+    public sealed override int GetHashCode()
+    {
+        return base.GetHashCode();
     }
 
     public IDbContextTransaction GetContextTransaction()

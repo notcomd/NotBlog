@@ -1599,6 +1599,19 @@
           "bin/placeholder/Evenbus.dll": {}
         }
       },
+      "FileDev.Domain/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "dependencies": {
+          "NotMediator": "1.0.5"
+        },
+        "compile": {
+          "bin/placeholder/FileDev.Domain.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/FileDev.Domain.dll": {}
+        }
+      },
       "Identity.Domain/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v10.0",
@@ -4527,6 +4540,11 @@
       "path": "../Evenbus/Evenbus.csproj",
       "msbuildProject": "../Evenbus/Evenbus.csproj"
     },
+    "FileDev.Domain/1.0.0": {
+      "type": "project",
+      "path": "../FileDev.Domain/FileDev.Domain.csproj",
+      "msbuildProject": "../FileDev.Domain/FileDev.Domain.csproj"
+    },
     "Identity.Domain/1.0.0": {
       "type": "project",
       "path": "../Identity.Domain/Identity.Domain.csproj",
@@ -4558,6 +4576,7 @@
       "Aspire.RabbitMQ.Client >= 13.1.3",
       "Aspire.StackExchange.Redis.DistributedCaching >= 13.1.3",
       "CommonsInitializer >= 1.0.0",
+      "FileDev.Domain >= 1.0.0",
       "Identity.Infrastructure >= 1.0.0",
       "MailKit >= 4.13.0",
       "Microsoft.AspNetCore.OpenApi >= 10.0.5",
@@ -4606,6 +4625,9 @@
           "projectReferences": {
             "F:\\NotBlog\\CommonsInitializer\\CommonsInitializer.csproj": {
               "projectPath": "F:\\NotBlog\\CommonsInitializer\\CommonsInitializer.csproj"
+            },
+            "F:\\NotBlog\\FileDev.Domain\\FileDev.Domain.csproj": {
+              "projectPath": "F:\\NotBlog\\FileDev.Domain\\FileDev.Domain.csproj"
             },
             "F:\\NotBlog\\Identity.Infrastructure\\Identity.Infrastructure.csproj": {
               "projectPath": "F:\\NotBlog\\Identity.Infrastructure\\Identity.Infrastructure.csproj"

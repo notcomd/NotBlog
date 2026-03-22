@@ -2,6 +2,7 @@ using ConsoleApp1;
 using FileDev.Domain.Entities;
 using FileDev.Domain.SeedWork;
 using FileDev.Infrastructure.EntityConfig;
+using FileDev.Infrastructure.Idempotent;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using NotMediator;
@@ -11,17 +12,21 @@ namespace FileDev.Infrastructure.EntityFramework;
 public class NotFileDbContext(DbContextOptions<NotFileDbContext> options, INotMediator mediator)
     : DbContext(options), IUnitOfWork
 {
-    private readonly INotMediator _notMediator = mediator ?? throw new ArgumentNullException(nameof(mediator), "Mediator cannot be null");
-    
+    private readonly INotMediator _notMediator = mediator ??
+                                                 throw new ArgumentNullException(nameof(mediator),
+                                                     "Mediator cannot be null");
+
     private IDbContextTransaction _currentTransaction;
 
 
     public DbSet<NotFile> NotFiles { get; set; }
-    
+
+    public DbSet<ClientRequest> ClientRequests { get; set; }
+
     public DbSet<NotFileGroup> NotFileGroups { get; set; }
-    
-    public bool HasActiveTransaction => _currentTransaction != null;
-    
+
+    public bool HasActiveTransaction => _currentTransaction is not null;
+
     public async Task<int> SavaChangesAsync(CancellationToken cancellationToken = default)
     {
         //if (_notMediator is null) throw new ArgumentNullException(nameof(_notMediator), "Mediator cannot be null");
@@ -30,11 +35,6 @@ public class NotFileDbContext(DbContextOptions<NotFileDbContext> options, INotMe
         return 0;
     }
 
-    public IDbContextTransaction GetContextTransaction()
-    {
-        return _currentTransaction;
-    }
-    
     public async Task<bool> SavaEntitiesAsync(CancellationToken cancellationToken = default)
     {
         await _notMediator.DispatchDomainEventsAsync(this);
@@ -42,10 +42,12 @@ public class NotFileDbContext(DbContextOptions<NotFileDbContext> options, INotMe
         return true;
     }
 
-    
+    public IDbContextTransaction GetCurrentTransaction() => _currentTransaction;
+
+
     public async Task<IDbContextTransaction> BeginTransactionAsync()
     {
-        if (_currentTransaction is not null) return null;
+        if (_currentTransaction != null) return null;
         _currentTransaction = await Database.BeginTransactionAsync();
         return _currentTransaction;
     }
@@ -98,5 +100,4 @@ public class NotFileDbContext(DbContextOptions<NotFileDbContext> options, INotMe
         modelBuilder.ApplyConfiguration(new NotFileEntityConfiguration());
         modelBuilder.ApplyConfiguration(new NotFileGroupEntityConfiguration());
     }
-    
 }

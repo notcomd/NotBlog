@@ -9,7 +9,7 @@ public class NotFileService(INotFileRepository notFileRepository, ILogger<INotFi
 {
     public async Task CreateFileAsync(Guid userId, string fileName, HashSet<string>? fileTags, string? fileDescription,
         FileType fileType,
-        double fileSize, Uri fileUri, string fileMd5, FileIdentity fileIdentity = FileIdentity.FilePrivate)
+        long fileSize, Uri fileUri, string fileMd5, FileIdentity fileIdentity = FileIdentity.FilePrivate)
     {
         var file = new NotFile.NotFileBuilder()
             .WithFileName(fileName)

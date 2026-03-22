@@ -1,17 +1,14 @@
 namespace Identity.Web.API.Application.Command;
 
-public class GenerateCodeCommandHandler : IRequestHandler<GenerateCodeCommand, string>
+public class GenerateCodeCommandHandler(IEmail email, INotMediator notMediator, IJwtTokenService jwtTokenServer)
+    : IRequestHandler<GenerateCodeCommand, string>
 {
-    private readonly IEmail _email;
-    private readonly IJwtTokenService _jwtTokenServer;
-    private readonly INotMediator _notMediator;
+    private readonly IEmail _email = email ?? throw new ArgumentNullException(nameof(email));
 
-    public GenerateCodeCommandHandler(IEmail email, INotMediator notMediator, IJwtTokenService jwtTokenServer)
-    {
-        _email = email ?? throw new ArgumentNullException(nameof(email));
-        _jwtTokenServer = jwtTokenServer ?? throw new ArgumentNullException(nameof(jwtTokenServer));
-        _notMediator = notMediator ?? throw new ArgumentNullException(nameof(notMediator));
-    }
+    private readonly IJwtTokenService _jwtTokenServer =
+        jwtTokenServer ?? throw new ArgumentNullException(nameof(jwtTokenServer));
+
+    private readonly INotMediator _notMediator = notMediator ?? throw new ArgumentNullException(nameof(notMediator));
 
     public Task<string> Handler(GenerateCodeCommand request, CancellationToken cancellationToken)
     {

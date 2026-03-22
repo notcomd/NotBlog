@@ -27,8 +27,11 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddProblemDetails();
+// 添加这行来注册 IHttpContextAccessor
+builder.Services.AddHttpContextAccessor();
 
-builder.Services.Configure<FormOptions>(ope => { ope.MultipartBoundaryLengthLimit = 1024 * 1024 * 1024; });
+builder.Services.Configure<FormOptions>(options => { options.MultipartBoundaryLengthLimit = 1024 * 1024 * 1024; }
+);
 builder.WebHost.ConfigureKestrel(options => { options.Limits.MaxRequestBodySize = 1024 * 1024 * 1024; });
 
 
