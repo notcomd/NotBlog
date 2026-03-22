@@ -2,7 +2,7 @@ namespace Identity.Infrastructure.Idempotent;
 
 public interface IRequestManagement
 {
-    Task ExecuteAsync(ClientRequest request);
+    Task<bool> ExecuteAsync(Guid request);
 
-    Task CreateRequestForCommandAsync(ClientRequest request);
+    Task CreateRequestForCommandAsync<T>(Guid request);
 }
