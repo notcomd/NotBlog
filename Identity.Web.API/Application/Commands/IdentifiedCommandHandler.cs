@@ -1,4 +1,5 @@
 using Identity.Infrastructure.Idempotent;
+using Identity.Web.API.Application.Commands;
 
 namespace Identity.Web.API.Application.Command;
 

@@ -1,4 +1,4 @@
-namespace Identity.Web.API.Application.Command;
+namespace Identity.Web.API.Application.Commands;
 
 public class GenerateCodeCommandHandler(IEmail email, INotMediator notMediator, IJwtTokenService jwtTokenServer)
     : IRequestHandler<GenerateCodeCommand, string>

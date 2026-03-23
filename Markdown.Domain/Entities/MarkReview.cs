@@ -2,9 +2,8 @@ using Markdown.Domain.SeedWork;
 
 namespace Markdown.Domain.Entities;
 
-public class MarkReview:Entity
+public class MarkReview : Entity
 {
-
     private MarkReview()
     {
         MarkReviewGuid = Guid.CreateVersion7();
@@ -15,7 +14,7 @@ public class MarkReview:Entity
     }
 
 
-    public MarkReview(Guid markDownGuid,Guid userGuid,string markReviewContent) : this()
+    public MarkReview(Guid markDownGuid, Guid userGuid, string markReviewContent) : this()
     {
         MarkDownGuid = markDownGuid;
         UserId = userGuid;
@@ -26,11 +25,11 @@ public class MarkReview:Entity
 
 
     public Guid MarkReviewGuid { get; init; }
-    
+
     public Guid MarkDownGuid { get; init; }
 
     public Guid UserId { get; init; }
- 
+
     public Guid? MarkAggregateRootGuid { get; private set; }
 
     public string MarkReviewContent { get; private set; } = null!;
@@ -38,16 +37,17 @@ public class MarkReview:Entity
     public DateTime MarkReviewTime { get; private set; }
 
     public MarkReviewAuth MarkReviewAuth { get; private set; }
-    
+
     public MarkDown MarkDown { get; private set; }
 
     public ICollection<MarkReview> MarkReviews { get; private set; }
-    
+
     public MarkQuote MarkQuote { get; private set; }
 
-    private Task<MarkReview> AddToChildReviewAsync(Guid aggregateRootGuid, MarkReview markReview)
+    public Task<MarkReview> AddToChildReviewAsync(Guid aggregateRootGuid, MarkReview markReview)
     {
         markReview.MarkAggregateRootGuid = aggregateRootGuid;
+        MarkReviews.Add(markReview);
         return Task.FromResult(markReview);
     }
 

@@ -41,6 +41,15 @@
           }
         }
       },
+      "Dynamic.Json/1.4.1": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/Dynamic.Json.dll": {}
+        },
+        "runtime": {
+          "lib/net8.0/Dynamic.Json.dll": {}
+        }
+      },
       "Microsoft.AspNetCore.OpenApi/10.0.4": {
         "type": "package",
         "dependencies": {
@@ -533,7 +542,7 @@
           }
         }
       },
-      "RabbitMQ.Client/7.1.2": {
+      "RabbitMQ.Client/7.2.1": {
         "type": "package",
         "compile": {
           "lib/net8.0/RabbitMQ.Client.dll": {
@@ -561,6 +570,20 @@
         "frameworkReferences": [
           "Microsoft.AspNetCore.App"
         ]
+      },
+      "Evenbus/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Dynamic.Json": "1.4.1",
+          "RabbitMQ.Client": "7.2.1"
+        },
+        "compile": {
+          "bin/placeholder/Evenbus.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Evenbus.dll": {}
+        }
       },
       "Markdown.Domain/1.0.0": {
         "type": "project",
@@ -660,6 +683,22 @@
         "lib/net8.0/HealthChecks.Rabbitmq.xml",
         "lib/netstandard2.0/HealthChecks.Rabbitmq.dll",
         "lib/netstandard2.0/HealthChecks.Rabbitmq.xml"
+      ]
+    },
+    "Dynamic.Json/1.4.1": {
+      "sha512": "74hR3DqQYHW3CbfxarjAeBzGgTUr/wWr7ZeBE2UaATzrOy4/eSn3orFJGpiYrb9mck8Zauh+Hf4cljXFLe4vnQ==",
+      "type": "package",
+      "path": "dynamic.json/1.4.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "dynamic.json.1.4.1.nupkg.sha512",
+        "dynamic.json.nuspec",
+        "lib/net6.0/Dynamic.Json.dll",
+        "lib/net7.0/Dynamic.Json.dll",
+        "lib/net8.0/Dynamic.Json.dll",
+        "lib/netcoreapp3.1/Dynamic.Json.dll",
+        "lib/netstandard2.0/Dynamic.Json.dll"
       ]
     },
     "Microsoft.AspNetCore.OpenApi/10.0.4": {
@@ -1385,10 +1424,10 @@
         "polly.ratelimiting.nuspec"
       ]
     },
-    "RabbitMQ.Client/7.1.2": {
-      "sha512": "y3c6ulgULScWthHw5PLM1ShHRLhxg0vCtzX/hh61gRgNecL3ZC3WoBW2HYHoXOVRqTl99Br9E7CZEytGZEsCyQ==",
+    "RabbitMQ.Client/7.2.1": {
+      "sha512": "YKXEfg9fVQiTKgZlvIhAfPSFaamEgi8DsQmisCH0IAsU4FYLrtoguDrDj6JtJVGUt40QPnBLRH6fTQcAC4qsOg==",
       "type": "package",
-      "path": "rabbitmq.client/7.1.2",
+      "path": "rabbitmq.client/7.2.1",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -1398,7 +1437,7 @@
         "lib/net8.0/RabbitMQ.Client.xml",
         "lib/netstandard2.0/RabbitMQ.Client.dll",
         "lib/netstandard2.0/RabbitMQ.Client.xml",
-        "rabbitmq.client.7.1.2.nupkg.sha512",
+        "rabbitmq.client.7.2.1.nupkg.sha512",
         "rabbitmq.client.nuspec"
       ]
     },
@@ -1421,6 +1460,11 @@
         "scalar.aspnetcore.nuspec"
       ]
     },
+    "Evenbus/1.0.0": {
+      "type": "project",
+      "path": "../Evenbus/Evenbus.csproj",
+      "msbuildProject": "../Evenbus/Evenbus.csproj"
+    },
     "Markdown.Domain/1.0.0": {
       "type": "project",
       "path": "../Markdown.Domain/Markdown.Domain.csproj",
@@ -1440,6 +1484,7 @@
   "projectFileDependencyGroups": {
     "net10.0": [
       "Aspire.RabbitMQ.Client >= 13.1.2",
+      "Evenbus >= 1.0.0",
       "Markdown.Domain >= 1.0.0",
       "Markdown.Infrastructure >= 1.0.0",
       "Microsoft.AspNetCore.OpenApi >= 10.0.4",
@@ -1482,6 +1527,9 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "projectReferences": {
+            "F:\\NotBlog\\Evenbus\\Evenbus.csproj": {
+              "projectPath": "F:\\NotBlog\\Evenbus\\Evenbus.csproj"
+            },
             "F:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj": {
               "projectPath": "F:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj"
             },

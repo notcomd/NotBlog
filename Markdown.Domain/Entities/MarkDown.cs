@@ -33,12 +33,13 @@ public class MarkDown : Entity, IAggregateRoot
 
     // 公有简化构造函数，使用默认值调用私有构造函数
     public MarkDown(Guid markUserGuid, string markDownName, string markDownContent, string markDownHash)
-        : this(markUserGuid, markDownName, markDownContent, markDownHash, Guid.Empty, new HashSet<string>(), MarkOption.Default)
+        : this(markUserGuid, markDownName, markDownContent, markDownHash, Guid.Empty, new HashSet<string>(),
+            MarkOption.Default)
     {
     }
 
     public Guid MarkDownGuid { get; init; }
-    
+
     public Guid MarkHistoryGuid { get; private set; }
     public Guid MarkReviewGuid { get; init; }
     public Guid MarkUserGuid { get; init; }
@@ -48,11 +49,11 @@ public class MarkDown : Entity, IAggregateRoot
     public string MarkDownHash { get; private set; } = null!;
     public DateTime CreateAt { get; init; }
     public string MarkDownContent { get; private set; } = null!;
-    
+
     public bool IsDelete { get; private set; }
-    
+
     public ICollection<MarkDown> MarkDowns { get; private set; }
-    
+
     public DateTime UplaodAt { get; private set; }
 
     // 关系外键
@@ -73,21 +74,25 @@ public class MarkDown : Entity, IAggregateRoot
         return Task.FromResult(this);
     }
 
-    public bool IsMarkDownEques(string markMd5)=> MarkDownHash == markMd5;
+    public bool IsMarkDownEques(string markMd5) => MarkDownHash == markMd5;
 
-    
+    public void SoftDelete()
+    {
+        IsDelete = true;
+    }
+
     /// <summary>
     ///     MarkDown 构建器（创建者类）
     /// </summary>
     public class Builder
     {
-        private readonly Guid _markUserGuid;
-        private readonly string _markDownName;
         private readonly string _markDownContent;
         private readonly string _markDownHash;
-        private Guid _markReviewGuid;
+        private readonly string _markDownName;
+        private readonly Guid _markUserGuid;
         private readonly HashSet<string> _tags = new();
         private MarkOption _markOption = MarkOption.Default;
+        private Guid _markReviewGuid;
 
         public Builder(Guid markUserGuid, string markDownName, string markDownContent, string markDownHash)
         {

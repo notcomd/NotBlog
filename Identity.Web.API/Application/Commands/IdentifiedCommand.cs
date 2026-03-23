@@ -1,4 +1,4 @@
-namespace Identity.Web.API.Application.Command;
+namespace Identity.Web.API.Application.Commands;
 
 public class IdentifiedCommand<T, R>(Guid id, T command) : IRequest<R>
     where T : IRequest<R>

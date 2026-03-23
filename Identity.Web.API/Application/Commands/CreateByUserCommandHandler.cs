@@ -1,7 +1,7 @@
 using Identity.Infrastructure.EntityFramework;
 using Identity.Infrastructure.Idempotent;
 
-namespace Identity.Web.API.Application.Command;
+namespace Identity.Web.API.Application.Commands;
 
 public class CreateUserCommandHandler(
     ILogger<CreateUserCommandHandler> logger,
