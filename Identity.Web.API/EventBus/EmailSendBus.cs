@@ -1,18 +1,15 @@
 namespace Identity.Web.API.EventBus;
 
 [EvenBusName("Identity.User.Code")]
-public class EmailSendBus : JsonIntegrationEventHandler<EmailSendRecord>
+public class EmailSendBus(IEmail email, IEmailCodeSend emailCodeSend, ILogger<IEmailCodeSend> logger)
+    : JsonIntegrationEventHandler<EmailSendRecord>
 {
-    private readonly IEmail _email;
-    private readonly IEmailCodeSend _emailCodeSend;
-    private readonly ILogger<IEmailCodeSend> _logger;
+    private readonly IEmail _email = email ?? throw new ArgumentNullException(nameof(email));
 
-    public EmailSendBus(IEmail email, IEmailCodeSend emailCodeSend, ILogger<IEmailCodeSend> logger)
-    {
-        _email = email ?? throw new ArgumentNullException(nameof(email));
-        _emailCodeSend = emailCodeSend ?? throw new ArgumentNullException(nameof(emailCodeSend));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    }
+    private readonly IEmailCodeSend _emailCodeSend =
+        emailCodeSend ?? throw new ArgumentNullException(nameof(emailCodeSend));
+
+    private readonly ILogger<IEmailCodeSend> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
 
     public async Task Handle(EmailSendRecord notification, CancellationToken cancellationToken)

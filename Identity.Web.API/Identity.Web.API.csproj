@@ -47,7 +47,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Application\Behaviors\"/>
+        <Folder Include="Application\DomainHandler\"/>
     </ItemGroup>
 
 </Project>

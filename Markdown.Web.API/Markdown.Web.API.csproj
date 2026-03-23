@@ -38,8 +38,8 @@
 
     <ItemGroup>
       <Folder Include="Apis\" />
-      <Folder Include="Dto\Request\" />
-      <Folder Include="Dto\Response\" />
+        <Folder Include="Application\Command\"/>
+        <Folder Include="Application\DomainEventHandler\"/>
       <Folder Include="EventBus\" />
     </ItemGroup>
 

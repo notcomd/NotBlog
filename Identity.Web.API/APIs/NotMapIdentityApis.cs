@@ -55,7 +55,7 @@ public static class NotMapIdentityApis
     {
         if (emailSendRecord != string.Empty)
         {
-            await identityService.NotMediator.SendAsync(new CreateByUserCommand(emailSendRecord, "123456", "123456"),
+            await identityService.NotMediator.SendAsync(new CreateUserCommand(emailSendRecord, "123456", "123456"),
                 cancellationToken);
             return IdentityResult<string>.Success("发送成功", $"{DateTime.Now}");
         }
