@@ -11,7 +11,7 @@ public class MarkDown : Entity, IAggregateRoot
     {
         MarkDownGuid = Guid.CreateVersion7();
         MarkDownTagboard = new HashSet<string>();
-        MarkReview = new List<MarkReview>();
+        MarkReviews = new List<MarkReview>();
         MarkDowns = new List<MarkDown>();
         CreateAt = DateTime.UtcNow;
         UplaodAt = DateTime.UtcNow;
@@ -41,13 +41,21 @@ public class MarkDown : Entity, IAggregateRoot
     public Guid MarkDownGuid { get; init; }
 
     public Guid MarkHistoryGuid { get; private set; }
+
     public Guid MarkReviewGuid { get; init; }
+
     public Guid MarkUserGuid { get; init; }
+
     public string MarkDownName { get; private set; } = null!;
+
     public HashSet<string> MarkDownTagboard { get; private set; }
+
     public MarkOption MarkOption { get; private set; } = MarkOption.Default;
+
     public string MarkDownHash { get; private set; } = null!;
+
     public DateTime CreateAt { get; init; }
+
     public string MarkDownContent { get; private set; } = null!;
 
     public bool IsDelete { get; private set; }
@@ -56,12 +64,15 @@ public class MarkDown : Entity, IAggregateRoot
 
     public DateTime UplaodAt { get; private set; }
 
-    // 关系外键
-    public ICollection<MarkReview> MarkReview { get; private set; }
+    public DateTime UpdateAt { get; private set; }
+
+    public ICollection<MarkReview> MarkReviews { get; private set; }
+
+    public ICollection<OldMarkDown> OldMarkDowns { get; private set; }
 
     public Task<MarkDown> AddByMarkReviewAsync(MarkReview markReview)
     {
-        MarkReview.Add(markReview);
+        MarkReviews.Add(markReview);
         return Task.FromResult(this);
     }
 

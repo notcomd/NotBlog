@@ -12,10 +12,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Server\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <PackageReference Include="NotMediator" Version="1.0.5" />
     </ItemGroup>
 

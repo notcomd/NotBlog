@@ -10,15 +10,18 @@ public class MarkReview : Entity
         MarkReviewTime = DateTime.UtcNow;
         MarkReviewAuth = MarkReviewAuth.ReviewAuthPublic;
         MarkReviews = new List<MarkReview>();
+        ReviewImages = new List<ReviewImage>();
         MarkQuote = new MarkQuote();
     }
 
 
-    public MarkReview(Guid markDownGuid, Guid userGuid, string markReviewContent) : this()
+    public MarkReview(Guid markDownGuid, Guid userGuid, string? markReviewContent,
+        List<ReviewImage>? reviewImage) : this()
     {
         MarkDownGuid = markDownGuid;
         UserId = userGuid;
         MarkReviewContent = markReviewContent;
+        ReviewImages = reviewImage;
         MarkReviewTime = DateTime.Now;
         MarkAggregateRootGuid = Guid.Empty;
     }
@@ -32,7 +35,7 @@ public class MarkReview : Entity
 
     public Guid? MarkAggregateRootGuid { get; private set; }
 
-    public string MarkReviewContent { get; private set; } = null!;
+    public string? MarkReviewContent { get; private set; } = null!;
 
     public DateTime MarkReviewTime { get; private set; }
 
@@ -42,7 +45,11 @@ public class MarkReview : Entity
 
     public ICollection<MarkReview> MarkReviews { get; private set; }
 
+    public ICollection<ReviewImage>? ReviewImages { get; private set; }
+
     public MarkQuote MarkQuote { get; private set; }
+
+    public bool IsDelete { get; private set; }
 
     public Task<MarkReview> AddToChildReviewAsync(Guid aggregateRootGuid, MarkReview markReview)
     {
@@ -56,4 +63,13 @@ public class MarkReview : Entity
         MarkReviewAuth = markReviewAuth;
         return Task.FromResult(this);
     }
+
+    public void AddReviewImage(ReviewImage reviewImage)
+    {
+        ReviewImages?.Add(reviewImage);
+    }
+
+    public void SoftDelete() => IsDelete = true;
+
+    public void ResetDelete() => IsDelete = false;
 }

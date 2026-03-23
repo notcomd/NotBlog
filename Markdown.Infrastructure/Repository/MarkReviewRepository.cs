@@ -26,7 +26,7 @@ public class MarkReviewRepository(
             // 通过聚合根 MarkDown 访问子聚合 MarkReview
             var markdown = await markDownDbContext.Markdowns
                 .Where(x => x.MarkDownGuid == markdownGuid)
-                .SelectMany(m => m.MarkReview) // 使用 SelectMany 展开评论集合
+                .SelectMany(m => m.MarkReviews) // 使用 SelectMany 展开评论集合
                 .Where(r => r.MarkAggregateRootGuid == null) // 只获取顶级评论
                 .OrderByDescending(r => r.MarkReviewTime)
                 .ToListAsync();
@@ -50,7 +50,7 @@ public class MarkReviewRepository(
         {
             // 通过聚合根查找子评论
             var review = await markDownDbContext.Markdowns
-                .SelectMany(m => m.MarkReview)
+                .SelectMany(m => m.MarkReviews)
                 .FirstOrDefaultAsync(r => r.MarkReviewGuid == reviewGuid);
 
             if (review is null)
@@ -76,7 +76,7 @@ public class MarkReviewRepository(
         {
             // 通过聚合根查找子评论
             var childReviews = await markDownDbContext.Markdowns
-                .SelectMany(m => m.MarkReview)
+                .SelectMany(m => m.MarkReviews)
                 .Where(r => r.MarkAggregateRootGuid == aggregateRootGuid)
                 .OrderBy(r => r.MarkReviewTime)
                 .ToListAsync();
@@ -149,7 +149,7 @@ public class MarkReviewRepository(
 
             if (markdown is not null)
             {
-                markdown.MarkReview.Remove(review);
+                markdown.MarkReviews.Remove(review);
             }
 
             // 同时从 DbContext 中移除实体
@@ -182,9 +182,9 @@ public class MarkReviewRepository(
                 throw new KeyNotFoundException($"父评论不存在：{parentReviewGuid}");
             }
 
-            var review = new MarkReview(childReview.MarkDownGuid, childReview.UserId, childReview.MarkReviewContent);
+            var review = new MarkReview(childReview.MarkDownGuid, childReview.UserId, childReview.MarkReviewContent,
+                childReview?.ReviewImages?.ToList());
             // 设置聚合根 GUID
-
             await parentReview.AddToChildReviewAsync(parentReviewGuid, review);
 
             // 增加父评论的回复计数

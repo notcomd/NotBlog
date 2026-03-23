@@ -18,7 +18,7 @@ public class MarkReviewEntityConfiguration : IEntityTypeConfiguration<MarkReview
 
         // 配置外键关系：MarkReview -> MarkDown（通过聚合根访问）
         builder.HasOne(x => x.MarkDown)
-            .WithMany(x => x.MarkReview)
+            .WithMany(x => x.MarkReviews)
             .HasForeignKey(x => x.MarkDownGuid)
             .OnDelete(DeleteBehavior.Cascade); // 级联删除：MarkDown 删除时自动删除评论
 

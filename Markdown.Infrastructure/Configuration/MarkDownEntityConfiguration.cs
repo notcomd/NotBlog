@@ -13,10 +13,10 @@ public class MarkDownEntityConfiguration : IEntityTypeConfiguration<MarkDown>
         builder.Property(x => x.Id).UseHiLo("NotFileGroupGuid");
         builder.HasKey(x => x.Id);
 
-        builder.HasMany(en => en.MarkReview)
+        builder.HasMany(en => en.MarkReviews)
             .WithOne(en => en.MarkDown)
             .HasForeignKey(en => en.MarkDownGuid);
-        
+
         builder.HasMany(en => en.MarkDowns)
             .WithOne()
             .HasForeignKey(en => en.MarkHistoryGuid);
