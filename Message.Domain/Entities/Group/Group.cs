@@ -1,4 +1,5 @@
 using Message.Domain.Enums;
+using Message.Domain.Events;
 using Message.Domain.SeedWork;
 
 namespace Message.Domain.Entities.Group;
@@ -64,6 +65,12 @@ public class Group : Entity, IAggregateRoot
         Avatar = avatar;
     }
 
+    /// <summary>
+    /// 更新群权限
+    /// </summary>
+    /// <param name="allowMemberInvite"></param>
+    /// <param name="allowMemberEditInfo"></param>
+    /// <exception cref="InvalidOperationException"></exception>
     public void UpdatePermissions(bool allowMemberInvite, bool allowMemberEditInfo)
     {
         if (IsDismissed)
@@ -81,8 +88,8 @@ public class Group : Entity, IAggregateRoot
             throw new InvalidOperationException("群成员已达上限");
         if (_members.Any(m => m.UserId == userId))
             throw new InvalidOperationException("用户已在群中");
-
         var member = new GroupMember(GroupId, userId, role);
+        AddDomainEvent(new GroupMemberJoinedEvent(this.GroupId, member.UserId, member.Role));
         _members.Add(member);
     }
 
@@ -92,12 +99,12 @@ public class Group : Entity, IAggregateRoot
             throw new InvalidOperationException("群已解散");
 
         var member = _members.FirstOrDefault(m => m.UserId == userId);
-        if (member == null)
+        if (member is null)
             throw new KeyNotFoundException("成员不存在");
 
         if (member.Role == GroupMemberRole.Owner)
             throw new InvalidOperationException("不能移除群主");
-
+        // AddDomainEvent(new GroupMemberRemovedEvent(this.GroupId, member.UserId));
         _members.Remove(member);
     }
 
@@ -109,7 +116,7 @@ public class Group : Entity, IAggregateRoot
         var oldOwner = _members.FirstOrDefault(m => m.UserId == OwnerId);
         var newOwner = _members.FirstOrDefault(m => m.UserId == newOwnerId);
 
-        if (oldOwner == null || newOwner == null)
+        if (oldOwner is null || newOwner is null)
             throw new KeyNotFoundException("成员不存在");
 
         oldOwner.DemoteToMember();
@@ -139,7 +146,7 @@ public class Group : Entity, IAggregateRoot
     public bool HasPermission(Guid userId, GroupPermission permission)
     {
         var member = GetMember(userId);
-        if (member == null) return false;
+        if (member is null) return false;
 
         return permission switch
         {

@@ -1,10 +1,11 @@
-﻿using NotMediator;
+﻿using Message.Domain.Events;
+using NotMediator;
 
 namespace Message.Domain.SeedWork;
 
 public abstract class Entity
 {
-    private List<INotifications> _domainEventbus;
+    private List<INotifications>? _domainEventbus;
 
     private int _id;
     private int? _requestedHashCode;
@@ -18,7 +19,7 @@ public abstract class Entity
     public IReadOnlyCollection<INotifications> DomainEventbus =>
         _domainEventbus?.AsReadOnly() ?? new List<INotifications>().AsReadOnly();
 
-    public void AddDomainEvent(INotifications notification)
+    public void AddDomainEvent(GroupMemberJoinedEvent notification)
     {
         _domainEventbus = _domainEventbus ?? new List<INotifications>();
         _domainEventbus.Add(notification);

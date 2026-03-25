@@ -3,7 +3,7 @@ using Message.Domain.Enums;
 namespace Message.Domain.Entities.Forward;
 
 /// <summary>
-///  消息转发实体
+/// 消息转发实体
 /// </summary>
 public class MessageForward
 {

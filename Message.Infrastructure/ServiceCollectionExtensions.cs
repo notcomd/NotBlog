@@ -1,5 +1,7 @@
+using Message.Domain.IProvider;
 using Message.Domain.IRepository;
 using Message.Infrastructure.EntityFramework;
+using Message.Infrastructure.Provider;
 using Message.Infrastructure.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -25,11 +27,8 @@ public static class ServiceCollectionExtensions
             });
         });
 
-        services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IMessageRepository, MessageRepository>();
-        services.AddScoped<IChatSessionRepository, ChatSessionRepository>();
-        services.AddScoped<IMessageFriendsRepository, MessageFriendsRepository>();
-        services.AddScoped<IGroupRepository, GroupRepository>();
+        RegisterRepositories(services);
+        RegisterProviders(services);
 
         return services;
     }
@@ -40,11 +39,8 @@ public static class ServiceCollectionExtensions
     {
         services.AddDbContext<MessageDbContext>(optionsAction);
 
-        services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IMessageRepository, MessageRepository>();
-        services.AddScoped<IChatSessionRepository, ChatSessionRepository>();
-        services.AddScoped<IMessageFriendsRepository, MessageFriendsRepository>();
-        services.AddScoped<IGroupRepository, GroupRepository>();
+        RegisterRepositories(services);
+        RegisterProviders(services);
 
         return services;
     }
@@ -54,12 +50,29 @@ public static class ServiceCollectionExtensions
     {
         services.AddDbContext<MessageDbContext>(options => { options.UseInMemoryDatabase("MessageDb"); });
 
+        RegisterRepositories(services);
+        RegisterProviders(services);
+
+        return services;
+    }
+
+    private static void RegisterRepositories(IServiceCollection services)
+    {
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IMessageRepository, MessageRepository>();
         services.AddScoped<IChatSessionRepository, ChatSessionRepository>();
         services.AddScoped<IMessageFriendsRepository, MessageFriendsRepository>();
         services.AddScoped<IGroupRepository, GroupRepository>();
+        services.AddScoped<IFileAttachmentRepository, FileAttachmentRepository>();
+    }
 
-        return services;
+    private static void RegisterProviders(IServiceCollection services)
+    {
+        services.AddScoped<IUserProvider, UserProvider>();
+        services.AddScoped<IMessageProvider, MessageProvider>();
+        services.AddScoped<IChatSessionProvider, ChatSessionProvider>();
+        services.AddScoped<IFriendProvider, FriendProvider>();
+        services.AddScoped<IGroupProvider, GroupProvider>();
+        services.AddScoped<IFileProvider, FileProvider>();
     }
 }

@@ -1,9 +1,11 @@
+using Message.Domain.SeedWork;
+
 namespace Message.Domain.Entities;
 
 /// <summary>
 ///  文件附件
 /// </summary>
-public class FileAttachment
+public class FileAttachment : Entity
 {
     public FileAttachment(Guid messageId, string fileName, string fileType, long fileSize, Uri fileUri)
     {
