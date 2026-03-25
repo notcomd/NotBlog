@@ -10,21 +10,21 @@ public class GroupRepository(MessageDbContext context) : Repository<Group>(conte
 {
     public async Task<Group?> GetByIdAsync(Guid groupId)
     {
-        return await _dbSet
+        return await DbSet
             .FirstOrDefaultAsync(g => g.GroupId == groupId && !g.IsDismissed);
     }
 
     public async Task<Group?> GetByOwnerIdAsync(Guid ownerId)
     {
-        return await _dbSet
+        return await DbSet
             .FirstOrDefaultAsync(g => g.OwnerId == ownerId && !g.IsDismissed);
     }
 
     public async Task<IEnumerable<Group>> GetByMemberIdAsync(Guid memberId)
     {
-        return await _context.GroupMembers
+        return await Context.GroupMembers
             .Where(gm => gm.UserId == memberId && !gm.IsBanned)
-            .Join(_dbSet,
+            .Join(DbSet,
                 gm => gm.GroupId,
                 g => g.GroupId,
                 (gm, g) => g)
@@ -34,7 +34,7 @@ public class GroupRepository(MessageDbContext context) : Repository<Group>(conte
 
     public async Task<IEnumerable<Group>> GetPublicGroupsAsync()
     {
-        return await _dbSet
+        return await DbSet
             .Where(g => g.IsPublic && !g.IsDismissed)
             .OrderBy(g => g.GroupName)
             .ToListAsync();
@@ -42,9 +42,9 @@ public class GroupRepository(MessageDbContext context) : Repository<Group>(conte
 
     public async Task<IEnumerable<Group>> GetByMemberIdAndRoleAsync(Guid memberId, GroupMemberRole role)
     {
-        return await _context.GroupMembers
+        return await Context.GroupMembers
             .Where(gm => gm.UserId == memberId && gm.Role == role)
-            .Join(_dbSet,
+            .Join(DbSet,
                 gm => gm.GroupId,
                 g => g.GroupId,
                 (gm, g) => g)
@@ -61,7 +61,7 @@ public class GroupRepository(MessageDbContext context) : Repository<Group>(conte
     /// <returns></returns>
     public async Task<IEnumerable<Group>> SearchAsync(string searchTerm, int page, int pageSize)
     {
-        var query = _dbSet
+        var query = DbSet
             .Where(g => g.IsPublic && !g.IsDismissed &&
                         (g.GroupName.Contains(searchTerm) ||
                          (g.Description != null && g.Description.Contains(searchTerm))));
@@ -72,7 +72,7 @@ public class GroupRepository(MessageDbContext context) : Repository<Group>(conte
 
     public new async Task<Group> AddAsync(Group group)
     {
-        var entry = await _dbSet.AddAsync(group);
+        var entry = await DbSet.AddAsync(group);
         return entry.Entity;
     }
 
@@ -80,7 +80,7 @@ public class GroupRepository(MessageDbContext context) : Repository<Group>(conte
     {
         try
         {
-            var entry = _dbSet.Update(group);
+            var entry = DbSet.Update(group);
             return Task.FromResult(entry.Entity);
         }
         catch (Exception exception)
@@ -95,30 +95,30 @@ public class GroupRepository(MessageDbContext context) : Repository<Group>(conte
         if (group is not null)
         {
             group.Dismiss();
-            _dbSet.Update(group);
+            DbSet.Update(group);
         }
     }
 
     public async Task<bool> ExistsAsync(Guid groupId)
     {
-        return await _dbSet.AnyAsync(g => g.GroupId == groupId && !g.IsDismissed);
+        return await DbSet.AnyAsync(g => g.GroupId == groupId && !g.IsDismissed);
     }
 
     public async Task<bool> IsMemberAsync(Guid groupId, Guid userId)
     {
-        return await _context.GroupMembers
+        return await Context.GroupMembers
             .AnyAsync(gm => gm.GroupId == groupId && gm.UserId == userId && !gm.IsBanned);
     }
 
     public async Task<bool> IsOwnerAsync(Guid groupId, Guid userId)
     {
-        return await _dbSet
+        return await DbSet
             .AnyAsync(g => g.GroupId == groupId && g.OwnerId == userId && !g.IsDismissed);
     }
 
     public async Task<bool> IsAdminAsync(Guid groupId, Guid userId)
     {
-        return await _context.GroupMembers
+        return await Context.GroupMembers
             .AnyAsync(gm => gm.GroupId == groupId &&
                             gm.UserId == userId &&
                             (gm.Role == GroupMemberRole.Admin || gm.Role == GroupMemberRole.Owner));
@@ -126,21 +126,21 @@ public class GroupRepository(MessageDbContext context) : Repository<Group>(conte
 
     public async Task<int> GetMemberCountAsync(Guid groupId)
     {
-        return await _context.GroupMembers
+        return await Context.GroupMembers
             .CountAsync(gm => gm.GroupId == groupId && !gm.IsBanned);
     }
 
     public async Task<int> GetGroupCountByOwnerAsync(Guid ownerId)
     {
-        return await _dbSet
+        return await DbSet
             .CountAsync(g => g.OwnerId == ownerId && !g.IsDismissed);
     }
 
     public async Task<int> GetGroupCountByMemberAsync(Guid memberId)
     {
-        return await _context.GroupMembers
+        return await Context.GroupMembers
             .Where(gm => gm.UserId == memberId && !gm.IsBanned)
-            .Join(_dbSet,
+            .Join(DbSet,
                 gm => gm.GroupId,
                 g => g.GroupId,
                 (gm, g) => g)
@@ -153,7 +153,7 @@ public class GroupRepository(MessageDbContext context) : Repository<Group>(conte
         if (group is not null)
         {
             group.AddMember(userId, role);
-            _dbSet.Update(group);
+            DbSet.Update(group);
         }
     }
 
@@ -163,19 +163,19 @@ public class GroupRepository(MessageDbContext context) : Repository<Group>(conte
         if (group is not null)
         {
             group.RemoveMember(userId);
-            _dbSet.Update(group);
+            DbSet.Update(group);
         }
     }
 
     public async Task<GroupMember?> GetMemberAsync(Guid groupId, Guid userId)
     {
-        return await _context.GroupMembers
+        return await Context.GroupMembers
             .FirstOrDefaultAsync(gm => gm.GroupId == groupId && gm.UserId == userId);
     }
 
     public async Task<IEnumerable<GroupMember>> GetMembersAsync(Guid groupId)
     {
-        return await _context.GroupMembers
+        return await Context.GroupMembers
             .Where(gm => gm.GroupId == groupId && !gm.IsBanned)
             .OrderBy(gm => gm.JoinTime)
             .ToListAsync();
@@ -183,7 +183,7 @@ public class GroupRepository(MessageDbContext context) : Repository<Group>(conte
 
     public async Task<IEnumerable<GroupMember>> GetAdminsAsync(Guid groupId)
     {
-        return await _context.GroupMembers
+        return await Context.GroupMembers
             .Where(gm => gm.GroupId == groupId &&
                          (gm.Role == GroupMemberRole.Admin || gm.Role == GroupMemberRole.Owner))
             .ToListAsync();
@@ -195,7 +195,7 @@ public class GroupRepository(MessageDbContext context) : Repository<Group>(conte
         if (member is not null)
         {
             member.PromoteToAdmin();
-            _context.GroupMembers.Update(member);
+            Context.GroupMembers.Update(member);
         }
     }
 
@@ -205,7 +205,7 @@ public class GroupRepository(MessageDbContext context) : Repository<Group>(conte
         if (member is not null)
         {
             member.DemoteToMember();
-            _context.GroupMembers.Update(member);
+            Context.GroupMembers.Update(member);
         }
     }
 
@@ -215,7 +215,7 @@ public class GroupRepository(MessageDbContext context) : Repository<Group>(conte
         if (group is not null)
         {
             group.TransferOwnership(newOwnerId);
-            _dbSet.Update(group);
+            DbSet.Update(group);
         }
     }
 
@@ -225,7 +225,7 @@ public class GroupRepository(MessageDbContext context) : Repository<Group>(conte
         if (member is not null)
         {
             member.Mute(duration);
-            _context.GroupMembers.Update(member);
+            Context.GroupMembers.Update(member);
         }
     }
 
@@ -235,7 +235,7 @@ public class GroupRepository(MessageDbContext context) : Repository<Group>(conte
         if (member is not null)
         {
             member.Unmute();
-            _context.GroupMembers.Update(member);
+            Context.GroupMembers.Update(member);
         }
     }
 
@@ -245,7 +245,7 @@ public class GroupRepository(MessageDbContext context) : Repository<Group>(conte
         if (member is not null)
         {
             member.Ban();
-            _context.GroupMembers.Update(member);
+            Context.GroupMembers.Update(member);
         }
     }
 
@@ -255,18 +255,18 @@ public class GroupRepository(MessageDbContext context) : Repository<Group>(conte
         if (member is not null)
         {
             member.Unban();
-            _context.GroupMembers.Update(member);
+            Context.GroupMembers.Update(member);
         }
     }
 
     public async Task<IEnumerable<Group>> GetGroupsWhereUserCanSendMessageAsync(Guid userId)
     {
-        var memberGroupIds = await _context.GroupMembers
+        var memberGroupIds = await Context.GroupMembers
             .Where(gm => gm.UserId == userId && !gm.IsBanned && gm.CanSendMessage())
             .Select(gm => gm.GroupId)
             .ToListAsync();
 
-        return await _dbSet
+        return await DbSet
             .Where(g => memberGroupIds.Contains(g.GroupId) && !g.IsDismissed)
             .ToListAsync();
     }

@@ -4,29 +4,24 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Message.Infrastructure.Repository;
 
-public abstract class Repository<T> where T : class, IAggregateRoot
+public abstract class Repository<T>(MessageDbContext context)
+    where T : class, IAggregateRoot
 {
-    protected readonly MessageDbContext _context;
-    protected readonly DbSet<T> _dbSet;
+    protected readonly MessageDbContext Context = context ?? throw new ArgumentNullException(nameof(context));
+    protected readonly DbSet<T> DbSet = context.Set<T>();
 
-    protected Repository(MessageDbContext context)
-    {
-        _context = context ?? throw new ArgumentNullException(nameof(context));
-        _dbSet = context.Set<T>();
-    }
-
-    public IUnitOfWork UnitOfWork => _context;
+    public IUnitOfWork UnitOfWork => Context;
 
     public virtual async Task<IEnumerable<T>> GetAllAsync()
     {
-        return await _dbSet.ToListAsync();
+        return await DbSet.ToListAsync();
     }
 
     public virtual async Task<T> AddAsync(T entity)
     {
         if (entity == null) throw new ArgumentNullException(nameof(entity));
 
-        var entry = await _dbSet.AddAsync(entity);
+        var entry = await DbSet.AddAsync(entity);
         return entry.Entity;
     }
 
@@ -34,13 +29,13 @@ public abstract class Repository<T> where T : class, IAggregateRoot
     {
         if (entity == null) throw new ArgumentNullException(nameof(entity));
 
-        var entry = _dbSet.Update(entity);
+        var entry = DbSet.Update(entity);
         return entry.Entity;
     }
 
     public virtual async Task<int> CountAsync()
     {
-        return await _dbSet.CountAsync();
+        return await DbSet.CountAsync();
     }
 
     protected IQueryable<T> ApplyPaging(IQueryable<T> query, int page, int pageSize)

@@ -6,20 +6,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Message.Infrastructure.Repository;
 
-public class ChatSessionRepository : Repository<ChatSession>, IChatSessionRepository
+public class ChatSessionRepository(MessageDbContext context) : Repository<ChatSession>(context), IChatSessionRepository
 {
-    public ChatSessionRepository(MessageDbContext context) : base(context)
-    {
-    }
-
     public async Task<ChatSession?> GetByIdAsync(Guid sessionId)
     {
-        return await _dbSet.FirstOrDefaultAsync(s => s.SessionId == sessionId);
+        return await DbSet.FirstOrDefaultAsync(s => s.SessionId == sessionId);
     }
 
     public async Task<ChatSession?> GetPrivateSessionAsync(Guid userId1, Guid userId2)
     {
-        return await _dbSet
+        return await DbSet
             .FirstOrDefaultAsync(s => s.SessionType == SessionType.Private &&
                                       s.Participants.Contains(userId1) &&
                                       s.Participants.Contains(userId2) &&
@@ -28,14 +24,14 @@ public class ChatSessionRepository : Repository<ChatSession>, IChatSessionReposi
 
     public async Task<IEnumerable<ChatSession>> GetByUserIdAsync(Guid userId)
     {
-        return await _dbSet
+        return await DbSet
             .Where(s => !s.IsDismissed)
             .ToListAsync();
     }
 
     public async Task<IEnumerable<ChatSession>> GetPinnedSessionsAsync(Guid userId)
     {
-        return await _dbSet
+        return await DbSet
             .Where(s => s.IsPinned && !s.IsDismissed)
             .OrderByDescending(s => s.LastMessageTime)
             .ToListAsync();
@@ -43,14 +39,14 @@ public class ChatSessionRepository : Repository<ChatSession>, IChatSessionReposi
 
     public async Task<IEnumerable<ChatSession>> GetByTypeAsync(SessionType sessionType)
     {
-        return await _dbSet
+        return await DbSet
             .Where(s => s.SessionType == sessionType && !s.IsDismissed)
             .ToListAsync();
     }
 
     public async Task<IEnumerable<ChatSession>> GetActiveSessionsAsync(Guid userId)
     {
-        return await _dbSet
+        return await DbSet
             .Where(s => !s.IsDismissed)
             .OrderByDescending(s => s.LastMessageTime)
             .ToListAsync();
@@ -58,40 +54,40 @@ public class ChatSessionRepository : Repository<ChatSession>, IChatSessionReposi
 
     public async Task<ChatSession?> GetByGroupIdAsync(Guid groupId)
     {
-        return await _dbSet
+        return await DbSet
             .FirstOrDefaultAsync(s => s.GroupId == groupId && !s.IsDismissed);
     }
 
     public new async Task<ChatSession> AddAsync(ChatSession session)
     {
-        var entry = await _dbSet.AddAsync(session);
+        var entry = await DbSet.AddAsync(session);
         return entry.Entity;
     }
 
     public new async Task<ChatSession> UpdateAsync(ChatSession session)
     {
-        var entry = _dbSet.Update(session);
+        var entry = DbSet.Update(session);
         return entry.Entity;
     }
 
     public async Task DeleteAsync(Guid sessionId)
     {
         var session = await GetByIdAsync(sessionId);
-        if (session != null)
+        if (session is not null)
         {
             session.Dismiss();
-            _dbSet.Update(session);
+            DbSet.Update(session);
         }
     }
 
     public async Task<bool> ExistsAsync(Guid sessionId)
     {
-        return await _dbSet.AnyAsync(s => s.SessionId == sessionId);
+        return await DbSet.AnyAsync(s => s.SessionId == sessionId);
     }
 
     public async Task<bool> PrivateSessionExistsAsync(Guid userId1, Guid userId2)
     {
-        return await _dbSet
+        return await DbSet
             .AnyAsync(s => s.SessionType == SessionType.Private &&
                            s.Participants.Contains(userId1) &&
                            s.Participants.Contains(userId2));
@@ -99,13 +95,13 @@ public class ChatSessionRepository : Repository<ChatSession>, IChatSessionReposi
 
     public async Task<int> GetSessionCountByUserAsync(Guid userId)
     {
-        return await _dbSet
+        return await DbSet
             .CountAsync(s => !s.IsDismissed);
     }
 
     public async Task<int> GetTotalUnreadCountAsync(Guid userId)
     {
-        var sessions = await _dbSet
+        var sessions = await DbSet
             .Where(s => !s.IsDismissed)
             .ToListAsync();
 
@@ -114,7 +110,7 @@ public class ChatSessionRepository : Repository<ChatSession>, IChatSessionReposi
 
     public async Task<IEnumerable<ChatSession>> GetSessionsWithUnreadMessagesAsync(Guid userId)
     {
-        var sessions = await _dbSet
+        var sessions = await DbSet
             .Where(s => !s.IsDismissed)
             .ToListAsync();
 
@@ -124,30 +120,30 @@ public class ChatSessionRepository : Repository<ChatSession>, IChatSessionReposi
     public async Task AddParticipantAsync(Guid sessionId, Guid userId)
     {
         var session = await GetByIdAsync(sessionId);
-        if (session != null)
+        if (session is not null)
         {
             session.AddParticipant(userId);
-            _dbSet.Update(session);
+            DbSet.Update(session);
         }
     }
 
     public async Task RemoveParticipantAsync(Guid sessionId, Guid userId)
     {
         var session = await GetByIdAsync(sessionId);
-        if (session != null)
+        if (session is not null)
         {
             session.RemoveParticipant(userId);
-            _dbSet.Update(session);
+            DbSet.Update(session);
         }
     }
 
     public async Task UpdateLastMessageAsync(Guid sessionId, Guid messageId, string? content)
     {
         var session = await GetByIdAsync(sessionId);
-        if (session != null)
+        if (session is not null)
         {
             session.UpdateLastMessage(messageId, content);
-            _dbSet.Update(session);
+            DbSet.Update(session);
         }
     }
 }
