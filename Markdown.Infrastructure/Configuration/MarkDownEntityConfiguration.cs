@@ -17,8 +17,8 @@ public class MarkDownEntityConfiguration : IEntityTypeConfiguration<MarkDown>
             .WithOne(en => en.MarkDown)
             .HasForeignKey(en => en.MarkDownGuid);
 
-        builder.HasMany(en => en.MarkDowns)
-            .WithOne()
-            .HasForeignKey(en => en.MarkHistoryGuid);
+        builder.HasMany(en => en.OldMarkDowns)
+            .WithOne(en => en.MarkDown)
+            .HasForeignKey(en => en.MarkDownGuid);
     }
 }

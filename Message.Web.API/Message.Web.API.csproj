@@ -21,6 +21,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Folder Include="Application\Behaviors\"/>
+        <Folder Include="Application\CommandHandlers\"/>
+        <Folder Include="Application\Commands\"/>
+        <Folder Include="Application\DomainEventHandlers\"/>
       <Folder Include="Dto\Request\" />
       <Folder Include="Dto\Response\" />
     </ItemGroup>

@@ -11,12 +11,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="EntityConfig\" />
-      <Folder Include="Repository\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.5" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.5"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.5"/>
       <PackageReference Include="NotMediator" Version="1.0.5" />
     </ItemGroup>
 

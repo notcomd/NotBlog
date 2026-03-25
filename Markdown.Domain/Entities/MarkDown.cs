@@ -12,14 +12,15 @@ public class MarkDown : Entity, IAggregateRoot
         MarkDownGuid = Guid.CreateVersion7();
         MarkDownTagboard = new HashSet<string>();
         MarkReviews = new List<MarkReview>();
-        MarkDowns = new List<MarkDown>();
+        OldMarkDowns = new List<OldMarkDown>();
         CreateAt = DateTime.UtcNow;
-        UplaodAt = DateTime.UtcNow;
+        UpdateAt = DateTime.UtcNow;
     }
 
     // 私有全参数构造函数，供 Builder 调用
     private MarkDown(Guid markUserGuid, string markDownName, string markDownContent, string markDownHash,
-        Guid markReviewGuid, HashSet<string> markDownTagboard, MarkOption markOption) : this()
+        Guid markReviewGuid, HashSet<string> markDownTagboard, MarkDownAuth markDownAuth,
+        MarkOption markOption) : this()
     {
         MarkUserGuid = markUserGuid;
         MarkDownName = markDownName;
@@ -27,6 +28,7 @@ public class MarkDown : Entity, IAggregateRoot
         MarkDownHash = markDownHash;
         MarkReviewGuid = markReviewGuid;
         MarkDownTagboard = markDownTagboard;
+        MarkDownAuth = markDownAuth;
         MarkOption = markOption;
         IsDelete = false;
     }
@@ -34,13 +36,11 @@ public class MarkDown : Entity, IAggregateRoot
     // 公有简化构造函数，使用默认值调用私有构造函数
     public MarkDown(Guid markUserGuid, string markDownName, string markDownContent, string markDownHash)
         : this(markUserGuid, markDownName, markDownContent, markDownHash, Guid.Empty, new HashSet<string>(),
-            MarkOption.Default)
+            MarkDownAuth.PublicMark, MarkOption.Default)
     {
     }
 
     public Guid MarkDownGuid { get; init; }
-
-    public Guid MarkHistoryGuid { get; private set; }
 
     public Guid MarkReviewGuid { get; init; }
 
@@ -50,19 +50,17 @@ public class MarkDown : Entity, IAggregateRoot
 
     public HashSet<string> MarkDownTagboard { get; private set; }
 
+    public MarkDownAuth MarkDownAuth { get; private set; } = MarkDownAuth.PublicMark;
+
     public MarkOption MarkOption { get; private set; } = MarkOption.Default;
 
     public string MarkDownHash { get; private set; } = null!;
-
-    public DateTime CreateAt { get; init; }
 
     public string MarkDownContent { get; private set; } = null!;
 
     public bool IsDelete { get; private set; }
 
-    public ICollection<MarkDown> MarkDowns { get; private set; }
-
-    public DateTime UplaodAt { get; private set; }
+    public DateTime CreateAt { get; init; }
 
     public DateTime UpdateAt { get; private set; }
 
@@ -70,42 +68,238 @@ public class MarkDown : Entity, IAggregateRoot
 
     public ICollection<OldMarkDown> OldMarkDowns { get; private set; }
 
+    /// <summary>
+    ///     添加评论到文档
+    /// </summary>
+    /// <param name="markReview">要添加的评论</param>
+    /// <returns>当前文档实例（支持链式调用）</returns>
     public Task<MarkDown> AddByMarkReviewAsync(MarkReview markReview)
     {
+        if (markReview is null)
+            throw new ArgumentNullException(nameof(markReview));
+
         MarkReviews.Add(markReview);
         return Task.FromResult(this);
     }
 
+    /// <summary>
+    ///     更新文档内容（同时创建历史版本）
+    /// </summary>
+    /// <param name="markDownName">新名称</param>
+    /// <param name="markDownContent">新内容</param>
+    /// <param name="markDownHash">新哈希值</param>
+    /// <returns>当前文档实例（支持链式调用）</returns>
     public Task<MarkDown> UpDataByMarkDownAsync(string markDownName, string markDownContent, string markDownHash)
     {
+        if (string.IsNullOrWhiteSpace(markDownName))
+            throw new ArgumentNullException(nameof(markDownName));
+        if (string.IsNullOrWhiteSpace(markDownContent))
+            throw new ArgumentNullException(nameof(markDownContent));
+        if (string.IsNullOrWhiteSpace(markDownHash))
+            throw new ArgumentNullException(nameof(markDownHash));
+
+        // 如果内容发生变化，应该先创建历史版本记录（由应用层负责）
         MarkDownName = markDownName;
         MarkDownContent = markDownContent;
         MarkDownHash = markDownHash;
-        UplaodAt = DateTime.Now;
+        UpdateAt = DateTime.UtcNow;
+
         return Task.FromResult(this);
     }
 
+    /// <summary>
+    ///     验证文档哈希值是否匹配
+    /// </summary>
+    /// <param name="markMd5">要比较的 MD5 哈希值</param>
+    /// <returns>如果匹配返回 true</returns>
     public bool IsMarkDownEques(string markMd5) => MarkDownHash == markMd5;
 
+    /// <summary>
+    ///     软删除文档
+    /// </summary>
     public void SoftDelete()
     {
         IsDelete = true;
+        UpdateAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    ///     恢复已删除的文档
+    /// </summary>
+    public void Restore()
+    {
+        IsDelete = false;
+        UpdateAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    ///     添加标签到标签板
+    /// </summary>
+    /// <param name="tag">要添加的标签</param>
+    public void AddTag(string tag)
+    {
+        if (!string.IsNullOrWhiteSpace(tag) && !MarkDownTagboard.Contains(tag))
+        {
+            MarkDownTagboard.Add(tag);
+            UpdateAt = DateTime.UtcNow;
+        }
+    }
+
+    /// <summary>
+    ///     批量添加标签到标签板
+    /// </summary>
+    /// <param name="tags">要添加的标签集合</param>
+    public void AddTags(IEnumerable<string> tags)
+    {
+        foreach (var tag in tags.Where(t => !string.IsNullOrWhiteSpace(t)))
+        {
+            if (!MarkDownTagboard.Contains(tag))
+            {
+                MarkDownTagboard.Add(tag);
+            }
+        }
+
+        UpdateAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    ///     移除标签
+    /// </summary>
+    /// <param name="tag">要移除的标签</param>
+    /// <returns>如果成功移除返回 true，标签不存在返回 false</returns>
+    public bool RemoveTag(string tag)
+    {
+        if (MarkDownTagboard.Remove(tag))
+        {
+            UpdateAt = DateTime.UtcNow;
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    ///     清空所有标签
+    /// </summary>
+    public void ClearTags()
+    {
+        if (MarkDownTagboard.Count > 0)
+        {
+            MarkDownTagboard.Clear();
+            UpdateAt = DateTime.UtcNow;
+        }
+    }
+
+    /// <summary>
+    ///     检查是否包含指定标签
+    /// </summary>
+    /// <param name="tag">要检查的标签</param>
+    /// <returns>如果包含返回 true</returns>
+    public bool HasTag(string tag)
+    {
+        return MarkDownTagboard.Contains(tag);
+    }
+
+    /// <summary>
+    ///     更新文档权限设置
+    /// </summary>
+    /// <param name="markOption">新的权限选项</param>
+    public void UpdateMarkOption(MarkDownAuth markOption)
+    {
+        MarkDownAuth = markOption;
+        UpdateAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// 获取文档统计信息
+    /// </summary>
+    /// <returns>包含评论数、标签数等信息的匿名对象</returns>
+    public object GetStatistics()
+    {
+        return new
+        {
+            ReviewCount = MarkReviews?.Count ?? 0,
+            TagCount = MarkDownTagboard?.Count ?? 0,
+            HistoryCount = OldMarkDowns?.Count ?? 0,
+            ContentLength = MarkDownContent?.Length ?? 0,
+            LastUpdateTime = UpdateAt,
+            CreateTime = CreateAt
+        };
+    }
+
+    /// <summary>
+    ///     验证用户是否有权限操作此文档
+    /// </summary>
+    /// <param name="userGuid">用户 GUID</param>
+    /// <returns>如果有权限返回 true</returns>
+    public bool HasPermission(Guid userGuid)
+    {
+        // 文档所有者始终有权限
+        if (MarkUserGuid == userGuid)
+            return true;
+        var markDownAuth = MarkDownAuth;
+        // 根据权限类型判断
+        return markDownAuth switch
+        {
+            MarkDownAuth.PublicMark => true, // 公开文档所有人可访问
+            MarkDownAuth.PrivateMark => false, // 私有文档只有所有者可访问
+            MarkDownAuth.ProtectedMark => false, // 受保护文档需要额外验证
+            MarkDownAuth.AdminMark => false, // 管理员文档
+            MarkDownAuth.RootMark => false, // 根管理员文档
+            _ => false
+        };
+    }
+
+    /// <summary>
+    ///     创建历史版本快照（用于更新前保存旧版本）
+    /// </summary>
+    /// <returns>新创建的 OldMarkDown 实例</returns>
+    public OldMarkDown CreateHistorySnapshot()
+    {
+        var oldVersion = new OldMarkDown(
+            MarkDownGuid,
+            MarkUserGuid,
+            MarkDownContent,
+            MarkDownHash,
+            MarkDownAuth.PublicMark
+        );
+
+        return oldVersion;
+    }
+
+    /// <summary>
+    ///     从历史版本还原
+    /// </summary>
+    /// <param name="oldMarkDown">要还原的历史版本</param>
+    /// <returns>当前文档实例（支持链式调用）</returns>
+    public Task<MarkDown> RestoreFromHistory(OldMarkDown oldMarkDown)
+    {
+        if (oldMarkDown is null)
+            throw new ArgumentNullException(nameof(oldMarkDown));
+
+        // 使用历史版本的内容更新当前文档
+        return UpDataByMarkDownAsync(
+            $"{MarkDownName}_v{oldMarkDown.OldMarkDownGuid}",
+            oldMarkDown.OldMarkDownContent,
+            oldMarkDown.OldMarkDownHash
+        );
     }
 
     /// <summary>
     ///     MarkDown 构建器（创建者类）
     /// </summary>
-    public class Builder
+    public class MarkDownBuilder
     {
         private readonly string _markDownContent;
         private readonly string _markDownHash;
         private readonly string _markDownName;
         private readonly Guid _markUserGuid;
         private readonly HashSet<string> _tags = new();
+        private MarkDownAuth _markDownAuth = MarkDownAuth.PublicMark;
         private MarkOption _markOption = MarkOption.Default;
         private Guid _markReviewGuid;
 
-        public Builder(Guid markUserGuid, string markDownName, string markDownContent, string markDownHash)
+        public MarkDownBuilder(Guid markUserGuid, string markDownName, string markDownContent, string markDownHash)
         {
             _markUserGuid = markUserGuid;
             _markDownName = markDownName;
@@ -113,27 +307,27 @@ public class MarkDown : Entity, IAggregateRoot
             _markDownHash = markDownHash;
         }
 
-        public Builder WithMarkReviewGuid(Guid markReviewGuid)
+        public MarkDownBuilder WithMarkReviewGuid(Guid markReviewGuid)
         {
             _markReviewGuid = markReviewGuid;
             return this;
         }
 
-        public Builder WithTag(string tag)
+        public MarkDownBuilder WithTag(string tag)
         {
             if (!string.IsNullOrWhiteSpace(tag))
                 _tags.Add(tag);
             return this;
         }
 
-        public Builder WithTags(IEnumerable<string> tags)
+        public MarkDownBuilder WithTags(IEnumerable<string> tags)
         {
             foreach (var tag in tags.Where(t => !string.IsNullOrWhiteSpace(t)))
                 _tags.Add(tag);
             return this;
         }
 
-        public Builder WithMarkOption(MarkOption option)
+        public MarkDownBuilder WithMarkOption(MarkOption option)
         {
             _markOption = option;
             return this;
@@ -148,6 +342,7 @@ public class MarkDown : Entity, IAggregateRoot
                 _markDownHash,
                 _markReviewGuid,
                 _tags,
+                _markDownAuth,
                 _markOption);
         }
     }

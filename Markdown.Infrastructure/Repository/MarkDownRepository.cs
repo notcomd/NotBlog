@@ -67,7 +67,7 @@ public class MarkDownRepository(MarkDownDbContext markDownDbContext, ILogger<IMa
             var markdowns = await markDownDbContext.Markdowns
                 .AsNoTracking()
                 .Where(x => x.MarkUserGuid == userGuid && !x.IsDelete)
-                .OrderByDescending(x => x.UplaodAt)
+                .OrderByDescending(x => x.CreateAt)
                 .ToListAsync();
 
             logger.LogInformation("用户 {UserGuid} 共有 {Count} 篇 Markdown 文档", userGuid, markdowns.Count);
@@ -115,7 +115,7 @@ public class MarkDownRepository(MarkDownDbContext markDownDbContext, ILogger<IMa
             var markdowns = await markDownDbContext.Markdowns
                 .AsNoTracking()
                 .Where(x => x.MarkDownName.Contains(markDownName) && !x.IsDelete)
-                .OrderByDescending(x => x.UplaodAt)
+                .OrderByDescending(x => x.CreateAt)
                 .ToListAsync();
 
             logger.LogInformation("模糊查找到 {Count} 篇名为 {MarkDownName} 的 Markdown 文档", markdowns.Count, markDownName);
@@ -137,8 +137,8 @@ public class MarkDownRepository(MarkDownDbContext markDownDbContext, ILogger<IMa
         {
             var markdowns = await markDownDbContext.Markdowns
                 .AsNoTracking()
-                .Where(x => x.MarkOption.Equals(markDownAuth) && !x.IsDelete)
-                .OrderByDescending(x => x.UplaodAt)
+                .Where(x => x.MarkDownAuth.Equals(markDownAuth) && !x.IsDelete)
+                .OrderByDescending(x => x.CreateAt)
                 .ToListAsync();
 
             logger.LogInformation("查找到 {Count} 篇权限为 {MarkDownAuth} 的 Markdown 文档", markdowns.Count, markDownAuth);

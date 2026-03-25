@@ -24,7 +24,7 @@ public class CreateMarkdownCommandHandler(
         var md5Hash = request.MarkDownHash ?? ComputeMd5(request.MarkDownContent);
 
         // 使用 Builder 模式创建实体
-        var markdown = new MarkDown.Builder(
+        var markdown = new MarkDown.MarkDownBuilder(
             request.MarkUserGuid,
             request.MarkDownName,
             request.MarkDownContent,
