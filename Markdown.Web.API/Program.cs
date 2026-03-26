@@ -15,6 +15,7 @@ builder.Services.AddNpgsql<MarkDownDbContext>("MarkDownPostgres");
 // 配置 NotMediator（领域事件中介）
 builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
 
+
 // 配置 EventBus（RabbitMQ 消息总线）
 builder.Services.Configure<IntegrationEventRabbitMqOptions>(options =>
 {

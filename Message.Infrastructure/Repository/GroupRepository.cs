@@ -1,6 +1,7 @@
 using Message.Domain.Entities.Group;
 using Message.Domain.Enums;
 using Message.Domain.IRepository;
+using Message.Domain.SeedWork;
 using Message.Infrastructure.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,6 +9,8 @@ namespace Message.Infrastructure.Repository;
 
 public class GroupRepository(MessageDbContext context) : Repository<Group>(context), IGroupRepository
 {
+    public IUnitOfWork UnitOfWork => context;
+
     public async Task<Group?> GetByIdAsync(Guid groupId)
     {
         return await DbSet

@@ -15,7 +15,7 @@ public class Message_Web_API : global::Aspire.Hosting.IProjectMetadata
     /// <summary>
     /// The path to the Message_Web_API project.
     /// </summary>
-    public string ProjectPath => """F:\NotBlog\Message.Web.API\Message.Web.API.csproj""";
+    public string ProjectPath => """f:\NotBlog\Message.Web.API\Message.Web.API.csproj""";
 
     /// <summary>
     /// Gets a value indicating whether building the project before running it should be suppressed.

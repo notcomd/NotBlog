@@ -1,0 +1,234 @@
+using Message.Domain.Entities;
+using Message.Domain.IProvider;
+using Message.Domain.IRepository;
+using Message.Domain.SeedWork;
+
+namespace Message.Infrastructure.Provider;
+
+public class FriendProvider(
+    IMessageFriendsRepository friendRepository,
+    IUserRepository userRepository,
+    IUnitOfWork unitOfWork)
+    : IFriendProvider
+{
+    public async Task<MessageFriends> SendFriendRequestAsync(Guid userId, Guid friendId)
+    {
+        if (userId == friendId)
+            throw new InvalidOperationException("不能添加自己为好友");
+
+        var user = await userRepository.GetByIdAsync(userId);
+        if (user == null)
+            throw new KeyNotFoundException("用户不存在");
+
+        var friend = await userRepository.GetByIdAsync(friendId);
+        if (friend == null)
+            throw new KeyNotFoundException("目标用户不存在");
+
+        if (await friendRepository.ExistsAsync(userId, friendId))
+            throw new InvalidOperationException("好友关系已存在");
+
+        var friendship = new MessageFriends(userId, friendId);
+        await friendRepository.AddAsync(friendship);
+        await unitOfWork.SavaEntitiesAsync();
+
+        return friendship;
+    }
+
+    public async Task AcceptFriendRequestAsync(Guid userId, Guid friendId)
+    {
+        var friendship = await friendRepository.GetByUserAndFriendAsync(friendId, userId);
+        if (friendship == null)
+            throw new KeyNotFoundException("好友请求不存在");
+
+        friendship.Accept();
+        await friendRepository.UpdateAsync(friendship);
+        await unitOfWork.SavaEntitiesAsync();
+    }
+
+    public async Task RejectFriendRequestAsync(Guid userId, Guid friendId)
+    {
+        var friendship = await friendRepository.GetByUserAndFriendAsync(friendId, userId);
+        if (friendship == null)
+            throw new KeyNotFoundException("好友请求不存在");
+
+        friendship.Reject();
+        await friendRepository.UpdateAsync(friendship);
+        await unitOfWork.SavaEntitiesAsync();
+    }
+
+    public async Task<MessageFriends?> GetFriendshipAsync(Guid friendshipId)
+    {
+        return await friendRepository.GetByIdAsync(friendshipId);
+    }
+
+    public async Task<MessageFriends?> GetFriendshipAsync(Guid userId, Guid friendId)
+    {
+        return await friendRepository.GetByUserAndFriendAsync(userId, friendId);
+    }
+
+    public async Task<IEnumerable<MessageFriends>> GetFriendsAsync(Guid userId)
+    {
+        return await friendRepository.GetAcceptedFriendsAsync(userId);
+    }
+
+    public async Task<IEnumerable<MessageFriends>> GetPendingRequestsAsync(Guid userId)
+    {
+        return await friendRepository.GetPendingRequestsAsync(userId);
+    }
+
+    public async Task<IEnumerable<MessageFriends>> GetSentRequestsAsync(Guid userId)
+    {
+        return await friendRepository.GetSentRequestsAsync(userId);
+    }
+
+    public async Task<IEnumerable<MessageFriends>> GetBlockedUsersAsync(Guid userId)
+    {
+        return await friendRepository.GetBlockedUsersAsync(userId);
+    }
+
+    public async Task<IEnumerable<MessageFriends>> GetStarredFriendsAsync(Guid userId)
+    {
+        return await friendRepository.GetStarredFriendsAsync(userId);
+    }
+
+    public async Task<IEnumerable<MessageFriends>> GetFriendsByGroupAsync(Guid userId, string groupName)
+    {
+        return await friendRepository.GetByFriendGroupAsync(userId, groupName);
+    }
+
+    public async Task<int> GetFriendCountAsync(Guid userId)
+    {
+        return await friendRepository.GetFriendCountAsync(userId);
+    }
+
+    public async Task<int> GetPendingRequestCountAsync(Guid userId)
+    {
+        return await friendRepository.GetPendingRequestCountAsync(userId);
+    }
+
+    public async Task<bool> AreFriendsAsync(Guid userId, Guid friendId)
+    {
+        return await friendRepository.AreFriendsAsync(userId, friendId);
+    }
+
+    public async Task<bool> IsBlockedAsync(Guid userId, Guid friendId)
+    {
+        return await friendRepository.IsBlockedAsync(userId, friendId);
+    }
+
+    public async Task<bool> CanSendMessageAsync(Guid userId, Guid friendId)
+    {
+        var friendship = await friendRepository.GetByUserAndFriendAsync(userId, friendId);
+        return friendship?.CanSendMessage() ?? false;
+    }
+
+    public async Task BlockUserAsync(Guid userId, Guid friendId)
+    {
+        var friendship = await friendRepository.GetByUserAndFriendAsync(userId, friendId);
+        if (friendship == null)
+            throw new KeyNotFoundException("好友关系不存在");
+
+        friendship.Block();
+        await friendRepository.UpdateAsync(friendship);
+        await unitOfWork.SavaEntitiesAsync();
+    }
+
+    public async Task UnblockUserAsync(Guid userId, Guid friendId)
+    {
+        var friendship = await friendRepository.GetByUserAndFriendAsync(userId, friendId);
+        if (friendship == null)
+            throw new KeyNotFoundException("好友关系不存在");
+
+        friendship.Unblock();
+        await friendRepository.UpdateAsync(friendship);
+        await unitOfWork.SavaEntitiesAsync();
+    }
+
+    public async Task StarFriendAsync(Guid userId, Guid friendId)
+    {
+        var friendship = await friendRepository.GetByUserAndFriendAsync(userId, friendId);
+        if (friendship == null)
+            throw new KeyNotFoundException("好友关系不存在");
+
+        friendship.Star();
+        await friendRepository.UpdateAsync(friendship);
+        await unitOfWork.SavaEntitiesAsync();
+    }
+
+    public async Task UnstarFriendAsync(Guid userId, Guid friendId)
+    {
+        var friendship = await friendRepository.GetByUserAndFriendAsync(userId, friendId);
+        if (friendship == null)
+            throw new KeyNotFoundException("好友关系不存在");
+
+        friendship.Unstar();
+        await friendRepository.UpdateAsync(friendship);
+        await unitOfWork.SavaEntitiesAsync();
+    }
+
+    public async Task MuteFriendAsync(Guid userId, Guid friendId)
+    {
+        var friendship = await friendRepository.GetByUserAndFriendAsync(userId, friendId);
+        if (friendship == null)
+            throw new KeyNotFoundException("好友关系不存在");
+
+        friendship.Mute();
+        await friendRepository.UpdateAsync(friendship);
+        await unitOfWork.SavaEntitiesAsync();
+    }
+
+    public async Task UnmuteFriendAsync(Guid userId, Guid friendId)
+    {
+        var friendship = await friendRepository.GetByUserAndFriendAsync(userId, friendId);
+        if (friendship == null)
+            throw new KeyNotFoundException("好友关系不存在");
+
+        friendship.Unmute();
+        await friendRepository.UpdateAsync(friendship);
+        await unitOfWork.SavaEntitiesAsync();
+    }
+
+    public async Task UpdateFriendRemarkAsync(Guid userId, Guid friendId, string remark)
+    {
+        var friendship = await friendRepository.GetByUserAndFriendAsync(userId, friendId);
+        if (friendship == null)
+            throw new KeyNotFoundException("好友关系不存在");
+
+        friendship.UpdateRemark(remark);
+        await friendRepository.UpdateAsync(friendship);
+        await unitOfWork.SavaEntitiesAsync();
+    }
+
+    public async Task UpdateFriendGroupAsync(Guid userId, Guid friendId, string groupName)
+    {
+        var friendship = await friendRepository.GetByUserAndFriendAsync(userId, friendId);
+        if (friendship == null)
+            throw new KeyNotFoundException("好友关系不存在");
+
+        friendship.UpdateFriendGroup(groupName);
+        await friendRepository.UpdateAsync(friendship);
+        await unitOfWork.SavaEntitiesAsync();
+    }
+
+    public async Task RecordInteractionAsync(Guid userId, Guid friendId)
+    {
+        var friendship = await friendRepository.GetByUserAndFriendAsync(userId, friendId);
+        if (friendship == null)
+            throw new KeyNotFoundException("好友关系不存在");
+
+        friendship.RecordInteraction();
+        await friendRepository.UpdateAsync(friendship);
+        await unitOfWork.SavaEntitiesAsync();
+    }
+
+    public async Task<IEnumerable<MessageFriends>> SearchFriendsAsync(Guid userId, string searchTerm)
+    {
+        return await friendRepository.SearchFriendsAsync(userId, searchTerm);
+    }
+
+    public async Task DeleteFriendshipAsync(Guid friendshipId)
+    {
+        await friendRepository.DeleteAsync(friendshipId);
+        await unitOfWork.SavaEntitiesAsync();
+    }
+}

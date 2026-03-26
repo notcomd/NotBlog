@@ -1126,7 +1126,8 @@
           "Microsoft.EntityFrameworkCore": "10.0.5",
           "Microsoft.EntityFrameworkCore.InMemory": "10.0.5",
           "Microsoft.EntityFrameworkCore.SqlServer": "10.0.5",
-          "NotMediator": "1.0.5"
+          "NotMediator": "1.0.5",
+          "StackExchange.Redis": "2.8.24"
         },
         "compile": {
           "bin/placeholder/Message.Infrastructure.dll": {}

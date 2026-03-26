@@ -15,7 +15,7 @@ public class Identity_Web_API : global::Aspire.Hosting.IProjectMetadata
     /// <summary>
     /// The path to the Identity_Web_API project.
     /// </summary>
-    public string ProjectPath => """F:\NotBlog\Identity.Web.API\Identity.Web.API.csproj""";
+    public string ProjectPath => """f:\NotBlog\Identity.Web.API\Identity.Web.API.csproj""";
 
     /// <summary>
     /// Gets a value indicating whether building the project before running it should be suppressed.
