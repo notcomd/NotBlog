@@ -9,11 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
-builder.NotBlogConfigureExtraServices(new InitializerOptions
-{
-    EventBusQueueName = "Identity.Web.API",
-    LogFilePath = "E:/web.log"
-});
+builder.Services.AddNotBlogServices(builder.Configuration.GetSection("DbContextConnect"));
 
 builder.Services.AddNpgsql<IdentityDbContext>("IdentityPostgres");
 
@@ -45,7 +41,7 @@ var app = builder.Build();
 
 app.MapDefaultEndpoints();
 
-app.NotBlogUseServer();
+app.UseNotBlogPipeline();
 
 
 if (app.Environment.IsDevelopment())

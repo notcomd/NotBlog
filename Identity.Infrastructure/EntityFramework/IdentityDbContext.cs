@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using Identity.Infrastructure.Configuration;
 using Identity.Infrastructure.Idempotent;
 using Microsoft.EntityFrameworkCore.Storage;
 

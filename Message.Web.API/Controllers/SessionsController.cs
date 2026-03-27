@@ -11,22 +11,30 @@ namespace Message.Web.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class SessionsController(IChatSessionProvider sessionProvider, ICurrentUserService currentUserService)
-    : ControllerBase
+public class SessionsController : ControllerBase
 {
+    private readonly ICurrentUserService _currentUserService;
+    private readonly IChatSessionProvider _sessionProvider;
+
+    public SessionsController(IChatSessionProvider sessionProvider, ICurrentUserService currentUserService)
+    {
+        _sessionProvider = sessionProvider;
+        _currentUserService = currentUserService;
+    }
+
     [HttpPost]
     public async Task<ActionResult<ApiResponse<SessionDto>>> CreateSession([FromBody] CreateSessionRequest request)
     {
-        var userId = currentUserService.GetUserId();
+        var userId = _currentUserService.GetUserId();
         ChatSession session;
 
         if (request.SessionType == SessionType.Private)
         {
-            session = await sessionProvider.CreatePrivateSessionAsync(userId, request.FriendId!.Value);
+            session = await _sessionProvider.CreatePrivateSessionAsync(userId, request.FriendId!.Value);
         }
         else
         {
-            session = await sessionProvider.CreateGroupSessionAsync(
+            session = await _sessionProvider.CreateGroupSessionAsync(
                 request.GroupId!.Value,
                 userId,
                 request.SessionName!,
@@ -39,15 +47,15 @@ public class SessionsController(IChatSessionProvider sessionProvider, ICurrentUs
     [HttpGet]
     public async Task<ActionResult<ApiResponse<IEnumerable<SessionDto>>>> GetSessions()
     {
-        var userId = currentUserService.GetUserId();
-        var sessions = await sessionProvider.GetUserSessionsAsync(userId);
+        var userId = _currentUserService.GetUserId();
+        var sessions = await _sessionProvider.GetUserSessionsAsync(userId);
         return Ok(ApiResponse<IEnumerable<SessionDto>>.Ok(sessions.Select(MapToDto)));
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<ApiResponse<SessionDto>>> GetSession(Guid id)
     {
-        var session = await sessionProvider.GetSessionAsync(id);
+        var session = await _sessionProvider.GetSessionAsync(id);
         if (session == null)
             return NotFound(ApiResponse<SessionDto>.NotFound("会话不存在"));
 
@@ -58,9 +66,9 @@ public class SessionsController(IChatSessionProvider sessionProvider, ICurrentUs
     public async Task<ActionResult<ApiResponse>> PinSession(Guid id, [FromQuery] bool pin = true)
     {
         if (pin)
-            await sessionProvider.PinSessionAsync(id);
+            await _sessionProvider.PinSessionAsync(id);
         else
-            await sessionProvider.UnpinSessionAsync(id);
+            await _sessionProvider.UnpinSessionAsync(id);
 
         return Ok(ApiResponse.Ok(pin ? "会话已置顶" : "会话已取消置顶"));
     }
@@ -69,9 +77,9 @@ public class SessionsController(IChatSessionProvider sessionProvider, ICurrentUs
     public async Task<ActionResult<ApiResponse>> MuteSession(Guid id, [FromQuery] bool mute = true)
     {
         if (mute)
-            await sessionProvider.MuteSessionAsync(id);
+            await _sessionProvider.MuteSessionAsync(id);
         else
-            await sessionProvider.UnmuteSessionAsync(id);
+            await _sessionProvider.UnmuteSessionAsync(id);
 
         return Ok(ApiResponse.Ok(mute ? "会话已静音" : "会话已取消静音"));
     }
@@ -79,14 +87,14 @@ public class SessionsController(IChatSessionProvider sessionProvider, ICurrentUs
     [HttpDelete("{id}")]
     public async Task<ActionResult<ApiResponse>> DismissSession(Guid id)
     {
-        await sessionProvider.DismissSessionAsync(id);
+        await _sessionProvider.DismissSessionAsync(id);
         return Ok(ApiResponse.Ok("会话已解散"));
     }
 
     [HttpGet("{id}/participants")]
     public async Task<ActionResult<ApiResponse<IEnumerable<Guid>>>> GetParticipants(Guid id)
     {
-        var session = await sessionProvider.GetSessionAsync(id);
+        var session = await _sessionProvider.GetSessionAsync(id);
         if (session == null)
             return NotFound(ApiResponse<IEnumerable<Guid>>.NotFound("会话不存在"));
 
@@ -96,30 +104,30 @@ public class SessionsController(IChatSessionProvider sessionProvider, ICurrentUs
     [HttpPost("{id}/participants")]
     public async Task<ActionResult<ApiResponse>> AddParticipant(Guid id, [FromBody] AddParticipantRequest request)
     {
-        await sessionProvider.AddParticipantAsync(id, request.UserId);
+        await _sessionProvider.AddParticipantAsync(id, request.UserId);
         return Ok(ApiResponse.Ok("成员已添加"));
     }
 
     [HttpDelete("{id}/participants/{userId}")]
     public async Task<ActionResult<ApiResponse>> RemoveParticipant(Guid id, Guid userId)
     {
-        await sessionProvider.RemoveParticipantAsync(id, userId);
+        await _sessionProvider.RemoveParticipantAsync(id, userId);
         return Ok(ApiResponse.Ok("成员已移除"));
     }
 
     [HttpGet("pinned")]
     public async Task<ActionResult<ApiResponse<IEnumerable<SessionDto>>>> GetPinnedSessions()
     {
-        var userId = currentUserService.GetUserId();
-        var sessions = await sessionProvider.GetPinnedSessionsAsync(userId);
+        var userId = _currentUserService.GetUserId();
+        var sessions = await _sessionProvider.GetPinnedSessionsAsync(userId);
         return Ok(ApiResponse<IEnumerable<SessionDto>>.Ok(sessions.Select(MapToDto)));
     }
 
     [HttpGet("unread-count")]
     public async Task<ActionResult<ApiResponse<int>>> GetTotalUnreadCount()
     {
-        var userId = currentUserService.GetUserId();
-        var count = await sessionProvider.GetTotalUnreadCountAsync(userId);
+        var userId = _currentUserService.GetUserId();
+        var count = await _sessionProvider.GetTotalUnreadCountAsync(userId);
         return Ok(ApiResponse<int>.Ok(count));
     }
 

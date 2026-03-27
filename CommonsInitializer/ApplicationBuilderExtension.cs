@@ -1,18 +1,25 @@
 ﻿using Microsoft.AspNetCore.Builder;
-using Notcomd.Evenbus;
 
 namespace CommonsInitializer;
 
+/// <summary>
+/// IApplicationBuilder 扩展方法
+/// 中间件管道配置的扩展点
+/// 具体实现在各宿主项目中完成
+/// </summary>
 public static class ApplicationBuilderExtension
 {
-    public static IApplicationBuilder NotBlogUseServer(this IApplicationBuilder app)
+    /// <summary>
+    /// NotBlog 项目中间件管道配置入口
+    /// 宿主项目可在此前后添加自定义中间件
+    /// </summary>
+    public static IApplicationBuilder UseNotBlogPipeline(this IApplicationBuilder app)
     {
-        app.UseEventBus();
-        app.UseCors(); //启用Cors
-        app.UseForwardedHeaders();
-        //app.UseHttpsRedirection();//不能与ForwardedHeaders很好的工作，而且webapi项目也没必要配置这个
-        app.UseAuthentication();
-        app.UseAuthorization();
+        // 基础中间件由各宿主项目自行配置：
+        // app.UseCors();
+        // app.UseForwardedHeaders();
+        // app.UseAuthentication();
+        // app.UseAuthorization();
         return app;
     }
 }

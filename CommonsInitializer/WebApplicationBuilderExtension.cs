@@ -1,103 +1,37 @@
-using System.Reflection;
-using CommonsInitializer;
-using EmailSendServer;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Mvc;
+﻿using DomainInfrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Notcomd.DomainCommand;
-using Notcomd.Evenbus;
-using Notcomd.Token.JWT;
 
-namespace DomainCommonst;
+namespace CommonsInitializer;
 
-public static class WebApplicationBuilderExtension
+/// <summary>
+/// 服务注册扩展
+/// 统一配置所有项目通用的基础服务
+/// </summary>
+public static class ServiceCollectionExtensions
 {
-    public static void NotBlogConfigureExtraServices(this WebApplicationBuilder builder, InitializerOptions initOptions)
+    /// <summary>
+    /// 配置 NotBlog 项目通用服务
+    /// 包括：模块初始化、DbContext 注册、UnitOfWork 过滤器
+    /// </summary>
+    public static IServiceCollection AddNotBlogServices(
+        this IServiceCollection services,
+        IConfiguration configuration)
     {
-        var services = builder.Services;
-        IConfiguration configuration = builder.Configuration;
-        var assemblies = ReflectionHelper.GetAllReferencedAssemblies();
-        var enumerable = assemblies as Assembly[] ?? assemblies.ToArray();
-        services.AddAutoAddInstance(enumerable);
-        services.AddAllDbContexts(ctx =>
-        {
-            //连接字符串如果放到appsettings.json中，会有泄密的风险
-            //如果放到UserSecrets中，每个项目都要配置，很麻烦
-            //因此这里推荐放到环境变量中。
-            var connStr = configuration.GetValue<string>("DefaultDB:ConnStr");
-            ctx.UseNpgsql(connStr);
-        }, enumerable);
+        var assemblies = ReflectionHelper.GetAllReferencedAssemblies().ToArray();
 
+        // 1. 模块自动初始化（扫描并执行所有 IModuleInitializer）
+        services.AddAutoAddInstance(assemblies);
 
-        //开始:Authentication,Authorization
-        //只要需要校验Authentication报文头的地方（非IdentityService.WebAPI项目）也需要启用这些
-        //IdentityService项目还需要启用AddIdentityCore
-        builder.Services.AddAuthorization();
-        builder.Services.AddAuthentication();
-        var jwtOptions = configuration.GetSection(nameof(JwtOptions)).Get<JwtOptions>() ??
-                         throw new ArgumentNullException($"没有配置JwtOptions{nameof(JwtOptions)}");
-        builder.Services.AddJwtAuthentication(jwtOptions);
+        // 2. 自动注册所有 DbContext
+        var connStr = configuration.GetConnectionString("DbaseConnection")
+                      ?? configuration.GetValue<string>("DefaultDB:ConnStr")
+                      ?? throw new InvalidOperationException(
+                          "未找到数据库连接字符串。请在 appsettings.json 中配置 DbaseConnection 或 DefaultDB:ConnStr。");
 
+        services.AddAllDbContexts(ctx => ctx.UseNpgsql(connStr), assemblies);
 
-        //启用Swagger中的【Authorize】按钮。这样就不用每个项目的AddSwaggerGen中单独配置了
-        // builder.Services.Configure<SwaggerGenOptions>(c =>
-        //{
-        //               c.AddAuthenticationHeader();
-        //         });
-        //结束:Authentication,Authorization
-
-        services.AddMediator(enumerable);
-
-        //现在不用手动AddMVC了，因此把文档中的services.AddMvc(options =>{})改写成Configure<MvcOptions>(options=> {})这个问题很多都类似
-        services.Configure<MvcOptions>(options => { options.Filters.Add<UnitOfWorkFilter>(); });
-
-
-        // services.Configure<JsonOptions>(options =>
-        // {
-        //设置时间格式。而非“2008-08-08T08:08:08”这样的格式
-        //   options.JsonSerializerOptions.Converters.Add(new DateTimeJsonConverter("yyyy-MM-dd HH:mm:ss"));
-        // });
-
-        // services.AddCors(options =>
-        //     {
-        //         //更好的在Program.cs中用绑定方式读取配置的方法：https://github.com/dotnet/aspnetcore/issues/21491
-        //         //不过比较麻烦。
-        //         var corsOpt = configuration.GetSection("Cors").Get<CorsSettings>();
-        //         string[] urls = corsOpt!.AllowedOrigins;
-        //         options.AddDefaultPolicy(builder => builder.WithOrigins(urls)
-        //             .AllowAnyMethod().AllowAnyHeader().AllowCredentials());
-        //     }
-        // );
-
-        services.AddEmailServer(configuration);
-        //services.AddLogging(builder =>
-        //{
-        //    Log.Logger = new LoggerConfiguration()
-        // .MinimumLevel.Information().Enrich.FromLogContext()
-        //      .WriteTo.Console()
-        //     .WriteTo.File(initOptions.LogFilePath)
-        //     .CreateLogger();
-        //  builder.AddSerilog();
-        //});
-        // services.AddFluentValidation(fv =>
-        //{                
-        // fv.RegisterValidatorsFromAssemblies(assemblies);
-        // });
-
-        services.Configure<JwtOptions>(configuration.GetSection("PrivateKey"));
-        services.Configure<IntegrationEventRabbitMqOptions>(
-            configuration.GetSection(nameof(IntegrationEventRabbitMqOptions)));
-        services.AddEventBus(initOptions.EventBusQueueName, enumerable);
-
-        //Redis的配置
-        //string redisConnStr = configuration.GetValue<string>("Redis:ConnStr");
-        //IConnectionMultiplexer redisConnMultiplexer = ConnectionMultiplexer.Connect(redisConnStr);
-        //services.AddSingleton(typeof(IConnectionMultiplexer), redisConnMultiplexer);
-        //services.Configure<ForwardedHeadersOptions>(options =>
-        //{
-        //options.ForwardedHeaders = ForwardedHeaders.All;
-        //});
+        return services;
     }
 }

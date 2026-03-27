@@ -1,9 +1,13 @@
-namespace CommonsInitializer;
+﻿namespace CommonsInitializer;
 
+/// <summary>
+/// 初始化器配置选项
+/// </summary>
 public class InitializerOptions
 {
-    public string LogFilePath { get; set; }
+    /// <summary>日志文件路径</summary>
+    public string? LogFilePath { get; set; }
 
-    //用于EventBus的QueueName，因此要维持“同一个项目值保持一直，不同项目不能冲突”
-    public string EventBusQueueName { get; set; }
+    /// <summary>EventBus 队列名，同一项目值需一致，不同项目不能冲突</summary>
+    public string? EventBusQueueName { get; set; }
 }

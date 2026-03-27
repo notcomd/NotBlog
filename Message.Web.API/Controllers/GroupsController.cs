@@ -10,21 +10,29 @@ namespace Message.Web.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class GroupsController(IGroupProvider groupProvider, ICurrentUserService currentUserService)
-    : ControllerBase
+public class GroupsController : ControllerBase
 {
+    private readonly ICurrentUserService _currentUserService;
+    private readonly IGroupProvider _groupProvider;
+
+    public GroupsController(IGroupProvider groupProvider, ICurrentUserService currentUserService)
+    {
+        _groupProvider = groupProvider;
+        _currentUserService = currentUserService;
+    }
+
     [HttpPost]
     public async Task<ActionResult<ApiResponse<GroupDto>>> CreateGroup([FromBody] CreateGroupRequest request)
     {
-        var userId = currentUserService.GetUserId();
-        var group = await groupProvider.CreateGroupAsync(userId, request.GroupName, request.MaxMembers,
+        var userId = _currentUserService.GetUserId();
+        var group = await _groupProvider.CreateGroupAsync(userId, request.GroupName, request.MaxMembers,
             request.IsPublic);
 
         if (request.InitialMembers != null && request.InitialMembers.Any())
         {
             foreach (var memberId in request.InitialMembers)
             {
-                await groupProvider.AddMemberAsync(group.GroupId, memberId);
+                await _groupProvider.AddMemberAsync(group.GroupId, memberId);
             }
         }
 
@@ -34,15 +42,15 @@ public class GroupsController(IGroupProvider groupProvider, ICurrentUserService 
     [HttpGet]
     public async Task<ActionResult<ApiResponse<IEnumerable<GroupDto>>>> GetGroups()
     {
-        var userId = currentUserService.GetUserId();
-        var groups = await groupProvider.GetUserGroupsAsync(userId);
+        var userId = _currentUserService.GetUserId();
+        var groups = await _groupProvider.GetUserGroupsAsync(userId);
         return Ok(ApiResponse<IEnumerable<GroupDto>>.Ok(groups.Select(MapToDto)));
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<ApiResponse<GroupDto>>> GetGroup(Guid id)
     {
-        var group = await groupProvider.GetGroupAsync(id);
+        var group = await _groupProvider.GetGroupAsync(id);
         if (group == null)
             return NotFound(ApiResponse<GroupDto>.NotFound("群组不存在"));
 
@@ -52,35 +60,35 @@ public class GroupsController(IGroupProvider groupProvider, ICurrentUserService 
     [HttpPut("{id}/info")]
     public async Task<ActionResult<ApiResponse>> UpdateGroupInfo(Guid id, [FromBody] UpdateGroupInfoRequest request)
     {
-        await groupProvider.UpdateGroupInfoAsync(id, request.GroupName, request.Description);
+        await _groupProvider.UpdateGroupInfoAsync(id, request.GroupName, request.Description);
         return Ok(ApiResponse.Ok("群组信息已更新"));
     }
 
     [HttpDelete("{id}")]
     public async Task<ActionResult<ApiResponse>> DismissGroup(Guid id)
     {
-        await groupProvider.DismissGroupAsync(id);
+        await _groupProvider.DismissGroupAsync(id);
         return Ok(ApiResponse.Ok("群组已解散"));
     }
 
     [HttpGet("{id}/members")]
     public async Task<ActionResult<ApiResponse<IEnumerable<GroupMemberDto>>>> GetMembers(Guid id)
     {
-        var members = await groupProvider.GetMembersAsync(id);
+        var members = await _groupProvider.GetMembersAsync(id);
         return Ok(ApiResponse<IEnumerable<GroupMemberDto>>.Ok(members.Select(MapMemberToDto)));
     }
 
     [HttpPost("{id}/members")]
     public async Task<ActionResult<ApiResponse>> AddMember(Guid id, [FromBody] AddGroupMemberRequest request)
     {
-        await groupProvider.AddMemberAsync(id, request.UserId, request.Role);
+        await _groupProvider.AddMemberAsync(id, request.UserId, request.Role);
         return Ok(ApiResponse.Ok("成员已添加"));
     }
 
     [HttpDelete("{id}/members/{userId}")]
     public async Task<ActionResult<ApiResponse>> RemoveMember(Guid id, Guid userId)
     {
-        await groupProvider.RemoveMemberAsync(id, userId);
+        await _groupProvider.RemoveMemberAsync(id, userId);
         return Ok(ApiResponse.Ok("成员已移除"));
     }
 
@@ -88,9 +96,9 @@ public class GroupsController(IGroupProvider groupProvider, ICurrentUserService 
     public async Task<ActionResult<ApiResponse>> SetAdmin(Guid id, [FromBody] SetAdminRequest request)
     {
         if (request.IsAdmin)
-            await groupProvider.PromoteToAdminAsync(id, request.UserId);
+            await _groupProvider.PromoteToAdminAsync(id, request.UserId);
         else
-            await groupProvider.DemoteToMemberAsync(id, request.UserId);
+            await _groupProvider.DemoteToMemberAsync(id, request.UserId);
 
         return Ok(ApiResponse.Ok(request.IsAdmin ? "已设为管理员" : "已取消管理员"));
     }
@@ -98,42 +106,42 @@ public class GroupsController(IGroupProvider groupProvider, ICurrentUserService 
     [HttpPut("{id}/transfer")]
     public async Task<ActionResult<ApiResponse>> TransferOwnership(Guid id, [FromBody] TransferOwnershipRequest request)
     {
-        await groupProvider.TransferOwnershipAsync(id, request.NewOwnerId);
+        await _groupProvider.TransferOwnershipAsync(id, request.NewOwnerId);
         return Ok(ApiResponse.Ok("群主已转让"));
     }
 
     [HttpPut("{id}/members/{userId}/mute")]
     public async Task<ActionResult<ApiResponse>> MuteMember(Guid id, Guid userId, [FromBody] MuteMemberRequest request)
     {
-        await groupProvider.MuteMemberAsync(id, userId, TimeSpan.FromMinutes(request.DurationMinutes));
+        await _groupProvider.MuteMemberAsync(id, userId, TimeSpan.FromMinutes(request.DurationMinutes));
         return Ok(ApiResponse.Ok("成员已禁言"));
     }
 
     [HttpDelete("{id}/members/{userId}/mute")]
     public async Task<ActionResult<ApiResponse>> UnmuteMember(Guid id, Guid userId)
     {
-        await groupProvider.UnmuteMemberAsync(id, userId);
+        await _groupProvider.UnmuteMemberAsync(id, userId);
         return Ok(ApiResponse.Ok("成员已解除禁言"));
     }
 
     [HttpPut("{id}/members/{userId}/ban")]
     public async Task<ActionResult<ApiResponse>> BanMember(Guid id, Guid userId)
     {
-        await groupProvider.BanMemberAsync(id, userId);
+        await _groupProvider.BanMemberAsync(id, userId);
         return Ok(ApiResponse.Ok("成员已封禁"));
     }
 
     [HttpDelete("{id}/members/{userId}/ban")]
     public async Task<ActionResult<ApiResponse>> UnbanMember(Guid id, Guid userId)
     {
-        await groupProvider.UnbanMemberAsync(id, userId);
+        await _groupProvider.UnbanMemberAsync(id, userId);
         return Ok(ApiResponse.Ok("成员已解除封禁"));
     }
 
     [HttpGet("public")]
     public async Task<ActionResult<ApiResponse<IEnumerable<GroupDto>>>> GetPublicGroups()
     {
-        var groups = await groupProvider.GetPublicGroupsAsync();
+        var groups = await _groupProvider.GetPublicGroupsAsync();
         return Ok(ApiResponse<IEnumerable<GroupDto>>.Ok(groups.Select(MapToDto)));
     }
 
@@ -143,7 +151,7 @@ public class GroupsController(IGroupProvider groupProvider, ICurrentUserService 
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
     {
-        var groups = await groupProvider.SearchGroupsAsync(searchTerm, page, pageSize);
+        var groups = await _groupProvider.SearchGroupsAsync(searchTerm, page, pageSize);
         var result = new PagedResult<GroupDto>
         {
             Items = groups.Select(MapToDto).ToList(),
@@ -157,14 +165,14 @@ public class GroupsController(IGroupProvider groupProvider, ICurrentUserService 
     [HttpGet("{id}/member-count")]
     public async Task<ActionResult<ApiResponse<int>>> GetMemberCount(Guid id)
     {
-        var count = await groupProvider.GetMemberCountAsync(id);
+        var count = await _groupProvider.GetMemberCountAsync(id);
         return Ok(ApiResponse<int>.Ok(count));
     }
 
     [HttpGet("{id}/is-member/{userId}")]
     public async Task<ActionResult<ApiResponse<bool>>> IsMember(Guid id, Guid userId)
     {
-        var isMember = await groupProvider.IsMemberAsync(id, userId);
+        var isMember = await _groupProvider.IsMemberAsync(id, userId);
         return Ok(ApiResponse<bool>.Ok(isMember));
     }
 

@@ -1,12 +1,11 @@
-namespace Notcomd.DomainCommand;
+﻿namespace DomainInfrastructure;
 
+/// <summary>
+/// IO 操作扩展方法
+/// </summary>
 public static class IOHelper
 {
-    /// <summary>
-    ///     将流转换为字节数组
-    /// </summary>
-    /// <param name="stream"></param>
-    /// <returns></returns>
+    /// <summary>异步将流转换为字节数组</summary>
     public static async Task<byte[]> ToArrayAsync(this Stream stream)
     {
         using var memory = new MemoryStream();
@@ -15,12 +14,8 @@ public static class IOHelper
         return memory.ToArray();
     }
 
-    /// <summary>
-    ///     将流转换为字节数组
-    /// </summary>
-    /// <param name="stream"></param>
-    /// <returns></returns>
-    public static byte[] ToArrsy(this Stream stream)
+    /// <summary>同步将流转换为字节数组</summary>
+    public static byte[] ToByteArray(this Stream stream)
     {
         using var memory = new MemoryStream();
         stream.CopyTo(memory);
@@ -28,12 +23,10 @@ public static class IOHelper
         return memory.ToArray();
     }
 
-    /// <summary>
-    ///     创建文件夹
-    /// </summary>
-    /// <param name="fileInfo"></param>
-    public static void CreateDir(FileInfo fileInfo)
+    /// <summary>确保文件所在目录存在，不存在则创建</summary>
+    public static void EnsureDirectoryExists(this FileInfo fileInfo)
     {
-        if (!fileInfo.Directory.Exists) fileInfo.Directory.Create();
+        if (fileInfo.Directory is { Exists: false })
+            fileInfo.Directory.Create();
     }
 }

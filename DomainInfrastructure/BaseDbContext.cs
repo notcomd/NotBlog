@@ -1,28 +1,42 @@
-using MediatR;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
-namespace Notcomd.DomainCommand;
+namespace DomainInfrastructure;
 
+/// <summary>
+/// EF Core 基础 DbContext
+/// 集成领域事件发布机制，在 SaveChangesAsync 时自动派发领域事件
+/// </summary>
 public abstract class BaseDbContext : DbContext
 {
-    private readonly IMediator? _mediator;
+    /// <summary>
+    /// 领域事件分发器（由子类或 DI 注入）
+    /// </summary>
+    private readonly Func<BaseDbContext, ValueTask>? _domainEventDispatcher;
 
-    public BaseDbContext(DbContextOptions options, IMediator mediator) : base(options)
+    protected BaseDbContext(DbContextOptions options) : base(options)
     {
-        _mediator = mediator;
     }
 
+    protected BaseDbContext(
+        DbContextOptions options,
+        Func<BaseDbContext, ValueTask> domainEventDispatcher) : base(options)
+    {
+        _domainEventDispatcher = domainEventDispatcher;
+    }
+
+    /// <summary>禁止同步 SaveChanges，强制使用异步方法</summary>
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
-        throw new NotImplementedException("Don not call SaveChanges, please call SaveChangesAsync instead.");
+        throw new InvalidOperationException("请使用 SaveChangesAsync 方法代替同步 SaveChanges。");
     }
 
-    public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess,
-        CancellationToken cancellationToken = new())
+    public override async Task<int> SaveChangesAsync(
+        bool acceptAllChangesOnSuccess,
+        CancellationToken cancellationToken = default)
     {
-        if (_mediator != null) await _mediator.DispatchDomainEventsAsync(this);
+        if (_domainEventDispatcher != null)
+            await _domainEventDispatcher(this);
 
-        var result = await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
-        return result;
+        return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
     }
 }

@@ -9,24 +9,36 @@ using Microsoft.AspNetCore.SignalR;
 namespace Message.Web.API.Hubs;
 
 [Authorize]
-public class MessageHub(
-    IMessageProvider messageProvider,
-    IChatSessionProvider sessionProvider,
-    IConnectionManager connectionManager,
-    ILogger<MessageHub> logger)
-    : Hub<IMessageClient>
+public class MessageHub : Hub<IMessageClient>
 {
+    private readonly IConnectionManager _connectionManager;
+    private readonly ILogger<MessageHub> _logger;
+    private readonly IMessageProvider _messageProvider;
+    private readonly IChatSessionProvider _sessionProvider;
+
+    public MessageHub(
+        IMessageProvider messageProvider,
+        IChatSessionProvider sessionProvider,
+        IConnectionManager connectionManager,
+        ILogger<MessageHub> logger)
+    {
+        _messageProvider = messageProvider;
+        _sessionProvider = sessionProvider;
+        _connectionManager = connectionManager;
+        _logger = logger;
+    }
+
     public override async Task OnConnectedAsync()
     {
         var userId = GetUserId();
         var connectionId = Context.ConnectionId;
 
-        await connectionManager.AddConnectionAsync(userId, connectionId);
-        await connectionManager.SetUserOnlineAsync(userId);
+        await _connectionManager.AddConnectionAsync(userId, connectionId);
+        await _connectionManager.SetUserOnlineAsync(userId);
 
-        logger.LogInformation("用户 {UserId} 已连接，连接ID: {ConnectionId}", userId, connectionId);
+        _logger.LogInformation("用户 {UserId} 已连接，连接ID: {ConnectionId}", userId, connectionId);
 
-        var offlineMessages = await messageProvider.GetUnreadMessagesAsync(userId);
+        var offlineMessages = await _messageProvider.GetUnreadMessagesAsync(userId);
         foreach (var message in offlineMessages)
         {
             await Clients.Caller.ReceiveMessage(MapToDto(message));
@@ -40,15 +52,15 @@ public class MessageHub(
         var userId = GetUserId();
         var connectionId = Context.ConnectionId;
 
-        await connectionManager.RemoveConnectionAsync(userId, connectionId);
+        await _connectionManager.RemoveConnectionAsync(userId, connectionId);
 
-        var hasOtherConnections = await connectionManager.HasOtherConnectionsAsync(userId);
+        var hasOtherConnections = await _connectionManager.HasOtherConnectionsAsync(userId);
         if (!hasOtherConnections)
         {
-            await connectionManager.SetUserOfflineAsync(userId);
+            await _connectionManager.SetUserOfflineAsync(userId);
         }
 
-        logger.LogInformation("用户 {UserId} 已断开连接，连接ID: {ConnectionId}", userId, connectionId);
+        _logger.LogInformation("用户 {UserId} 已断开连接，连接ID: {ConnectionId}", userId, connectionId);
 
         await base.OnDisconnectedAsync(exception);
     }
@@ -59,31 +71,31 @@ public class MessageHub(
 
         var message = request.MessageType switch
         {
-            MessageType.MessageText => await messageProvider.SendTextMessageAsync(sessionId, userId,
+            MessageType.MessageText => await _messageProvider.SendTextMessageAsync(sessionId, userId,
                 request.Content ?? ""),
-            MessageType.MessageImage => await messageProvider.SendImageMessageAsync(sessionId, userId,
+            MessageType.MessageImage => await _messageProvider.SendImageMessageAsync(sessionId, userId,
                 new Uri(request.MediaUrl!), request.Caption, request.ThumbnailUrl),
-            MessageType.MessageVideo => await messageProvider.SendVideoMessageAsync(sessionId, userId,
+            MessageType.MessageVideo => await _messageProvider.SendVideoMessageAsync(sessionId, userId,
                 new Uri(request.MediaUrl!), request.Duration ?? 0, request.Caption, request.ThumbnailUrl),
-            MessageType.MessageAudio => await messageProvider.SendAudioMessageAsync(sessionId, userId,
+            MessageType.MessageAudio => await _messageProvider.SendAudioMessageAsync(sessionId, userId,
                 new Uri(request.MediaUrl!), request.Duration ?? 0, request.Caption),
-            MessageType.MessageFile => await messageProvider.SendFileMessageAsync(sessionId, userId,
+            MessageType.MessageFile => await _messageProvider.SendFileMessageAsync(sessionId, userId,
                 new Uri(request.MediaUrl!), request.FileName!, request.FileSize ?? 0, request.MimeType!),
-            MessageType.MessageLocation => await messageProvider.SendLocationMessageAsync(sessionId, userId,
+            MessageType.MessageLocation => await _messageProvider.SendLocationMessageAsync(sessionId, userId,
                 request.Latitude ?? 0, request.Longitude ?? 0, request.LocationName!),
-            MessageType.MessageLink => await messageProvider.SendLinkMessageAsync(sessionId, userId, request.LinkUrl!,
+            MessageType.MessageLink => await _messageProvider.SendLinkMessageAsync(sessionId, userId, request.LinkUrl!,
                 request.LinkTitle, request.LinkDescription),
-            MessageType.MessageExpression => await messageProvider.SendExpressionMessageAsync(sessionId, userId,
+            MessageType.MessageExpression => await _messageProvider.SendExpressionMessageAsync(sessionId, userId,
                 request.ExpressionCode!),
             _ => throw new NotSupportedException($"不支持的消息类型: {request.MessageType}")
         };
 
-        var session = await sessionProvider.GetSessionAsync(sessionId);
+        var session = await _sessionProvider.GetSessionAsync(sessionId);
         if (session != null)
         {
             foreach (var participantId in session.Participants)
             {
-                var connectionIds = await connectionManager.GetConnectionsAsync(participantId);
+                var connectionIds = await _connectionManager.GetConnectionsAsync(participantId);
                 foreach (var connectionId in connectionIds)
                 {
                     await Clients.Client(connectionId).ReceiveMessage(MapToDto(message));
@@ -95,38 +107,38 @@ public class MessageHub(
     public async Task MarkAsRead(Guid messageId)
     {
         var userId = GetUserId();
-        await messageProvider.MarkAsReadAsync(messageId, userId);
+        await _messageProvider.MarkAsReadAsync(messageId, userId);
         await Clients.Caller.MessageRead(messageId, userId);
     }
 
     public async Task RecallMessage(Guid messageId)
     {
         var userId = GetUserId();
-        await messageProvider.RecallMessageAsync(messageId, userId, RecallReason.UserRequest);
+        await _messageProvider.RecallMessageAsync(messageId, userId, RecallReason.UserRequest);
         await Clients.Caller.MessageRecalled(messageId);
     }
 
     public async Task JoinSession(Guid sessionId)
     {
         await Groups.AddToGroupAsync(Context.ConnectionId, $"session:{sessionId}");
-        logger.LogDebug("连接 {ConnectionId} 加入会话 {SessionId}", Context.ConnectionId, sessionId);
+        _logger.LogDebug("连接 {ConnectionId} 加入会话 {SessionId}", Context.ConnectionId, sessionId);
     }
 
     public async Task LeaveSession(Guid sessionId)
     {
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"session:{sessionId}");
-        logger.LogDebug("连接 {ConnectionId} 离开会话 {SessionId}", Context.ConnectionId, sessionId);
+        _logger.LogDebug("连接 {ConnectionId} 离开会话 {SessionId}", Context.ConnectionId, sessionId);
     }
 
     public async Task SendTypingIndicator(Guid sessionId)
     {
         var userId = GetUserId();
-        var session = await sessionProvider.GetSessionAsync(sessionId);
+        var session = await _sessionProvider.GetSessionAsync(sessionId);
         if (session != null)
         {
             foreach (var participantId in session.Participants.Where(p => p != userId))
             {
-                var connectionIds = await connectionManager.GetConnectionsAsync(participantId);
+                var connectionIds = await _connectionManager.GetConnectionsAsync(participantId);
                 foreach (var connectionId in connectionIds)
                 {
                     await Clients.Client(connectionId).TypingIndicator(sessionId, userId);
@@ -187,4 +199,24 @@ public interface IMessageClient
     Task UserOffline(Guid userId);
     Task TypingIndicator(Guid sessionId, Guid userId);
     Task UnreadCountUpdated(Guid sessionId, int count);
+}
+
+public class SendMessageRequest
+{
+    public MessageType MessageType { get; init; }
+    public string? Content { get; init; }
+    public string? MediaUrl { get; init; }
+    public string? ThumbnailUrl { get; init; }
+    public string? FileName { get; init; }
+    public long? FileSize { get; init; }
+    public string? MimeType { get; init; }
+    public double? Duration { get; init; }
+    public string? Caption { get; init; }
+    public double? Latitude { get; init; }
+    public double? Longitude { get; init; }
+    public string? LocationName { get; init; }
+    public string? LinkUrl { get; init; }
+    public string? LinkTitle { get; init; }
+    public string? LinkDescription { get; init; }
+    public string? ExpressionCode { get; init; }
 }

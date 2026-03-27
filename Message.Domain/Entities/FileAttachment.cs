@@ -7,6 +7,15 @@ namespace Message.Domain.Entities;
 /// </summary>
 public class FileAttachment : Entity
 {
+    /// <summary>
+    /// 创建文件附件
+    /// </summary>
+    /// <param name="messageId">消息ID</param>
+    /// <param name="fileName">文件名</param>
+    /// <param name="fileType">文件类型</param>
+    /// <param name="fileSize">文件大小</param>
+    /// <param name="fileUri">文件URI</param>
+    /// <returns>文件附件</returns>
     public FileAttachment(Guid messageId, string fileName, string fileType, long fileSize, Uri fileUri)
     {
         if (string.IsNullOrWhiteSpace(fileName))
@@ -25,6 +34,10 @@ public class FileAttachment : Entity
         IsDeleted = false;
     }
 
+    /// <summary>
+    /// 创建文件附件
+    /// </summary>
+    /// <returns>文件附件</returns>
     private FileAttachment()
     {
         AttachmentId = Guid.NewGuid();
@@ -33,36 +46,105 @@ public class FileAttachment : Entity
         IsDeleted = false;
     }
 
+    /// <summary>
+    /// 文件附件ID
+    /// </summary>
     public Guid AttachmentId { get; init; }
+
+    /// <summary>
+    /// 消息ID
+    /// </summary>
     public Guid MessageId { get; init; }
+
+    /// <summary>
+    /// 文件名
+    /// </summary>
     public string FileName { get; private set; }
+
+    /// <summary>
+    /// 文件类型
+    /// </summary>
     public string FileType { get; private set; }
+
+    /// <summary>
+    /// 文件大小
+    /// </summary>
     public long FileSize { get; private set; }
+
+    /// <summary>
+    /// 文件URI
+    /// </summary>
     public Uri FileUri { get; private set; }
+
+    /// <summary>
+    /// 缩略图URI
+    /// </summary>
     public Uri? ThumbnailUri { get; private set; }
+
+    /// <summary>
+    /// MIME类型
+    /// </summary>
     public string? MimeType { get; private set; }
+
+    /// <summary>
+    /// 文件描述
+    /// </summary>
     public string? Description { get; set; }
+
+    /// <summary>
+    /// 上传时间
+    /// </summary>
     public DateTime UploadTime { get; init; }
+
+    /// <summary>
+    /// 下载时间
+    /// </summary>
     public DateTime? DownloadTime { get; private set; }
+
+    /// <summary>
+    /// 下载次数
+    /// </summary>
     public int DownloadCount { get; private set; }
+
+    /// <summary>
+    /// 是否已删除
+    /// </summary>
     public bool IsDeleted { get; private set; }
 
+    /// <summary>
+    /// 设置缩略图URI
+    /// </summary>
+    /// <param name="thumbnailUri">缩略图URI</param>
+    /// <returns>文件附件</returns>
     public void SetThumbnail(Uri thumbnailUri)
     {
         ThumbnailUri = thumbnailUri;
     }
 
+    /// <summary>
+    /// 更新文件描述
+    /// </summary>
+    /// <param name="description">文件描述</param>
+    /// <returns>文件附件</returns>
     public void UpdateDescription(string description)
     {
         Description = description;
     }
 
+    /// <summary>
+    /// 记录下载
+    /// </summary>
+    /// <returns>文件附件</returns>
     public void RecordDownload()
     {
         DownloadTime = DateTime.UtcNow;
         DownloadCount++;
     }
 
+    /// <summary>
+    /// 删除文件附件
+    /// </summary>
+    /// <returns>文件附件</returns>
     public void Delete()
     {
         if (IsDeleted)
@@ -71,6 +153,10 @@ public class FileAttachment : Entity
         IsDeleted = true;
     }
 
+    /// <summary>
+    /// 获取格式化后的文件大小
+    /// </summary>
+    /// <returns>格式化后的文件大小</returns>
     public string GetFormattedFileSize()
     {
         string[] sizes = { "B", "KB", "MB", "GB", "TB" };
@@ -86,25 +172,50 @@ public class FileAttachment : Entity
         return $"{size:0.##} {sizes[order]}";
     }
 
+    /// <summary>
+    /// 是否为图片
+    /// </summary>
+    /// <returns>是否为图片</returns>
     public bool IsImage()
     {
         return FileType.StartsWith("image/", StringComparison.OrdinalIgnoreCase);
     }
 
+    /// <summary>
+    /// 是否为视频
+    /// </summary>
+    /// <returns>是否为视频</returns>
     public bool IsVideo()
     {
         return FileType.StartsWith("video/", StringComparison.OrdinalIgnoreCase);
     }
 
+    /// <summary>
+    /// 是否为音频
+    /// </summary>
+    /// <returns>是否为音频</returns>
     public bool IsAudio()
     {
         return FileType.StartsWith("audio/", StringComparison.OrdinalIgnoreCase);
     }
 
+    /// <summary>
+    /// 是否为文档
+    /// </summary>
+    /// <returns>是否为文档</returns>
     public bool IsDocument()
     {
         var documentTypes = new[]
             { "application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument", "text/" };
         return documentTypes.Any(t => FileType.StartsWith(t, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// 是否为其他文件
+    /// </summary>
+    /// <returns>是否为其他文件</returns>
+    public bool IsOther()
+    {
+        return !IsImage() && !IsVideo() && !IsAudio() && !IsDocument();
     }
 }

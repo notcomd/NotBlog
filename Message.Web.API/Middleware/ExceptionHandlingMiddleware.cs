@@ -4,13 +4,22 @@ using Message.Web.API.Dto;
 
 namespace Message.Web.API.Middleware;
 
-public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
+public class ExceptionHandlingMiddleware
 {
+    private readonly ILogger<ExceptionHandlingMiddleware> _logger;
+    private readonly RequestDelegate _next;
+
+    public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
+    {
+        _next = next;
+        _logger = logger;
+    }
+
     public async Task InvokeAsync(HttpContext context)
     {
         try
         {
-            await next(context);
+            await _next(context);
         }
         catch (Exception ex)
         {
@@ -20,7 +29,7 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
 
     private async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
-        logger.LogError(exception, "发生未处理的异常: {Message}", exception.Message);
+        _logger.LogError(exception, "发生未处理的异常: {Message}", exception.Message);
 
         var response = context.Response;
         response.ContentType = "application/json";

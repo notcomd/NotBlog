@@ -1,63 +1,50 @@
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace Notcomd.DomainCommand;
+namespace DomainInfrastructure;
 
+/// <summary>
+/// 哈希计算辅助类
+/// </summary>
 public static class HashHelper
 {
-    private static Task<string> ToHashStringAsync(byte[] hash)
+    private static string ToHexString(byte[] hash)
     {
-        var hashString = new StringBuilder();
-        foreach (var itm in hash) hashString.Append(itm.ToString("x2"));
-        return Task.FromResult(hashString.ToString());
+        var sb = new StringBuilder(hash.Length * 2);
+        foreach (var b in hash)
+            sb.Append(b.ToString("x2"));
+        return sb.ToString();
     }
 
-    /// <summary>
-    ///     计算字符串的SHA256哈希值
-    /// </summary>
-    /// <param name="str"></param>
-    /// <returns></returns>
-    public static Task<string> ComputeSha254Hash(string str)
+    /// <summary>计算字符串的 SHA256 哈希值</summary>
+    public static string ComputeSha256Hash(string input)
     {
         using var sha = SHA256.Create();
-        var hash = sha.ComputeHash(Encoding.UTF8.GetBytes(str));
-        return ToHashStringAsync(hash);
+        var hash = sha.ComputeHash(Encoding.UTF8.GetBytes(input));
+        return ToHexString(hash);
     }
 
-    /// <summary>
-    ///     计算流的MD5哈希值
-    /// </summary>
-    /// <param name="stream"></param>
-    /// <returns></returns>
-    public static Task<string> ComputeSha254Hash(Stream stream)
+    /// <summary>计算流的 SHA256 哈希值</summary>
+    public static string ComputeSha256Hash(Stream stream)
     {
         using var sha = SHA256.Create();
         var hash = sha.ComputeHash(stream);
-        return ToHashStringAsync(hash);
+        return ToHexString(hash);
     }
 
-
-    /// <summary>
-    ///     计算字符串的MD5哈希值
-    /// </summary>
-    /// <param name="str"></param>
-    /// <returns></returns>
-    public static Task<string> ComputeMd5Hash(string str)
+    /// <summary>计算字符串的 MD5 哈希值</summary>
+    public static string ComputeMd5Hash(string input)
     {
         using var md5 = MD5.Create();
-        var hash = md5.ComputeHash(Encoding.UTF8.GetBytes(str));
-        return ToHashStringAsync(hash);
+        var hash = md5.ComputeHash(Encoding.UTF8.GetBytes(input));
+        return ToHexString(hash);
     }
 
-    /// <summary>
-    ///     计算流的MD5哈希值
-    /// </summary>
-    /// <param name="stream"></param>
-    /// <returns></returns>
-    public static Task<string> ComputeMd5Hash(Stream stream)
+    /// <summary>计算流的 MD5 哈希值</summary>
+    public static string ComputeMd5Hash(Stream stream)
     {
         using var md5 = MD5.Create();
         var hash = md5.ComputeHash(stream);
-        return ToHashStringAsync(hash);
+        return ToHexString(hash);
     }
 }

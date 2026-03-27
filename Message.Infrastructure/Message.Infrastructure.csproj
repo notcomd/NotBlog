@@ -15,7 +15,6 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.5"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.5"/>
         <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.9"/>
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.5"/>
         <PackageReference Include="StackExchange.Redis" Version="2.8.24"/>
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.5"/>
         <PackageReference Include="NotMediator" Version="1.0.5"/>

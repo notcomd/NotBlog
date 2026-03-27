@@ -1,12 +1,19 @@
-namespace Notcomd.DomainCommand;
+﻿namespace DomainInfrastructure;
 
+/// <summary>
+/// FormattableString 扩展方法
+/// 用于安全构建 URI 字符串
+/// </summary>
 public static class FormattableStringHelper
 {
-    public static string UriBuilder(FormattableString formattableString)
+    /// <summary>
+    /// 将 FormattableString 转换为 URL 安全的字符串，自动对参数进行 Uri 编码
+    /// </summary>
+    public static string ToUriEncoded(this FormattableString formattableString)
     {
-        var initail = formattableString.GetArguments()
-            .Select(en => FormattableString.Invariant($"{en}"));
-        var pro = initail.Select(en => (object)Uri.EscapeDataString(en)).ToArray();
-        return string.Format(formattableString.Format, pro);
+        var encodedArgs = formattableString.GetArguments()
+            .Select(arg => (object)Uri.EscapeDataString(FormattableString.Invariant($"{arg}")))
+            .ToArray();
+        return string.Format(formattableString.Format, encodedArgs);
     }
 }

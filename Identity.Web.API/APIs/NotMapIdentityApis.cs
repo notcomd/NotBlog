@@ -1,4 +1,4 @@
-using Identity.Domain.AggregatesModel.UserAggregate;
+using Identity.Domain.Entities.UserAggregate;
 using Identity.Domain.Result;
 using Identity.Web.API.Application.Commands;
 using Microsoft.AspNetCore.HttpLogging;

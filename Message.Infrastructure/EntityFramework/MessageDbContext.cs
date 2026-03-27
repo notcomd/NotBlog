@@ -7,12 +7,15 @@ using MessageEntity = Message.Domain.Entities.Message;
 
 namespace Message.Infrastructure.EntityFramework;
 
-public class MessageDbContext(DbContextOptions<MessageDbContext> options, INotMediator notMediator)
-    : DbContext(options), IUnitOfWork
+public class MessageDbContext : DbContext, IUnitOfWork
 {
-    private readonly INotMediator _notMediator = notMediator ?? throw new ArgumentNullException(nameof(notMediator));
+    private readonly INotMediator _notMediator;
 
-    public DbSet<User> Users { get; set; } = null!;
+    public MessageDbContext(DbContextOptions<MessageDbContext> options, INotMediator notMediator) : base(options)
+    {
+        _notMediator = notMediator ?? throw new ArgumentNullException(nameof(notMediator));
+    }
+
 
     public DbSet<MessageEntity> Messages { get; set; } = null!;
 
@@ -21,12 +24,11 @@ public class MessageDbContext(DbContextOptions<MessageDbContext> options, INotMe
     public DbSet<MessageFriends> MessageFriends { get; set; } = null!;
 
     public DbSet<Group> Groups { get; set; } = null!;
-
     public DbSet<GroupMember> GroupMembers { get; set; } = null!;
 
     public DbSet<FileAttachment> FileAttachments { get; set; } = null!;
 
-    //public IUnitOfWork UnitOfWork => this;
+    public IUnitOfWork UnitOfWork => this;
 
     public async Task<int> SavaChangesAsync(CancellationToken cancellationToken = default)
     {

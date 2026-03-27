@@ -37,9 +37,9 @@ public class RabbitMqEventButs : IEventBus, IDisposable
         _serviceScope = serviceScopeFactory.CreateScope() ??
                         throw new ArgumentNullException($"无法创建{serviceScopeFactory.CreateScope()}");
         _serviceProvider = _serviceScope.ServiceProvider;
-        _consumerChannel = (IChannel)CreateConsumerChannel(). Result ??
+        _consumerChannel = CreateConsumerChannel().GetAwaiter().GetResult() ??
                            throw new ArgumentNullException(nameof(rabbitMqConnection));
-        _subscriptionsManager.OnEventRemoved +=  (sender, e) => SubsManager_OnEventRemoved(sender, e);
+        _subscriptionsManager.OnEventRemoved += (sender, e) => SubsManager_OnEventRemoved(sender, e);
     }
 
     public void Dispose()

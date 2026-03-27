@@ -26,6 +26,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\Evenbus\Evenbus.csproj"/>
         <ProjectReference Include="..\FileDev.Domain\FileDev.Domain.csproj"/>
         <ProjectReference Include="..\FileDev.Infrastructure\FileDev.Infrastructure.csproj" />
         <ProjectReference Include="..\NotBlog.ServiceDefaults\NotBlog.ServiceDefaults.csproj" />

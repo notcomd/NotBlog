@@ -1,4 +1,4 @@
-using Identity.Domain.AggregatesModel.Author2Aggregate;
+using Identity.Domain.Entities.Author2Aggregate;
 
 namespace Identity.Domain.IRepository;
 

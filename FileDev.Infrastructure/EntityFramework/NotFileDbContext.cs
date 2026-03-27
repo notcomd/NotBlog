@@ -1,12 +1,3 @@
-using ConsoleApp1;
-using FileDev.Domain.Entities;
-using FileDev.Domain.SeedWork;
-using FileDev.Infrastructure.EntityConfig;
-using FileDev.Infrastructure.Idempotent;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
-using NotMediator;
-
 namespace FileDev.Infrastructure.EntityFramework;
 
 public class NotFileDbContext(DbContextOptions<NotFileDbContext> options, INotMediator mediator)

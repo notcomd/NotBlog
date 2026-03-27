@@ -1,18 +1,31 @@
-using MediatR;
+﻿namespace DomainCommons;
 
-namespace DomainCommons;
+/// <summary>
+/// 领域事件接口
+/// 所有领域事件都应实现此接口
+/// </summary>
+public interface IDomainEvent
+{
+}
 
+/// <summary>
+/// 领域事件容器接口
+/// 聚合根实现此接口以支持领域事件的发布和清除
+/// </summary>
 public interface IDomainEvents
 {
-    IEnumerable<INotification> GetDomainEvents();
+    /// <summary>获取所有待发布的领域事件</summary>
+    IEnumerable<IDomainEvent> GetDomainEvents();
 
-    void AddDomainEvent(INotification eventItem);
+    /// <summary>添加一个领域事件</summary>
+    void AddDomainEvent(IDomainEvent domainEvent);
 
     /// <summary>
-    ///     如果已经存在这个元素，则跳过，否则增加。以避免对于同样的事件触发多次（比如在一个事务中修改领域模型的多个对象）
+    /// 如果已存在相同类型的事件则跳过，否则添加
+    /// 避免在同一事务中修改多个对象时重复触发同类事件
     /// </summary>
-    /// <param name="eventItem"></param>
-    void AddDomainEventIfAbsent(INotification eventItem);
+    void AddDomainEventIfAbsent(IDomainEvent domainEvent);
 
-    public void ClearDomainEvents();
+    /// <summary>清除所有已发布的领域事件</summary>
+    void ClearDomainEvents();
 }

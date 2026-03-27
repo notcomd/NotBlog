@@ -1,38 +1,24 @@
-using System.Reflection;
+﻿using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Notcomd.DomainCommand;
+namespace DomainInfrastructure;
 
+/// <summary>
+/// EF Core DbContext 自动注册扩展
+/// 扫描程序集中所有 DbContext 子类并自动注册到 DI 容器
+/// </summary>
 public static class EFCoreInitializerHelper
 {
-    public static IServiceCollection AutoAddDbContextBuilder(this IServiceCollection serviceCollection,
-        Action<DbContextOptionsBuilder> optionsBuilder, IEnumerable<Assembly> assemblies)
-    {
-        Type[] types =
-        [
-            typeof(IServiceCollection), typeof(Action<DbContextOptionsBuilder>), typeof(ServiceLifetime),
-            typeof(ServiceLifetime)
-        ];
-        var dbContextMethod = typeof(EntityFrameworkServiceCollectionExtensions)
-            .GetMethod(nameof(EntityFrameworkServiceCollectionExtensions.AddDbContext), 1, types);
-        foreach (var item in assemblies)
-        {
-            var typesInAsm = item.GetTypes();
-            foreach (var type in typesInAsm.Where(t => !t.IsAbstract && typeof(DbContext).IsAssignableFrom(t)))
-            {
-                var dbContextMethodAddDbContext = dbContextMethod?.MakeGenericMethod(type);
-                dbContextMethodAddDbContext?.Invoke(null, new object[]
-                {
-                    serviceCollection, optionsBuilder, ServiceLifetime.Scoped, ServiceLifetime.Scoped
-                });
-            }
-        }
-
-        return serviceCollection;
-    }
-
-    public static IServiceCollection AutoAddDbContextBuilder(
+    /// <summary>
+    /// 自动扫描并注册所有 DbContext
+    /// </summary>
+    /// <param name="services">服务集合</param>
+    /// <param name="optionsBuilder">DbContext 配置（如连接字符串）</param>
+    /// <param name="assemblies">要扫描的程序集</param>
+    /// <param name="contextLifetime">DbContext 生命周期，默认 Scoped</param>
+    /// <param name="optionsLifetime">Options 生命周期，默认 Scoped</param>
+    public static IServiceCollection AddAllDbContexts(
         this IServiceCollection services,
         Action<DbContextOptionsBuilder> optionsBuilder,
         IEnumerable<Assembly> assemblies,
@@ -40,76 +26,49 @@ public static class EFCoreInitializerHelper
         ServiceLifetime optionsLifetime = ServiceLifetime.Scoped)
     {
         if (services == null) throw new ArgumentNullException(nameof(services));
+        if (optionsBuilder == null) throw new ArgumentNullException(nameof(optionsBuilder));
         if (assemblies == null) throw new ArgumentNullException(nameof(assemblies));
+
+        var addDbContextMethod = FindAddDbContextMethod();
 
         foreach (var assembly in assemblies)
         {
-            var dbContextTypes = assembly.GetExportedTypes()
-                .Where(t => !t.IsAbstract && typeof(DbContext).IsAssignableFrom(t))
-                .ToList();
+            var dbContextTypes = assembly.GetTypes()
+                .Where(t => !t.IsAbstract && typeof(DbContext).IsAssignableFrom(t));
 
-            foreach (var type in dbContextTypes)
+            foreach (var dbContextType in dbContextTypes)
+            {
                 try
                 {
-                    // 使用泛型方式注册 DbContext
-                    var method = typeof(EntityFrameworkServiceCollectionExtensions)
-                        .GetMethods()
-                        .FirstOrDefault(m =>
-                            m.Name == nameof(EntityFrameworkServiceCollectionExtensions.AddDbContext) &&
-                            m.IsGenericMethod &&
-                            m.GetParameters().Length == 4);
-
-                    if (method == null) throw new InvalidOperationException("无法找到 AddDbContext 方法。");
-
-                    var genericMethod = method.MakeGenericMethod(type);
+                    var genericMethod = addDbContextMethod.MakeGenericMethod(dbContextType);
                     genericMethod.Invoke(null, new object[]
                     {
-                        services, optionsBuilder, contextLifetime, optionsLifetime
+                        services,
+                        optionsBuilder,
+                        contextLifetime,
+                        optionsLifetime
                     });
-
-                    Console.WriteLine($"成功注册 DbContext: {type.FullName}");
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"注册 DbContext {type.FullName} 失败: {ex.InnerException?.Message}");
+                    Console.WriteLine(
+                        $"注册 DbContext {dbContextType.FullName} 失败: {ex.InnerException?.Message ?? ex.Message}");
                 }
+            }
         }
 
         return services;
     }
 
-
-    public static IServiceCollection AddAllDbContexts(this IServiceCollection services,
-        Action<DbContextOptionsBuilder> builder,
-        IEnumerable<Assembly> assemblies)
+    private static MethodInfo FindAddDbContextMethod()
     {
-        //AddDbContextPool不支持DbContext注入其他对象，而且使用不当有内存暴涨的问题，因此不用AddDbContextPool
-        var types = new[]
-        {
-            typeof(IServiceCollection), typeof(Action<DbContextOptionsBuilder>), typeof(ServiceLifetime),
-            typeof(ServiceLifetime)
-        };
-        var methodAddDbContext = typeof(EntityFrameworkServiceCollectionExtensions)
-            .GetMethod(nameof(EntityFrameworkServiceCollectionExtensions.AddDbContext), 1, types);
-        foreach (var asmToLoad in assemblies)
-        {
-            var typesInAsm = asmToLoad.GetTypes();
-            //Register DbContext
-            //GetTypes() include public/protected ones
-            //GetExportedTypes only include public ones
-            //so that XXDbContext in Agrregation can be internal to keep insulated
-            foreach (var dbCtxType in typesInAsm
-                         .Where(t => !t.IsAbstract && typeof(DbContext).IsAssignableFrom(t)))
-            {
-                //similar to serviceCollection.AddDbContextPool<ECDictDbContext>(opt=>new DbContextOptionsBuilder(dbCtxOpt));
-                var methodGenericAddDbContext = methodAddDbContext.MakeGenericMethod(dbCtxType);
-                methodGenericAddDbContext.Invoke(null, new object[]
-                {
-                    services, builder, ServiceLifetime.Scoped, ServiceLifetime.Scoped
-                });
-            }
-        }
+        var method = typeof(EntityFrameworkServiceCollectionExtensions)
+            .GetMethods()
+            .FirstOrDefault(m =>
+                m.Name == nameof(EntityFrameworkServiceCollectionExtensions.AddDbContext)
+                && m.IsGenericMethod
+                && m.GetParameters().Length == 4);
 
-        return services;
+        return method ?? throw new InvalidOperationException("无法找到 AddDbContext 方法。");
     }
 }

@@ -1,24 +1,8 @@
-using System.Reflection;
-using CommonsInitializer;
-using DomainCommonst;
-using FileDev.Domain.IServices;
-using FileDev.Infrastructure.EntityFramework;
-using FileDev.Infrastructure.Service;
-using FileDev.Web.API.APIs;
-using Microsoft.AspNetCore.Http.Features;
-using NotBlog.ServiceDefaults;
-using NotMediator;
-using Scalar.AspNetCore;
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
-builder.NotBlogConfigureExtraServices(new InitializerOptions
-{
-    EventBusQueueName = "FileDev.Web.API",
-    LogFilePath = "E:/web.log"
-});
+builder.Services.AddNotBlogServices(builder.Configuration.GetSection("DbContextConnect"));
 
 builder.Services.AddNpgsql<NotFileDbContext>("PostgresSQL");
 builder.Services.AddScoped<INotFileService, NotFileService>();
@@ -36,7 +20,7 @@ builder.WebHost.ConfigureKestrel(options => { options.Limits.MaxRequestBodySize 
 
 
 var app = builder.Build();
-app.NotBlogUseServer();
+app.UseNotBlogPipeline();
 app.MapDefaultEndpoints();
 
 

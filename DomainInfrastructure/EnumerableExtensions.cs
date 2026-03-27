@@ -1,17 +1,21 @@
-namespace Notcomd.DomainCommand;
+﻿namespace DomainInfrastructure;
 
+/// <summary>
+/// IEnumerable 扩展方法
+/// </summary>
 public static class EnumerableExtensions
 {
-    public static bool SequenceIgnoredEqual<Ty>(this IEnumerable<Ty> enumerable, IEnumerable<Ty> enumerable2)
+    /// <summary>
+    /// 忽略顺序比较两个序列是否相等
+    /// </summary>
+    public static bool SequenceIgnoredEqual<T>(this IEnumerable<T> source, IEnumerable<T> other)
     {
-        if (enumerable == enumerable2)
-        {
-        }
-        else if (enumerable == null || enumerable2 == null)
-        {
-            return false;
-        }
+        if (ReferenceEquals(source, other))
+            return true;
 
-        return enumerable.OrderBy(e => e).SequenceEqual(enumerable2.OrderBy(e => e));
+        if (source is null || other is null)
+            return false;
+
+        return source.OrderBy(x => x).SequenceEqual(other.OrderBy(x => x));
     }
 }

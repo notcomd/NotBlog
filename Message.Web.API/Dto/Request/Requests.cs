@@ -2,9 +2,6 @@ using Message.Domain.Enums;
 
 namespace Message.Web.API.Dto.Request;
 
-/// <summary>
-///   发送消息
-/// </summary>
 public class SendMessageRequest
 {
     public Guid SessionId { get; init; }

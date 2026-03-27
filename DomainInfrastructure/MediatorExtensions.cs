@@ -1,19 +1,22 @@
-using System.Reflection;
-using DomainCommons;
-using MediatR;
+﻿using DomainCommons;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace Notcomd.DomainCommand;
+namespace DomainInfrastructure;
 
+/// <summary>
+/// 领域事件分发扩展
+/// </summary>
 public static class MediatorExtensions
 {
-    public static IServiceCollection AddMediator(this IServiceCollection service, IEnumerable<Assembly> assemblies)
-    {
-        return service.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(assemblies.ToArray()));
-    }
-
-    public static async Task DispatchDomainEventsAsync(this IMediator mediator, DbContext dbContext)
+    /// <summary>
+    /// 从 DbContext 中提取并分发所有领域事件
+    /// 在 SaveChangesAsync 之前调用此方法
+    /// </summary>
+    /// <param name="dispatcher">领域事件分发器</param>
+    /// <param name="dbContext">当前 DbContext</param>
+    public static async Task DispatchDomainEventsAsync(
+        this Func<IDomainEvent, ValueTask> dispatcher,
+        DbContext dbContext)
     {
         var domainEntities = dbContext.ChangeTracker
             .Entries<IDomainEvents>()
@@ -21,11 +24,13 @@ public static class MediatorExtensions
 
         var domainEvents = domainEntities
             .SelectMany(x => x.Entity.GetDomainEvents())
-            .ToList(); //加ToList()是为立即加载，否则会延迟执行，到foreach的时候已经被ClearDomainEvents()了
+            .ToList();
 
-        domainEntities.ToList()
-            .ForEach(entity => entity.Entity.ClearDomainEvents());
+        // 立即加载到列表，避免延迟执行时已被 ClearDomainEvents 清空
+        foreach (var entity in domainEntities.ToList())
+            entity.Entity.ClearDomainEvents();
 
-        foreach (var domainEvent in domainEvents) await mediator.Publish(domainEvent);
+        foreach (var domainEvent in domainEvents)
+            await dispatcher(domainEvent);
     }
 }

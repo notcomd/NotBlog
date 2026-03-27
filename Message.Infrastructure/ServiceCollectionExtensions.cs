@@ -6,6 +6,7 @@ using Message.Infrastructure.Provider;
 using Message.Infrastructure.Repository;
 using Message.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Message.Infrastructure;
@@ -14,19 +15,19 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddMessageInfrastructure(
         this IServiceCollection services,
-        // IConfiguration configuration,
+        IConfiguration configuration,
         string connectionStringName = "DefaultConnection")
     {
-        // var connectionString = configuration.GetConnectionString(connectionStringName);
-        //
-        // services.AddDbContext<MessageDbContext>(options =>
-        // {
-        //     options.UseSqlServer(connectionString, sqlOptions =>
-        //     {
-        //         sqlOptions.MigrationsAssembly(typeof(MessageDbContext).Assembly.FullName);
-        //         sqlOptions.EnableRetryOnFailure(maxRetryCount: 3);
-        //     });
-        // });
+        var connectionString = configuration.GetConnectionString(connectionStringName);
+
+        services.AddDbContext<MessageDbContext>(options =>
+        {
+            options.UseSqlServer(connectionString, sqlOptions =>
+            {
+                sqlOptions.MigrationsAssembly(typeof(MessageDbContext).Assembly.FullName);
+                sqlOptions.EnableRetryOnFailure(maxRetryCount: 3);
+            });
+        });
 
         RegisterRepositories(services);
         RegisterProviders(services);
@@ -62,7 +63,6 @@ public static class ServiceCollectionExtensions
 
     private static void RegisterRepositories(IServiceCollection services)
     {
-        services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IMessageRepository, MessageRepository>();
         services.AddScoped<IChatSessionRepository, ChatSessionRepository>();
         services.AddScoped<IMessageFriendsRepository, MessageFriendsRepository>();
@@ -72,7 +72,6 @@ public static class ServiceCollectionExtensions
 
     private static void RegisterProviders(IServiceCollection services)
     {
-        services.AddScoped<IUserProvider, UserProvider>();
         services.AddScoped<IMessageProvider, MessageProvider>();
         services.AddScoped<IChatSessionProvider, ChatSessionProvider>();
         services.AddScoped<IFriendProvider, FriendProvider>();
