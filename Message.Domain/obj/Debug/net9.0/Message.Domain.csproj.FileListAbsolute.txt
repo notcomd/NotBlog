@@ -1,0 +1,13 @@
+F:\NotBlog\Message.Domain\bin\Debug\net9.0\Message.Domain.deps.json
+F:\NotBlog\Message.Domain\bin\Debug\net9.0\Message.Domain.dll
+F:\NotBlog\Message.Domain\bin\Debug\net9.0\Message.Domain.pdb
+F:\NotBlog\Message.Domain\obj\Debug\net9.0\Message.Domain.csproj.AssemblyReference.cache
+F:\NotBlog\Message.Domain\obj\Debug\net9.0\Message.Domain.GeneratedMSBuildEditorConfig.editorconfig
+F:\NotBlog\Message.Domain\obj\Debug\net9.0\Message.Domain.AssemblyInfoInputs.cache
+F:\NotBlog\Message.Domain\obj\Debug\net9.0\Message.Domain.AssemblyInfo.cs
+F:\NotBlog\Message.Domain\obj\Debug\net9.0\Message.Domain.csproj.CoreCompileInputs.cache
+F:\NotBlog\Message.Domain\obj\Debug\net9.0\Message.Domain.sourcelink.json
+F:\NotBlog\Message.Domain\obj\Debug\net9.0\Message.Domain.dll
+F:\NotBlog\Message.Domain\obj\Debug\net9.0\refint\Message.Domain.dll
+F:\NotBlog\Message.Domain\obj\Debug\net9.0\Message.Domain.pdb
+F:\NotBlog\Message.Domain\obj\Debug\net9.0\ref\Message.Domain.dll

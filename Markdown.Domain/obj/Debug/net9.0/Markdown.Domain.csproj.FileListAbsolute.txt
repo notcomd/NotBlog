@@ -1,0 +1,12 @@
+F:\NotBlog\Markdown.Domain\obj\Debug\net9.0\Markdown.Domain.GeneratedMSBuildEditorConfig.editorconfig
+F:\NotBlog\Markdown.Domain\obj\Debug\net9.0\Markdown.Domain.AssemblyInfoInputs.cache
+F:\NotBlog\Markdown.Domain\obj\Debug\net9.0\Markdown.Domain.AssemblyInfo.cs
+F:\NotBlog\Markdown.Domain\obj\Debug\net9.0\Markdown.Domain.csproj.CoreCompileInputs.cache
+F:\NotBlog\Markdown.Domain\obj\Debug\net9.0\Markdown.Domain.sourcelink.json
+F:\NotBlog\Markdown.Domain\bin\Debug\net9.0\Markdown.Domain.deps.json
+F:\NotBlog\Markdown.Domain\bin\Debug\net9.0\Markdown.Domain.dll
+F:\NotBlog\Markdown.Domain\bin\Debug\net9.0\Markdown.Domain.pdb
+F:\NotBlog\Markdown.Domain\obj\Debug\net9.0\Markdown.Domain.dll
+F:\NotBlog\Markdown.Domain\obj\Debug\net9.0\refint\Markdown.Domain.dll
+F:\NotBlog\Markdown.Domain\obj\Debug\net9.0\Markdown.Domain.pdb
+F:\NotBlog\Markdown.Domain\obj\Debug\net9.0\ref\Markdown.Domain.dll

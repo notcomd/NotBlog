@@ -15,7 +15,7 @@ public class FileDev_Web_API : global::Aspire.Hosting.IProjectMetadata
     /// <summary>
     /// The path to the FileDev_Web_API project.
     /// </summary>
-    public string ProjectPath => """f:\NotBlog\FileDev.Web.API\FileDev.Web.API.csproj""";
+    public string ProjectPath => """F:\NotBlog\FileDev.Web.API\FileDev.Web.API.csproj""";
 
     /// <summary>
     /// Gets a value indicating whether building the project before running it should be suppressed.

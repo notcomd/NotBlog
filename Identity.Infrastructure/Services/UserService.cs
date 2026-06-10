@@ -14,36 +14,28 @@ public class UserService(
     ILogger<IUserRoleRepository> loggerUserRole)
     : IUserService
 {
-   // private readonly ILogger<IUserRoleRepository> _loggerUserRole = loggerUserRole;
-
-    public async Task<string> LogInByCheckPasswordAsync(PhoneNumber phoneNumber, string password, long code)
-    {
-        var userData=await userRepository.FindOneByUserAsync(phoneNumber);
-        if (userData is not null) return await LogInByCheckPasswordCoreAsync(phoneNumber, password);
-        loggerUser.LogError($"[{DateTime.UtcNow}] 用户 {phoneNumber} 不存在");
-        return $"用户 {phoneNumber} 不存在！";
-    }
-    
     public async Task<bool> SignInByCreateUserAsync(string email, string password, string code)
     {
-        var userData= await userRepository.FindOneByUserAsync(email);
+        var userData = await userRepository.FindOneByUserAsync(email);
         if (userData is not null)
         {
-           loggerUser.LogError($"[{DateTime.UtcNow}] 用户 {email} 已存在");
-           return false;
+            loggerUser.LogError($"[{DateTime.UtcNow}] 用户 {email} 已存在");
+            return false;
         }
+
         Roles? userRole = null;
         if (!await userRoleRepository.IsUserRoleAsync("User"))
-            userRole= Roles.RoleFactory.CreateUserRole();
+            userRole = Roles.RoleFactory.CreateUserRole();
         if (userRole is null)
         {
             loggerUserRole.LogError($"[{DateTime.UtcNow}] 创建用户角色失败");
             return false;
         }
+
         var newUser = await User.CreateByEmailUser(
-            userRole.RoleGuid,email,
+            userRole.RoleGuid, email,
             password,
-           null,null);
+            null, null);
         await userRepository.AddOneByUserAsync(newUser);
 
         return true;
@@ -57,7 +49,6 @@ public class UserService(
             loggerUser.LogError($"[{DateTime.UtcNow}] 用户 {email} 不存在");
             return;
         }
-        
     }
 
     public Task SendResetPasswordEmailAsync(string email)
@@ -70,7 +61,6 @@ public class UserService(
         throw new NotImplementedException();
     }
 
-   
 
     /// <summary>
     ///     登入验证
@@ -94,7 +84,16 @@ public class UserService(
 
         return await LogInByCheckPasswordCoreAsync(userData, password);
     }
-    
+    // private readonly ILogger<IUserRoleRepository> _loggerUserRole = loggerUserRole;
+
+    public async Task<string> LogInByCheckPasswordAsync(PhoneNumber phoneNumber, string password, long code)
+    {
+        var userData = await userRepository.FindOneByUserAsync(phoneNumber);
+        if (userData is not null) return await LogInByCheckPasswordCoreAsync(phoneNumber, password);
+        loggerUser.LogError($"[{DateTime.UtcNow}] 用户 {phoneNumber} 不存在");
+        return $"用户 {phoneNumber} 不存在！";
+    }
+
 
     /// <summary>
     ///     登入验证核心方法
@@ -134,9 +133,9 @@ public class UserService(
                 {
                     var listClaims = new List<Claim>
                     {
-                        new(ClaimTypes.Name, userData.UserName?? 
+                        new(ClaimTypes.Name, userData.UserName ??
                                              throw new ArgumentNullException(nameof(userData.UserName), "用户名不能为空")),
-                        new(ClaimTypes.Email, userData.UserEmail?? 
+                        new(ClaimTypes.Email, userData.UserEmail ??
                                               throw new ArgumentNullException(nameof(userData.UserEmail), "用户邮箱不能为空")),
                         new(ClaimTypes.Role, roleName ?? "User"),
                         new(ClaimTypes.MobilePhone, userData.PhoneNumber?.PhoneCode ?? string.Empty),
@@ -150,24 +149,22 @@ public class UserService(
         }
         catch (Exception ex)
         {
-           // SwitchRole(await GetRoleName(userData));
+            // SwitchRole(await GetRoleName(userData));
             loggerUser.LogError(ex, $"[{DateTime.UtcNow}] 用户 {userIdentifier} 登录过程中发生错误");
             return "登录失败";
         }
-
-       
     }
 
     private string SwitchRole(IEnumerable<RoleAuthority> roles)
     {
         var roleAuthorities = roles as RoleAuthority[] ?? roles.ToArray();
-        if (roleAuthorities.Any())
-            return string.Empty;
-        if(roleAuthorities.Contains(RoleAuthority.Root))
+        if (!roleAuthorities.Any())
+            return "User";
+        if (roleAuthorities.Contains(RoleAuthority.Root))
             return "Root";
-        if(roleAuthorities.Contains(RoleAuthority.Admin))
+        if (roleAuthorities.Contains(RoleAuthority.Admin))
             return "Admin";
-        if(roleAuthorities.Contains(RoleAuthority.User))
+        if (roleAuthorities.Contains(RoleAuthority.User))
             return "User";
         return "Guest";
     }
@@ -182,6 +179,7 @@ public class UserService(
             if (role is null) continue;
             roleNames.Add(role.RoleAuthority);
         }
+
         return roleNames;
     }
 }

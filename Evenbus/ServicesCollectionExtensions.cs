@@ -1,4 +1,5 @@
-using System.Reflection;
+﻿using System.Reflection;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
@@ -7,57 +8,91 @@ namespace Notcomd.Evenbus;
 
 public static class ServicesCollectionExtensions
 {
-    public static IServiceCollection AddEventBus(this IServiceCollection services, string queueName
-        , params Assembly[] assemblies)
-    {
-        return services.AddEventBus(queueName, assemblies.ToList());
-    }
-
+    /// <summary>
+    /// 注册 EventBus（自动扫描程序集中的 Handler）
+    /// </summary>
     public static IServiceCollection AddEventBus(this IServiceCollection services, string queueName,
-        IEnumerable<Assembly> assemblies)
+        params Assembly[] assemblies)
     {
         var eventHandlers = new List<Type>();
         foreach (var asm in assemblies)
         {
-            var types =
-                asm.GetTypes().Where(T => !T.IsAbstract && T.IsAssignableTo(typeof(IIntegrationEventHandler)));
+            var types = asm.GetTypes()
+                .Where(t => !t.IsAbstract && t.IsAssignableTo(typeof(IIntegrationEventHandler)));
             eventHandlers.AddRange(types);
         }
 
         return services.AddEventBus(queueName, eventHandlers);
     }
 
+    /// <summary>
+    /// 注册 EventBus（指定 Handler 类型列表）
+    /// </summary>
     public static IServiceCollection AddEventBus(this IServiceCollection services, string queueName,
-        IEnumerable<Type> eventHandler)
+        IEnumerable<Type> eventHandlers)
     {
-        var enumerable = eventHandler as Type[] ?? eventHandler.ToArray();
-        foreach (var type in enumerable) services.AddScoped(type, type);
+        var handlerList = eventHandlers as Type[] ?? eventHandlers.ToArray();
+        foreach (var type in handlerList) services.AddScoped(type, type);
+
         services.AddSingleton<IEventBus>(sp =>
         {
             var optionMq = sp.GetRequiredService<IOptions<IntegrationEventRabbitMqOptions>>().Value;
-            var factoy = new ConnectionFactory
-            {
-                HostName = optionMq.HostName
-            };
-            if (optionMq.UserName != null) factoy.UserName = optionMq.UserName;
-            if (optionMq.Password != null) factoy.Password = optionMq.Password;
-            var rabbitMqConnection = new RabbitMqConnection(factoy);
+            var factory = new ConnectionFactory { HostName = optionMq.HostName };
+            if (!string.IsNullOrEmpty(optionMq.UserName)) factory.UserName = optionMq.UserName;
+            if (!string.IsNullOrEmpty(optionMq.Password)) factory.Password = optionMq.Password;
+
+            var rabbitMqConnection = new RabbitMqConnection(factory);
             var serviceScopeFactory = sp.GetRequiredService<IServiceScopeFactory>();
-            var eventbus = new RabbitMqEventButs(rabbitMqConnection, optionMq.ExchangeName, queueName,
+            var eventBus = new RabbitMqEventBus(rabbitMqConnection, optionMq, queueName,
                 serviceScopeFactory);
 
-            foreach (var type in enumerable)
+            foreach (var type in handlerList)
             {
                 var eventNameAttrs = type.GetCustomAttributes<EvenBusNameAttribute>();
-                var evenBusNameAttributes = eventNameAttrs as EvenBusNameAttribute[] ?? eventNameAttrs.ToArray();
-                if (!evenBusNameAttributes.Any())
-                    throw new ApplicationException($"There should be at least one EventNameAttribute on {type}");
-                foreach (var eventNameAttr in evenBusNameAttributes)
-                    eventbus.Subscribe(eventNameAttr.GetType().Name, type);
+                var attrs = eventNameAttrs as EvenBusNameAttribute[] ?? eventNameAttrs.ToArray();
+                if (!attrs.Any())
+                    throw new ApplicationException(
+                        $"Handler {type.Name} must have at least one [{nameof(EvenBusNameAttribute)}]");
+                foreach (var attr in attrs)
+                    // 修复: 使用属性的真实 EventName 值，而非类型名
+                    eventBus.Subscribe(attr.EventName, type).GetAwaiter().GetResult();
             }
 
-            return eventbus;
+            return eventBus;
         });
+
+        return services;
+    }
+
+    /// <summary>
+    /// 注册 RequestBus（RPC 同步调用）
+    /// </summary>
+    public static IServiceCollection AddRequestBus(this IServiceCollection services)
+    {
+        services.AddSingleton<IRequestBus>(sp =>
+        {
+            var optionMq = sp.GetRequiredService<IOptions<IntegrationEventRabbitMqOptions>>().Value;
+            var factory = new ConnectionFactory { HostName = optionMq.HostName };
+            if (!string.IsNullOrEmpty(optionMq.UserName)) factory.UserName = optionMq.UserName;
+            if (!string.IsNullOrEmpty(optionMq.Password)) factory.Password = optionMq.Password;
+
+            var connection = new RabbitMqConnection(factory);
+            return new RabbitMqRequestBus(connection, optionMq);
+        });
+        return services;
+    }
+
+    /// <summary>
+    /// 注册 Outbox（分布式事务消息持久化）
+    /// </summary>
+    public static IServiceCollection AddOutbox<TDbContext>(this IServiceCollection services,
+        Action<OutboxOptions> configure) where TDbContext : DbContext
+    {
+        var options = new OutboxOptions();
+        configure?.Invoke(options);
+        services.Configure(configure);
+        services.AddScoped<IOutboxStore, EfCoreOutboxStore<TDbContext>>();
+        services.AddHostedService<OutboxPublisher<TDbContext>>();
         return services;
     }
 }

@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Identity.Infrastructure.Idempotent;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -62,6 +62,8 @@ public class IdentityDbContext : DbContext, IUnitOfWork
 
         modelBuilder.ApplyConfiguration(new UserEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new RoleEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new PermissionEntityTypeConfigurtion());
+        modelBuilder.ApplyConfiguration(new RoleGroupEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new Author2EntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new UserAccessFailEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new UserSafetyEntityTypeConfiguration());

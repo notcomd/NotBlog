@@ -19,8 +19,6 @@ builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
 
 builder.Services.AddControllers(opt => { opt.Filters.Add(new UnitOfWorkFilter()); });
 
-builder.Services.AddControllers();
-
 builder.Services.AddOpenApi();
 
 builder.Services.AddEndpointsApiExplorer();

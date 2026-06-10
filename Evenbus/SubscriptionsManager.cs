@@ -1,4 +1,4 @@
-namespace Notcomd.Evenbus;
+﻿namespace Notcomd.Evenbus;
 
 public class SubscriptionsManager
 {
@@ -46,4 +46,9 @@ public class SubscriptionsManager
     {
         return _handlers.ContainsKey(eventName);
     }
+
+    /// <summary>
+    /// 获取所有已注册的事件名称
+    /// </summary>
+    public IEnumerable<string> GetEventNames() => _handlers.Keys;
 }

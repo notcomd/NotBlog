@@ -51,17 +51,9 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "dependencies": {
-            "MediatR": {
-              "target": "Package",
-              "version": "[12.5.0, )"
-            },
             "Microsoft.Extensions.DependencyInjection.Abstractions": {
               "target": "Package",
               "version": "[10.0.4, )"
-            },
-            "NotMediator": {
-              "target": "Package",
-              "version": "[1.0.5, )"
             }
           },
           "imports": [
@@ -409,13 +401,9 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "dependencies": {
-            "MediatR": {
+            "Microsoft.AspNetCore.Mvc.Core": {
               "target": "Package",
-              "version": "[12.5.0, )"
-            },
-            "Microsoft.AspNetCore.Authentication.JwtBearer": {
-              "target": "Package",
-              "version": "[10.0.5, )"
+              "version": "[2.3.0, )"
             },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
@@ -428,10 +416,6 @@
             "Microsoft.Extensions.DependencyInjection.Abstractions": {
               "target": "Package",
               "version": "[10.0.5, )"
-            },
-            "NotMediator": {
-              "target": "Package",
-              "version": "[1.0.5, )"
             }
           },
           "imports": [

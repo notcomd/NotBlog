@@ -1,0 +1,14 @@
+{
+  "profiles": {
+    "FileDev.Web.API": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchUrl": "scalar",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:62435;http://localhost:62436"
+    }
+  }
+}

@@ -38,15 +38,6 @@
               },
               "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj": {
                 "projectPath": "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj"
-              },
-              "F:\\NotBlog\\Evenbus\\Evenbus.csproj": {
-                "projectPath": "F:\\NotBlog\\Evenbus\\Evenbus.csproj"
-              },
-              "F:\\NotBlog\\JWToken\\Token.JWT.csproj": {
-                "projectPath": "F:\\NotBlog\\JWToken\\Token.JWT.csproj"
-              },
-              "F:\\NotBlog\\NotEmail\\NotEmail.csproj": {
-                "projectPath": "F:\\NotBlog\\NotEmail\\NotEmail.csproj"
               }
             }
           }
@@ -67,17 +58,9 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "dependencies": {
-            "Microsoft.AspNetCore.Connections.Abstractions": {
+            "Microsoft.Extensions.Configuration.Binder": {
               "target": "Package",
               "version": "[10.0.5, )"
-            },
-            "Microsoft.Extensions.DependencyInjection.Abstractions": {
-              "target": "Package",
-              "version": "[10.0.5, )"
-            },
-            "Npgsql": {
-              "target": "Package",
-              "version": "[10.0.1, )"
             },
             "Npgsql.EntityFrameworkCore.PostgreSQL": {
               "target": "Package",
@@ -425,17 +408,9 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "dependencies": {
-            "MediatR": {
-              "target": "Package",
-              "version": "[12.5.0, )"
-            },
             "Microsoft.Extensions.DependencyInjection.Abstractions": {
               "target": "Package",
               "version": "[10.0.4, )"
-            },
-            "NotMediator": {
-              "target": "Package",
-              "version": "[1.0.5, )"
             }
           },
           "imports": [
@@ -783,13 +758,9 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "dependencies": {
-            "MediatR": {
+            "Microsoft.AspNetCore.Mvc.Core": {
               "target": "Package",
-              "version": "[12.5.0, )"
-            },
-            "Microsoft.AspNetCore.Authentication.JwtBearer": {
-              "target": "Package",
-              "version": "[10.0.5, )"
+              "version": "[2.3.0, )"
             },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
@@ -802,10 +773,6 @@
             "Microsoft.Extensions.DependencyInjection.Abstractions": {
               "target": "Package",
               "version": "[10.0.5, )"
-            },
-            "NotMediator": {
-              "target": "Package",
-              "version": "[1.0.5, )"
             }
           },
           "imports": [
@@ -1153,21 +1120,33 @@
               "target": "Package",
               "version": "[1.4.1, )"
             },
-            "Microsoft.AspNetCore.Connections.Abstractions": {
-              "target": "Package",
-              "version": "[10.0.5, )"
-            },
             "Microsoft.AspNetCore.Http.Abstractions": {
               "target": "Package",
-              "version": "[2.3.0, )"
+              "version": "[2.3.11, )"
+            },
+            "Microsoft.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[*, )"
+            },
+            "Microsoft.EntityFrameworkCore.Relational": {
+              "target": "Package",
+              "version": "[*, )"
             },
             "Microsoft.Extensions.DependencyInjection.Abstractions": {
               "target": "Package",
-              "version": "[10.0.5, )"
+              "version": "[*, )"
+            },
+            "Microsoft.Extensions.Hosting.Abstractions": {
+              "target": "Package",
+              "version": "[*, )"
+            },
+            "Microsoft.Extensions.Logging.Abstractions": {
+              "target": "Package",
+              "version": "[*, )"
             },
             "Microsoft.Extensions.Options": {
               "target": "Package",
-              "version": "[8.0.2, )"
+              "version": "[*, )"
             },
             "RabbitMQ.Client": {
               "target": "Package",

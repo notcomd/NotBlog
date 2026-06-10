@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("FileGrpcService")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7164ae881b29733e986512fd4aa94b445ac4f52c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+688dbbc23f02d479c8180880383203bdb3a64ce1")]
 [assembly: System.Reflection.AssemblyProductAttribute("FileGrpcService")]
 [assembly: System.Reflection.AssemblyTitleAttribute("FileGrpcService")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

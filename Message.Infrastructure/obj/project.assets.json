@@ -1889,7 +1889,6 @@
       "Microsoft.EntityFrameworkCore >= 10.0.5",
       "Microsoft.EntityFrameworkCore.InMemory >= 10.0.5",
       "Microsoft.EntityFrameworkCore.SqlServer >= 10.0.5",
-      "Microsoft.Extensions.Logging >= 10.0.5",
       "Microsoft.Extensions.Logging.Abstractions >= 10.0.5",
       "NotMediator >= 1.0.5",
       "StackExchange.Redis >= 2.8.24"
@@ -1963,10 +1962,6 @@
             "version": "[10.0.5, )"
           },
           "Microsoft.EntityFrameworkCore.SqlServer": {
-            "target": "Package",
-            "version": "[10.0.5, )"
-          },
-          "Microsoft.Extensions.Logging": {
             "target": "Package",
             "version": "[10.0.5, )"
           },

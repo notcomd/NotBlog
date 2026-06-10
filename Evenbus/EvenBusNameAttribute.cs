@@ -1,7 +1,12 @@
-namespace Notcomd.Evenbus;
+﻿namespace Notcomd.Evenbus;
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-public class EvenBusNameAttribute(string eventBusName) : Attribute
+public class EvenBusNameAttribute : Attribute
 {
-    private string EventName { get; set; } = eventBusName;
+    public EvenBusNameAttribute(string eventBusName)
+    {
+        EventName = eventBusName ?? throw new ArgumentNullException(nameof(eventBusName));
+    }
+
+    public string EventName { get; }
 }

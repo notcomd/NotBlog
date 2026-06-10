@@ -1,18 +1,22 @@
-namespace Identity.Web.API.Application.Commands;
+﻿namespace Identity.Web.API.Application.Commands;
 
-public class GenerateCodeCommandHandler(IEmail email, INotMediator notMediator, IJwtTokenService jwtTokenServer)
+public class GenerateCodeCommandHandler(
+    ILogger<GenerateCodeCommandHandler> logger,
+    IEmailCodeSend emailCodeSend)
     : IRequestHandler<GenerateCodeCommand, string>
 {
-    private readonly IEmail _email = email ?? throw new ArgumentNullException(nameof(email));
-
-    private readonly IJwtTokenService _jwtTokenServer =
-        jwtTokenServer ?? throw new ArgumentNullException(nameof(jwtTokenServer));
-
-
-    private readonly INotMediator _notMediator = notMediator ?? throw new ArgumentNullException(nameof(notMediator));
-
-    public Task<string> Handler(GenerateCodeCommand request, CancellationToken cancellationToken)
+    public async Task<string> Handler(GenerateCodeCommand request, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var code = await emailCodeSend.SendEmailCodeAsync(request.Email);
+            logger.LogInformation("[{Time}] 验证码已发送至: {Email}", DateTime.UtcNow, request.Email);
+            return code;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "[{Time}] 发送验证码失败: {Email}", DateTime.UtcNow, request.Email);
+            throw;
+        }
     }
 }

@@ -9,11 +9,14 @@
 
     <ItemGroup>
         <PackageReference Include="Dynamic.Json" Version="1.4.1"/>
-        <PackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="10.0.5" />
-        <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0"/>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.5" />
-        <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="*"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="*"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="*"/>
+        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="*"/>
+        <PackageReference Include="Microsoft.Extensions.Options" Version="*"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="*"/>
         <PackageReference Include="RabbitMQ.Client" Version="7.2.1" />
+        <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.11"/>
     </ItemGroup>
 
 </Project>

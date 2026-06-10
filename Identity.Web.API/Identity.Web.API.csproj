@@ -23,31 +23,10 @@
 
     <ItemGroup>
         <ProjectReference Include="..\CommonsInitializer\CommonsInitializer.csproj"/>
-        <ProjectReference Include="..\FileDev.Domain\FileDev.Domain.csproj"/>
         <ProjectReference Include="..\NotBlog.ServiceDefaults\NotBlog.ServiceDefaults.csproj" />
         <ProjectReference Include="..\NotEmail\NotEmail.csproj"/>
         <ProjectReference Include="..\Identity.Infrastructure\Identity.Infrastructure.csproj"/>
         <ProjectReference Include="..\JWToken\Token.JWT.csproj"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Compile Remove="Application\CommandHandler\**"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <EmbeddedResource Remove="Application\CommandHandler\**"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Content Remove="Application\CommandHandler\**"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <None Remove="Application\CommandHandler\**"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Folder Include="Application\DomainHandler\"/>
     </ItemGroup>
 
 </Project>
