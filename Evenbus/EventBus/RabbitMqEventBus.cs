@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
+using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -158,40 +159,122 @@ public class RabbitMqEventBus : IEventBus, IAsyncDisposable
     {
         var eventName = @event.RoutingKey;
         var message = Encoding.UTF8.GetString(@event.Body.Span);
+        var deliveryTag = @event.DeliveryTag;
 
-        if (await ProcessWithRetryAsync(eventName, message, @event, retryCount: 0).ConfigureAwait(false))
+        _logger?.LogDebug(
+            "[Evenbus] 收到消息: Event={EventName}, DeliveryTag={DeliveryTag}, " +
+            "BodySize={Size} bytes, Exchange={Exchange}",
+            eventName, deliveryTag, @event.Body.Length, _exchangeName);
+
+        var sw = Stopwatch.StartNew();
+        var result = await ProcessWithRetryAsync(eventName, message, deliveryTag, retryCount: 0)
+            .ConfigureAwait(false);
+        sw.Stop();
+
+        if (result)
         {
-            await _consumerChannel!.BasicAckAsync(@event.DeliveryTag, multiple: false).ConfigureAwait(false);
+            await _consumerChannel!.BasicAckAsync(deliveryTag, multiple: false)
+                .ConfigureAwait(false);
+
+            _logger?.LogInformation(
+                "[Evenbus] 消息处理成功: Event={EventName}, " +
+                "耗时={ElapsedMs}ms, DeliveryTag={DeliveryTag}",
+                eventName, (int)sw.Elapsed.TotalMilliseconds, deliveryTag);
         }
         else
         {
             // 重试耗尽，发送到死信队列（nack + requeue=false 触发 DLQ）
-            _logger?.LogError("[Evenbus] 事件处理失败已达最大重试次数: {EventName}, 发送到 DLQ", eventName);
-            await _consumerChannel!.BasicNackAsync(@event.DeliveryTag, multiple: false, requeue: false)
+            var dlqName = $"{_queueName}{_options.DeadLetterQueueSuffix}";
+            _logger?.LogError(
+                "[Evenbus] 消息处理失败，已达最大重试次数({MaxRetry}次)，" +
+                "已投递到死信队列(DLQ={DlqName})。" +
+                "Event={EventName}, DeliveryTag={DeliveryTag}, " +
+                "总耗时={TotalElapsedMs}ms, 消息内容预览={MessagePreview}",
+                _options.MaxRetryCount, dlqName,
+                eventName, deliveryTag, (int)sw.Elapsed.TotalMilliseconds,
+                TruncateMessage(message));
+
+            await _consumerChannel!.BasicNackAsync(deliveryTag, multiple: false, requeue: false)
                 .ConfigureAwait(false);
         }
     }
 
     /// <summary>
-    /// 带重试的事件处理
+    /// 截断消息内容用于日志输出（避免日志过大）
+    /// </summary>
+    private static string TruncateMessage(string message, int maxLength = 500)
+    {
+        if (string.IsNullOrEmpty(message)) return "(empty)";
+        return message.Length <= maxLength
+            ? message
+            : message[..maxLength] + "...(truncated)";
+    }
+
+    /// <summary>
+    /// 带重试的事件处理（详细日志记录每次重试）
     /// </summary>
     private async Task<bool> ProcessWithRetryAsync(string eventName, string message,
-        BasicDeliverEventArgs deliverEvent, int retryCount)
+        ulong deliveryTag, int retryCount)
     {
         try
         {
+            if (retryCount == 0)
+            {
+                _logger?.LogDebug(
+                    "[Evenbus] 开始处理消息: Event={EventName}, DeliveryTag={DeliveryTag}",
+                    eventName, deliveryTag);
+            }
+
             await ProcessEventAsync(eventName, message).ConfigureAwait(false);
+
+            _logger?.LogDebug(
+                "[Evenbus] 事件处理完成: Event={EventName}, " +
+                "当前重试次数={CurrentRetry}, DeliveryTag={DeliveryTag}",
+                eventName, retryCount, deliveryTag);
+
             return true;
         }
         catch (Exception ex)
         {
-            _logger?.LogWarning(ex, "[Evenbus] 事件处理失败 (重试 {Retry}/{Max}): {EventName}",
-                retryCount + 1, _options.MaxRetryCount, eventName);
+            var currentAttempt = retryCount + 1;
+            var remainingRetries = _options.MaxRetryCount - currentAttempt;
+            var delayMs = _options.RetryIntervalMs * (retryCount + 1);
+
+            // 第 N 次失败日志
+            if (currentAttempt < _options.MaxRetryCount)
+            {
+                _logger?.LogWarning(ex,
+                    "[Evenbus] 事件处理第 {CurrentAttempt} 次失败，" +
+                    "将在 {DelayMs}ms 后进行第 {NextAttempt} 次重试（剩余 {Remaining} 次）。" +
+                    "Event={EventName}, DeliveryTag={DeliveryTag}, Handler={HandlerType}。" +
+                    "异常类型={ExType}: {ExMessage}" +
+                    "{MessagePreview}",
+                    currentAttempt, delayMs, currentAttempt + 1, remainingRetries,
+                    eventName, deliveryTag,
+                    GetHandlerTypeName(eventName),
+                    ex.GetType().Name, ex.Message,
+                    TruncateMessage(message));
+            }
+            else
+            {
+                // 最后一次失败（即将进入 DLQ）
+                _logger?.LogError(ex,
+                    "[Evenbus] 事件处理第 {CurrentAttempt}/{MaxRetry} 次失败，" +
+                    "已耗尽所有重试次数，消息将被投递到死信队列。 " +
+                    "Event={EventName}, DeliveryTag={DeliveryTag}, Handler={HandlerType}。" +
+                    "最终异常: [{ExType}] {ExMessage}\n{StackTrace}" +
+                    "\n原始消息内容: {MessagePreview}",
+                    currentAttempt, _options.MaxRetryCount,
+                    eventName, deliveryTag,
+                    GetHandlerTypeName(eventName),
+                    ex.GetType().Name, ex.Message, ex.StackTrace,
+                    TruncateMessage(message));
+            }
 
             if (retryCount < _options.MaxRetryCount)
             {
-                await Task.Delay(_options.RetryIntervalMs * (retryCount + 1)).ConfigureAwait(false);
-                return await ProcessWithRetryAsync(eventName, message, deliverEvent, retryCount + 1)
+                await Task.Delay(delayMs).ConfigureAwait(false);
+                return await ProcessWithRetryAsync(eventName, message, deliveryTag, retryCount + 1)
                     .ConfigureAwait(false);
             }
 
@@ -199,11 +282,25 @@ public class RabbitMqEventBus : IEventBus, IAsyncDisposable
         }
     }
 
+    /// <summary>
+    /// 获取事件对应的处理器类型名称
+    /// </summary>
+    private string? GetHandlerTypeName(string eventName)
+    {
+        if (!_subscriptionsManager.HasSubscriptionForEvent(eventName)) return "(none)";
+        var handlers = _subscriptionsManager.GetHandlersForEvent(eventName).ToList();
+        return string.Join(", ", handlers.Select(h => h.Name));
+    }
+
     private async Task ProcessEventAsync(string eventName, string message)
     {
         if (!_subscriptionsManager.HasSubscriptionForEvent(eventName))
         {
-            _logger?.LogWarning("[Evenbus] 未找到事件处理器: {EventName}", eventName);
+            _logger?.LogWarning(
+                "[Evenbus] 未找到事件处理器: Event={EventName}, " +
+                "消息将被丢弃。已注册的事件: {RegisteredEvents}",
+                eventName,
+                _subscriptionsManager.IsEmpty ? "(无)" : string.Join(", ", _subscriptionsManager.GetEventNames()));
             return;
         }
 
@@ -213,8 +310,19 @@ public class RabbitMqEventBus : IEventBus, IAsyncDisposable
             using var scope = _serviceScopeFactory.CreateScope();
             var handler = scope.ServiceProvider.GetService(handlerType) as IIntegrationEventHandler;
             if (handler == null)
-                throw new ApplicationException($"无法创建 Handler: {handlerType.Name}");
+            {
+                throw new ApplicationException($"无法创建 Handler: {handlerType.Name}。" +
+                                               $"请确认 {handlerType.FullName} 已在 DI 中注册为 Scoped 服务。");
+            }
+
+            var handlerSw = Stopwatch.StartNew();
             await handler.Handler(eventName, message).ConfigureAwait(false);
+            handlerSw.Stop();
+
+            _logger?.LogDebug(
+                "[Evenbus] Handler 执行完成: Handler={HandlerName}, " +
+                "Event={EventName}, 耗时={ElapsedMs}ms",
+                handlerType.Name, eventName, (int)handlerSw.Elapsed.TotalMilliseconds);
         }
     }
 

@@ -1,14 +1,10 @@
-using FileDev.Infrastructure.Idempotent;
-using Notcomd.Evenbus;
-using NotMediator;
-
 namespace FileDev.Web.API.ActionFilter.Command;
 
 public abstract class IdentifiedCommandHandler<T, R>(
     INotMediator mediator,
     IRequestManagement requestManagement,
     ILogger<IdentifiedCommandHandler<T, R>> logger)
-    : IRequestHandler<IdentifiedCommand<T, R>, R> where T : IRequest<R>
+    : NotMediator.IRequestHandler<IdentifiedCommand<T, R>, R> where T : IRequest<R>
 {
     private readonly ILogger<IdentifiedCommandHandler<T, R>> _logger =
         logger ?? throw new ArgumentNullException(nameof(logger));

@@ -1,4 +1,4 @@
-using Dynamic.Json;
+﻿using Dynamic.Json;
 
 namespace Notcomd.Evenbus;
 

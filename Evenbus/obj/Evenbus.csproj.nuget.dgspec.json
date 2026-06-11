@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "f:\\NotBlog\\Evenbus\\Evenbus.csproj": {}
+    "F:\\NotBlog\\Evenbus\\Evenbus.csproj": {}
   },
   "projects": {
-    "f:\\NotBlog\\Evenbus\\Evenbus.csproj": {
+    "F:\\NotBlog\\Evenbus\\Evenbus.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "f:\\NotBlog\\Evenbus\\Evenbus.csproj",
+        "projectUniqueName": "F:\\NotBlog\\Evenbus\\Evenbus.csproj",
         "projectName": "Evenbus",
-        "projectPath": "f:\\NotBlog\\Evenbus\\Evenbus.csproj",
+        "projectPath": "F:\\NotBlog\\Evenbus\\Evenbus.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "f:\\NotBlog\\Evenbus\\obj\\",
+        "outputPath": "F:\\NotBlog\\Evenbus\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"

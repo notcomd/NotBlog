@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "LH52qzVpLQA=",
+  "dgSpecHash": "DOQs6zBcl+s=",
   "success": true,
-  "projectFilePath": "f:\\NotBlog\\Evenbus\\Evenbus.csproj",
+  "projectFilePath": "F:\\NotBlog\\Evenbus\\Evenbus.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\notco\\.nuget\\packages\\dynamic.json\\1.4.1\\dynamic.json.1.4.1.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.aspnetcore.http.abstractions\\2.3.11\\microsoft.aspnetcore.http.abstractions.2.3.11.nupkg.sha512",

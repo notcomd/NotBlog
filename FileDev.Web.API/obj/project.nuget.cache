@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "EbqgEipnCq4=",
+  "dgSpecHash": "9RDMFuH++to=",
   "success": true,
   "projectFilePath": "F:\\NotBlog\\FileDev.Web.API\\FileDev.Web.API.csproj",
   "expectedPackageFiles": [
@@ -12,7 +12,12 @@
     "C:\\Users\\notco\\.nuget\\packages\\dynamic.json\\1.4.1\\dynamic.json.1.4.1.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\messagepack\\2.5.187\\messagepack.2.5.187.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\messagepack.annotations\\2.5.187\\messagepack.annotations.2.5.187.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\8.0.6\\microsoft.aspnetcore.authentication.jwtbearer.8.0.6.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.aspnetcore.authentication.microsoftaccount\\8.0.6\\microsoft.aspnetcore.authentication.microsoftaccount.8.0.6.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.aspnetcore.http.connections.client\\8.0.6\\microsoft.aspnetcore.http.connections.client.8.0.6.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.aspnetcore.openapi\\10.0.5\\microsoft.aspnetcore.openapi.10.0.5.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.aspnetcore.signalr.client\\8.0.6\\microsoft.aspnetcore.signalr.client.8.0.6.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.aspnetcore.signalr.client.core\\8.0.6\\microsoft.aspnetcore.signalr.client.core.8.0.6.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.aspnetcore.signalr.stackexchangeredis\\10.0.4\\microsoft.aspnetcore.signalr.stackexchangeredis.10.0.4.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.entityframeworkcore\\10.0.9\\microsoft.entityframeworkcore.10.0.9.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.entityframeworkcore.abstractions\\10.0.9\\microsoft.entityframeworkcore.abstractions.10.0.9.nupkg.sha512",
@@ -30,6 +35,12 @@
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.servicediscovery.abstractions\\10.4.0\\microsoft.extensions.servicediscovery.abstractions.10.4.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.telemetry\\10.4.0\\microsoft.extensions.telemetry.10.4.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.telemetry.abstractions\\10.4.0\\microsoft.extensions.telemetry.abstractions.10.4.0.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.abstractions\\7.6.0\\microsoft.identitymodel.abstractions.7.6.0.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.jsonwebtokens\\7.6.0\\microsoft.identitymodel.jsonwebtokens.7.6.0.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.logging\\7.6.0\\microsoft.identitymodel.logging.7.6.0.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.protocols\\7.1.2\\microsoft.identitymodel.protocols.7.1.2.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.protocols.openidconnect\\7.1.2\\microsoft.identitymodel.protocols.openidconnect.7.1.2.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.tokens\\7.6.0\\microsoft.identitymodel.tokens.7.6.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.net.stringtools\\17.6.3\\microsoft.net.stringtools.17.6.3.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.openapi\\2.0.0\\microsoft.openapi.2.0.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\notmediator\\1.0.5\\notmediator.1.0.5.nupkg.sha512",
@@ -50,6 +61,7 @@
     "C:\\Users\\notco\\.nuget\\packages\\rabbitmq.client\\7.2.1\\rabbitmq.client.7.2.1.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\scalar.aspnetcore\\2.13.8\\scalar.aspnetcore.2.13.8.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\stackexchange.redis\\2.11.8\\stackexchange.redis.2.11.8.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\system.identitymodel.tokens.jwt\\7.6.0\\system.identitymodel.tokens.jwt.7.6.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\system.io.hashing\\10.0.2\\system.io.hashing.10.0.2.nupkg.sha512"
   ],
   "logs": []

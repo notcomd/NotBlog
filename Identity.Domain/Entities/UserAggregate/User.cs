@@ -1,0 +1,306 @@
+using Identity.Domain.Events;
+
+namespace Identity.Domain.Entities.UserAggregate;
+
+public class User : Entity, IAggregateRoot
+{
+    protected User()
+    {
+        UserGuid = Guid.CreateVersion7();
+        UserRoleGuid ??= new HashSet<Guid>();
+        AuthorGuids ??= new HashSet<Guid>();
+        UserAccessFail = UserAccessFail.CreateUserAccessFail(UserGuid) ??
+                         throw new ArgumentNullException(nameof(UserAccessFail));
+        UserSafety = UserSafety.CreateByUserSafety(UserGuid, null, null) ??
+                     throw new ArgumentNullException(nameof(UserSafety));
+        CreateDatetime = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>
+    /// 用户ID
+    /// </summary>
+    public Guid UserGuid { get; init; }
+
+    /// <summary>
+    /// 用户角色ID
+    /// </summary>
+    public HashSet<Guid> UserRoleGuid { get; private set; }
+
+    /// <summary>
+    /// 用户作者ID
+    /// </summary>
+    public HashSet<Guid> AuthorGuids { get; private set; }
+
+    /// <summary>
+    /// 用户名
+    /// </summary>
+    public string? UserName { get; private set; }
+
+    /// <summary>
+    /// 用户头像
+    /// </summary>
+    public Uri ImageCover { get; private set; }
+
+    /// <summary>
+    /// 用户邮箱
+    /// </summary>
+    [EmailAddress(ErrorMessage = "Error Email Address!")]
+    public string UserEmail { get; private set; }
+
+    /// <summary>
+    /// 用户密码哈希
+    /// </summary>
+    public string PasswordHash { get; private set; }
+
+    /// <summary>
+    /// 用户手机号
+    /// </summary>
+    public PhoneNumber? PhoneNumber { get; private set; }
+
+    /// <summary>
+    /// 用户地址
+    /// </summary>
+    public Address? UserAddress { get; private set; }
+
+    /// <summary>
+    /// 用户访问失败
+    /// </summary>
+    public UserAccessFail UserAccessFail { get; private set; }
+
+    /// <summary>
+    /// 用户安全
+    /// </summary>
+    public UserSafety UserSafety { get; private set; }
+
+    /// <summary>
+    /// 创建时间
+    /// </summary>
+    public DateTimeOffset CreateDatetime { get; init; }
+
+    /// <summary>
+    /// 创建用户邮箱
+    /// </summary>
+    /// <param name="userRoleGuid">用户角色ID</param>
+    /// <param name="userEmail">邮箱</param>
+    /// <param name="passwordHash">密码哈希</param>
+    /// <param name="imageCover">用户头像</param>
+    /// <param name="authorGuids">用户作者ID</param>
+    /// <returns>用户邮箱后的任务</returns>
+    public static async Task<User> CreateByEmailUser(
+        Guid userRoleGuid,
+        string userEmail,
+        string passwordHash,
+        Uri? imageCover,
+        HashSet<Guid>? authorGuids)
+    {
+        if (userRoleGuid == Guid.Empty)
+            throw new ArgumentNullException(nameof(userRoleGuid), "User role cannot be null or empty");
+        if (string.IsNullOrEmpty(userEmail))
+            throw new ArgumentNullException(nameof(userEmail), "User email cannot be null or empty");
+        if (string.IsNullOrEmpty(passwordHash))
+            throw new ArgumentNullException(nameof(passwordHash), "Password hash cannot be null or empty");
+        if (imageCover == null)
+            throw new ArgumentNullException(nameof(imageCover), "Image cover cannot be null");
+
+        var salt = await HashH256Tool.GenerateSValueTask() ?? throw new ArgumentNullException("salt is null");
+        var stamp = await JwtRandom.GenerateSecurityStamp() ??
+                    throw new ArgumentNullException("security stamp is null");
+
+        var user = new User
+        {
+            UserRoleGuid = [userRoleGuid],
+            UserName = userEmail,
+            PasswordHash = await HashH256Tool.CreateHash256Async(passwordHash, salt),
+            ImageCover = imageCover,
+            UserAccessFail = UserAccessFail.CreateUserAccessFail(Guid.CreateVersion7()) ??
+                             throw new ArgumentNullException(nameof(UserAccessFail)),
+            UserSafety = UserSafety.CreateByUserSafety(Guid.CreateVersion7(), stamp, salt.ToString()) ??
+                         throw new ArgumentNullException(nameof(UserSafety)),
+            CreateDatetime = DateTimeOffset.UtcNow
+        };
+
+        user.AddDomainEvent(new UserStartedByEmailDomainEvent([userRoleGuid], userEmail, passwordHash, imageCover,
+            authorGuids));
+        return user;
+    }
+
+    /// <summary>
+    /// 创建用户手机号
+    /// </summary>
+    /// <param name="userRoleGuid">用户角色ID</param>
+    /// <param name="phoneNumber">手机号</param>
+    /// <param name="passwordHash">密码哈希</param>
+    /// <param name="imageCover">用户头像</param>
+    /// <param name="authorGuids">用户作者ID</param>
+    /// <returns>用户手机号后的任务</returns>
+    public static async Task<User> CreateByPhoneUser(
+        HashSet<Guid> userRoleGuid,
+        PhoneNumber phoneNumber,
+        string passwordHash,
+        Uri? imageCover,
+        HashSet<Guid>? authorGuids)
+    {
+        if (userRoleGuid is null)
+            throw new ArgumentNullException(nameof(userRoleGuid), "User role cannot be null or empty");
+        if (phoneNumber is null)
+            throw new ArgumentNullException(nameof(phoneNumber), "Phone number cannot be null or empty");
+        if (string.IsNullOrEmpty(passwordHash))
+            throw new ArgumentNullException(nameof(passwordHash), "Password hash cannot be null or empty");
+        if (imageCover == null)
+            throw new ArgumentNullException(nameof(imageCover), "Image cover cannot be null");
+
+        var salt = await HashH256Tool.GenerateSValueTask() ?? throw new ArgumentNullException("salt is null");
+        var stamp = await JwtRandom.GenerateSecurityStamp() ??
+                    throw new ArgumentNullException("security stamp is null");
+
+        var user = new User
+        {
+            UserGuid = Guid.CreateVersion7(),
+            UserRoleGuid = userRoleGuid,
+            PhoneNumber = phoneNumber,
+            PasswordHash = await HashH256Tool.CreateHash256Async(passwordHash, salt),
+            ImageCover = imageCover,
+            UserAccessFail = UserAccessFail.CreateUserAccessFail(Guid.CreateVersion7()) ??
+                             throw new ArgumentNullException(nameof(UserAccessFail)),
+            UserSafety = UserSafety.CreateByUserSafety(Guid.CreateVersion7(), stamp, salt.ToString()) ??
+                         throw new ArgumentNullException(nameof(UserSafety)),
+            CreateDatetime = DateTimeOffset.UtcNow
+        };
+
+        user.AddDomainEvent(
+            new UserStartedByPhoneDomainEvent(userRoleGuid, phoneNumber, passwordHash, imageCover, authorGuids));
+        return user;
+    }
+
+    /// <summary>
+    /// 修改用户地址
+    /// </summary>
+    /// <param name="userAddress">新地址</param>
+    public void ChangeByAddress(ref Address userAddress)
+    {
+        UserAddress = userAddress;
+    }
+
+    /// <summary>
+    /// 修改用户密码
+    /// </summary>
+    /// <param name="password">新密码</param>
+    /// <returns>修改密码后的任务</returns>
+    public async ValueTask ChangeByPasswordAsync(string password)
+    {
+        if (UserSafety.UserStatus == UserStatus.Locked)
+            throw new InvalidOperationException("用户已被锁定，无法修改密码");
+
+        if (password.Length <= 8)
+            throw new ArgumentOutOfRangeException(nameof(password), "密码长度不能小于 8 位");
+
+        var salt = await HashH256Tool.GenerateSValueTask() ?? throw new ArgumentNullException("salt is null!");
+        var saltStr = salt.ToString() ?? throw new ArgumentNullException(nameof(salt), "Salt is null");
+
+        UserSafety.ResetByPasswordSalt(saltStr);
+        PasswordHash = await HashH256Tool.CreateHash256Async(password, Encoding.UTF8.GetBytes(UserSafety.PasswordSalt));
+    }
+
+    /// <summary>
+    /// 绑定用户手机号
+    /// </summary>
+    /// <param name="region">手机号区域</param>
+    /// <param name="phoneNumber">手机号</param>
+    public void BandingByPhone(long region, string phoneNumber)
+    {
+        PhoneNumber = PhoneNumber.CreatePhoneNumber(region, phoneNumber) ??
+                      throw new ArgumentNullException(nameof(PhoneNumber), "phone number is null");
+        AddDomainEvent(new PhoneNumberBandingEvent(UserGuid, PhoneNumber.PhoneCode));
+    }
+
+    /// <summary>
+    /// 验证用户手机号是否正确
+    /// </summary>
+    /// <param name="phoneNumber">用户输入的手机号</param>
+    /// <returns>如果手机号正确则返回 true，否则返回 false</returns>
+    public bool VerifyByPhoneNumber(PhoneNumber phoneNumber)
+    {
+        if (phoneNumber is null)
+            throw new ArgumentNullException(nameof(phoneNumber), "phone number is null");
+        return PhoneNumber?.PhoneCode == phoneNumber.PhoneCode &&
+               PhoneNumber.AddressRegion == phoneNumber.AddressRegion;
+    }
+
+    /// <summary>
+    /// 验证用户邮箱是否正确
+    /// </summary>
+    /// <param name="email">用户输入的邮箱</param>
+    /// <returns>如果邮箱正确则返回 true，否则返回 false</returns>
+    public bool VerifyByEmail(string email)
+    {
+        if (string.IsNullOrEmpty(email))
+            throw new ArgumentNullException(nameof(email), "email is null or empty");
+        return UserEmail == email;
+    }
+
+    /// <summary>
+    /// 验证用户密码是否正确
+    /// </summary>
+    /// <param name="password">用户输入的密码</param>
+    /// <returns>如果密码正确则返回 true，否则返回 false</returns>
+    public async Task<bool> VerifyByPasswordAsync(string password)
+    {
+        var isValid = await CheckByPasswordAsync(password);
+
+        if (!isValid)
+        {
+            UserAccessFail.VerifyByAccessFaild(true);
+            AddDomainEvent(new AccountLockedEvent(UserGuid));
+        }
+
+        return isValid;
+    }
+
+    public void ChangeByEmail(
+        [EmailAddress(ErrorMessage = "your set email is error ,pleas set again your email address!")]
+        string newEmail)
+    {
+        if (UserEmail == newEmail)
+            throw new ArgumentException("需要不同的邮箱");
+
+        UserEmail = newEmail;
+    }
+
+    /// <summary>
+    /// 连接用户权限
+    /// </summary>
+    /// <param name="authorGuid">用户权限ID</param>
+    public void LinkAuthority(Guid authorGuid)
+    {
+        if (authorGuid == Guid.Empty)
+            throw new ArgumentNullException(nameof(authorGuid), "authorGuid is empty");
+        AuthorGuids.Add(authorGuid);
+    }
+
+    /// <summary>
+    /// 断开用户权限
+    /// </summary>
+    /// <param name="authorGuid">用户权限ID</param>
+    public void UnLinkAuthority(Guid authorGuid)
+    {
+        if (authorGuid == Guid.Empty)
+            throw new ArgumentNullException(nameof(authorGuid), "authorGuid is empty");
+        AuthorGuids.Remove(authorGuid);
+    }
+
+    /// <summary>
+    /// 验证用户密码是否正确
+    /// </summary>
+    /// <param name="password">用户输入的密码</param>
+    /// <returns>如果密码正确则返回 true，否则返回 false</returns>
+    private async Task<bool> CheckByPasswordAsync(string password)
+    {
+        var salt = UserSafety.PasswordSalt ??
+                   throw new InvalidOperationException("Password salt is not set");
+
+        return await HashH256Tool.VerifyPasswordValueTask(
+            password,
+            PasswordHash,
+            Encoding.UTF8.GetBytes(salt));
+    }
+}

@@ -1,9 +1,3 @@
-using FileDev.Domain.IServices;
-using FileDev.Domain.Options;
-using FileDev.Infrastructure.Idempotent;
-using Microsoft.Extensions.Options;
-using NotMediator;
-
 namespace FileDev.Web.API.ActionFilter.Command;
 
 public class CreateNotFileGroupCommandHandler(
@@ -11,7 +5,7 @@ public class CreateNotFileGroupCommandHandler(
     IOptionsSnapshot<NotFileStorageOptions> configOptions,
     INotFileService notFileService,
     INotFileGroupService notFileGroupService)
-    : IRequestHandler<CreateNotFileGroupCommand, bool>
+    : NotMediator.IRequestHandler<CreateNotFileGroupCommand, bool>
 {
     private readonly IOptionsSnapshot<NotFileStorageOptions> _configOptions =
         configOptions ?? throw new ArgumentNullException(nameof(configOptions));
