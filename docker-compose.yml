@@ -1,0 +1,48 @@
+﻿services:
+  # ── PostgreSQL 数据库 ──────────────────────────────
+  postgres:
+    image: postgres:17-alpine
+    container_name: notblog-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: notblog
+      POSTGRES_PASSWORD: NotBlog@2026!
+      POSTGRES_DB: notblog_identity
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U notblog -d notblog_identity"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+  # ── RabbitMQ 消息队列 ──────────────────────────────
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    container_name: notblog-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: notblog
+      RABBITMQ_DEFAULT_PASS: NotBlog@2026!
+      RABBITMQ_DEFAULT_VHOST: /
+    ports:
+      - "5672:5672"       # AMQP 协议端口（应用连接）
+      - "15672:15672"     # 管理界面 Web UI
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+volumes:
+  pgdata:
+    driver: local
+  rabbitmq-data:
+    driver: local
