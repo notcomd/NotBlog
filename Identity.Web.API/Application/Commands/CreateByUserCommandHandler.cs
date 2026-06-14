@@ -5,7 +5,7 @@ namespace Identity.Web.API.Application.Commands;
 public class CreateUserCommandHandler(
     ILogger<CreateUserCommandHandler> logger,
     IUserService userService)
-    : IRequestHandler<CreateUserCommand, bool>
+    : NotMediator.IRequestHandler<CreateUserCommand, bool>
 {
     public async Task<bool> Handler(CreateUserCommand request, CancellationToken cancellationToken)
     {

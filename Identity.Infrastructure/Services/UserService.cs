@@ -63,7 +63,7 @@ public class UserService(
 
 
     /// <summary>
-    ///     登入验证
+    ///  登入验证
     /// </summary>
     /// <param name="email">电子邮件地址</param>
     /// <param name="password">密码</param>
@@ -96,7 +96,7 @@ public class UserService(
 
 
     /// <summary>
-    ///     登入验证核心方法
+    ///  登入验证核心方法
     /// </summary>
     /// <param name="userIdentifier">用户标识符，可以是手机号或电子邮件地址</param>
     /// <param name="password">用户密码</param>

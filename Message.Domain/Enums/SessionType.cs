@@ -3,9 +3,9 @@ namespace Message.Domain.Enums;
 public enum SessionType
 {
     /// <summary>
-    /// 未知会话类型
+    /// AI类型
     /// </summary>
-    Unknown,
+    AiChat,
 
     /// <summary>
     /// 私聊会话
@@ -15,5 +15,11 @@ public enum SessionType
     /// <summary>
     /// 群聊会话
     /// </summary>
-    Group
+    Group,
+
+    // 频道会话
+    Channel,
+
+    ///匿名会话
+    NonAnonymous,
 }

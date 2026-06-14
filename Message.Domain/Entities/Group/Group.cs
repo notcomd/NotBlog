@@ -34,25 +34,38 @@ public class Group : Entity, IAggregateRoot
 
     private Group()
     {
-        GroupId = Guid.NewGuid();
+        GroupId = Guid.CreateVersion7();
         CreatedTime = DateTime.UtcNow;
     }
 
     public Guid GroupId { get; init; }
+
     public string GroupName { get; private set; }
+
     public string? Description { get; set; }
+
     public Guid OwnerId { get; private set; }
+
     public Uri? Avatar { get; set; }
+
     public int MaxMembers { get; private set; }
+
     public bool IsPublic { get; private set; }
+
     public bool AllowMemberInvite { get; private set; }
+
     public bool AllowMemberEditInfo { get; private set; }
+
     public DateTime CreatedTime { get; init; }
+
     public DateTime? DismissedTime { get; private set; }
+
     public bool IsDismissed { get; private set; }
+
     public IReadOnlyCollection<GroupMember> Members => _members.AsReadOnly();
 
     public int MemberCount => _members.Count;
+
 
     public void UpdateGroupInfo(string groupName, string? description, Uri? avatar)
     {

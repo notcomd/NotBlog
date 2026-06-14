@@ -1,8 +1,5 @@
 using Message.Domain.Entities.Group;
 using Message.Domain.Enums;
-using Message.Domain.IProvider;
-using Message.Domain.IRepository;
-using Message.Domain.SeedWork;
 
 namespace Message.Infrastructure.Provider;
 
@@ -24,15 +21,7 @@ public class GroupProvider : IGroupProvider
     public async Task<Group> CreateGroupAsync(Guid ownerId, string groupName, int maxMembers = 500,
         bool isPublic = false)
     {
-        var owner = await _userRepository.GetByIdAsync(ownerId);
-        if (owner == null)
-            throw new KeyNotFoundException("群主不存在");
-
-        var group = new Group(ownerId, groupName, maxMembers, isPublic);
-        await _groupRepository.AddAsync(group);
-        await _unitOfWork.SavaEntitiesAsync();
-
-        return group;
+        return null;
     }
 
     public async Task<Group?> GetGroupAsync(Guid groupId)
@@ -132,17 +121,6 @@ public class GroupProvider : IGroupProvider
 
     public async Task AddMemberAsync(Guid groupId, Guid userId, GroupMemberRole role = GroupMemberRole.Member)
     {
-        var group = await _groupRepository.GetByIdAsync(groupId);
-        if (group == null)
-            throw new KeyNotFoundException("群组不存在");
-
-        var user = await _userRepository.GetByIdAsync(userId);
-        if (user == null)
-            throw new KeyNotFoundException("用户不存在");
-
-        group.AddMember(userId, role);
-        await _groupRepository.UpdateAsync(group);
-        await _unitOfWork.SavaEntitiesAsync();
     }
 
     public async Task RemoveMemberAsync(Guid groupId, Guid userId)

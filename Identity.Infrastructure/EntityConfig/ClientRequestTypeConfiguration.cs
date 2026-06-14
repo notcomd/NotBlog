@@ -1,6 +1,4 @@
-using Identity.Infrastructure.Idempotent;
-
-namespace Identity.Infrastructure.Configuration;
+namespace Identity.Infrastructure.EntityConfig;
 
 public class ClientRequestTypeConfiguration : IEntityTypeConfiguration<ClientRequest>
 {

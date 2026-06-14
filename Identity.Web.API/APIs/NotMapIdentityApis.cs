@@ -35,6 +35,14 @@ public static class NotMapIdentityApis
         return Task.FromResult<IActionResult>(IdentityResult<string>.Success("hello world!", $"{DateTime.Now}"));
     }
 
+
+    private static Task<IActionResult> Login([AsParameters] IdentityService identityService,
+        [EmailAddress(ErrorMessage = "格式错误")] string email, string password, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
+
+
     private static async Task<IActionResult> GetByTest2([AsParameters] IdentityService identityService,
         CreateByUserDto createByUserDto, CancellationToken cancellationToken)
     {

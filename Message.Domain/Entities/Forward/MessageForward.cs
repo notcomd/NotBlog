@@ -8,9 +8,8 @@ namespace Message.Domain.Entities.Forward;
 public class MessageForward
 {
     public MessageForward(Guid originalMessageId, Guid forwardedMessageId, Guid forwardedBy,
-        Guid targetSessionId, ForwardType forwardType, Guid? parentForwardId = null, string? comment = null)
+        Guid targetSessionId, ForwardType forwardType, Guid? parentForwardId = null, string? comment = null) : this()
     {
-        ForwardId = Guid.NewGuid();
         OriginalMessageId = originalMessageId;
         ForwardedMessageId = forwardedMessageId;
         ForwardedBy = forwardedBy;
@@ -20,27 +19,39 @@ public class MessageForward
         ForwardComment = comment;
         ParentForwardId = parentForwardId;
         ForwardDepth = 1;
-        ForwardChain = new List<Guid> { ForwardId };
+        ForwardChain.Add(ForwardId);
+        //ForwardChain = new List<Guid> { ForwardId };
     }
 
     private MessageForward()
     {
-        ForwardId = Guid.NewGuid();
+        ForwardId = Guid.CreateVersion7();
         ForwardTime = DateTime.UtcNow;
         ForwardChain = new List<Guid>();
     }
 
     public Guid ForwardId { get; init; }
+
     public Guid OriginalMessageId { get; init; }
+
     public Guid ForwardedMessageId { get; init; }
+
     public Guid ForwardedBy { get; init; }
+
     public Guid TargetSessionId { get; init; }
+
     public ForwardType ForwardType { get; private set; }
+
     public DateTime ForwardTime { get; init; }
+
     public string? ForwardComment { get; set; }
+
     public Guid? ParentForwardId { get; init; }
+
     public int ForwardDepth { get; private set; }
+
     public List<Guid> ForwardChain { get; init; }
+
 
     public static MessageForward CreateNestedForward(MessageForward parentForward, Guid newForwardedMessageId,
         Guid forwardedBy, Guid targetSessionId, ForwardType forwardType, string? comment = null)

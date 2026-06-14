@@ -38,17 +38,29 @@ public class MessageFriends : Entity, IAggregateRoot
     }
 
     public Guid FriendshipId { get; init; }
+
     public Guid UserId { get; init; }
+
     public Guid FriendId { get; init; }
+
     public FriendshipStatus Status { get; private set; }
+
     public string? Remark { get; set; }
+
     public string? FriendGroupName { get; set; }
+
     public bool IsBlocked { get; private set; }
+
     public bool IsMuted { get; private set; }
+
     public bool IsStarred { get; private set; }
+
     public DateTime CreatedTime { get; init; }
+
     public DateTime? AcceptedTime { get; private set; }
+
     public DateTime? LastInteractionTime { get; private set; }
+
 
     public void Accept()
     {

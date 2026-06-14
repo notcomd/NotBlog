@@ -14,6 +14,6 @@
     <SourceRoot Include="D:\Microsoft_Visual_Studio_Tools\NuGetPackages\" />
   </ItemGroup>
   <ImportGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
-    <Import Project="$(NuGetPackageRoot)microsoft.entityframeworkcore\10.0.9\buildTransitive\net10.0\Microsoft.EntityFrameworkCore.props" Condition="Exists('$(NuGetPackageRoot)microsoft.entityframeworkcore\10.0.9\buildTransitive\net10.0\Microsoft.EntityFrameworkCore.props')" />
+    <Import Project="$(NuGetPackageRoot)scriban\5.10.0\build\Scriban.props" Condition="Exists('$(NuGetPackageRoot)scriban\5.10.0\build\Scriban.props')" />
   </ImportGroup>
 </Project>

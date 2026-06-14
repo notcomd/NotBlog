@@ -6,7 +6,6 @@ using Markdown.Infrastructure.EntityFramework;
 using Markdown.Web.API.Application.Commands;
 using Markdown.Web.API.Application.IntegrationEventHandlers;
 using Notcomd.Evenbus;
-using NotMediator;
 
 namespace Markdown.Web.API.Application.CommandHandlers;
 
@@ -16,7 +15,7 @@ namespace Markdown.Web.API.Application.CommandHandlers;
 public class CreateMarkdownCommandHandler(
     IMarkdownRepository markdownRepository,
     MarkDownDbContext dbContext,
-    IEventBus eventBus) : IRequestHandler<CreateMarkdownCommand, bool>
+    IEventBus eventBus) : NotMediator.IRequestHandler<CreateMarkdownCommand, bool>
 {
     public async Task<bool> Handler(CreateMarkdownCommand request, CancellationToken cancellationToken)
     {

@@ -23,6 +23,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\CommonsInitializer\CommonsInitializer.csproj"/>
+        <ProjectReference Include="..\Evenbus\Evenbus.csproj"/>
         <ProjectReference Include="..\NotBlog.ServiceDefaults\NotBlog.ServiceDefaults.csproj" />
         <ProjectReference Include="..\NotEmail\NotEmail.csproj"/>
         <ProjectReference Include="..\Identity.Infrastructure\Identity.Infrastructure.csproj"/>

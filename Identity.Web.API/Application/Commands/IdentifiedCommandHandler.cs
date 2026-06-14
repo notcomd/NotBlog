@@ -1,13 +1,12 @@
 using Identity.Infrastructure.Idempotent;
-using Identity.Web.API.Application.Commands;
 
-namespace Identity.Web.API.Application.Command;
+namespace Identity.Web.API.Application.Commands;
 
 public abstract class IdentifiedCommandHandler<T, R>(
     ILogger<IdentifiedCommandHandler<T, R>> logger,
     INotMediator mediator,
     IRequestManagement requestManagement)
-    : IRequestHandler<IdentifiedCommand<T, R>, R>
+    : NotMediator.IRequestHandler<IdentifiedCommand<T, R>, R>
     where T : IRequest<R>
 {
     private readonly ILogger<IdentifiedCommandHandler<T, R>> _logger =

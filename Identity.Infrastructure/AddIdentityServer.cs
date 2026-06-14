@@ -1,5 +1,4 @@
-﻿using Identity.Domain.IService;
-using Identity.Domain.Options;
+﻿using Identity.Domain.Options;
 using Identity.Infrastructure.Services;
 
 namespace Identity.Infrastructure;
@@ -15,7 +14,6 @@ public static class AddIdentityServer
         serviceCollection.AddDistributedMemoryCache();
         serviceCollection.AddScoped<ISmsCodeSend, SmsCodeSend>();
         serviceCollection.AddScoped<UserService>();
-        serviceCollection.AddEmailServer();
         serviceCollection.AddJwtAuthentication(configuration);
         return serviceCollection;
     }

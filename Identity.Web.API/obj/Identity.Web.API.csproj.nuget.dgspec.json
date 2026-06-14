@@ -2202,6 +2202,9 @@
               "F:\\NotBlog\\CommonsInitializer\\CommonsInitializer.csproj": {
                 "projectPath": "F:\\NotBlog\\CommonsInitializer\\CommonsInitializer.csproj"
               },
+              "F:\\NotBlog\\Evenbus\\Evenbus.csproj": {
+                "projectPath": "F:\\NotBlog\\Evenbus\\Evenbus.csproj"
+              },
               "F:\\NotBlog\\Identity.Infrastructure\\Identity.Infrastructure.csproj": {
                 "projectPath": "F:\\NotBlog\\Identity.Infrastructure\\Identity.Infrastructure.csproj"
               },
@@ -3620,14 +3623,7 @@
         "frameworks": {
           "net10.0": {
             "targetAlias": "net10.0",
-            "projectReferences": {
-              "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj": {
-                "projectPath": "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj"
-              },
-              "F:\\NotBlog\\Evenbus\\Evenbus.csproj": {
-                "projectPath": "F:\\NotBlog\\Evenbus\\Evenbus.csproj"
-              }
-            }
+            "projectReferences": {}
           }
         },
         "warningProperties": {
@@ -3652,15 +3648,27 @@
             },
             "Microsoft.Extensions.Configuration.Abstractions": {
               "target": "Package",
-              "version": "[9.0.4, )"
+              "version": "[*, )"
+            },
+            "Microsoft.Extensions.DependencyInjection.Abstractions": {
+              "target": "Package",
+              "version": "[*, )"
             },
             "Microsoft.Extensions.Logging.Abstractions": {
               "target": "Package",
-              "version": "[8.0.0, )"
+              "version": "[*, )"
             },
             "Microsoft.Extensions.Options": {
               "target": "Package",
-              "version": "[10.0.4, )"
+              "version": "[*, )"
+            },
+            "Microsoft.Extensions.Options.ConfigurationExtensions": {
+              "target": "Package",
+              "version": "[*, )"
+            },
+            "Scriban": {
+              "target": "Package",
+              "version": "[5.10.0, )"
             }
           },
           "imports": [

@@ -41,7 +41,7 @@ public class UserRoleRepository(IdentityDbContext userRoleDbContext) : IUserRole
     {
         var data = await
             userRoleDbContext.Roles
-                .Include(en => en.RolePermission)
+                .Include(en => en.Permissions)
                 .Where(en => en.RoleName == roleName)
                 .SingleOrDefaultAsync();
         return data ?? throw new ArgumentNullException($"{roleName}");
@@ -60,7 +60,8 @@ public class UserRoleRepository(IdentityDbContext userRoleDbContext) : IUserRole
 
     public async ValueTask<bool> UpByUserRoleAsync(Roles userRole)
     {
-        if ((await FindByUserRoleAsync(userRole.RoleGuid) ?? throw new InvalidOperationException()) == userRole) return true;
+        if ((await FindByUserRoleAsync(userRole.RoleGuid) ?? throw new InvalidOperationException()) ==
+            userRole) return true;
         userRoleDbContext.Update(userRole);
         return true;
     }

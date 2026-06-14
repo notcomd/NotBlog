@@ -8,9 +8,8 @@ namespace Message.Domain.Entities.Group;
 /// </summary>
 public class GroupMember : Entity
 {
-    public GroupMember(Guid groupId, Guid userId, GroupMemberRole role)
+    public GroupMember(Guid groupId, Guid userId, GroupMemberRole role) : this()
     {
-        MemberId = Guid.NewGuid();
         GroupId = groupId;
         UserId = userId;
         Role = role;
@@ -21,21 +20,30 @@ public class GroupMember : Entity
 
     private GroupMember()
     {
-        MemberId = Guid.NewGuid();
+        MemberId = Guid.CreateVersion7();
         JoinTime = DateTime.UtcNow;
     }
 
     public Guid MemberId { get; init; }
+
     public Guid GroupId { get; init; }
+
     public Guid UserId { get; init; }
+
     public GroupMemberRole Role { get; private set; }
 
     public string? Nickname { get; set; }
+
     public DateTime JoinTime { get; init; }
+
     public DateTime? MuteEndTime { get; set; }
+
     public bool IsMuted { get; private set; }
+
     public bool IsBanned { get; private set; }
+
     public DateTime? BannedTime { get; private set; }
+
 
     public void PromoteToAdmin()
     {

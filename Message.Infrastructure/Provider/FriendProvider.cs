@@ -1,8 +1,3 @@
-using Message.Domain.Entities;
-using Message.Domain.IProvider;
-using Message.Domain.IRepository;
-using Message.Domain.SeedWork;
-
 namespace Message.Infrastructure.Provider;
 
 public class FriendProvider : IFriendProvider
@@ -22,25 +17,7 @@ public class FriendProvider : IFriendProvider
 
     public async Task<MessageFriends> SendFriendRequestAsync(Guid userId, Guid friendId)
     {
-        if (userId == friendId)
-            throw new InvalidOperationException("不能添加自己为好友");
-
-        var user = await _userRepository.GetByIdAsync(userId);
-        if (user == null)
-            throw new KeyNotFoundException("用户不存在");
-
-        var friend = await _userRepository.GetByIdAsync(friendId);
-        if (friend == null)
-            throw new KeyNotFoundException("目标用户不存在");
-
-        if (await _friendRepository.ExistsAsync(userId, friendId))
-            throw new InvalidOperationException("好友关系已存在");
-
-        var friendship = new MessageFriends(userId, friendId);
-        await _friendRepository.AddAsync(friendship);
-        await _unitOfWork.SavaEntitiesAsync();
-
-        return friendship;
+        return null;
     }
 
     public async Task AcceptFriendRequestAsync(Guid userId, Guid friendId)

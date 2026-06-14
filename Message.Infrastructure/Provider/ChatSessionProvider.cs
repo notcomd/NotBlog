@@ -1,23 +1,17 @@
-using Message.Domain.Entities;
-using Message.Domain.IProvider;
-using Message.Domain.IRepository;
-using Message.Domain.SeedWork;
-
 namespace Message.Infrastructure.Provider;
 
 public class ChatSessionProvider : IChatSessionProvider
 {
     private readonly IChatSessionRepository _sessionRepository;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IUserRepository _userRepository;
+
 
     public ChatSessionProvider(
         IChatSessionRepository sessionRepository,
-        IUserRepository userRepository,
         IUnitOfWork unitOfWork)
     {
         _sessionRepository = sessionRepository;
-        _userRepository = userRepository;
+
         _unitOfWork = unitOfWork;
     }
 
@@ -27,13 +21,6 @@ public class ChatSessionProvider : IChatSessionProvider
         if (existingSession != null)
             return existingSession;
 
-        var user1 = await _userRepository.GetByIdAsync(userId1);
-        if (user1 == null)
-            throw new KeyNotFoundException("用户1不存在");
-
-        var user2 = await _userRepository.GetByIdAsync(userId2);
-        if (user2 == null)
-            throw new KeyNotFoundException("用户2不存在");
 
         var session = ChatSession.CreatePrivateSession(userId1, userId2);
         await _sessionRepository.AddAsync(session);
@@ -45,10 +32,6 @@ public class ChatSessionProvider : IChatSessionProvider
     public async Task<ChatSession> CreateGroupSessionAsync(Guid groupId, Guid creatorId, string groupName,
         HashSet<Guid> initialMembers)
     {
-        var creator = await _userRepository.GetByIdAsync(creatorId);
-        if (creator == null)
-            throw new KeyNotFoundException("创建者不存在");
-
         var session = ChatSession.CreateGroupSession(groupId, creatorId, groupName, initialMembers);
         await _sessionRepository.AddAsync(session);
         await _unitOfWork.SavaEntitiesAsync();
@@ -107,9 +90,6 @@ public class ChatSessionProvider : IChatSessionProvider
         if (session == null)
             throw new KeyNotFoundException("会话不存在");
 
-        var user = await _userRepository.GetByIdAsync(userId);
-        if (user == null)
-            throw new KeyNotFoundException("用户不存在");
 
         session.AddParticipant(userId);
         await _sessionRepository.UpdateAsync(session);

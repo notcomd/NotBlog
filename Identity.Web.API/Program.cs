@@ -1,9 +1,11 @@
+using System.Runtime.CompilerServices;
 using Identity.Domain.IService;
 using Identity.Domain.Options;
 using Identity.Infrastructure.EntityFramework;
 using Identity.Infrastructure.Services;
 using Identity.Web.API.APIs;
 using NotBlog.ServiceDefaults;
+using Notcomd.NotEmail;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +20,16 @@ builder.AddRedisDistributedCache("Redis");
 builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
 
 builder.Services.AddControllers(opt => { opt.Filters.Add(new UnitOfWorkFilter()); });
+///c7d9264a-5c9b-45dd-a3b6-84ec3f138395
+builder.Services.AddNotEmailWithOAuth2Provider(
+    ()=>EmailProviderConfig.OutlookOAuth2("311cc2de-cf6a-4b92-82de-a3382f68c2e4",
+    "c7d9264a-5c9b-45dd-a3b6-84ec3f138395",
+    async ac=>{
+        var token = await await _oauthService.GetAccessTokenAsync(ac);
+
+        return token.AccessToken;
+    },"common","","notcomd@outlook.com")
+);
 
 builder.Services.AddOpenApi();
 

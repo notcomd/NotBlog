@@ -52,7 +52,7 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 // 使用 EventBus
-app.UseEventBus();
+await app.UseEventBusAsync();
 
 app.MapControllers();
 

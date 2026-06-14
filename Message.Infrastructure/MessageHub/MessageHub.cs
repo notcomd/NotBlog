@@ -1,5 +1,5 @@
 ﻿namespace Message.Infrastructure.MessageHub;
 
-public class MessageHub : Hub<Message>
+public class MessageHub : Hub<Domain.Entities.Message>
 {
 }

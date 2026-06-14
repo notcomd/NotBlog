@@ -1,68 +1,22 @@
 {
   "version": 2,
-  "dgSpecHash": "smSfHkjH25k=",
-  "success": false,
+  "dgSpecHash": "fQqvPom/JeU=",
+  "success": true,
   "projectFilePath": "F:\\NotBlog\\NotEmail\\NotEmail.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\notco\\.nuget\\packages\\bouncycastle.cryptography\\2.4.0\\bouncycastle.cryptography.2.4.0.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\dynamic.json\\1.4.1\\dynamic.json.1.4.1.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\mailkit\\4.7.1.1\\mailkit.4.7.1.1.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.aspnetcore.http.abstractions\\2.3.11\\microsoft.aspnetcore.http.abstractions.2.3.11.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.aspnetcore.http.features\\2.3.10\\microsoft.aspnetcore.http.features.2.3.10.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.entityframeworkcore\\10.0.9\\microsoft.entityframeworkcore.10.0.9.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.entityframeworkcore.abstractions\\10.0.9\\microsoft.entityframeworkcore.abstractions.10.0.9.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.entityframeworkcore.analyzers\\10.0.9\\microsoft.entityframeworkcore.analyzers.10.0.9.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.entityframeworkcore.relational\\10.0.9\\microsoft.entityframeworkcore.relational.10.0.9.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.caching.abstractions\\10.0.9\\microsoft.extensions.caching.abstractions.10.0.9.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.caching.memory\\10.0.9\\microsoft.extensions.caching.memory.10.0.9.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\9.0.4\\microsoft.extensions.configuration.abstractions.9.0.4.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.dependencyinjection\\10.0.9\\microsoft.extensions.dependencyinjection.10.0.9.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.configuration\\10.0.9\\microsoft.extensions.configuration.10.0.9.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\10.0.9\\microsoft.extensions.configuration.abstractions.10.0.9.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.configuration.binder\\10.0.9\\microsoft.extensions.configuration.binder.10.0.9.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\10.0.9\\microsoft.extensions.dependencyinjection.abstractions.10.0.9.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.diagnostics.abstractions\\10.0.9\\microsoft.extensions.diagnostics.abstractions.10.0.9.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.fileproviders.abstractions\\10.0.9\\microsoft.extensions.fileproviders.abstractions.10.0.9.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.hosting.abstractions\\10.0.9\\microsoft.extensions.hosting.abstractions.10.0.9.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.logging\\10.0.9\\microsoft.extensions.logging.10.0.9.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\8.0.0\\microsoft.extensions.logging.abstractions.8.0.0.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.options\\10.0.4\\microsoft.extensions.options.10.0.4.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\10.0.9\\microsoft.extensions.logging.abstractions.10.0.9.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.options\\10.0.9\\microsoft.extensions.options.10.0.9.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.options.configurationextensions\\10.0.9\\microsoft.extensions.options.configurationextensions.10.0.9.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.primitives\\10.0.9\\microsoft.extensions.primitives.10.0.9.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\mimekit\\4.7.1\\mimekit.4.7.1.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\rabbitmq.client\\7.2.1\\rabbitmq.client.7.2.1.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\system.security.cryptography.pkcs\\8.0.0\\system.security.cryptography.pkcs.8.0.0.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\system.threading.ratelimiting\\8.0.0\\system.threading.ratelimiting.8.0.0.nupkg.sha512"
+    "C:\\Users\\notco\\.nuget\\packages\\scriban\\5.10.0\\scriban.5.10.0.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\system.security.cryptography.pkcs\\8.0.0\\system.security.cryptography.pkcs.8.0.0.nupkg.sha512"
   ],
-  "logs": [
-    {
-      "code": "NU1605",
-      "level": "Error",
-      "message": "Warning As Error: Detected package downgrade: Microsoft.Extensions.Configuration.Abstractions from 10.0.9 to 9.0.4. Reference the package directly from the project to select a different version. \r\n NotEmail -> Evenbus -> Microsoft.EntityFrameworkCore.Relational 10.0.9 -> Microsoft.Extensions.Configuration.Abstractions (>= 10.0.9) \r\n NotEmail -> Microsoft.Extensions.Configuration.Abstractions (>= 9.0.4)",
-      "projectPath": "F:\\NotBlog\\NotEmail\\NotEmail.csproj",
-      "filePath": "F:\\NotBlog\\NotEmail\\NotEmail.csproj",
-      "libraryId": "Microsoft.Extensions.Configuration.Abstractions",
-      "targetGraphs": [
-        "net10.0"
-      ]
-    },
-    {
-      "code": "NU1605",
-      "level": "Error",
-      "message": "Warning As Error: Detected package downgrade: Microsoft.Extensions.Logging.Abstractions from 10.0.9 to 8.0.0. Reference the package directly from the project to select a different version. \r\n NotEmail -> Evenbus -> Microsoft.Extensions.Hosting.Abstractions 10.0.9 -> Microsoft.Extensions.Logging.Abstractions (>= 10.0.9) \r\n NotEmail -> Microsoft.Extensions.Logging.Abstractions (>= 8.0.0)",
-      "projectPath": "F:\\NotBlog\\NotEmail\\NotEmail.csproj",
-      "filePath": "F:\\NotBlog\\NotEmail\\NotEmail.csproj",
-      "libraryId": "Microsoft.Extensions.Logging.Abstractions",
-      "targetGraphs": [
-        "net10.0"
-      ]
-    },
-    {
-      "code": "NU1605",
-      "level": "Error",
-      "message": "Warning As Error: Detected package downgrade: Microsoft.Extensions.Options from 10.0.9 to 10.0.4. Reference the package directly from the project to select a different version. \r\n NotEmail -> Evenbus -> Microsoft.EntityFrameworkCore 10.0.9 -> Microsoft.Extensions.Caching.Memory 10.0.9 -> Microsoft.Extensions.Options (>= 10.0.9) \r\n NotEmail -> Microsoft.Extensions.Options (>= 10.0.4)",
-      "projectPath": "F:\\NotBlog\\NotEmail\\NotEmail.csproj",
-      "filePath": "F:\\NotBlog\\NotEmail\\NotEmail.csproj",
-      "libraryId": "Microsoft.Extensions.Options",
-      "targetGraphs": [
-        "net10.0"
-      ]
-    }
-  ]
+  "logs": []
 }

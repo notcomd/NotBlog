@@ -1,4 +1,4 @@
-﻿namespace Identity.Infrastructure.Configuration;
+﻿namespace Identity.Infrastructure.EntityConfig;
 
 public class UserEntityTypeConfiguration : IEntityTypeConfiguration<User>
 {

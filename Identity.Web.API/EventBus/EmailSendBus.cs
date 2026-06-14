@@ -1,10 +1,10 @@
 namespace Identity.Web.API.EventBus;
 
 [EvenBusName("Identity.User.Code")]
-public class EmailSendBus(IEmail email, IEmailCodeSend emailCodeSend, ILogger<IEmailCodeSend> logger)
+public class EmailSendBus(IEmailSender email, IEmailCodeSend emailCodeSend, ILogger<IEmailCodeSend> logger)
     : JsonIntegrationEventHandler<EmailSendRecord>
 {
-    private readonly IEmail _email = email ?? throw new ArgumentNullException(nameof(email));
+    private readonly IEmailSender _email = email ?? throw new ArgumentNullException(nameof(email));
 
     private readonly IEmailCodeSend _emailCodeSend =
         emailCodeSend ?? throw new ArgumentNullException(nameof(emailCodeSend));
@@ -18,9 +18,8 @@ public class EmailSendBus(IEmail email, IEmailCodeSend emailCodeSend, ILogger<IE
         _logger.LogInformation($"date:{DateTime.UtcNow},邮件发送{notification.ToEmail}");
     }
 
-    protected override async Task EventDlerJson(string eventName, EmailSendRecord? eventData)
+    protected override Task EventDlerJson(string eventName, EmailSendRecord? eventData)
     {
-        await _emailCodeSend.SendEmailCodeAsync(eventData?.ToEmail, eventData?.Code.ToString());
-        _logger.LogInformation($"date:{DateTime.UtcNow},邮件发送{eventData.ToEmail}");
+        return Handle(eventData, CancellationToken.None);
     }
 }
