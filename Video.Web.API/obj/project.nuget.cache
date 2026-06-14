@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "BeCMQatyipk=",
+  "dgSpecHash": "750pUQlnClM=",
   "success": true,
   "projectFilePath": "F:\\NotBlog\\Video.Web.API\\Video.Web.API.csproj",
   "expectedPackageFiles": [
@@ -8,13 +8,10 @@
     "C:\\Users\\notco\\.nuget\\packages\\aspire.stackexchange.redis.distributedcaching\\13.1.2\\aspire.stackexchange.redis.distributedcaching.13.1.2.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\aspnetcore.healthchecks.redis\\9.0.0\\aspnetcore.healthchecks.redis.9.0.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\8.0.6\\microsoft.aspnetcore.authentication.jwtbearer.8.0.6.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.aspnetcore.authentication.microsoftaccount\\8.0.6\\microsoft.aspnetcore.authentication.microsoftaccount.8.0.6.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.aspnetcore.http.connections.client\\8.0.6\\microsoft.aspnetcore.http.connections.client.8.0.6.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\10.0.9\\microsoft.aspnetcore.authentication.jwtbearer.10.0.9.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.aspnetcore.openapi\\10.0.5\\microsoft.aspnetcore.openapi.10.0.5.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.aspnetcore.signalr.client\\8.0.6\\microsoft.aspnetcore.signalr.client.8.0.6.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.aspnetcore.signalr.client.core\\8.0.6\\microsoft.aspnetcore.signalr.client.core.8.0.6.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\7.0.0\\microsoft.bcl.asyncinterfaces.7.0.0.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.bcl.cryptography\\10.0.2\\microsoft.bcl.cryptography.10.0.2.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.build.framework\\17.8.3\\microsoft.build.framework.17.8.3.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.build.locator\\1.7.8\\microsoft.build.locator.1.7.8.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.codeanalysis.analyzers\\3.3.4\\microsoft.codeanalysis.analyzers.3.3.4.nupkg.sha512",
@@ -42,12 +39,12 @@
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.servicediscovery.abstractions\\10.4.0\\microsoft.extensions.servicediscovery.abstractions.10.4.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.telemetry\\10.4.0\\microsoft.extensions.telemetry.10.4.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.telemetry.abstractions\\10.4.0\\microsoft.extensions.telemetry.abstractions.10.4.0.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.abstractions\\7.6.0\\microsoft.identitymodel.abstractions.7.6.0.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.jsonwebtokens\\7.6.0\\microsoft.identitymodel.jsonwebtokens.7.6.0.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.logging\\7.6.0\\microsoft.identitymodel.logging.7.6.0.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.protocols\\7.1.2\\microsoft.identitymodel.protocols.7.1.2.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.protocols.openidconnect\\7.1.2\\microsoft.identitymodel.protocols.openidconnect.7.1.2.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.tokens\\7.6.0\\microsoft.identitymodel.tokens.7.6.0.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.abstractions\\8.19.1\\microsoft.identitymodel.abstractions.8.19.1.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.jsonwebtokens\\8.19.1\\microsoft.identitymodel.jsonwebtokens.8.19.1.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.logging\\8.19.1\\microsoft.identitymodel.logging.8.19.1.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.protocols\\8.0.1\\microsoft.identitymodel.protocols.8.0.1.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.protocols.openidconnect\\8.0.1\\microsoft.identitymodel.protocols.openidconnect.8.0.1.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.tokens\\8.19.1\\microsoft.identitymodel.tokens.8.19.1.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.openapi\\2.0.0\\microsoft.openapi.2.0.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\mono.texttemplating\\3.0.0\\mono.texttemplating.3.0.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\notmediator\\1.0.5\\notmediator.1.0.5.nupkg.sha512",
@@ -74,7 +71,7 @@
     "C:\\Users\\notco\\.nuget\\packages\\system.composition.hosting\\7.0.0\\system.composition.hosting.7.0.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\system.composition.runtime\\7.0.0\\system.composition.runtime.7.0.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\system.composition.typedparts\\7.0.0\\system.composition.typedparts.7.0.0.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\system.identitymodel.tokens.jwt\\7.6.0\\system.identitymodel.tokens.jwt.7.6.0.nupkg.sha512"
+    "C:\\Users\\notco\\.nuget\\packages\\system.identitymodel.tokens.jwt\\8.19.1\\system.identitymodel.tokens.jwt.8.19.1.nupkg.sha512"
   ],
   "logs": [
     {

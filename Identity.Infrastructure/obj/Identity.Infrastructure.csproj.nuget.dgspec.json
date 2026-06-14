@@ -1820,11 +1820,7 @@
         "frameworks": {
           "net10.0": {
             "targetAlias": "net10.0",
-            "projectReferences": {
-              "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj": {
-                "projectPath": "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj"
-              }
-            }
+            "projectReferences": {}
           }
         },
         "warningProperties": {
@@ -1845,23 +1841,11 @@
           "dependencies": {
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
-              "version": "[8.0.6, )"
-            },
-            "Microsoft.AspNetCore.Authentication.MicrosoftAccount": {
-              "target": "Package",
-              "version": "[8.0.6, )"
-            },
-            "Microsoft.AspNetCore.SignalR.Client": {
-              "target": "Package",
-              "version": "[8.0.6, )"
-            },
-            "NotMediator": {
-              "target": "Package",
-              "version": "[1.0.5, )"
+              "version": "[*, )"
             },
             "System.IdentityModel.Tokens.Jwt": {
               "target": "Package",
-              "version": "[7.6.0, )"
+              "version": "[*, )"
             }
           },
           "imports": [

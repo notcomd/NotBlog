@@ -22,118 +22,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5b6bb9ff-c83f-4a69-99e3-d3d137b7bca0" name="Changes" comment="docs(system): 添加即时通讯系统设计文档和项目整理方案&#10;&#10;- 创建即时通讯系统实体设计方案，包含用户、消息、聊天会话、文件附件等核心实体&#10;- 设计群聊功能相关实体，包括群组、群成员、群角色权限等完整结构&#10;- 实现消息撤回、转发、已读回执等高级功能的实体设计&#10;- 添加离线消息存储和消息加密功能的实体架构&#10;- 完善领域事件设计，涵盖消息发送、接收、群聊等各类事件&#10;- 创建NotBlog项目整理方案，解决命名错误、废弃项目等问题&#10;- 设计Markdown.Web.API实现说明文档，详细描述CRUD操作和事件流&#10;- 配置Docker Compose文件，集成PostgreSQL数据库和RabbitMQ消息队列&#10;- 规划完整的文件目录结构和CQRS模式的应用层架构">
+    <list default="true" id="5b6bb9ff-c83f-4a69-99e3-d3d137b7bca0" name="Changes" comment="feat(email): 添加完整的邮件系统核心功能&#10;&#10;- 实现 EmailAttachment 邮件附件模型，支持文件名、数据和MIME类型&#10;- 实现 EmailMessage 邮件消息模型，支持收件人、主题、HTML/文本正文、抄送密送等功能&#10;- 实现 EmailOptions 邮件配置选项，支持SMTP/IMAP服务器配置和OAuth2认证&#10;- 定义 IEmailManager、IEmailReceiver、IEmailSender 等核心接口&#10;- 实现 ReceivedEmail 已接收邮件模型和 SendResult 发送结果模型&#10;- 添加 ServiceCollectionExtensions 依赖注入扩展方法&#10;- 实现 EmailProviderConfig 邮件服务商预置配置，支持主流邮箱服务&#10;- 实现 EmailProviderType 邮件服务商枚举类型&#10;- 实现 ImapEmailReceiver IMAP邮件接收器，支持收件箱、搜索、删除等操作&#10;- 实现 SmtpEmailSender SMTP邮件发送器基础框架">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.NotBlog/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.NotBlog/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CommonsInitializer/obj/rider.project.restore.info" beforeDir="false" afterPath="$PROJECT_DIR$/CommonsInitializer/obj/rider.project.restore.info" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DomainCommons/obj/Debug/net10.0/DomainCommons.AssemblyInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DomainCommons/obj/Debug/net10.0/DomainCommons.AssemblyInfo.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DomainCommons/obj/Debug/net10.0/DomainCommons.AssemblyInfoInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/DomainCommons/obj/Debug/net10.0/DomainCommons.AssemblyInfoInputs.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DomainCommons/obj/rider.project.restore.info" beforeDir="false" afterPath="$PROJECT_DIR$/DomainCommons/obj/rider.project.restore.info" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DomainInfrastructure/obj/Debug/net10.0/DomainInfrastructure.AssemblyInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DomainInfrastructure/obj/Debug/net10.0/DomainInfrastructure.AssemblyInfo.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DomainInfrastructure/obj/Debug/net10.0/DomainInfrastructure.AssemblyInfoInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/DomainInfrastructure/obj/Debug/net10.0/DomainInfrastructure.AssemblyInfoInputs.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DomainInfrastructure/obj/rider.project.restore.info" beforeDir="false" afterPath="$PROJECT_DIR$/DomainInfrastructure/obj/rider.project.restore.info" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Evenbus/obj/Debug/net10.0/Evenbus.AssemblyInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Evenbus/obj/Debug/net10.0/Evenbus.AssemblyInfo.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FileDev.Domain/obj/Debug/net9.0/FileDev.Domain.AssemblyInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/FileDev.Domain/obj/Debug/net9.0/FileDev.Domain.AssemblyInfo.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FileDev.Infrastructure/obj/Debug/net10.0/FileDev.Infrastructure.AssemblyInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/FileDev.Infrastructure/obj/Debug/net10.0/FileDev.Infrastructure.AssemblyInfo.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FileDev.Infrastructure/obj/Debug/net10.0/FileDev.Infrastructure.AssemblyInfoInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/FileDev.Infrastructure/obj/Debug/net10.0/FileDev.Infrastructure.AssemblyInfoInputs.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FileDev.Infrastructure/obj/rider.project.restore.info" beforeDir="false" afterPath="$PROJECT_DIR$/FileDev.Infrastructure/obj/rider.project.restore.info" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FileDev.Web.API/obj/Debug/net10.0/FileDev.Web.API.AssemblyInfoInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/FileDev.Web.API/obj/Debug/net10.0/FileDev.Web.API.AssemblyInfoInputs.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FileDev.Web.API/obj/rider.project.restore.info" beforeDir="false" afterPath="$PROJECT_DIR$/FileDev.Web.API/obj/rider.project.restore.info" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FileGrpcService/obj/Debug/net9.0/FileGrpcService.AssemblyInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/FileGrpcService/obj/Debug/net9.0/FileGrpcService.AssemblyInfo.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FileGrpcService/obj/Debug/net9.0/FileGrpcService.AssemblyInfoInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/FileGrpcService/obj/Debug/net9.0/FileGrpcService.AssemblyInfoInputs.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FileGrpcService/obj/rider.project.restore.info" beforeDir="false" afterPath="$PROJECT_DIR$/FileGrpcService/obj/rider.project.restore.info" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Domain/obj/Debug/net10.0/Identity.Domain.AssemblyInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Domain/obj/Debug/net10.0/Identity.Domain.AssemblyInfo.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Domain/obj/rider.project.restore.info" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Domain/obj/rider.project.restore.info" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Infrastructure/AddIdentityServer.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Infrastructure/AddIdentityServer.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Infrastructure/EntityConfig/Author2EntityTypeConfiguration.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Infrastructure/EntityConfig/Author2EntityTypeConfiguration.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Infrastructure/EntityConfig/ClientRequestTypeConfiguration.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Infrastructure/EntityConfig/ClientRequestTypeConfiguration.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Infrastructure/EntityConfig/PermissionEntityTypeConfigurtion.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Infrastructure/EntityConfig/PermissionEntityTypeConfigurtion.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Infrastructure/EntityConfig/UserAccessFailEntityTypeConfiguration.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Infrastructure/EntityConfig/UserAccessFailEntityTypeConfiguration.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Infrastructure/EntityConfig/UserEntityTypeConfiguration.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Infrastructure/EntityConfig/UserEntityTypeConfiguration.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Infrastructure/EntityConfig/UserExternalLoginEntityTypeConfiguration.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Infrastructure/EntityConfig/UserExternalLoginEntityTypeConfiguration.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Infrastructure/EntityConfig/UserSafetyEntityTypeConfiguration.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Infrastructure/EntityConfig/UserSafetyEntityTypeConfiguration.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Infrastructure/EntityFramework/IdentityDbContext.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Infrastructure/EntityFramework/IdentityDbContext.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Infrastructure/GlobalUsings.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Infrastructure/GlobalUsings.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Infrastructure/Repository/EmailCodeSend.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Infrastructure/Repository/EmailCodeSend.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Infrastructure/Repository/UserRoleRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Infrastructure/Repository/UserRoleRepository.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Infrastructure/Services/UserService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Infrastructure/Services/UserService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Infrastructure/obj/rider.project.restore.info" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Infrastructure/obj/rider.project.restore.info" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Web.API/APIs/IdentityService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Web.API/APIs/IdentityService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Web.API/APIs/NotMapIdentityApis.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Web.API/APIs/NotMapIdentityApis.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Web.API/Application/Commands/CreateByUserCommand.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Web.API/Application/Commands/CreateByUserCommand.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Web.API/Application/Commands/CreateByUserCommandHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Web.API/Application/Commands/CreateByUserCommandHandler.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Web.API/Application/Commands/GenerateCodeCommandHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Web.API/Application/Commands/GenerateCodeCommandHandler.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Web.API/Application/Commands/IdentifiedCommandHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Web.API/Application/Commands/IdentifiedCommandHandler.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Web.API/EventBus/EmailSendBus.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Web.API/EventBus/EmailSendBus.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Web.API/GlobalUsings.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Web.API/GlobalUsings.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Web.API/Identity.Web.API.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Web.API/Identity.Web.API.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Web.API/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Web.API/Program.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Web.API/obj/Debug/net10.0/Identity.Web.API.AssemblyInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Web.API/obj/Debug/net10.0/Identity.Web.API.AssemblyInfo.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Web.API/obj/Debug/net10.0/Identity.Web.API.AssemblyInfoInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Web.API/obj/Debug/net10.0/Identity.Web.API.AssemblyInfoInputs.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Web.API/obj/rider.project.restore.info" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Web.API/obj/rider.project.restore.info" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/IdentityGrpc/obj/Debug/net9.0/IdentityGrpc.AssemblyInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/IdentityGrpc/obj/Debug/net9.0/IdentityGrpc.AssemblyInfo.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/IdentityGrpc/obj/Debug/net9.0/IdentityGrpc.AssemblyInfoInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/IdentityGrpc/obj/Debug/net9.0/IdentityGrpc.AssemblyInfoInputs.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/IdentityGrpc/obj/rider.project.restore.info" beforeDir="false" afterPath="$PROJECT_DIR$/IdentityGrpc/obj/rider.project.restore.info" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/JWToken/JwtRandom.cs" beforeDir="false" afterPath="$PROJECT_DIR$/JWToken/JwtRandom.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/JWToken/obj/Debug/net10.0/Token.JWT.AssemblyInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/JWToken/obj/Debug/net10.0/Token.JWT.AssemblyInfo.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/JWToken/obj/rider.project.restore.info" beforeDir="false" afterPath="$PROJECT_DIR$/JWToken/obj/rider.project.restore.info" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Markdown.Domain/obj/Debug/net10.0/Markdown.Domain.AssemblyInfoInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/Markdown.Domain/obj/Debug/net10.0/Markdown.Domain.AssemblyInfoInputs.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Markdown.Domain/obj/rider.project.restore.info" beforeDir="false" afterPath="$PROJECT_DIR$/Markdown.Domain/obj/rider.project.restore.info" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Markdown.Infrastructure/obj/Debug/net10.0/Markdown.Infrastructure.AssemblyInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Markdown.Infrastructure/obj/Debug/net10.0/Markdown.Infrastructure.AssemblyInfo.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Markdown.Infrastructure/obj/Debug/net10.0/Markdown.Infrastructure.AssemblyInfoInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/Markdown.Infrastructure/obj/Debug/net10.0/Markdown.Infrastructure.AssemblyInfoInputs.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Markdown.Infrastructure/obj/rider.project.restore.info" beforeDir="false" afterPath="$PROJECT_DIR$/Markdown.Infrastructure/obj/rider.project.restore.info" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Markdown.Web.API/Application/CommandHandlers/CreateMarkdownCommandHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Markdown.Web.API/Application/CommandHandlers/CreateMarkdownCommandHandler.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Markdown.Web.API/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Markdown.Web.API/Program.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Markdown.Web.API/obj/Debug/net10.0/Markdown.Web.API.AssemblyInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Markdown.Web.API/obj/Debug/net10.0/Markdown.Web.API.AssemblyInfo.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Markdown.Web.API/obj/Debug/net10.0/Markdown.Web.API.AssemblyInfoInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/Markdown.Web.API/obj/Debug/net10.0/Markdown.Web.API.AssemblyInfoInputs.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Markdown.Web.API/obj/rider.project.restore.info" beforeDir="false" afterPath="$PROJECT_DIR$/Markdown.Web.API/obj/rider.project.restore.info" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Domain/Entities/Forward/MessageForward.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Domain/Entities/Forward/MessageForward.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Domain/Entities/Group/Group.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Domain/Entities/Group/Group.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Domain/Entities/Group/GroupMember.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Domain/Entities/Group/GroupMember.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Domain/Entities/Message.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Domain/Entities/Message.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Domain/Entities/MessageFriends.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Domain/Entities/MessageFriends.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Domain/Entities/Recall/MessageRecall.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Domain/Entities/Recall/MessageRecall.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Domain/Enums/SessionType.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Domain/Enums/SessionType.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Domain/obj/Debug/net9.0/Message.Domain.AssemblyInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Domain/obj/Debug/net9.0/Message.Domain.AssemblyInfo.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Domain/obj/Debug/net9.0/Message.Domain.AssemblyInfoInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Domain/obj/Debug/net9.0/Message.Domain.AssemblyInfoInputs.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Domain/obj/rider.project.restore.info" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Domain/obj/rider.project.restore.info" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Infrastructure/GlobalUsings.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Infrastructure/GlobalUsings.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Infrastructure/Message.Infrastructure.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Infrastructure/Message.Infrastructure.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Infrastructure/MessageHub/MessageHub.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Infrastructure/MessageHub/MessageHub.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Infrastructure/Provider/ChatSessionProvider.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Infrastructure/Provider/ChatSessionProvider.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Infrastructure/Provider/FriendProvider.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Infrastructure/Provider/FriendProvider.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Infrastructure/Provider/GroupProvider.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Infrastructure/Provider/GroupProvider.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Infrastructure/obj/Debug/net10.0/Message.Infrastructure.AssemblyInfoInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Infrastructure/obj/Debug/net10.0/Message.Infrastructure.AssemblyInfoInputs.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Infrastructure/obj/Message.Infrastructure.csproj.nuget.dgspec.json" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Infrastructure/obj/Message.Infrastructure.csproj.nuget.dgspec.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Infrastructure/obj/Message.Infrastructure.csproj.nuget.g.targets" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Infrastructure/obj/Message.Infrastructure.csproj.nuget.g.targets" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Infrastructure/obj/project.assets.json" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Infrastructure/obj/project.assets.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Infrastructure/obj/project.nuget.cache" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Infrastructure/obj/project.nuget.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Infrastructure/obj/project.packagespec.json" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Infrastructure/obj/project.packagespec.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Infrastructure/obj/rider.project.model.nuget.info" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Infrastructure/obj/rider.project.model.nuget.info" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Infrastructure/obj/rider.project.restore.info" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Infrastructure/obj/rider.project.restore.info" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Web.API/Hubs/SendMessageRequest.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Web.API/obj/Debug/net10.0/Message.Web.API.AssemblyInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Web.API/obj/Debug/net10.0/Message.Web.API.AssemblyInfo.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Web.API/obj/Debug/net10.0/Message.Web.API.AssemblyInfoInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Web.API/obj/Debug/net10.0/Message.Web.API.AssemblyInfoInputs.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Web.API/obj/Message.Web.API.csproj.nuget.dgspec.json" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Web.API/obj/Message.Web.API.csproj.nuget.dgspec.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Web.API/obj/project.nuget.cache" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Web.API/obj/project.nuget.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NotBlog.AppHost/obj/Debug/net10.0/NotBlog.AppHost.AssemblyInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/NotBlog.AppHost/obj/Debug/net10.0/NotBlog.AppHost.AssemblyInfo.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NotBlog.AppHost/obj/Debug/net10.0/NotBlog.AppHost.AssemblyInfoInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/NotBlog.AppHost/obj/Debug/net10.0/NotBlog.AppHost.AssemblyInfoInputs.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NotBlog.AppHost/obj/rider.project.restore.info" beforeDir="false" afterPath="$PROJECT_DIR$/NotBlog.AppHost/obj/rider.project.restore.info" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NotBlog.ServiceDefaults/obj/Debug/net10.0/NotBlog.ServiceDefaults.AssemblyInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/NotBlog.ServiceDefaults/obj/Debug/net10.0/NotBlog.ServiceDefaults.AssemblyInfo.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NotBlog.ServiceDefaults/obj/Debug/net10.0/NotBlog.ServiceDefaults.AssemblyInfoInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/NotBlog.ServiceDefaults/obj/Debug/net10.0/NotBlog.ServiceDefaults.AssemblyInfoInputs.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NotBlog.ServiceDefaults/obj/rider.project.restore.info" beforeDir="false" afterPath="$PROJECT_DIR$/NotBlog.ServiceDefaults/obj/rider.project.restore.info" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NotEmail/Email.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/NotEmail/EmailOptions.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/NotEmail/IEmail.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/NotEmail/MailPush.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/NotEmail/NotEmailExtension.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/NotEmail/obj/Debug/net10.0/NotEmail.AssemblyInfoInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/NotEmail/obj/Debug/net10.0/NotEmail.AssemblyInfoInputs.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NotEmail/obj/rider.project.restore.info" beforeDir="false" afterPath="$PROJECT_DIR$/NotEmail/obj/rider.project.restore.info" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Video.Domain/obj/Debug/net10.0/Video.Domain.AssemblyInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Video.Domain/obj/Debug/net10.0/Video.Domain.AssemblyInfo.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Video.Domain/obj/Debug/net10.0/Video.Domain.AssemblyInfoInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/Video.Domain/obj/Debug/net10.0/Video.Domain.AssemblyInfoInputs.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Video.Domain/obj/rider.project.restore.info" beforeDir="false" afterPath="$PROJECT_DIR$/Video.Domain/obj/rider.project.restore.info" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Video.Infrastructure/obj/Debug/net10.0/Video.Infrastructure.AssemblyInfoInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/Video.Infrastructure/obj/Debug/net10.0/Video.Infrastructure.AssemblyInfoInputs.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Video.Infrastructure/obj/rider.project.restore.info" beforeDir="false" afterPath="$PROJECT_DIR$/Video.Infrastructure/obj/rider.project.restore.info" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Video.Web.API/obj/rider.project.restore.info" beforeDir="false" afterPath="$PROJECT_DIR$/Video.Web.API/obj/rider.project.restore.info" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -687,39 +577,7 @@
       <workItem from="1774027827677" duration="13948000" />
       <workItem from="1774089662756" duration="57242000" />
       <workItem from="1774422037740" duration="23781000" />
-      <workItem from="1781114257089" duration="22929000" />
-    </task>
-    <task id="LOCAL-00001" summary="chore(build): 清理项目构建输出文件和迁移代码&#10;&#10;- 删除多个项目的 .NET Core 版本程序集属性文件&#10;- 移除 Identity.Infrastructure 项目的数据迁移文件&#10;- 清理 API 终结点元数据 JSON 文件&#10;- 重新组织 Address 类的属性定义顺序&#10;- 更新 proto 依赖文件的修改状态">
-      <option name="closed" value="true" />
-      <created>1773219923776</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1773219923776</updated>
-    </task>
-    <task id="LOCAL-00002" summary="style(csharp): 格式化代码样式并移除冗余依赖&#10;&#10;- 统一命名空间声明格式，移除不必要的大括号&#10;- 重新排列类成员顺序，优化代码可读性&#10;- 移除 Scalar.AspNetCore 相关的依赖包&#10;- 添加 Microsoft.Extensions.Logging.Abstractions 依赖&#10;- 修复方法参数格式化和空行布局问题&#10;- 优化条件判断语句的表达式写法&#10;- 调整集合初始化器的格式化方式&#10;- 更新 AssemblyInfo 版本哈希值信息">
-      <option name="closed" value="true" />
-      <created>1773228700455</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1773228700455</updated>
-    </task>
-    <task id="LOCAL-00003" summary="chore(project): 升级项目到 .NET 10 并更新依赖包版本&#10;&#10;- 将 CommonsInitializer 和 DomainInfrastructure 项目目标框架从 net9.0 升级到 net10.0&#10;- 更新 Microsoft.AspNetCore.Connections.Abstractions 从 9.0.4 到 10.0.4&#10;- 更新 Microsoft.Extensions.DependencyInjection.Abstractions 从 9.0.7 到 10.0.4&#10;- 更新 Npgsql 从 9.0.3 到 10.0.1&#10;- 更新 Npgsql.EntityFrameworkCore.PostgreSQL 从 9.0.4 到 10.0.0&#10;- 更新 Microsoft.EntityFrameworkCore 从 9.0.4 到 10.0.0&#10;- 更新 NotMediator 从 1.0.4 到 1.0.5&#10;- 更新 Microsoft.Extensions.Options 从 9.0.4 到 10.0.4&#10;- 更新 Microsoft.Extensions.Logging.Abstractions 从 9.0.4 到 10.0.0&#10;- 将审计模式从 direct 更改为 all&#10;- 移除旧的下载依赖项配置并添加 packagesToPrune 配置">
-      <option name="closed" value="true" />
-      <created>1773252749791</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1773252749791</updated>
-    </task>
-    <task id="LOCAL-00004" summary="feat(markdown): 添加Markdown文档阅读历史和引用统计功能&#10;&#10;- 添加MarkHository实体用于记录用户阅读历史&#10;- 实现MarkHository实体配置和数据库映射&#10;- 重构MarkQuote类增加线程安全的统计数据&#10;- 添加MarkReview实体配置支持引用统计&#10;- 扩展MarkStatus枚举添加更多推送状态选项&#10;- 实现文件组服务和仓储层功能&#10;- 添加NotFileException自定义异常处理&#10;- 更新AssemblyInfo版本信息和项目恢复信息">
-      <option name="closed" value="true" />
-      <created>1773312327965</created>
-      <option name="number" value="00004" />
-      <option name="presentableId" value="LOCAL-00004" />
-      <option name="project" value="LOCAL" />
-      <updated>1773312327965</updated>
+      <workItem from="1781114257089" duration="24958000" />
     </task>
     <task id="LOCAL-00005" summary="feat(domain): 添加实体基类和仓储接口定义&#10;&#10;- 新增 Entity 基类实现领域对象基础功能&#10;- 添加 IAggregateRoot 接口用于聚合根标识&#10;- 定义 IRepository 和 IUnitOfWork 接口规范&#10;- 迁移消息实体到正确命名空间&#10;- 升级项目目标框架至 .NET 10.0&#10;- 集成 Redis 相关缓存和信号栈依赖包">
       <option name="closed" value="true" />
@@ -1073,7 +931,47 @@
       <option name="project" value="LOCAL" />
       <updated>1781166821802</updated>
     </task>
-    <option name="localTasksCounter" value="49" />
+    <task id="LOCAL-00049" summary="refactor(Evenbus): 移除 EventBus 相关功能模块&#10;&#10;- 删除 HashHelper.cs 文件中的哈希计算辅助类&#10;- 删除 IOHelper.cs 文件中的 IO 操作扩展方法&#10;- 删除 ApplicationBuilderExtensions.cs 中的应用构建器扩展&#10;- 删除 DynamicIntegrationEventHandler.cs 中的动态集成事件处理器&#10;- 删除 EvenBusNameAttribute.cs 中的事件总线名称特性&#10;- 删除 GenericTypeExtensions.cs 中的泛型类型扩展方法&#10;- 删除 IEventBus.cs 中的事件总线接口定义&#10;- 删除 IIntegrationEventHandler.cs 中的集成事件处理器接口&#10;- 删除 IntegrationEventRabbitMqOptions.cs 中的 RabbitMQ 配置选项&#10;- 删除 JsonIntegrationEventHandler.cs 中的 JSON 集成事件处理器&#10;- 删除 RabbitMqConnection.cs 中的 RabbitMQ 连接管理类&#10;- 删除 RabbitMqEventBus.cs 中的 RabbitMQ 事件总线实现&#10;- 删除 ServicesCollectionExtensions.cs 中的服务集合扩展方法&#10;- 删除 SubscriptionsManager.cs 中的订阅管理器&#10;- 更新项目文件路径大小写一致性&#10;- 修改程序集版本信息中的提交哈希值">
+      <option name="closed" value="true" />
+      <created>1781460271824</created>
+      <option name="number" value="00049" />
+      <option name="presentableId" value="LOCAL-00049" />
+      <option name="project" value="LOCAL" />
+      <updated>1781460271824</updated>
+    </task>
+    <task id="LOCAL-00050" summary="refactor(Evenbus): 移除 EventBus 相关功能模块&#10;&#10;- 删除 HashHelper.cs 文件中的哈希计算辅助类&#10;- 删除 IOHelper.cs 文件中的 IO 操作扩展方法&#10;- 删除 ApplicationBuilderExtensions.cs 中的应用构建器扩展&#10;- 删除 DynamicIntegrationEventHandler.cs 中的动态集成事件处理器&#10;- 删除 EvenBusNameAttribute.cs 中的事件总线名称特性&#10;- 删除 GenericTypeExtensions.cs 中的泛型类型扩展方法&#10;- 删除 IEventBus.cs 中的事件总线接口定义&#10;- 删除 IIntegrationEventHandler.cs 中的集成事件处理器接口&#10;- 删除 IntegrationEventRabbitMqOptions.cs 中的 RabbitMQ 配置选项&#10;- 删除 JsonIntegrationEventHandler.cs 中的 JSON 集成事件处理器&#10;- 删除 RabbitMqConnection.cs 中的 RabbitMQ 连接管理类&#10;- 删除 RabbitMqEventBus.cs 中的 RabbitMQ 事件总线实现&#10;- 删除 ServicesCollectionExtensions.cs 中的服务集合扩展方法&#10;- 删除 SubscriptionsManager.cs 中的订阅管理器&#10;- 更新项目文件路径大小写一致性&#10;- 修改程序集版本信息中的提交哈希值">
+      <option name="closed" value="true" />
+      <created>1781460766019</created>
+      <option name="number" value="00050" />
+      <option name="presentableId" value="LOCAL-00050" />
+      <option name="project" value="LOCAL" />
+      <updated>1781460766060</updated>
+    </task>
+    <task id="LOCAL-00051" summary="feat(email): 添加完整的邮件系统核心功能&#10;&#10;- 实现 EmailAttachment 邮件附件模型，支持文件名、数据和MIME类型&#10;- 实现 EmailMessage 邮件消息模型，支持收件人、主题、HTML/文本正文、抄送密送等功能&#10;- 实现 EmailOptions 邮件配置选项，支持SMTP/IMAP服务器配置和OAuth2认证&#10;- 定义 IEmailManager、IEmailReceiver、IEmailSender 等核心接口&#10;- 实现 ReceivedEmail 已接收邮件模型和 SendResult 发送结果模型&#10;- 添加 ServiceCollectionExtensions 依赖注入扩展方法&#10;- 实现 EmailProviderConfig 邮件服务商预置配置，支持主流邮箱服务&#10;- 实现 EmailProviderType 邮件服务商枚举类型&#10;- 实现 ImapEmailReceiver IMAP邮件接收器，支持收件箱、搜索、删除等操作&#10;- 实现 SmtpEmailSender SMTP邮件发送器基础框架">
+      <option name="closed" value="true" />
+      <created>1781460807593</created>
+      <option name="number" value="00051" />
+      <option name="presentableId" value="LOCAL-00051" />
+      <option name="project" value="LOCAL" />
+      <updated>1781460807594</updated>
+    </task>
+    <task id="LOCAL-00052" summary="feat(email): 添加完整的邮件系统核心功能&#10;&#10;- 实现 EmailAttachment 邮件附件模型，支持文件名、数据和MIME类型&#10;- 实现 EmailMessage 邮件消息模型，支持收件人、主题、HTML/文本正文、抄送密送等功能&#10;- 实现 EmailOptions 邮件配置选项，支持SMTP/IMAP服务器配置和OAuth2认证&#10;- 定义 IEmailManager、IEmailReceiver、IEmailSender 等核心接口&#10;- 实现 ReceivedEmail 已接收邮件模型和 SendResult 发送结果模型&#10;- 添加 ServiceCollectionExtensions 依赖注入扩展方法&#10;- 实现 EmailProviderConfig 邮件服务商预置配置，支持主流邮箱服务&#10;- 实现 EmailProviderType 邮件服务商枚举类型&#10;- 实现 ImapEmailReceiver IMAP邮件接收器，支持收件箱、搜索、删除等操作&#10;- 实现 SmtpEmailSender SMTP邮件发送器基础框架">
+      <option name="closed" value="true" />
+      <created>1781460995623</created>
+      <option name="number" value="00052" />
+      <option name="presentableId" value="LOCAL-00052" />
+      <option name="project" value="LOCAL" />
+      <updated>1781460995623</updated>
+    </task>
+    <task id="LOCAL-00053" summary="feat(email): 添加完整的邮件系统核心功能&#10;&#10;- 实现 EmailAttachment 邮件附件模型，支持文件名、数据和MIME类型&#10;- 实现 EmailMessage 邮件消息模型，支持收件人、主题、HTML/文本正文、抄送密送等功能&#10;- 实现 EmailOptions 邮件配置选项，支持SMTP/IMAP服务器配置和OAuth2认证&#10;- 定义 IEmailManager、IEmailReceiver、IEmailSender 等核心接口&#10;- 实现 ReceivedEmail 已接收邮件模型和 SendResult 发送结果模型&#10;- 添加 ServiceCollectionExtensions 依赖注入扩展方法&#10;- 实现 EmailProviderConfig 邮件服务商预置配置，支持主流邮箱服务&#10;- 实现 EmailProviderType 邮件服务商枚举类型&#10;- 实现 ImapEmailReceiver IMAP邮件接收器，支持收件箱、搜索、删除等操作&#10;- 实现 SmtpEmailSender SMTP邮件发送器基础框架">
+      <option name="closed" value="true" />
+      <created>1781461784619</created>
+      <option name="number" value="00053" />
+      <option name="presentableId" value="LOCAL-00053" />
+      <option name="project" value="LOCAL" />
+      <updated>1781461784621</updated>
+    </task>
+    <option name="localTasksCounter" value="54" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1105,7 +1003,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="chore(build): 更新程序集版本信息和项目模型缓存&#10;&#10;- 更新多个项目的 AssemblyInformationalVersion 属性中的提交哈希值&#10;- 删除 NotFileRepository 中未实现的 FileByFileIdAsync 方法&#10;- 更新各项目 rider.project.model.nuget.info 缓存文件的时间戳信息&#10;- 确保所有程序集版本信息与当前提交保持一致" />
     <MESSAGE value="feat(events): 添加文件操作领域事件&#10;&#10;- 创建 FileDeletedEvent 用于文件删除事件&#10;- 创建 FileRestoredEvent 用于文件恢复事件&#10;- 创建 FileUpdatedEvent 用于文件更新事件&#10;- 创建 FileUploadedEvent 用于文件上传事件&#10;- 所有事件都实现 INotifications 接口&#10;- 每个事件包含文件ID、用户ID和发生时间属性" />
     <MESSAGE value="chore(DomainCommons): 初始化项目并配置 .NET 10.0 框架支持&#10;&#10;- 创建 DomainCommons 项目基础结构&#10;- 配置项目目标框架为 .NET 10.0&#10;- 添加 MediatR、Microsoft.Extensions.DependencyInjection.Abstractions 和 NotMediator 包依赖&#10;- 生成程序集属性和信息文件以支持多框架编译&#10;- 创建 NuGet 包管理相关配置文件和依赖清单&#10;- 生成调试版本的二进制文件和符号文件" />
     <MESSAGE value="chore(domain): 更新项目配置文件结构&#10;&#10;- 添加 DTO 请求和响应文件夹引用&#10;- 包含调试版本的依赖项、程序集和符号文件&#10;- 排除二进制输出目录中的编译、嵌入资源和无类型文件" />
@@ -1128,9 +1025,10 @@
     <MESSAGE value="feat(infrastructure): 添加当前用户服务和多种Redis缓存服务&#10;&#10;- 实现CurrentUserService获取HTTP上下文中的用户信息&#10;- 添加RedisCacheService提供通用缓存功能&#10;- 实现RedisConnectionManager管理用户连接状态&#10;- 添加SessionCacheService缓存会话信息&#10;- 实现UnreadCountCacheService管理未读消息计数&#10;- 添加UserStatusCacheService缓存用户在线状态&#10;- 更新FileUploadedEventHandler使用构造函数注入简化代码" />
     <MESSAGE value="refactor(CommonsInitializer): 重构项目初始化和依赖注入配置&#10;&#10;- 重命名 ApplicationBuilderExtension.NotBlogUseServer 为 UseNotBlogPipeline&#10;- 移除 EventBus 和 JWT 相关中间件配置，改为由宿主项目自行配置&#10;- 优化 DbContextOptionBuilderFactory 连接字符串获取逻辑，增强异常处理&#10;- 重构 WebApplicationBuilderExtension 为 ServiceCollectionExtensions，提供通用服务注册功能&#10;- 移除 CommonsInitializer 项目中的多余包引用和项目引用&#10;- 更新 DomainInfrastructure 中的领域事件处理机制，移除对 MediatR 的依赖&#10;- 优化 BaseDbContext 领域事件分发机制，支持自定义分发器&#10;- 重构 EFCoreExtension 和相关扩展方法的命名空间和实现&#10;- 移除不再使用的 CORSHelper 和 DbConfigurationProviderExtension 类&#10;- 优化反射和程序集扫描相关方法的性能和错误处理" />
     <MESSAGE value="docs(architecture): 添加基础设施设计文档与依赖配置&#10;&#10;- 添加 PostgreSQL 数据源本地配置文件&#10;- 创建仓储实现计划文档，包含 EF Core 上下文完善方案&#10;- 添加 Provider 接口设计文档，定义用户、消息、会话等业务接口&#10;- 生成 CommonsInitializer 项目的依赖清单文件&#10;- 规划数据库实体配置与仓储类的实现路径&#10;- 设计领域事件分发与工作单元模式集成方案" />
-    <MESSAGE value="refactor(Evenbus): 移除 EventBus 相关功能模块&#10;&#10;- 删除 HashHelper.cs 文件中的哈希计算辅助类&#10;- 删除 IOHelper.cs 文件中的 IO 操作扩展方法&#10;- 删除 ApplicationBuilderExtensions.cs 中的应用构建器扩展&#10;- 删除 DynamicIntegrationEventHandler.cs 中的动态集成事件处理器&#10;- 删除 EvenBusNameAttribute.cs 中的事件总线名称特性&#10;- 删除 GenericTypeExtensions.cs 中的泛型类型扩展方法&#10;- 删除 IEventBus.cs 中的事件总线接口定义&#10;- 删除 IIntegrationEventHandler.cs 中的集成事件处理器接口&#10;- 删除 IntegrationEventRabbitMqOptions.cs 中的 RabbitMQ 配置选项&#10;- 删除 JsonIntegrationEventHandler.cs 中的 JSON 集成事件处理器&#10;- 删除 RabbitMqConnection.cs 中的 RabbitMQ 连接管理类&#10;- 删除 RabbitMqEventBus.cs 中的 RabbitMQ 事件总线实现&#10;- 删除 ServicesCollectionExtensions.cs 中的服务集合扩展方法&#10;- 删除 SubscriptionsManager.cs 中的订阅管理器&#10;- 更新项目文件路径大小写一致性&#10;- 修改程序集版本信息中的提交哈希值" />
     <MESSAGE value="docs(system): 添加即时通讯系统设计文档和项目整理方案&#10;&#10;- 创建即时通讯系统实体设计方案，包含用户、消息、聊天会话、文件附件等核心实体&#10;- 设计群聊功能相关实体，包括群组、群成员、群角色权限等完整结构&#10;- 实现消息撤回、转发、已读回执等高级功能的实体设计&#10;- 添加离线消息存储和消息加密功能的实体架构&#10;- 完善领域事件设计，涵盖消息发送、接收、群聊等各类事件&#10;- 创建NotBlog项目整理方案，解决命名错误、废弃项目等问题&#10;- 设计Markdown.Web.API实现说明文档，详细描述CRUD操作和事件流&#10;- 配置Docker Compose文件，集成PostgreSQL数据库和RabbitMQ消息队列&#10;- 规划完整的文件目录结构和CQRS模式的应用层架构" />
-    <option name="LAST_COMMIT_MESSAGE" value="docs(system): 添加即时通讯系统设计文档和项目整理方案&#10;&#10;- 创建即时通讯系统实体设计方案，包含用户、消息、聊天会话、文件附件等核心实体&#10;- 设计群聊功能相关实体，包括群组、群成员、群角色权限等完整结构&#10;- 实现消息撤回、转发、已读回执等高级功能的实体设计&#10;- 添加离线消息存储和消息加密功能的实体架构&#10;- 完善领域事件设计，涵盖消息发送、接收、群聊等各类事件&#10;- 创建NotBlog项目整理方案，解决命名错误、废弃项目等问题&#10;- 设计Markdown.Web.API实现说明文档，详细描述CRUD操作和事件流&#10;- 配置Docker Compose文件，集成PostgreSQL数据库和RabbitMQ消息队列&#10;- 规划完整的文件目录结构和CQRS模式的应用层架构" />
+    <MESSAGE value="refactor(Evenbus): 移除 EventBus 相关功能模块&#10;&#10;- 删除 HashHelper.cs 文件中的哈希计算辅助类&#10;- 删除 IOHelper.cs 文件中的 IO 操作扩展方法&#10;- 删除 ApplicationBuilderExtensions.cs 中的应用构建器扩展&#10;- 删除 DynamicIntegrationEventHandler.cs 中的动态集成事件处理器&#10;- 删除 EvenBusNameAttribute.cs 中的事件总线名称特性&#10;- 删除 GenericTypeExtensions.cs 中的泛型类型扩展方法&#10;- 删除 IEventBus.cs 中的事件总线接口定义&#10;- 删除 IIntegrationEventHandler.cs 中的集成事件处理器接口&#10;- 删除 IntegrationEventRabbitMqOptions.cs 中的 RabbitMQ 配置选项&#10;- 删除 JsonIntegrationEventHandler.cs 中的 JSON 集成事件处理器&#10;- 删除 RabbitMqConnection.cs 中的 RabbitMQ 连接管理类&#10;- 删除 RabbitMqEventBus.cs 中的 RabbitMQ 事件总线实现&#10;- 删除 ServicesCollectionExtensions.cs 中的服务集合扩展方法&#10;- 删除 SubscriptionsManager.cs 中的订阅管理器&#10;- 更新项目文件路径大小写一致性&#10;- 修改程序集版本信息中的提交哈希值" />
+    <MESSAGE value="feat(email): 添加完整的邮件系统核心功能&#10;&#10;- 实现 EmailAttachment 邮件附件模型，支持文件名、数据和MIME类型&#10;- 实现 EmailMessage 邮件消息模型，支持收件人、主题、HTML/文本正文、抄送密送等功能&#10;- 实现 EmailOptions 邮件配置选项，支持SMTP/IMAP服务器配置和OAuth2认证&#10;- 定义 IEmailManager、IEmailReceiver、IEmailSender 等核心接口&#10;- 实现 ReceivedEmail 已接收邮件模型和 SendResult 发送结果模型&#10;- 添加 ServiceCollectionExtensions 依赖注入扩展方法&#10;- 实现 EmailProviderConfig 邮件服务商预置配置，支持主流邮箱服务&#10;- 实现 EmailProviderType 邮件服务商枚举类型&#10;- 实现 ImapEmailReceiver IMAP邮件接收器，支持收件箱、搜索、删除等操作&#10;- 实现 SmtpEmailSender SMTP邮件发送器基础框架" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat(email): 添加完整的邮件系统核心功能&#10;&#10;- 实现 EmailAttachment 邮件附件模型，支持文件名、数据和MIME类型&#10;- 实现 EmailMessage 邮件消息模型，支持收件人、主题、HTML/文本正文、抄送密送等功能&#10;- 实现 EmailOptions 邮件配置选项，支持SMTP/IMAP服务器配置和OAuth2认证&#10;- 定义 IEmailManager、IEmailReceiver、IEmailSender 等核心接口&#10;- 实现 ReceivedEmail 已接收邮件模型和 SendResult 发送结果模型&#10;- 添加 ServiceCollectionExtensions 依赖注入扩展方法&#10;- 实现 EmailProviderConfig 邮件服务商预置配置，支持主流邮箱服务&#10;- 实现 EmailProviderType 邮件服务商枚举类型&#10;- 实现 ImapEmailReceiver IMAP邮件接收器，支持收件箱、搜索、删除等操作&#10;- 实现 SmtpEmailSender SMTP邮件发送器基础框架" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />

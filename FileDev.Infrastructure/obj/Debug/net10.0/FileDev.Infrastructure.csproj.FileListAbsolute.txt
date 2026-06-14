@@ -4,16 +4,12 @@ F:\NotBlog\FileDev.Infrastructure\bin\Debug\net10.0\FileDev.Infrastructure.pdb
 F:\NotBlog\FileDev.Infrastructure\bin\Debug\net10.0\CommonsInitializer.dll
 F:\NotBlog\FileDev.Infrastructure\bin\Debug\net10.0\DomainCommons.dll
 F:\NotBlog\FileDev.Infrastructure\bin\Debug\net10.0\DomainInfrastructure.dll
-F:\NotBlog\FileDev.Infrastructure\bin\Debug\net10.0\Evenbus.dll
 F:\NotBlog\FileDev.Infrastructure\bin\Debug\net10.0\FileDev.Domain.dll
-F:\NotBlog\FileDev.Infrastructure\bin\Debug\net10.0\NotEmail.dll
 F:\NotBlog\FileDev.Infrastructure\bin\Debug\net10.0\Token.JWT.dll
 F:\NotBlog\FileDev.Infrastructure\bin\Debug\net10.0\CommonsInitializer.pdb
 F:\NotBlog\FileDev.Infrastructure\bin\Debug\net10.0\FileDev.Domain.pdb
 F:\NotBlog\FileDev.Infrastructure\bin\Debug\net10.0\DomainCommons.pdb
 F:\NotBlog\FileDev.Infrastructure\bin\Debug\net10.0\DomainInfrastructure.pdb
-F:\NotBlog\FileDev.Infrastructure\bin\Debug\net10.0\Evenbus.pdb
-F:\NotBlog\FileDev.Infrastructure\bin\Debug\net10.0\NotEmail.pdb
 F:\NotBlog\FileDev.Infrastructure\bin\Debug\net10.0\Token.JWT.pdb
 F:\NotBlog\FileDev.Infrastructure\obj\Debug\net10.0\FileDev.Infrastructure.csproj.AssemblyReference.cache
 F:\NotBlog\FileDev.Infrastructure\obj\Debug\net10.0\FileDev.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig

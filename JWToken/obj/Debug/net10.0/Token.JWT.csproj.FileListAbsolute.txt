@@ -1,15 +1,12 @@
 f:\NotBlog\JWToken\bin\Debug\net10.0\Token.JWT.deps.json
 f:\NotBlog\JWToken\bin\Debug\net10.0\Token.JWT.dll
 f:\NotBlog\JWToken\bin\Debug\net10.0\Token.JWT.pdb
-f:\NotBlog\JWToken\bin\Debug\net10.0\DomainCommons.dll
-f:\NotBlog\JWToken\bin\Debug\net10.0\DomainCommons.pdb
 f:\NotBlog\JWToken\obj\Debug\net10.0\Token.JWT.csproj.AssemblyReference.cache
 f:\NotBlog\JWToken\obj\Debug\net10.0\Token.JWT.GeneratedMSBuildEditorConfig.editorconfig
 f:\NotBlog\JWToken\obj\Debug\net10.0\Token.JWT.AssemblyInfoInputs.cache
 f:\NotBlog\JWToken\obj\Debug\net10.0\Token.JWT.AssemblyInfo.cs
 f:\NotBlog\JWToken\obj\Debug\net10.0\Token.JWT.csproj.CoreCompileInputs.cache
 f:\NotBlog\JWToken\obj\Debug\net10.0\Token.JWT.sourcelink.json
-f:\NotBlog\JWToken\obj\Debug\net10.0\Token.JWT.csproj.Up2Date
 f:\NotBlog\JWToken\obj\Debug\net10.0\Token.JWT.dll
 f:\NotBlog\JWToken\obj\Debug\net10.0\refint\Token.JWT.dll
 f:\NotBlog\JWToken\obj\Debug\net10.0\Token.JWT.pdb
