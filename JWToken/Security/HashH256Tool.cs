@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace Notcomd.Token.JWT;
+namespace Notcomd.Token.JWT.Security;
 
 /// <summary>
 /// 密码哈希工具类（PBKDF2 + HMACSHA256，100,000 迭代）

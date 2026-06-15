@@ -1,4 +1,6 @@
-﻿namespace Notcomd.NotEmail;
+﻿using Notcomd.NotEmail.Core;
+
+namespace Notcomd.NotEmail.Providers;
 
 /// <summary>
 /// 主流邮件服务商预置配置

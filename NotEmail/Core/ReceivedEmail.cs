@@ -1,4 +1,4 @@
-﻿namespace Notcomd.NotEmail;
+﻿namespace Notcomd.NotEmail.Core;
 
 /// <summary>
 /// 已接收邮件模型

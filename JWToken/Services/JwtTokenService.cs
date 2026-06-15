@@ -7,6 +7,8 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Notcomd.Token.JWT.Core;
+using SecurityAlgorithms = Notcomd.Token.JWT.Core.SecurityAlgorithms;
 
 namespace Notcomd.Token.JWT;
 

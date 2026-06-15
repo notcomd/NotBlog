@@ -1,3 +1,5 @@
+using Notcomd.NotEmail.Core;
+
 namespace Identity.Web.API.EventBus;
 
 [EvenBusName("Identity.User.Code")]

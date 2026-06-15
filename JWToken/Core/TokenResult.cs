@@ -1,4 +1,4 @@
-﻿namespace Notcomd.Token.JWT;
+﻿namespace Notcomd.Token.JWT.Core;
 
 /// <summary>
 /// JWT Token 生成结果

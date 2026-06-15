@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace Notcomd.Token.JWT;
+namespace Notcomd.Token.JWT.Security;
 
 /// <summary>
 /// 哈希校验工具类（SHA256/SHA384/SHA512）

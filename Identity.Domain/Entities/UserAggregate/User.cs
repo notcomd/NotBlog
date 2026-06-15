@@ -1,4 +1,5 @@
 using Identity.Domain.Events;
+using Notcomd.Token.JWT.Security;
 
 namespace Identity.Domain.Entities.UserAggregate;
 

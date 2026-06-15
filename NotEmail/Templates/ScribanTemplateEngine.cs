@@ -1,7 +1,7 @@
 ﻿using Scriban;
 using Scriban.Runtime;
 
-namespace Notcomd.NotEmail;
+namespace Notcomd.NotEmail.Templates;
 
 /// <summary>
 /// 基于 Scriban 的邮件模板引擎

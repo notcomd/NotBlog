@@ -1,9 +1,4 @@
-using FileDev.Domain.Dto.Request;
-using FileDev.Domain.Dto.Response;
-using FileDev.Domain.IServices;
-using FileDev.Domain.Options;
-using Microsoft.Extensions.Options;
-using Notcomd.Token.JWT;
+using Notcomd.Token.JWT.Security;
 
 namespace FileDev.Infrastructure.Service;
 

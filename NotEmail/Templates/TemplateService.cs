@@ -1,7 +1,8 @@
 ﻿using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
+using Notcomd.NotEmail.Core;
 
-namespace Notcomd.NotEmail;
+namespace Notcomd.NotEmail.Templates;
 
 /// <summary>
 /// 模板注册与渲染服务

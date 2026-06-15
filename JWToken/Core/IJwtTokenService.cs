@@ -2,7 +2,7 @@
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Notcomd.Token.JWT;
+namespace Notcomd.Token.JWT.Core;
 
 /// <summary>
 /// JWT Token 服务接口

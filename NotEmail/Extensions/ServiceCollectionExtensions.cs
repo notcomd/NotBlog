@@ -1,6 +1,10 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Notcomd.NotEmail.Core;
+using Notcomd.NotEmail.Providers;
+using Notcomd.NotEmail.Services;
+using Notcomd.NotEmail.Templates;
 
-namespace Notcomd.NotEmail;
+namespace Notcomd.NotEmail.Extensions;
 
 /// <summary>
 /// NotEmail DI 注册扩展

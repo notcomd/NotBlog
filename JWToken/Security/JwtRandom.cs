@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 
-namespace Notcomd.Token.JWT;
+namespace Notcomd.Token.JWT.Security;
 
 /// <summary>
 /// 加密安全随机值生成器

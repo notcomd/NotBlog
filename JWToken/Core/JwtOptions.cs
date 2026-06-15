@@ -1,4 +1,4 @@
-﻿namespace Notcomd.Token.JWT;
+﻿namespace Notcomd.Token.JWT.Core;
 
 /// <summary>
 /// JWT 配置选项（兼容现有 appsettings.json 字段名）

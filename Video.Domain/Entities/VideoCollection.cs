@@ -1,4 +1,4 @@
-using Notcomd.Token.JWT;
+using Notcomd.Token.JWT.Security;
 using Video.Domain.SeedWork;
 using Video.Domain.ValueObjects;
 
@@ -11,19 +11,19 @@ public class VideoCollection : Entity, IAggregateRoot
         VideoGuid = new();
         AffiliatedUser = new();
         TimeSpace = new(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
-        VideoControl =  VideoControl.VideoControlBuilder();
+        VideoControl = VideoControl.VideoControlBuilder();
     }
 
     public Guid VideoCollectionGuid { get; init; } = Guid.CreateVersion7();
 
     public string VideoNvid { get; init; } = NvidGenerator.GenerateNvStyleIdWithUuid();
-    public List<Guid> AffiliatedUser { get;  } 
+    public List<Guid> AffiliatedUser { get; }
 
     public string VideoCollectionName { get; private set; }
 
     public string VideoCollectionBriefIntroduction { get; private set; }
 
-    public List<Guid> VideoGuid { get; } 
+    public List<Guid> VideoGuid { get; }
 
     public TimeSpace TimeSpace { get; }
 

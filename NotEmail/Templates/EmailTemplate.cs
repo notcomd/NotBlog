@@ -1,4 +1,4 @@
-﻿namespace Notcomd.NotEmail;
+﻿namespace Notcomd.NotEmail.Templates;
 
 /// <summary>
 /// 模板存储实体

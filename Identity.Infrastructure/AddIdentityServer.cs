@@ -1,5 +1,6 @@
 ﻿using Identity.Domain.Options;
 using Identity.Infrastructure.Services;
+using Notcomd.Token.JWT.Extensions;
 
 namespace Identity.Infrastructure;
 

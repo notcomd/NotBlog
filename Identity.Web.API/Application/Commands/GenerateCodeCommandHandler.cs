@@ -1,4 +1,6 @@
-﻿namespace Identity.Web.API.Application.Commands;
+﻿using Notcomd.Token.JWT.Security;
+
+namespace Identity.Web.API.Application.Commands;
 
 public class GenerateCodeCommandHandler(
     ILogger<GenerateCodeCommandHandler> logger,

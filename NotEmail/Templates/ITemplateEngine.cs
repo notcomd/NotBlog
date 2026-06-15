@@ -1,4 +1,4 @@
-﻿namespace Notcomd.NotEmail;
+﻿namespace Notcomd.NotEmail.Templates;
 
 /// <summary>
 /// 邮件模板引擎接口

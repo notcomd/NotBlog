@@ -1,4 +1,4 @@
-﻿namespace Notcomd.NotEmail;
+﻿namespace Notcomd.NotEmail.Core;
 
 /// <summary>
 /// 邮件附件模型

@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
+using Notcomd.NotEmail.Core;
+using Notcomd.NotEmail.Templates;
 
-namespace Notcomd.NotEmail;
+namespace Notcomd.NotEmail.Services;
 
 /// <summary>
 /// 邮件综合管理器

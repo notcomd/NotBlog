@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace Notcomd.Token.JWT;
+namespace Notcomd.Token.JWT.Security;
 
 /// <summary>
 /// 唯一 ID 生成器

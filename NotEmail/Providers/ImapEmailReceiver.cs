@@ -5,8 +5,9 @@ using MailKit.Security;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MimeKit;
+using Notcomd.NotEmail.Core;
 
-namespace Notcomd.NotEmail;
+namespace Notcomd.NotEmail.Providers;
 
 /// <summary>
 /// IMAP 邮件接收器

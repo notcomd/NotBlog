@@ -1,4 +1,4 @@
-﻿namespace Notcomd.NotEmail;
+﻿namespace Notcomd.NotEmail.Providers;
 
 /// <summary>
 /// 支持的邮件服务商类型

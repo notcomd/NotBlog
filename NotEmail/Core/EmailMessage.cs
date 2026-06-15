@@ -1,4 +1,4 @@
-﻿namespace Notcomd.NotEmail;
+﻿namespace Notcomd.NotEmail.Core;
 
 /// <summary>
 /// 邮件消息模型（发送用）

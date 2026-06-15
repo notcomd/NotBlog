@@ -4,8 +4,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Notcomd.Token.JWT.Core;
+using SecurityAlgorithms = Notcomd.Token.JWT.Core.SecurityAlgorithms;
 
-namespace Notcomd.Token.JWT;
+namespace Notcomd.Token.JWT.Extensions;
 
 /// <summary>
 /// JWT 认证 DI 注册扩展

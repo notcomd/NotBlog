@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using Identity.Domain.IService;
 using Microsoft.Extensions.Options;
+using Notcomd.Token.JWT.Core;
 
 namespace Identity.Infrastructure.Services;
 

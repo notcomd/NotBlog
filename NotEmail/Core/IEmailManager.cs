@@ -1,4 +1,4 @@
-﻿namespace Notcomd.NotEmail;
+﻿namespace Notcomd.NotEmail.Core;
 
 /// <summary>
 /// 邮件管理器综合接口（发送 + 接收 + 管理）
