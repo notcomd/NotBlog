@@ -60,8 +60,7 @@ public class UserRoleRepository(IdentityDbContext userRoleDbContext) : IUserRole
 
     public async ValueTask<bool> UpByUserRoleAsync(Roles userRole)
     {
-        if ((await FindByUserRoleAsync(userRole.RoleGuid) ?? throw new InvalidOperationException()) ==
-            userRole) return true;
+        if ((await FindByUserRoleAsync(userRole.RoleGuid) ?? throw new InvalidOperationException()) == userRole) return true;
         userRoleDbContext.Update(userRole);
         return true;
     }

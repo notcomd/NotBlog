@@ -22,7 +22,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5b6bb9ff-c83f-4a69-99e3-d3d137b7bca0" name="Changes" comment="feat(email): 添加完整的邮件系统核心功能&#10;&#10;- 实现 EmailAttachment 邮件附件模型，支持文件名、数据和MIME类型&#10;- 实现 EmailMessage 邮件消息模型，支持收件人、主题、HTML/文本正文、抄送密送等功能&#10;- 实现 EmailOptions 邮件配置选项，支持SMTP/IMAP服务器配置和OAuth2认证&#10;- 定义 IEmailManager、IEmailReceiver、IEmailSender 等核心接口&#10;- 实现 ReceivedEmail 已接收邮件模型和 SendResult 发送结果模型&#10;- 添加 ServiceCollectionExtensions 依赖注入扩展方法&#10;- 实现 EmailProviderConfig 邮件服务商预置配置，支持主流邮箱服务&#10;- 实现 EmailProviderType 邮件服务商枚举类型&#10;- 实现 ImapEmailReceiver IMAP邮件接收器，支持收件箱、搜索、删除等操作&#10;- 实现 SmtpEmailSender SMTP邮件发送器基础框架">
+    <list default="true" id="5b6bb9ff-c83f-4a69-99e3-d3d137b7bca0" name="Changes" comment="refactor(jwtoken): 重构JWT和邮件模块的命名空间结构&#10;&#10;- 将JWT相关核心类从Notcomd.Token.JWT移动到Notcomd.Token.JWT.Core命名空间&#10;- 将JWT相关安全工具类从Notcomd.Token.JWT移动到Notcomd.Token.JWT.Security命名空间&#10;- 将邮件相关核心类从Notcomd.NotEmail移动到Notcomd.NotEmail.Core命名空间&#10;- 将邮件相关扩展、提供者、服务和模板类分别移动到对应子命名空间&#10;- 在多个服务类中添加必要的命名空间引用以支持重构后的结构&#10;- 创建JWT模块的完整单元测试套件，覆盖选项配置、令牌服务和安全工具功能">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.NotBlog/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.NotBlog/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -163,7 +163,6 @@
     <setting file="file://$PROJECT_DIR$/Identity.Infrastructure/Services/UserRoleService.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Identity.Web.API/Application/Behaviors/LoggerBehavior.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Identity.Web.API/Application/Behaviors/TransactionBehavior.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/JWToken/HashHelper.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Markdown.Domain/Entities/OldMarkDown.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Markdown.Domain/Entities/ReviewImage.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Markdown.Domain/IProvider/IMarkDownProvider.cs" root0="FORCE_HIGHLIGHTING" />
@@ -577,39 +576,7 @@
       <workItem from="1774027827677" duration="13948000" />
       <workItem from="1774089662756" duration="57242000" />
       <workItem from="1774422037740" duration="23781000" />
-      <workItem from="1781114257089" duration="24958000" />
-    </task>
-    <task id="LOCAL-00005" summary="feat(domain): 添加实体基类和仓储接口定义&#10;&#10;- 新增 Entity 基类实现领域对象基础功能&#10;- 添加 IAggregateRoot 接口用于聚合根标识&#10;- 定义 IRepository 和 IUnitOfWork 接口规范&#10;- 迁移消息实体到正确命名空间&#10;- 升级项目目标框架至 .NET 10.0&#10;- 集成 Redis 相关缓存和信号栈依赖包">
-      <option name="closed" value="true" />
-      <created>1773340704861</created>
-      <option name="number" value="00005" />
-      <option name="presentableId" value="LOCAL-00005" />
-      <option name="project" value="LOCAL" />
-      <updated>1773340704862</updated>
-    </task>
-    <task id="LOCAL-00006" summary="refactor(domain): 重构领域模型结构并优化实体设计&#10;&#10;- 移除 Affiliated 记录类型，改为使用 Guid 集合进行用户关联&#10;- 添加 Entity 基类和 IAggregateRoot 接口到 SeedWork 层&#10;- 将 TimeSpace、VideoControl、VideoQuote 移至 ValueObjects 命名空间&#10;- 更新 Video 和 VideoCollection 实体继承自 Entity 基类&#10;- 重构 VideoQuote 为线程安全的原子操作值对象&#10;- 修改 VideoControl 的显示控制逻辑和属性初始化方式&#10;- 更新 VideoBarrage 构造函数和属性设置方式&#10;- 优化 Video 控制器的更新方法实现&#10;- 添加 Repository 和 UnitOfWork 接口定义&#10;- 更新数据库配置映射关系和忽略域事件总线属性">
-      <option name="closed" value="true" />
-      <created>1773553995295</created>
-      <option name="number" value="00006" />
-      <option name="presentableId" value="LOCAL-00006" />
-      <option name="project" value="LOCAL" />
-      <updated>1773553995295</updated>
-    </task>
-    <task id="LOCAL-00007" summary="feat(apphost): 添加Aspire应用主机配置&#10;&#10;- 集成Aspire Hosting框架支持微服务部署&#10;- 配置PostgreSQL和Redis连接字符串&#10;- 添加FileDev、Identity、Markdown、Message、Video等服务项目引用&#10;- 实现开发环境和生产环境的不同配置&#10;- 添加服务发现、健康检查和OpenTelemetry监控功能&#10;- 生成项目元数据和Assembly特性文件&#10;- 配置HTTPS和HTTP启动设置及环境变量">
-      <option name="closed" value="true" />
-      <created>1773554318481</created>
-      <option name="number" value="00007" />
-      <option name="presentableId" value="LOCAL-00007" />
-      <option name="project" value="LOCAL" />
-      <updated>1773554318481</updated>
-    </task>
-    <task id="LOCAL-00008" summary="chore(project): 初始化项目基础配置和依赖设置&#10;&#10;- 添加 .NET 9.0 和 .NET 10.0 框架支持文件&#10;- 配置 Markdown.Infrastructure 项目的 Entity Framework 相关依赖&#10;- 设置 API 项目的开发环境配置文件 appsettings.json&#10;- 添加项目启动配置文件 launchSettings.json&#10;- 集成 PostgreSQL 数据库连接支持&#10;- 添加数据库上下文配置类 DbContextConfiguration">
-      <option name="closed" value="true" />
-      <created>1773554422353</created>
-      <option name="number" value="00008" />
-      <option name="presentableId" value="LOCAL-00008" />
-      <option name="project" value="LOCAL" />
-      <updated>1773554422353</updated>
+      <workItem from="1781114257089" duration="28657000" />
     </task>
     <task id="LOCAL-00009" summary="refactor(eventbus): 重构事件总线实现并优化领域事件分发&#10;&#10;- 将 List&lt;string&gt; Tags 替换为 HashSet&lt;string&gt; Tags 提升性能&#10;- 修改 DynamicIntegrationEventHandler 中 HandleDynamic 方法访问级别为 protected&#10;- 修改 EmailSendBus 中 EventDlerJson 方法访问级别为 protected&#10;- 重构 EvenBusNameAttribute 使用主构造函数初始化&#10;- 为 IdentityDbContext 添加 GetHashCode 方法实现&#10;- 在 IEventBus 接口文档中补充订阅和取消订阅说明&#10;- 重命名 IntegrationEventRabbitMQOptions 为 IntegrationEventRabbitMqOptions&#10;- 为 IVideoRepository 添加 IRepository&lt;Videos&gt; 继承&#10;- 重构 JsonIntegrationEventHandler 中方法参数命名规范&#10;- 为 MarkDownDbContext 实现 IUnitOfWork 接口&#10;- 新增 FileDev.Infrastructure 模块及 NotFileDbContext 实现&#10;- 扩展 NotMediatorExtension 支持并发发布和异常隔离&#10;- 重构 RabbitMQConnection 为 RabbitMqConnection 使用主构造函数&#10;- 重命名 RabbitMQEventButs 为 RabbitMqEventButs&#10;- 优化 RabbitMqEventButs 中资源管理和代码结构&#10;- 更新 ServicesCollectionExtensions 扩展方法实现&#10;- 优化 SubscriptionsManager 中空值检查和事件触发逻辑&#10;- 注释掉 UpdateByVideoController 中的受保护端点&#10;- 重构 VideoCollectionRepository 使用依赖注入构造函数&#10;- 为 VideoDbContext 实现 IUnitOfWork 接口并集成领域事件分发">
       <option name="closed" value="true" />
@@ -971,7 +938,39 @@
       <option name="project" value="LOCAL" />
       <updated>1781461784621</updated>
     </task>
-    <option name="localTasksCounter" value="54" />
+    <task id="LOCAL-00054" summary="feat(email): 添加完整的邮件系统核心功能&#10;&#10;- 实现 EmailAttachment 邮件附件模型，支持文件名、数据和MIME类型&#10;- 实现 EmailMessage 邮件消息模型，支持收件人、主题、HTML/文本正文、抄送密送等功能&#10;- 实现 EmailOptions 邮件配置选项，支持SMTP/IMAP服务器配置和OAuth2认证&#10;- 定义 IEmailManager、IEmailReceiver、IEmailSender 等核心接口&#10;- 实现 ReceivedEmail 已接收邮件模型和 SendResult 发送结果模型&#10;- 添加 ServiceCollectionExtensions 依赖注入扩展方法&#10;- 实现 EmailProviderConfig 邮件服务商预置配置，支持主流邮箱服务&#10;- 实现 EmailProviderType 邮件服务商枚举类型&#10;- 实现 ImapEmailReceiver IMAP邮件接收器，支持收件箱、搜索、删除等操作&#10;- 实现 SmtpEmailSender SMTP邮件发送器基础框架">
+      <option name="closed" value="true" />
+      <created>1781465854021</created>
+      <option name="number" value="00054" />
+      <option name="presentableId" value="LOCAL-00054" />
+      <option name="project" value="LOCAL" />
+      <updated>1781465854021</updated>
+    </task>
+    <task id="LOCAL-00055" summary="feat(jwt): 添加完整的JWT令牌服务功能&#10;&#10;- 新增IJwtTokenService接口定义完整令牌操作契约&#10;- 实现JwtTokenService提供令牌生成、验证、刷新和吊销功能&#10;- 添加JwtOptions配置类支持灵活的令牌参数设置&#10;- 实现TokenResult结果类封装令牌信息和声明数据&#10;- 集成AuthenticationExtensions扩展支持ASP.NET Core认证&#10;- 新增HashH256Tool密码哈希工具使用PBKDF2算法增强安全性&#10;- 添加HashHelper通用哈希校验工具支持多种算法&#10;- 实现JwtRandom加密安全随机数生成器替代普通随机数&#10;- 添加NvidGenerator唯一ID生成器支持多种ID格式&#10;- 创建完整的单元测试覆盖令牌服务各项功能">
+      <option name="closed" value="true" />
+      <created>1781465900878</created>
+      <option name="number" value="00055" />
+      <option name="presentableId" value="LOCAL-00055" />
+      <option name="project" value="LOCAL" />
+      <updated>1781465900878</updated>
+    </task>
+    <task id="LOCAL-00056" summary="feat(jwt): 添加完整的JWT令牌服务功能&#10;&#10;- 新增IJwtTokenService接口定义完整令牌操作契约&#10;- 实现JwtTokenService提供令牌生成、验证、刷新和吊销功能&#10;- 添加JwtOptions配置类支持灵活的令牌参数设置&#10;- 实现TokenResult结果类封装令牌信息和声明数据&#10;- 集成AuthenticationExtensions扩展支持ASP.NET Core认证&#10;- 新增HashH256Tool密码哈希工具使用PBKDF2算法增强安全性&#10;- 添加HashHelper通用哈希校验工具支持多种算法&#10;- 实现JwtRandom加密安全随机数生成器替代普通随机数&#10;- 添加NvidGenerator唯一ID生成器支持多种ID格式&#10;- 创建完整的单元测试覆盖令牌服务各项功能">
+      <option name="closed" value="true" />
+      <created>1781465910219</created>
+      <option name="number" value="00056" />
+      <option name="presentableId" value="LOCAL-00056" />
+      <option name="project" value="LOCAL" />
+      <updated>1781465910219</updated>
+    </task>
+    <task id="LOCAL-00057" summary="refactor(jwtoken): 重构JWT和邮件模块的命名空间结构&#10;&#10;- 将JWT相关核心类从Notcomd.Token.JWT移动到Notcomd.Token.JWT.Core命名空间&#10;- 将JWT相关安全工具类从Notcomd.Token.JWT移动到Notcomd.Token.JWT.Security命名空间&#10;- 将邮件相关核心类从Notcomd.NotEmail移动到Notcomd.NotEmail.Core命名空间&#10;- 将邮件相关扩展、提供者、服务和模板类分别移动到对应子命名空间&#10;- 在多个服务类中添加必要的命名空间引用以支持重构后的结构&#10;- 创建JWT模块的完整单元测试套件，覆盖选项配置、令牌服务和安全工具功能">
+      <option name="closed" value="true" />
+      <created>1781501220477</created>
+      <option name="number" value="00057" />
+      <option name="presentableId" value="LOCAL-00057" />
+      <option name="project" value="LOCAL" />
+      <updated>1781501220478</updated>
+    </task>
+    <option name="localTasksCounter" value="58" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1003,8 +1002,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="feat(events): 添加文件操作领域事件&#10;&#10;- 创建 FileDeletedEvent 用于文件删除事件&#10;- 创建 FileRestoredEvent 用于文件恢复事件&#10;- 创建 FileUpdatedEvent 用于文件更新事件&#10;- 创建 FileUploadedEvent 用于文件上传事件&#10;- 所有事件都实现 INotifications 接口&#10;- 每个事件包含文件ID、用户ID和发生时间属性" />
-    <MESSAGE value="chore(DomainCommons): 初始化项目并配置 .NET 10.0 框架支持&#10;&#10;- 创建 DomainCommons 项目基础结构&#10;- 配置项目目标框架为 .NET 10.0&#10;- 添加 MediatR、Microsoft.Extensions.DependencyInjection.Abstractions 和 NotMediator 包依赖&#10;- 生成程序集属性和信息文件以支持多框架编译&#10;- 创建 NuGet 包管理相关配置文件和依赖清单&#10;- 生成调试版本的二进制文件和符号文件" />
     <MESSAGE value="chore(domain): 更新项目配置文件结构&#10;&#10;- 添加 DTO 请求和响应文件夹引用&#10;- 包含调试版本的依赖项、程序集和符号文件&#10;- 排除二进制输出目录中的编译、嵌入资源和无类型文件" />
     <MESSAGE value="feat(file): 实现文件存储服务和分片上传功能&#10;&#10;- 添加 HashHelper 工具类支持 MD5/SHA256 哈希计算和校验&#10;- 重构服务接口命名空间，将服务接口移至 IServices 目录&#10;- 添加文件存储服务接口 INotFileStorageService 定义基础操作方法&#10;- 实现文件存储服务 NotFileStorageService 支持分片上传和合并功能&#10;- 添加文件存储相关 DTO 包括请求、响应和配置选项&#10;- 实现文件分片上传、合并和哈希校验功能&#10;- 添加 OAuth 认证相关 DTO 定义&#10;- 添加文件更新请求 DTO 和存储类型枚举" />
     <MESSAGE value="refactor(storage): 将文件存储服务改为异步实现&#10;&#10;- 将 INotFileStorageService 接口中的所有方法改为异步版本&#10;- 实现了完整的异步文件操作包括保存、删除、获取内容等&#10;- 添加了新的分片上传 API 端点 GetFileChunk&#10;- 更新了 NotFileStorageService 中的目录创建和文件操作为异步&#10;- 修改了依赖注入使用 IOptionsSnapshot 替代 IOptions&#10;- 实现了异步的分片合并和文件哈希校验功能" />
@@ -1028,7 +1025,9 @@
     <MESSAGE value="docs(system): 添加即时通讯系统设计文档和项目整理方案&#10;&#10;- 创建即时通讯系统实体设计方案，包含用户、消息、聊天会话、文件附件等核心实体&#10;- 设计群聊功能相关实体，包括群组、群成员、群角色权限等完整结构&#10;- 实现消息撤回、转发、已读回执等高级功能的实体设计&#10;- 添加离线消息存储和消息加密功能的实体架构&#10;- 完善领域事件设计，涵盖消息发送、接收、群聊等各类事件&#10;- 创建NotBlog项目整理方案，解决命名错误、废弃项目等问题&#10;- 设计Markdown.Web.API实现说明文档，详细描述CRUD操作和事件流&#10;- 配置Docker Compose文件，集成PostgreSQL数据库和RabbitMQ消息队列&#10;- 规划完整的文件目录结构和CQRS模式的应用层架构" />
     <MESSAGE value="refactor(Evenbus): 移除 EventBus 相关功能模块&#10;&#10;- 删除 HashHelper.cs 文件中的哈希计算辅助类&#10;- 删除 IOHelper.cs 文件中的 IO 操作扩展方法&#10;- 删除 ApplicationBuilderExtensions.cs 中的应用构建器扩展&#10;- 删除 DynamicIntegrationEventHandler.cs 中的动态集成事件处理器&#10;- 删除 EvenBusNameAttribute.cs 中的事件总线名称特性&#10;- 删除 GenericTypeExtensions.cs 中的泛型类型扩展方法&#10;- 删除 IEventBus.cs 中的事件总线接口定义&#10;- 删除 IIntegrationEventHandler.cs 中的集成事件处理器接口&#10;- 删除 IntegrationEventRabbitMqOptions.cs 中的 RabbitMQ 配置选项&#10;- 删除 JsonIntegrationEventHandler.cs 中的 JSON 集成事件处理器&#10;- 删除 RabbitMqConnection.cs 中的 RabbitMQ 连接管理类&#10;- 删除 RabbitMqEventBus.cs 中的 RabbitMQ 事件总线实现&#10;- 删除 ServicesCollectionExtensions.cs 中的服务集合扩展方法&#10;- 删除 SubscriptionsManager.cs 中的订阅管理器&#10;- 更新项目文件路径大小写一致性&#10;- 修改程序集版本信息中的提交哈希值" />
     <MESSAGE value="feat(email): 添加完整的邮件系统核心功能&#10;&#10;- 实现 EmailAttachment 邮件附件模型，支持文件名、数据和MIME类型&#10;- 实现 EmailMessage 邮件消息模型，支持收件人、主题、HTML/文本正文、抄送密送等功能&#10;- 实现 EmailOptions 邮件配置选项，支持SMTP/IMAP服务器配置和OAuth2认证&#10;- 定义 IEmailManager、IEmailReceiver、IEmailSender 等核心接口&#10;- 实现 ReceivedEmail 已接收邮件模型和 SendResult 发送结果模型&#10;- 添加 ServiceCollectionExtensions 依赖注入扩展方法&#10;- 实现 EmailProviderConfig 邮件服务商预置配置，支持主流邮箱服务&#10;- 实现 EmailProviderType 邮件服务商枚举类型&#10;- 实现 ImapEmailReceiver IMAP邮件接收器，支持收件箱、搜索、删除等操作&#10;- 实现 SmtpEmailSender SMTP邮件发送器基础框架" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat(email): 添加完整的邮件系统核心功能&#10;&#10;- 实现 EmailAttachment 邮件附件模型，支持文件名、数据和MIME类型&#10;- 实现 EmailMessage 邮件消息模型，支持收件人、主题、HTML/文本正文、抄送密送等功能&#10;- 实现 EmailOptions 邮件配置选项，支持SMTP/IMAP服务器配置和OAuth2认证&#10;- 定义 IEmailManager、IEmailReceiver、IEmailSender 等核心接口&#10;- 实现 ReceivedEmail 已接收邮件模型和 SendResult 发送结果模型&#10;- 添加 ServiceCollectionExtensions 依赖注入扩展方法&#10;- 实现 EmailProviderConfig 邮件服务商预置配置，支持主流邮箱服务&#10;- 实现 EmailProviderType 邮件服务商枚举类型&#10;- 实现 ImapEmailReceiver IMAP邮件接收器，支持收件箱、搜索、删除等操作&#10;- 实现 SmtpEmailSender SMTP邮件发送器基础框架" />
+    <MESSAGE value="feat(jwt): 添加完整的JWT令牌服务功能&#10;&#10;- 新增IJwtTokenService接口定义完整令牌操作契约&#10;- 实现JwtTokenService提供令牌生成、验证、刷新和吊销功能&#10;- 添加JwtOptions配置类支持灵活的令牌参数设置&#10;- 实现TokenResult结果类封装令牌信息和声明数据&#10;- 集成AuthenticationExtensions扩展支持ASP.NET Core认证&#10;- 新增HashH256Tool密码哈希工具使用PBKDF2算法增强安全性&#10;- 添加HashHelper通用哈希校验工具支持多种算法&#10;- 实现JwtRandom加密安全随机数生成器替代普通随机数&#10;- 添加NvidGenerator唯一ID生成器支持多种ID格式&#10;- 创建完整的单元测试覆盖令牌服务各项功能" />
+    <MESSAGE value="refactor(jwtoken): 重构JWT和邮件模块的命名空间结构&#10;&#10;- 将JWT相关核心类从Notcomd.Token.JWT移动到Notcomd.Token.JWT.Core命名空间&#10;- 将JWT相关安全工具类从Notcomd.Token.JWT移动到Notcomd.Token.JWT.Security命名空间&#10;- 将邮件相关核心类从Notcomd.NotEmail移动到Notcomd.NotEmail.Core命名空间&#10;- 将邮件相关扩展、提供者、服务和模板类分别移动到对应子命名空间&#10;- 在多个服务类中添加必要的命名空间引用以支持重构后的结构&#10;- 创建JWT模块的完整单元测试套件，覆盖选项配置、令牌服务和安全工具功能" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactor(jwtoken): 重构JWT和邮件模块的命名空间结构&#10;&#10;- 将JWT相关核心类从Notcomd.Token.JWT移动到Notcomd.Token.JWT.Core命名空间&#10;- 将JWT相关安全工具类从Notcomd.Token.JWT移动到Notcomd.Token.JWT.Security命名空间&#10;- 将邮件相关核心类从Notcomd.NotEmail移动到Notcomd.NotEmail.Core命名空间&#10;- 将邮件相关扩展、提供者、服务和模板类分别移动到对应子命名空间&#10;- 在多个服务类中添加必要的命名空间引用以支持重构后的结构&#10;- 创建JWT模块的完整单元测试套件，覆盖选项配置、令牌服务和安全工具功能" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />
