@@ -35,7 +35,7 @@ public static class AuthenticationExtensions
         IConfiguration configuration)
     {
         // 仅注入一次
-        if (!services.Any(s => s.ServiceType == typeof(IJwtTokenService)))
+        if (services.All(s => s.ServiceType != typeof(IJwtTokenService)))
             services.AddScoped<IJwtTokenService, JwtTokenService>();
 
         // 绑定配置

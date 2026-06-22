@@ -53,19 +53,23 @@
           "dependencies": {
             "MailKit": {
               "target": "Package",
-              "version": "[4.7.1.1, )"
+              "version": "[4.17.0, )"
+            },
+            "Microsoft.AspNetCore.Mvc.Core": {
+              "target": "Package",
+              "version": "[2.3.11, )"
             },
             "Microsoft.Extensions.Configuration.Abstractions": {
               "target": "Package",
-              "version": "[*, )"
+              "version": "[10.0.9, )"
             },
             "Microsoft.Extensions.DependencyInjection.Abstractions": {
               "target": "Package",
-              "version": "[*, )"
+              "version": "[10.0.9, )"
             },
             "Microsoft.Extensions.Logging.Abstractions": {
               "target": "Package",
-              "version": "[*, )"
+              "version": "[10.0.9, )"
             },
             "Microsoft.Extensions.Options": {
               "target": "Package",
@@ -77,7 +81,7 @@
             },
             "Scriban": {
               "target": "Package",
-              "version": "[5.10.0, )"
+              "version": "[7.2.4, )"
             }
           },
           "imports": [

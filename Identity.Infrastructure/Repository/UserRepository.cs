@@ -16,8 +16,8 @@ public class UserRepository(IdentityDbContext userDbContext, IDistributedCache d
         if (phoneNumber is null)
             throw new ArgumentNullException("数据为空");
         return await userDbContext.Users
-            .Where(en => en.PhoneNumber!.Equals(en.PhoneNumber.AddressRegion) &&
-                         en.PhoneNumber.Equals(en.PhoneNumber.PhoneCode))
+            .Where(en => en.PhoneNumber!.AddressRegion == phoneNumber.AddressRegion &&
+                         en.PhoneNumber.PhoneCode == phoneNumber.PhoneCode)
             .SingleOrDefaultAsync();
     }
 
@@ -77,7 +77,7 @@ public class UserRepository(IdentityDbContext userDbContext, IDistributedCache d
     public async ValueTask<string> FindPhoneNumberAsync(PhoneNumber phoneNumber)
     {
         var key = $"phoneCode{phoneNumber.PhoneCode},phoneAddressRegion{phoneNumber.AddressRegion}";
-        var code =await distributedCache.GetStringAsync(key);
+        var code = await distributedCache.GetStringAsync(key);
         await distributedCache.RemoveAsync(key);
         return code ?? string.Empty;
     }

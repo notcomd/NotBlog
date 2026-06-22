@@ -4,7 +4,7 @@ namespace Video.Domain.SeedWork;
 
 public abstract class Entity
 {
-    private List<INotifications> _domainEventbus;
+    private List<INotifications>? _domainEventbus;
 
     private int _id;
     private int? _requestedHashCode;

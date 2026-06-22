@@ -68,15 +68,19 @@
             },
             "Aspire.Hosting.PostgreSQL": {
               "target": "Package",
-              "version": "[13.1.2, )"
+              "version": "[13.4.6, )"
             },
             "Aspire.Hosting.RabbitMQ": {
               "target": "Package",
-              "version": "[13.1.2, )"
+              "version": "[13.4.6, )"
             },
             "Aspire.Hosting.Redis": {
               "target": "Package",
-              "version": "[13.1.2, )"
+              "version": "[13.4.6, )"
+            },
+            "Microsoft.AspNetCore.Mvc.Core": {
+              "target": "Package",
+              "version": "[2.3.11, )"
             }
           },
           "imports": [

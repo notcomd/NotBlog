@@ -1,24 +1,27 @@
-using Message.Domain.Enums;
+﻿using Message.Domain.Enums;
 using Message.Domain.Events;
 using Message.Domain.SeedWork;
 
 namespace Message.Domain.Entities.Group;
 
 /// <summary>
-///   群
+///   群聊
 /// </summary>
 public class Group : Entity, IAggregateRoot
 {
+    /// <summary>
+    ///   群成员
+    /// </summary>
     private readonly List<GroupMember> _members = new();
 
-    public Group(Guid ownerId, string groupName, int maxMembers = 500, bool isPublic = false)
+
+    public Group(Guid ownerId, string groupName, int maxMembers = 500, bool isPublic = false) : this()
     {
         if (string.IsNullOrWhiteSpace(groupName))
             throw new ArgumentException("群名称不能为空", nameof(groupName));
         if (maxMembers <= 0)
             throw new ArgumentOutOfRangeException(nameof(maxMembers), "最大成员数必须大于0");
 
-        GroupId = Guid.NewGuid();
         OwnerId = ownerId;
         GroupName = groupName;
         MaxMembers = maxMembers;
@@ -32,41 +35,88 @@ public class Group : Entity, IAggregateRoot
         _members.Add(owner);
     }
 
+    /// <summary>
+    ///   群构造函数
+    /// </summary>
     private Group()
     {
-        GroupId = Guid.CreateVersion7();
+        GroupId = Guid.NewGuid();
         CreatedTime = DateTime.UtcNow;
     }
 
+    /// <summary>
+    ///   群ID
+    /// </summary>
     public Guid GroupId { get; init; }
 
+    /// <summary>
+    ///   群名称
+    /// </summary>
     public string GroupName { get; private set; }
 
+    /// <summary>
+    ///   群描述
+    /// </summary>
     public string? Description { get; set; }
 
+    /// <summary>
+    ///   群主ID
+    /// </summary>
     public Guid OwnerId { get; private set; }
 
+    /// <summary>
+    ///   群头像
+    /// </summary>
     public Uri? Avatar { get; set; }
 
+    /// <summary>
+    ///   最大成员数
+    /// </summary>
     public int MaxMembers { get; private set; }
 
+    /// <summary>
+    ///   是否公开
+    /// </summary>
     public bool IsPublic { get; private set; }
 
+    /// <summary>
+    ///   是否允许成员邀请
+    /// </summary>
     public bool AllowMemberInvite { get; private set; }
 
+    /// <summary>
+    ///   是否允许成员编辑群信息
+    /// </summary>
     public bool AllowMemberEditInfo { get; private set; }
 
+    /// <summary>
+    ///   创建时间
+    /// </summary>
     public DateTime CreatedTime { get; init; }
 
+    /// <summary>
+    ///   解散时间
+    /// </summary>
     public DateTime? DismissedTime { get; private set; }
 
+    /// <summary>
+    ///   是否解散
+    /// </summary>
     public bool IsDismissed { get; private set; }
 
+    /// <summary>
+    ///   群成员
+    /// </summary>
     public IReadOnlyCollection<GroupMember> Members => _members.AsReadOnly();
 
+    /// <summary>
+    ///   群成员数
+    /// </summary>
     public int MemberCount => _members.Count;
 
-
+    /// <summary>
+    ///   更新群信息
+    /// </summary>
     public void UpdateGroupInfo(string groupName, string? description, Uri? avatar)
     {
         if (IsDismissed)
@@ -93,6 +143,12 @@ public class Group : Entity, IAggregateRoot
         AllowMemberEditInfo = allowMemberEditInfo;
     }
 
+    /// <summary>
+    ///   添加群成员
+    /// </summary>
+    /// <param name="userId">用户ID</param>
+    /// <param name="role">角色</param>
+    /// <exception cref="InvalidOperationException"></exception>
     public void AddMember(Guid userId, GroupMemberRole role = GroupMemberRole.Member)
     {
         if (IsDismissed)
@@ -106,6 +162,11 @@ public class Group : Entity, IAggregateRoot
         _members.Add(member);
     }
 
+    /// <summary>
+    ///   移除群成员
+    /// </summary>
+    /// <param name="userId">用户ID</param>
+    /// <exception cref="InvalidOperationException"></exception>
     public void RemoveMember(Guid userId)
     {
         if (IsDismissed)
@@ -121,6 +182,11 @@ public class Group : Entity, IAggregateRoot
         _members.Remove(member);
     }
 
+    /// <summary>
+    ///   转让群主
+    /// </summary>
+    /// <param name="newOwnerId">新群主ID</param>
+    /// <exception cref="InvalidOperationException"></exception>
     public void TransferOwnership(Guid newOwnerId)
     {
         if (IsDismissed)
@@ -137,6 +203,10 @@ public class Group : Entity, IAggregateRoot
         OwnerId = newOwnerId;
     }
 
+    /// <summary>
+    ///   解散群
+    /// </summary>
+    /// <exception cref="InvalidOperationException"></exception>
     public void Dismiss()
     {
         if (IsDismissed)
@@ -146,16 +216,34 @@ public class Group : Entity, IAggregateRoot
         DismissedTime = DateTime.UtcNow;
     }
 
+    /// <summary>
+    ///   获取群成员
+    /// </summary>
+    /// <param name="userId">用户ID</param>
+    /// <returns>群成员</returns>
+    /// <exception cref="KeyNotFoundException"></exception>
     public GroupMember? GetMember(Guid userId)
     {
         return _members.FirstOrDefault(m => m.UserId == userId);
     }
 
+    /// <summary>
+    ///   检查用户是否为群成员
+    /// </summary>
+    /// <param name="userId">用户ID</param>
+    /// <returns>是否为群成员</returns>
     public bool IsMember(Guid userId)
     {
         return _members.Any(m => m.UserId == userId);
     }
 
+    /// <summary>
+    ///   检查用户是否具有群权限
+    /// </summary>
+    /// <param name="userId">用户ID</param>
+    /// <param name="permission">权限</param>
+    /// <returns>是否具有群权限</returns>
+    /// <exception cref="KeyNotFoundException"></exception>
     public bool HasPermission(Guid userId, GroupPermission permission)
     {
         var member = GetMember(userId);

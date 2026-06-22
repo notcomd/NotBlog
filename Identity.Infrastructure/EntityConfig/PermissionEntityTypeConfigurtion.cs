@@ -1,25 +1,29 @@
-﻿namespace Identity.Infrastructure.EntityConfig;
-
-public class PermissionEntityTypeConfiguration : IEntityTypeConfiguration<Permission>
+﻿public class PermissionEntityTypeConfigurtion : IEntityTypeConfiguration<Permission>
 {
     public void Configure(EntityTypeBuilder<Permission> builder)
     {
         builder.ToTable("Permissions");
-        builder.HasKey(p => p.PermissionId);
-        builder.Ignore(e => e.DomainEventbus);
+        builder.Ignore(b => b.DomainEventbus);
+
+        builder.HasKey(x => x.PermissionId);
 
 
-        builder.HasMany(en => en.Roles)
-            .WithMany(r => r.Permissions)
+        builder.HasMany(x => x.Roles).WithMany(x => x.Permissions)
             .UsingEntity<Dictionary<string, object>>("RolePermissions",
-                f => f.HasOne<Roles>().WithMany().HasForeignKey("RoleId"),
-                f => f.HasOne<Permission>().WithMany().HasForeignKey("PermissionId"));
+                j => j.HasOne<Roles>()
+                    .WithMany()
+                    .HasForeignKey("RoleGuid"), j => j.HasOne<Permission>()
+                    .WithMany()
+                    .HasForeignKey("PermissionGuid"));
 
 
-        builder.HasMany(en => en.RoleGroups)
-            .WithMany(r => r.Permissions)
-            .UsingEntity<Dictionary<string, object>>("GroupPermissions",
-                f => f.HasOne<RoleGroup>().WithMany().HasForeignKey("RoleGroupId"),
-                f => f.HasOne<Permission>().WithMany().HasForeignKey("PermissionId"));
+        builder.HasMany(p => p.RoleGroups)
+            .WithMany(g => g.Permissions)
+            .UsingEntity<Dictionary<string, object>>("RoleGroupPermissions",
+                j => j.HasOne<RoleGroup>()
+                    .WithMany()
+                    .HasForeignKey("RoleGroupGuid"), j => j.HasOne<Permission>()
+                    .WithMany()
+                    .HasForeignKey("PermissionGuid"));
     }
 }

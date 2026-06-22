@@ -4,7 +4,7 @@ public class IdentityDbContext : DbContext, IUnitOfWork
 {
     private readonly INotMediator _notMediator;
 
-    private IDbContextTransaction _currentTransaction;
+    private IDbContextTransaction? _currentTransaction;
 
     // public IdentityDbContext(DbContextOptions<IdentityDbContext> options) : base(options) { }
 
@@ -16,12 +16,13 @@ public class IdentityDbContext : DbContext, IUnitOfWork
 
     public DbSet<User> Users { get; set; }
 
-    public DbSet<ClientRequest> ClientRequests { get; set; }
     public DbSet<Roles> Roles { get; set; }
 
     public DbSet<NotClient> NotClients { get; set; }
 
-    public DbSet<Author2> UserExternalLogins { get; set; }
+    public DbSet<RoleGroup> RoleGroups { get; set; }
+
+    public DbSet<UserExternalLogin> UserExternalLogins { get; set; }
 
     public bool HasActiveTransaction => _currentTransaction != null;
 
@@ -58,9 +59,7 @@ public class IdentityDbContext : DbContext, IUnitOfWork
 
         modelBuilder.ApplyConfiguration(new UserEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new RoleEntityTypeConfiguration());
-        modelBuilder.ApplyConfiguration(new PermissionEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new RoleGroupEntityTypeConfiguration());
-        modelBuilder.ApplyConfiguration(new Author2EntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new UserAccessFailEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new UserSafetyEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new NotClientEntityTypeConfiguration());

@@ -1,4 +1,4 @@
-global using Notcomd.Evenbus;
+﻿global using Notcomd.Evenbus;
 global using NotMediator;
 global using FileDev.Domain.IServices;
 global using FileDev.Domain.Options;
@@ -7,7 +7,6 @@ global using Microsoft.Extensions.Options;
 global using System.Reflection;
 global using CommonsInitializer;
 global using DomainCommons;
-global using FileDev.Domain.IServices;
 global using FileDev.Infrastructure.EntityFramework;
 global using FileDev.Infrastructure.Service;
 global using FileDev.Web.API.APIs;

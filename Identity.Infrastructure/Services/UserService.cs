@@ -1,13 +1,10 @@
-using System.ComponentModel.DataAnnotations;
-using System.Security.Claims;
-using Identity.Domain.IService;
-using Microsoft.Extensions.Options;
-using Notcomd.Token.JWT.Core;
+
 
 namespace Identity.Infrastructure.Services;
 
 public class UserService(
     IOptionsSnapshot<JwtOptions> optionsSnapshot,
+    IDistributedCache distributedCache,
     ILogger<IUserRepository> loggerUser,
     IUserRepository userRepository,
     IUserRoleRepository userRoleRepository,
@@ -15,7 +12,19 @@ public class UserService(
     ILogger<IUserRoleRepository> loggerUserRole)
     : IUserService
 {
-    public async Task<bool> SignInByCreateUserAsync(string email, string password, string code)
+    // ── 缓存键定义 ──
+    private const string AccessTokenKeyPrefix = "auth:token";
+    private const string RefreshTokenKeyPrefix = "auth:refresh";
+
+
+    /// <summary>
+    /// 创建用户
+    /// </summary>
+    /// <param name="email">电子邮件地址</param>
+    /// <param name="password">密码</param>
+    /// <param name="code">验证码（当前未使用）</param>
+    /// <returns>成功返回 true，失败返回 false</returns>
+    public async Task<bool> RegisterByCreateUserAsync(string email, string password, string code)
     {
         var userData = await userRepository.FindOneByUserAsync(email);
         if (userData is not null)
@@ -42,7 +51,14 @@ public class UserService(
         return true;
     }
 
-    public async Task ResetPasswordAsync(string email, string password, string code)
+    /// <summary>
+    /// 重置密码
+    /// </summary>
+    /// <param name="email">电子邮件地址</param>
+    /// <param name="password">新密码</param>
+    /// <param name="code">验证码（当前未使用）</param>
+    /// <returns>成功返回 true，失败返回 false</returns>
+    public async Task ChangeByPasswordAsync(string email, string password, string code)
     {
         var userData = await userRepository.FindOneByUserAsync(email);
         if (userData is null)
@@ -50,13 +66,29 @@ public class UserService(
             loggerUser.LogError($"[{DateTime.UtcNow}] 用户 {email} 不存在");
             return;
         }
+        await userData.ChangeByPasswordAsync(password);
+        //await userRepository.
+        loggerUser.LogInformation($"[{DateTime.UtcNow}] 用户 {email} 密码重置成功");
     }
 
+    /// <summary>
+    /// 发送重置密码邮件
+    /// </summary>
+    /// <param name="email">电子邮件地址</param>
+    /// <returns>成功返回 true，失败返回 false</returns>
     public Task SendResetPasswordEmailAsync(string email)
     {
         throw new NotImplementedException();
     }
 
+    /// <summary>
+    /// 获取 OAuth 授权链接
+    /// </summary>
+    /// <param name="provider">OAuth提供程序</param>
+    /// <param name="redirectUri">重定向 URI</param>
+    /// <returns>OAuth 授权链接</returns>
+    /// <exception cref="ArgumentException">提供程序无效</exception>
+    /// <exception cref="ArgumentNullException">重定向 URI 为空</exception>
     public Task<string> GenerateAuthorizationUrlAsync(string provider, string redirectUri)
     {
         throw new NotImplementedException();
@@ -64,13 +96,13 @@ public class UserService(
 
 
     /// <summary>
-    ///  登入验证
+    ///  邮箱登入验证
     /// </summary>
     /// <param name="email">电子邮件地址</param>
     /// <param name="password">密码</param>
     /// <param name="code">验证码（当前未使用）</param>
-    /// <returns>成功返回 JWT 令牌，失败返回错误信息</returns>
-    public async Task<string> LogInByCheckPasswordAsync(
+    /// <returns>成功返回 TokenResult，失败返回 null</returns>
+    public async Task<TokenResult> LogInByCheckPasswordAsync(
         [EmailAddress(ErrorMessage = "无效邮件地址")]
         string email,
         string password,
@@ -80,82 +112,175 @@ public class UserService(
         if (userData is null)
         {
             loggerUser.LogError($"[{DateTime.UtcNow}] 用户 {email} 不存在");
-            return $"用户 {email} 不存在！";
+            return null;
         }
 
         return await LogInByCheckPasswordCoreAsync(userData, password);
     }
-    // private readonly ILogger<IUserRoleRepository> _loggerUserRole = loggerUserRole;
 
-    public async Task<string> LogInByCheckPasswordAsync(PhoneNumber phoneNumber, string password, long code)
+    /// <summary>
+    /// 手机号登入验证
+    /// </summary>
+    public async Task<TokenResult?> LogInByCheckPasswordAsync(PhoneNumber phoneNumber, string password, string code)
     {
         var userData = await userRepository.FindOneByUserAsync(phoneNumber);
-        if (userData is not null) return await LogInByCheckPasswordCoreAsync(phoneNumber, password);
-        loggerUser.LogError($"[{DateTime.UtcNow}] 用户 {phoneNumber} 不存在");
-        return $"用户 {phoneNumber} 不存在！";
+        if (string.IsNullOrWhiteSpace(code) && string.Equals(code, "213123"))
+            if (userData is null)
+            {
+                loggerUser.LogError($"[{DateTime.UtcNow}] 用户 {phoneNumber} 不存在");
+                return null;
+            }
+
+        return await LogInByCheckPasswordCoreAsync(userData, password);
     }
 
 
     /// <summary>
-    ///  登入验证核心方法
+    /// 登入验证核心方法
+    /// 
+    /// 职责:
+    ///   1. 验证用户密码
+    ///   2. 解除账号锁定
+    ///   3. 构建 Claims 并生成 AccessToken + RefreshToken
+    ///   4. 将两个 Token 分别存入分布式缓存
     /// </summary>
-    /// <param name="userIdentifier">用户标识符，可以是手机号或电子邮件地址</param>
+    /// <param name="userData">已验证存在的用户实体</param>
     /// <param name="password">用户密码</param>
-    /// <returns>返回一个字符串，表示登录结果。成功返回 JWT 令牌，失败返回错误信息</returns>
-    /// <exception cref="ArgumentException">当用户标识符类型无效时抛出</exception>
-    /// <exception cref="ArgumentNullException">当用户不存在时抛出</exception>
-    private async ValueTask<string> LogInByCheckPasswordCoreAsync(object userIdentifier, string password)
+    /// <returns>成功返回 TokenResult，密码错误或账号锁定返回 null</returns>
+    private async ValueTask<TokenResult?> LogInByCheckPasswordCoreAsync(User userData, string password)
     {
-        User? userData;
-        Roles? roleData;
-        if (userIdentifier is PhoneNumber phoneNumber)
+        //var tokens = (AccessToken: string.Empty, RefreshToken: string.Empty);
+        // ── 第一步: 验证密码 ──
+        if (!await userData.VerifyByPasswordAsync(password))
         {
-            userData = await userRepository.FindOneByUserAsync(phoneNumber);
-            if (userData is null)
-                throw new ArgumentNullException(nameof(userIdentifier), "用户不存在");
-        }
-        else if (userIdentifier is string email)
-        {
-            userData = await userRepository.FindOneByUserAsync(email);
-            if (userData is null)
-                throw new ArgumentNullException(nameof(userIdentifier), "用户不存在");
-        }
-        else
-        {
-            throw new ArgumentException($"无效的用户标识符类型：{userIdentifier.GetType().Name}", nameof(userIdentifier));
+            loggerUser.LogWarning($"[{DateTime.UtcNow}] 用户 {userData.UserEmail} 密码错误");
+            return null;
         }
 
-        var roleName = SwitchRole(await GetRoleName(userData));
+        // ── 第二步: 解除账号锁定 ──
+        if (!userData.UserAccessFail.CloseLockAsync())
+        {
+            loggerUser.LogWarning($"[{DateTime.UtcNow}] 用户 {userData.UserEmail} 账号已锁定，无法关闭锁定状态");
+            return null;
+        }
 
         try
         {
-            if (await userData.VerifyByPasswordAsync(password))
-                if (userData.UserAccessFail.CloseLockAsync())
-                {
-                    var listClaims = new List<Claim>
-                    {
-                        new(ClaimTypes.Name, userData.UserName ??
-                                             throw new ArgumentNullException(nameof(userData.UserName), "用户名不能为空")),
-                        new(ClaimTypes.Email, userData.UserEmail ??
-                                              throw new ArgumentNullException(nameof(userData.UserEmail), "用户邮箱不能为空")),
-                        new(ClaimTypes.Role, roleName ?? "User"),
-                        new(ClaimTypes.MobilePhone, userData.PhoneNumber?.PhoneCode ?? string.Empty),
-                    };
-                    loggerUser.LogInformation($"[{DateTime.UtcNow}] 用户 {userData.UserEmail} 验证通过，生成 Token");
-                    return jwtTokenServer.BuilderTokenAsync(listClaims, optionsSnapshot.Value);
-                }
+            // ── 第三步: 构建 Claims ──
+            var roleName = SwitchRole(await GetRoleName(userData));
+            var claims = BuildClaims(userData, roleName);
 
-            loggerUser.LogWarning($"[{DateTime.UtcNow}] 用户 {userData.UserEmail} 密码错误");
-            return "密码错误";
+            // ── 第四步: 生成双 Token ──
+            var config = optionsSnapshot.Value;
+            var tokenData = await jwtTokenServer.BuildTokenAsync(claims, config);
+
+
+            // ── 第五步: 写入缓存 ──
+            await CacheTokensAsync(userData.UserGuid, tokenData, config);
+
+            loggerUser.LogInformation(
+                $"[{DateTime.UtcNow}] 用户 {userData.UserEmail} 验证通过，" +
+                $"Token 已生成 (AccessToken 过期: {config.ExpirSeconds} 秒，RefreshToken 过期: {config.RefreshTokenExpirSeconds} 秒)");
+
+            return tokenData;
         }
         catch (Exception ex)
         {
-            // SwitchRole(await GetRoleName(userData));
-            loggerUser.LogError(ex, $"[{DateTime.UtcNow}] 用户 {userIdentifier} 登录过程中发生错误");
-            return "登录失败";
+            loggerUser.LogError(ex, $"[{DateTime.UtcNow}] 用户 {userData.UserEmail} Token 生成失败");
+            return null;
         }
     }
 
+
+
+    /// <summary>
+    /// 将 AccessToken 和 RefreshToken 分别存入分布式缓存
+    /// 
+    /// 缓存键格式:
+    ///   AccessToken:  "auth:token:{userGuid}"
+    ///   RefreshToken: "auth:refresh:{userGuid}"
+    /// </summary>
+    private async Task CacheTokensAsync(Guid userGuid, TokenResult tokenResult, JwtOptions config)
+    {
+        // AccessToken 缓存（生命周期与 Token 本身一致）
+        var accessTokenEntry = new TokenCacheEntry
+        {
+            Token = tokenResult.AccessToken,
+            UserGuid = userGuid,
+            CreatedAt = DateTimeOffset.UtcNow,
+            ExpiresAt = tokenResult.ExpiresAt,
+            TokenType = tokenResult.TokenType
+        };
+
+        var accessKey = $"{AccessTokenKeyPrefix}:{userGuid}";
+        var accessTtl = config.ExpirSeconds > 0
+            ? TimeSpan.FromSeconds(config.ExpirSeconds)
+            : TimeSpan.FromHours(1);
+
+        await distributedCache.SetStringAsync(
+            accessKey,
+            JsonSerializer.Serialize(accessTokenEntry),
+            new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = accessTtl });
+
+        // RefreshToken 缓存（生命周期更长，默认为 7 天）
+        if (!string.IsNullOrEmpty(tokenResult.RefreshToken))
+        {
+            var refreshTokenEntry = new TokenCacheEntry
+            {
+                Token = tokenResult.RefreshToken,
+                UserGuid = userGuid,
+                CreatedAt = DateTimeOffset.UtcNow,
+                ExpiresAt = DateTimeOffset.UtcNow.AddSeconds(config.RefreshTokenExpirSeconds),
+                TokenType = "refresh",
+                LinkedAccessToken = tokenResult.AccessToken
+            };
+
+            var refreshKey = $"{RefreshTokenKeyPrefix}:{userGuid}";
+            var refreshTtl = config.RefreshTokenExpirSeconds > 0
+                ? TimeSpan.FromSeconds(config.RefreshTokenExpirSeconds)
+                : TimeSpan.FromDays(7);
+
+            await distributedCache.SetStringAsync(
+                refreshKey,
+                JsonSerializer.Serialize(refreshTokenEntry),
+                new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = refreshTtl });
+        }
+    }
+
+
+    /// <summary>
+    /// 从用户实体构建 JWT Claims
+    /// </summary>
+    /// <param name="userData">用户实体</param>
+    /// <param name="roleName">角色名称</param>
+    /// <returns>JWT Claims 列表</returns>
+    private static List<Claim> BuildClaims(User userData, string roleName)
+    {
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.NameIdentifier, userData.UserGuid.ToString()),
+            new(ClaimTypes.Name, userData.UserName ??
+                                 throw new InvalidOperationException("用户名不能为空")),
+            new(ClaimTypes.Email, userData.UserEmail ??
+                                  throw new InvalidOperationException("用户邮箱不能为空")),
+            new(ClaimTypes.Role, roleName),
+            new("user_guid", userData.UserGuid.ToString())
+        };
+
+        // 可选: 手机号
+        if (!string.IsNullOrEmpty(userData.PhoneNumber?.PhoneCode))
+            claims.Add(new Claim(ClaimTypes.MobilePhone, userData.PhoneNumber.PhoneCode));
+
+        return claims;
+    }
+
+
+
+    /// <summary>
+    /// 解析用户角色权限为字符串表示
+    /// </summary>
+    /// <param name="roles">角色权限列表</param>
+    /// <returns>角色名称</returns>
     private string SwitchRole(IEnumerable<RoleAuthority> roles)
     {
         var roleAuthorities = roles as RoleAuthority[] ?? roles.ToArray();
@@ -170,6 +295,11 @@ public class UserService(
         return "Guest";
     }
 
+    /// <summary>
+    /// 获取用户角色
+    /// </summary>
+    /// <param name="user">用户实体</param>
+    /// <returns>角色权限列表</returns>
     private async Task<IEnumerable<RoleAuthority>> GetRoleName(User? user)
     {
         if (user is null) return Enumerable.Empty<RoleAuthority>();
@@ -183,4 +313,48 @@ public class UserService(
 
         return roleNames;
     }
+
+    Task<TokenResult?> IUserService.LogInByCheckPasswordAsync(string email, string password, string code)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<string> GenerateCheckCodeAsync()
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<User?> GetUserByEmailAsync(string email)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<ICollection<User>> GetAllUsersAsync()
+    {
+        throw new NotImplementedException();
+    }
+}
+
+/// <summary>
+/// 缓存中的 Token 实体
+/// </summary>
+internal sealed class TokenCacheEntry
+{
+    /// <summary>Token 值</summary>
+    public string Token { get; init; } = null!;
+
+    /// <summary>所属用户</summary>
+    public Guid UserGuid { get; init; }
+
+    /// <summary>创建时间</summary>
+    public DateTimeOffset CreatedAt { get; init; }
+
+    /// <summary>过期时间</summary>
+    public DateTimeOffset ExpiresAt { get; init; }
+
+    /// <summary>Token 类型 (access / refresh)</summary>
+    public string TokenType { get; init; } = null!;
+
+    /// <summary>关联的 AccessToken（仅 RefreshToken 缓存条目使用）</summary>
+    public string? LinkedAccessToken { get; init; }
 }

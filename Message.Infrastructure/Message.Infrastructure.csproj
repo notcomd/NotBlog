@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
@@ -8,17 +8,19 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Message.Domain\Message.Domain.csproj"/>
+        <ProjectReference Include="..\DomainInfrastructure\DomainInfrastructure.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.11"/>
         <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.11"/>
         <PackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="10.0.9"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.5"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.5"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.5"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.9"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.9"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.9"/>
         <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.9"/>
         <PackageReference Include="StackExchange.Redis" Version="2.8.24"/>
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.5"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.9"/>
         <PackageReference Include="NotMediator" Version="1.0.5"/>
     </ItemGroup>
 

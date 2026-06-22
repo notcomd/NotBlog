@@ -58,13 +58,17 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "dependencies": {
+            "Microsoft.AspNetCore.Mvc.Core": {
+              "target": "Package",
+              "version": "[2.3.11, )"
+            },
             "Microsoft.Extensions.Configuration.Binder": {
               "target": "Package",
-              "version": "[10.0.5, )"
+              "version": "[10.0.9, )"
             },
             "Npgsql.EntityFrameworkCore.PostgreSQL": {
               "target": "Package",
-              "version": "[10.0.0, )"
+              "version": "[10.0.2, )"
             }
           },
           "imports": [
@@ -408,9 +412,13 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "dependencies": {
+            "Microsoft.AspNetCore.Mvc.Core": {
+              "target": "Package",
+              "version": "[2.3.11, )"
+            },
             "Microsoft.Extensions.DependencyInjection.Abstractions": {
               "target": "Package",
-              "version": "[10.0.4, )"
+              "version": "[10.0.9, )"
             }
           },
           "imports": [
@@ -760,19 +768,23 @@
           "dependencies": {
             "Microsoft.AspNetCore.Mvc.Core": {
               "target": "Package",
-              "version": "[2.3.0, )"
+              "version": "[2.3.11, )"
             },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
-              "version": "[10.0.5, )"
+              "version": "[10.0.9, )"
             },
             "Microsoft.Extensions.DependencyInjection": {
               "target": "Package",
-              "version": "[10.0.5, )"
+              "version": "[10.0.9, )"
             },
             "Microsoft.Extensions.DependencyInjection.Abstractions": {
               "target": "Package",
-              "version": "[10.0.5, )"
+              "version": "[10.0.9, )"
+            },
+            "NotMediator": {
+              "target": "Package",
+              "version": "[1.0.5, )"
             }
           },
           "imports": [
@@ -1118,23 +1130,27 @@
           "dependencies": {
             "Dynamic.Json": {
               "target": "Package",
-              "version": "[1.4.1, )"
+              "version": "[1.4.2, )"
             },
             "Microsoft.AspNetCore.Http.Abstractions": {
               "target": "Package",
               "version": "[2.3.11, )"
             },
+            "Microsoft.AspNetCore.Mvc.Core": {
+              "target": "Package",
+              "version": "[2.3.11, )"
+            },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
-              "version": "[*, )"
+              "version": "[10.0.9, )"
             },
             "Microsoft.EntityFrameworkCore.Relational": {
               "target": "Package",
-              "version": "[*, )"
+              "version": "[10.0.9, )"
             },
             "Microsoft.Extensions.DependencyInjection.Abstractions": {
               "target": "Package",
-              "version": "[*, )"
+              "version": "[10.0.9, )"
             },
             "Microsoft.Extensions.Hosting.Abstractions": {
               "target": "Package",
@@ -1142,7 +1158,7 @@
             },
             "Microsoft.Extensions.Logging.Abstractions": {
               "target": "Package",
-              "version": "[*, )"
+              "version": "[10.0.9, )"
             },
             "Microsoft.Extensions.Options": {
               "target": "Package",
@@ -1501,6 +1517,10 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "dependencies": {
+            "Microsoft.AspNetCore.Mvc.Core": {
+              "target": "Package",
+              "version": "[2.3.11, )"
+            },
             "NotMediator": {
               "target": "Package",
               "version": "[1.0.5, )"
@@ -1863,13 +1883,17 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "dependencies": {
+            "Microsoft.AspNetCore.Mvc.Core": {
+              "target": "Package",
+              "version": "[2.3.11, )"
+            },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
-              "version": "[10.0.5, )"
+              "version": "[10.0.9, )"
             },
             "Microsoft.EntityFrameworkCore.Abstractions": {
               "target": "Package",
-              "version": "[10.0.5, )"
+              "version": "[10.0.9, )"
             },
             "NotMediator": {
               "target": "Package",
@@ -2238,33 +2262,37 @@
           "dependencies": {
             "Aspire.RabbitMQ.Client": {
               "target": "Package",
-              "version": "[13.1.3, )"
+              "version": "[13.4.6, )"
             },
             "Aspire.StackExchange.Redis.DistributedCaching": {
               "target": "Package",
-              "version": "[13.1.3, )"
+              "version": "[13.4.6, )"
             },
             "MailKit": {
               "target": "Package",
-              "version": "[4.13.0, )"
+              "version": "[4.17.0, )"
+            },
+            "Microsoft.AspNetCore.Mvc.Core": {
+              "target": "Package",
+              "version": "[2.3.11, )"
             },
             "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",
-              "version": "[10.0.5, )"
+              "version": "[10.0.9, )"
             },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
-              "version": "[10.0.5, )"
+              "version": "[10.0.9, )"
             },
             "Microsoft.EntityFrameworkCore.Tools": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
               "target": "Package",
-              "version": "[10.0.5, )"
+              "version": "[10.0.9, )"
             },
             "Microsoft.Extensions.DependencyInjection.Abstractions": {
               "target": "Package",
-              "version": "[10.0.5, )"
+              "version": "[10.0.9, )"
             },
             "NotMediator": {
               "target": "Package",
@@ -2272,7 +2300,7 @@
             },
             "Scalar.AspNetCore": {
               "target": "Package",
-              "version": "[2.13.11, )"
+              "version": "[2.16.5, )"
             }
           },
           "imports": [
@@ -2763,6 +2791,10 @@
               "target": "Package",
               "version": "[*, )"
             },
+            "Microsoft.AspNetCore.Mvc.Core": {
+              "target": "Package",
+              "version": "[2.3.11, )"
+            },
             "System.IdentityModel.Tokens.Jwt": {
               "target": "Package",
               "version": "[*, )"
@@ -3109,13 +3141,17 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "dependencies": {
+            "Microsoft.AspNetCore.Mvc.Core": {
+              "target": "Package",
+              "version": "[2.3.11, )"
+            },
             "Microsoft.Extensions.Http.Resilience": {
               "target": "Package",
-              "version": "[10.4.0, )"
+              "version": "[10.7.0, )"
             },
             "Microsoft.Extensions.ServiceDiscovery": {
               "target": "Package",
-              "version": "[10.4.0, )"
+              "version": "[10.7.0, )"
             },
             "NotMediator": {
               "target": "Package",
@@ -3123,23 +3159,23 @@
             },
             "OpenTelemetry.Exporter.OpenTelemetryProtocol": {
               "target": "Package",
-              "version": "[1.14.0, )"
+              "version": "[1.16.0, )"
             },
             "OpenTelemetry.Extensions.Hosting": {
               "target": "Package",
-              "version": "[1.14.0, )"
+              "version": "[1.16.0, )"
             },
             "OpenTelemetry.Instrumentation.AspNetCore": {
               "target": "Package",
-              "version": "[1.14.0, )"
+              "version": "[1.15.2, )"
             },
             "OpenTelemetry.Instrumentation.Http": {
               "target": "Package",
-              "version": "[1.14.0, )"
+              "version": "[1.15.1, )"
             },
             "OpenTelemetry.Instrumentation.Runtime": {
               "target": "Package",
-              "version": "[1.14.0, )"
+              "version": "[1.15.1, )"
             }
           },
           "imports": [
@@ -3628,19 +3664,23 @@
           "dependencies": {
             "MailKit": {
               "target": "Package",
-              "version": "[4.7.1.1, )"
+              "version": "[4.17.0, )"
+            },
+            "Microsoft.AspNetCore.Mvc.Core": {
+              "target": "Package",
+              "version": "[2.3.11, )"
             },
             "Microsoft.Extensions.Configuration.Abstractions": {
               "target": "Package",
-              "version": "[*, )"
+              "version": "[10.0.9, )"
             },
             "Microsoft.Extensions.DependencyInjection.Abstractions": {
               "target": "Package",
-              "version": "[*, )"
+              "version": "[10.0.9, )"
             },
             "Microsoft.Extensions.Logging.Abstractions": {
               "target": "Package",
-              "version": "[*, )"
+              "version": "[10.0.9, )"
             },
             "Microsoft.Extensions.Options": {
               "target": "Package",
@@ -3652,7 +3692,7 @@
             },
             "Scriban": {
               "target": "Package",
-              "version": "[5.10.0, )"
+              "version": "[7.2.4, )"
             }
           },
           "imports": [

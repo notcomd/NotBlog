@@ -1,19 +1,16 @@
-// global using 指令
+﻿// global using 指令
 
 global using System.ComponentModel.DataAnnotations;
 global using System.Reflection;
-global using System.Security.Claims;
 global using CommonsInitializer;
-global using DomainCommons;
-global using Notcomd.NotEmail;
-global using Identity.Domain.Entities.RoleAggregate;
+global using Identity.Domain.Dto.Request;
 global using Identity.Domain.IRepository;
-global using Identity.Web.API.ActionFilter;
-global using Microsoft.AspNetCore.Mvc;
-global using Microsoft.AspNetCore.Mvc.Controllers;
-global using Microsoft.AspNetCore.Mvc.Filters;
+global using Identity.Domain.IService;
+global using Identity.Domain.Options;
+global using Identity.Domain.Entities.UserAggregate;
 global using Microsoft.EntityFrameworkCore;
 global using Notcomd.Evenbus;
-global using Notcomd.Token.JWT;
+global using Notcomd.NotEmail.Core;
+global using Notcomd.Token.JWT.Security;
 global using NotMediator;
 global using Scalar.AspNetCore;

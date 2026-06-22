@@ -1,3 +1,3 @@
-namespace Identity.Web.API.ResponseEntites;
+﻿namespace Identity.Web.API.Response;
 
 public record ResponseSignUpRecord(string Email, string PasswordHash);

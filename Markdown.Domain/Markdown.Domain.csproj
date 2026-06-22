@@ -12,6 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.11"/>
       <PackageReference Include="NotMediator" Version="1.0.5" />
     </ItemGroup>
 

@@ -1,4 +1,4 @@
-using Message.Domain.Entities.MessageContent;
+﻿using Message.Domain.Entities.MessageContent;
 using Message.Domain.Entities.Recall;
 using Message.Domain.Enums;
 using Message.Domain.Events;
@@ -26,7 +26,7 @@ public class Message : Entity, IAggregateRoot
 
     private Message()
     {
-        MessageId = Guid.CreateVersion7();
+        MessageId = Guid.NewGuid();
         SentTime = DateTime.UtcNow;
         Status = MessageStatus.Pending;
         IsRecalled = false;
@@ -35,65 +35,38 @@ public class Message : Entity, IAggregateRoot
     }
 
     public Guid MessageId { get; init; }
-
     public Guid SessionId { get; init; }
-
     public Guid SenderId { get; init; }
-
     public Guid? ReceiverId { get; set; }
-
     public MessageType MessageType { get; private set; }
-
     public MessageStatus Status { get; private set; }
 
     public string? Content { get; private set; }
-
     public Uri? MediaUri { get; private set; }
-
     public string? ThumbnailUri { get; private set; }
-
     public double? FileSize { get; private set; }
-
     public double? Duration { get; private set; }
-
     public string? FileName { get; private set; }
-
     public string? MimeType { get; private set; }
-
-    public string? Caption { get; private set; }
-
+    public string? Caption { get; set; }
     public double? Latitude { get; private set; }
-
     public double? Longitude { get; private set; }
-
     public string? LocationName { get; private set; }
-
     public string? LinkUrl { get; private set; }
-
     public string? LinkTitle { get; private set; }
-
     public string? LinkDescription { get; private set; }
-
     public string? ExpressionCode { get; private set; }
 
     public DateTime SentTime { get; init; }
-
     public DateTime? DeliveredTime { get; private set; }
-
     public DateTime? ReadTime { get; private set; }
-
     public bool IsRecalled { get; private set; }
-
     public bool IsEncrypted { get; private set; }
-
     public bool IsForwarded { get; private set; }
-
     public Guid? OriginalMessageId { get; private set; }
-
     public Guid? ReplyToMessageId { get; private set; }
 
     public IReadOnlyCollection<FileAttachment> Attachments => _attachments.AsReadOnly();
-
 
     public static Message CreateTextMessage(Guid sessionId, Guid senderId, string content)
     {

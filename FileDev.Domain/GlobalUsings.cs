@@ -1,0 +1,8 @@
+global using FileDev.Domain.Entities;
+global using FileDev.Domain.SeedWork;
+global using FileDev.Domain.ValueObjects;
+global using FileDev.Domain.Dto;
+global using FileDev.Domain.Events;
+global using FileDev.Domain.IRepository;
+global using FileDev.Domain.Options;
+global using FileDev.Domain.IServices;

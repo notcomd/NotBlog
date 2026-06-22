@@ -12,6 +12,11 @@ public class ModuleInitializer : IModuleInitializer
         service.AddScoped<IEmailCodeSend, EmailCodeSend>();
         service.AddDistributedMemoryCache();
         service.AddScoped<ISmsCodeSend, SmsCodeSend>();
-        service.AddScoped<UserService>();
+        service.AddScoped<IUserService, UserService>();
+        service.AddScoped<IUserRoleService, UserRoleService>();
+        service.AddScoped<IRoleGroupService, RoleGroupService>();
+        service.AddScoped<IUserExternalLoginRepository, UserExternalLoginRepository>();
+        service.AddScoped<IOAuthService, OAuthService>();
+        service.AddScoped<IGitHubAuthService, GithubAuthService>();
     }
 }

@@ -1,19 +1,14 @@
-using System.Net.Http.Headers;
-using System.Security.Claims;
+﻿using System.Net.Http.Headers;
 using System.Text;
-using System.Text.Json;
 using System.Web;
 using Identity.Domain.Dto.OAuth;
-using Identity.Domain.IService;
 using Identity.Domain.Options;
-using Microsoft.Extensions.Options;
-using Notcomd.Token.JWT.Core;
 using Notcomd.Token.JWT.Security;
 
 namespace Identity.Infrastructure.Services;
 
 public class OAuthService(
-    HttpClient httpClient,
+    IHttpClientFactory httpClient,
     IUserRepository userRepository,
     IUserRoleRepository userRoleRepository,
     IJwtTokenService jwtTokenService,
@@ -24,150 +19,122 @@ public class OAuthService(
 {
     private readonly JwtOptions _jwtOptions = jwtOptions.Value;
     private readonly OAuthOptions _oauthOptions = oauthOptions.Value;
-    private readonly IUserRepository _userRepository = userRepository;
 
     /// <summary>
-    ///  生成授权链接
+    /// 生成 OAuth 授权链接
     /// </summary>
-    /// <param name="provider"></param>
-    /// <param name="redirectUri"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentException"></exception>
-    public Task<string> GenerateAuthorizationUrlAsync(string provider, string redirectUri)
+    /// <param name="provider">提供商（google / github / microsoft）</param>
+    /// <param name="redirectUri">回调地址</param>
+    /// <returns>授权 URL</returns>
+    /// <exception cref="ArgumentException">不支持的 provider 时抛出</exception>
+    public async Task<string> GenerateAuthorizationUrlAsync(string provider, string redirectUri)
     {
-        var state = JwtRandom.GenerateSecurityStamp().Result;
+        var state = await JwtRandom.GenerateSecurityStamp();
+        var normalizedProvider = provider.ToLowerInvariant();
 
-        return provider.ToLower() switch
+        return normalizedProvider switch
         {
-            "google" => Task.FromResult(GenerateGoogleAuthUrl(redirectUri, state)),
-            "github" => Task.FromResult(GenerateGitHubAuthUrl(redirectUri, state)),
-            "microsoft" => Task.FromResult(GenerateMicrosoftAuthUrl(redirectUri, state)),
+            "google" => GenerateGoogleAuthUrl(redirectUri, state),
+            "github" => GenerateGitHubAuthUrl(redirectUri, state),
+            "microsoft" => GenerateMicrosoftAuthUrl(redirectUri, state),
             _ => throw new ArgumentException($"Unsupported provider: {provider}")
         };
     }
 
     /// <summary>
-    /// 获取外部用户信息
+    /// 通过外部登录信息查找已有用户。
+    /// 先将 providerUserId 解析为 Guid 后通过仓库查询。
     /// </summary>
-    /// <param name="provider"></param>
-    /// <param name="providerUserId"></param>
-    /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
+    /// <param name="provider">提供商</param>
+    /// <param name="providerUserId">提供商侧用户 ID</param>
+    /// <returns>用户实体，未找到返回 null</returns>
     public async Task<User?> GetExistingUserByExternalLoginAsync(string provider, string providerUserId)
     {
-        // 尝试通过外部登录提供商和用户ID查找现有用户
-        // 假设 User 实体或仓库中有方法可以通过外部登录信息查找用户
-        // 这里需要根据实际的领域模型调整，通常可能有一个 ExternalLogins 表或者 User 表中有相关字段
-
-        // 方案 A: 如果 UserRepository 有直接根据外部提供商和外部用户ID查找的方法
-        // return await _userRepository.FindByExternalLoginAsync(provider, providerUserId);
-
-        // 方案 B: 如果没有直接方法，且作者信息 (AuthorGuids) 存储了 ProviderUserId (参考下方 CreateOrUpdateUserFromExternalLoginAsync 的实现逻辑)
-        // 注意：下方代码将 providerUserId 解析为 Guid 放入 authorGuids，这暗示了一种关联方式。
-        // 但通常外部登录会有独立的映射表。鉴于当前代码结构，我们尝试通过解析 Guid 并在仓库中查找匹配的用户。
-        // 然而，更通用的做法是查询一个假设存在的“外部登录”关联，或者遍历用户列表（效率低）。
-
-        // 观察下方的 CreateOrUpdateUserFromExternalLoginAsync:
-        // var userData=await _userRepository.FindOneByUserAsync(Guid.Parse(externalUserInfo.ProviderUserId));
-        // 以及 User.CreateByEmailUser(..., authorGuids: [Guid.Parse(externalUserInfo.ProviderUserId)]);
-        // 这表明当前系统可能直接将 ProviderUserId (如果是 Guid 格式) 作为了某种内部关联键 (AuthorGuid)。
-        // 但 ProviderUserId 来自 Google/GitHub/Microsoft，不一定是合法的 Guid 格式 (例如 GitHub 是 int, Google 是 string)。
-        // 下方代码直接 Parse 可能会报错，除非所有 ProviderUserId 都能转为 Guid 或者测试数据特殊。
-
-        // 修正思路：我们需要一个稳健的查找方法。
-        // 由于 IUserRepository 接口定义未知，我们只能基于现有代码推断。
-        // 现有代码在创建用户时使用了 `authorGuids: [Guid.Parse(externalUserInfo.ProviderUserId)]`。
-        // 这意味着它试图将外部 ID 强制转换为 Guid。如果这是既定逻辑，那么查找也应如此。
-        // 但为了健壮性，我们应该先尝试解析，失败则返回 null 或采用其他策略。
-        // 不过，最可能的意图是：系统维护了一个外部登录映射，或者用户表中有一个字段存储了外部身份。
-
-        // 鉴于无法修改 IRepository 接口，且必须实现该方法以支持 HandleCallbackAsync。
-        // 我们假设存在一种机制可以通过 提供商 + 外部ID 找到用户。
-        // 如果项目中没有专门的 ExternalLogin 实体查询，可能需要遍历或依赖特定的仓库扩展。
-        // 但看 `CreateOrUpdateUserFromExternalLoginAsync` 的逻辑，它似乎是先查 `FindOneByUserAsync(Guid.Parse(...))`。
-        // 这非常奇怪，因为 `providerUserId` 通常不是用户的内部 Guid。
-        // 让我们重新审视 `CreateOrUpdateUserFromExternalLoginAsync`:
-        // 它先尝试 `FindOneByUserAsync(Guid.Parse(externalUserInfo.ProviderUserId))`。
-        // 如果找不到，才创建新用户，并将 `Guid.Parse(externalUserInfo.ProviderUserId)` 加入 `authorGuids`。
-        // 这说明该系统的设计可能是：如果外部用户曾经被导入过，其外部ID可能被转换并用作某种内部标识，或者这是一个设计缺陷/特定场景假设。
-
-        // 为了保持逻辑一致性（即使原逻辑看起来很脆弱），我们将尝试同样的查找策略：
-        // 尝试将 providerUserId 解析为 Guid，然后查找用户。
-        // 如果解析失败，说明该提供商的 ID 格式不兼容此逻辑，返回 null。
-
         if (!Guid.TryParse(providerUserId, out var userGuid))
-        {
-            // 如果 providerUserId 不是 Guid 格式（如 GitHub 的数字 ID 转字符串，或 Google 的随机字符串），
-            // 按照当前代码库的奇怪逻辑，可能无法通过这种方式找到旧用户，除非之前创建时也没报错。
-            // 但为了安全，返回 null，让调用者去创建新用户。
-            // 或者，如果有其他查找方式（比如遍历所有用户检查 authorGuids），但这太昂贵。
-            // 考虑到 `CreateOrUpdate...` 里直接 Parse 没做判断，这里我们也尝试 Parse。
-            // 如果之前能创建成功，说明 ID 是可 Parse 的。
             return null;
-        }
 
-        return await _userRepository.FindOneByUserAsync(userGuid);
+        return await userRepository.FindOneByUserAsync(userGuid);
     }
 
     /// <summary>
-    /// 创建或更新用户信息
+    /// 根据外部用户信息创建或更新用户。
+    /// 若用户已存在则直接返回，否则创建新用户并写入仓库。
     /// </summary>
-    /// <param name="provider"></param>
-    /// <param name="externalUserInfo">  </param>
-    /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
+    /// <param name="provider">提供商</param>
+    /// <param name="externalUserInfo">外部用户信息</param>
+    /// <returns>用户实体</returns>
+    /// <exception cref="FormatException">providerUserId 不是合法 Guid 时抛出</exception>
     public async Task<User> CreateOrUpdateUserFromExternalLoginAsync(string provider, ExternalUserInfo externalUserInfo)
     {
-        var userData = await _userRepository.FindOneByUserAsync(Guid.Parse(externalUserInfo.ProviderUserId));
-        var userRoleGuid = await userRoleRepository.FindByUserRoleAsync("USER");
-        if (userData is null)
-        {
-            var email = externalUserInfo.Email;
-            userData = await User.CreateByEmailUser(
-                userRoleGuid: userRoleGuid!.RoleGuid,
-                userEmail: email,
-                passwordHash: Guid.NewGuid().ToString(),
-                imageCover: externalUserInfo.AvatarUrl,
-                authorGuids: [Guid.Parse(externalUserInfo.ProviderUserId)]);
-            await _userRepository.AddOneByUserAsync(userData);
-        }
+        if (!Guid.TryParse(externalUserInfo.ProviderUserId, out var userGuid))
+            throw new FormatException($"ProviderUserId '{externalUserInfo.ProviderUserId}' 不是有效的 Guid 格式。");
 
+        var userData = await userRepository.FindOneByUserAsync(userGuid);
+        if (userData is not null)
+            return userData;
+
+        var userRole = await userRoleRepository.FindByUserRoleAsync("USER")
+                       ?? throw new InvalidOperationException("默认角色 'USER' 未在数据库中配置。");
+
+        userData = await User.CreateByEmailUser(
+            userRoleGuid: userRole.RoleGuid,
+            userEmail: externalUserInfo.Email,
+            passwordHash: Guid.NewGuid().ToString(),
+            imageCover: externalUserInfo.AvatarUrl,
+            authorGuids: [userGuid]);
+
+        await userRepository.AddOneByUserAsync(userData);
         return userData;
     }
 
     /// <summary>
-    ///  链接外部登录
+    /// 将外部登录关联到指定用户。
+    /// 当前为占位实现，仅校验用户是否存在。
     /// </summary>
-    /// <param name="userId"></param>
-    /// <param name="provider"></param>
-    /// <param name="providerUserId"></param>
-    /// <param name="displayName"></param>
-    /// <exception cref="ArgumentNullException"></exception>
-    /// <returns></returns>
+    /// <param name="userId">用户 ID</param>
+    /// <param name="provider">提供商</param>
+    /// <param name="providerUserId">提供商侧用户 ID</param>
+    /// <param name="displayName">显示名</param>
+    /// <exception cref="ArgumentException">用户不存在时抛出</exception>
     public async Task LinkExternalLoginToUserAsync(Guid userId, string provider, string providerUserId,
         string displayName)
     {
-        var userData = await _userRepository.FindOneByUserAsync(userId);
-        if (userData is null)
-        {
-            logger.LogError("User not found");
-            throw new ArgumentNullException(nameof(userData));
-        }
+        var userData = await userRepository.FindOneByUserAsync(userId)
+                       ?? throw new ArgumentException($"User {userId} not found.", nameof(userId));
+
+        // TODO: 实现外部登录关联逻辑（将 provider + providerUserId 写入 ExternalLogins 表）
+        logger.LogInformation("External login placeholder: {Provider} for user {UserId}", provider, userId);
     }
 
+    /// <summary>
+    /// 解除外部登录与指定用户的关联。
+    /// 当前为占位实现。
+    /// </summary>
+    /// <param name="userId">用户 ID</param>
+    /// <param name="provider">提供商</param>
+    /// <param name="providerUserId">提供商侧用户 ID</param>
+    /// <returns>成功返回 true</returns>
+    public Task UnlinkExternalLoginFromUserAsync(Guid userId, string provider, string providerUserId)
+    {
+        // TODO: 实现解除外部登录关联逻辑
+        logger.LogInformation("External login unlink placeholder: {Provider} for user {UserId}", provider, userId);
+        return Task.CompletedTask;
+    }
 
     /// <summary>
-    ///  获取回调信息
+    /// 处理 OAuth 回调：获取外部用户信息、查找或创建本地用户、生成 JWT Token。
     /// </summary>
-    /// <param name="provider"></param>
-    /// <param name="code"></param>
-    /// <param name="redirectUri"></param>
-    /// <returns></returns>
+    /// <param name="provider">提供商</param>
+    /// <param name="code">授权码</param>
+    /// <param name="redirectUri">回调地址</param>
+    /// <returns>登录响应</returns>
     public async Task<OAuthLoginResponse> HandleCallbackAsync(string provider, string code, string redirectUri)
     {
-        var externalUserInfo = await GetExternalUserInfoAsync(provider, code, redirectUri);
+        var normalizedProvider = provider.ToLowerInvariant();
+        var externalUserInfo = await GetExternalUserInfoAsync(normalizedProvider, code, redirectUri);
 
-        var existingUser = await GetExistingUserByExternalLoginAsync(provider, externalUserInfo.ProviderUserId);
+        var existingUser =
+            await GetExistingUserByExternalLoginAsync(normalizedProvider, externalUserInfo.ProviderUserId);
 
         User user;
         if (existingUser is not null)
@@ -177,26 +144,22 @@ public class OAuthService(
         }
         else
         {
-            user = await CreateOrUpdateUserFromExternalLoginAsync(provider, externalUserInfo);
+            user = await CreateOrUpdateUserFromExternalLoginAsync(normalizedProvider, externalUserInfo);
             logger.LogInformation("New user created with {Provider}", provider);
         }
 
-        if (existingUser is null)
-        {
-            throw new ArgumentNullException(nameof(existingUser));
-        }
+        var roles = await GetUserRolesAsync(user);
+        var roleName = DetermineHighestRole(roles);
 
-        var roleName = SwitchRole(await GetRoleName(user));
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.Name, user.UserName),
-            new Claim(ClaimTypes.Email, user.UserEmail),
-            new Claim(ClaimTypes.Role, roleName),
-            new Claim("UserGuid", user.UserGuid.ToString())
+            new(ClaimTypes.Name, user.UserName),
+            new(ClaimTypes.Email, user.UserEmail),
+            new(ClaimTypes.Role, roleName),
+            new("UserGuid", user.UserGuid.ToString())
         };
 
         var token = jwtTokenService.BuilderTokenAsync(claims, _jwtOptions);
-
 
         return new OAuthLoginResponse(
             token,
@@ -212,55 +175,45 @@ public class OAuthService(
         );
     }
 
+    // ═══════════════════════════════════════════════════════════
+    //  Private helpers — OAuth URL 生成
+    // ═══════════════════════════════════════════════════════════
+
     private string GenerateGoogleAuthUrl(string redirectUri, string state)
     {
-        var options = _oauthOptions.Google;
-        return $"https://accounts.google.com/o/oauth2/v2/auth?" +
-               $"client_id={options.ClientId}&" +
-               $"redirect_uri={Uri.EscapeDataString(redirectUri)}&" +
-               $"response_type=code&" +
-               $"scope=email%20profile&" +
-               $"state={state}";
+        return "https://accounts.google.com/o/oauth2/v2/auth" +
+               $"?client_id={_oauthOptions.Google.ClientId}" +
+               $"&redirect_uri={Uri.EscapeDataString(redirectUri)}" +
+               "&response_type=code" +
+               "&scope=email%20profile" +
+               $"&state={state}";
     }
 
-    /// <summary>
-    /// 获取GitHub用户信息
-    /// </summary>
-    /// <param name="redirectUri"></param>
-    /// <param name="state"></param>
-    /// <returns></returns>
     private string GenerateGitHubAuthUrl(string redirectUri, string state)
     {
-        var options = _oauthOptions.GitHub;
-        return $"https://github.com/login/oauth/authorize?" +
-               $"client_id={options.ClientId}&" +
-               $"redirect_uri={Uri.EscapeDataString(redirectUri)}&" +
-               $"scope=user:email&" +
-               $"state={state}";
+        return string.Empty;
     }
 
     private string GenerateMicrosoftAuthUrl(string redirectUri, string state)
     {
-        var options = _oauthOptions.Microsoft;
-        return $"https://login.microsoftonline.com/common/oauth2/v2.0/authorize?" +
-               $"client_id={options.ClientId}&" +
-               $"redirect_uri={Uri.EscapeDataString(redirectUri)}&" +
-               $"response_type=code&" +
-               $"scope=openid%20profile%20email&" +
-               $"state={state}";
+        return "https://login.microsoftonline.com/common/oauth2/v2.0/authorize" +
+               $"?client_id={_oauthOptions.Microsoft.ClientId}" +
+               $"&redirect_uri={Uri.EscapeDataString(redirectUri)}" +
+               "&response_type=code" +
+               "&scope=openid%20profile%20email" +
+               $"&state={state}";
     }
 
+    // ═══════════════════════════════════════════════════════════
+    //  Private helpers — OAuth 用户信息获取
+    // ═══════════════════════════════════════════════════════════
+
     /// <summary>
-    ///  获取外部用户信息
+    /// 根据 provider 路由到对应的 OAuth 用户信息获取方法
     /// </summary>
-    /// <param name="provider"></param>
-    /// <param name="code"></param>
-    /// <param name="redirectUri"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentException"></exception>
     private async Task<ExternalUserInfo> GetExternalUserInfoAsync(string provider, string code, string redirectUri)
     {
-        return provider.ToLower() switch
+        return provider switch
         {
             "google" => await GetGoogleUserInfoAsync(code, redirectUri),
             "github" => await GetGitHubUserInfoAsync(code, redirectUri),
@@ -269,17 +222,14 @@ public class OAuthService(
         };
     }
 
-    /// <summary>
-    ///  获取Google用户信息
-    /// </summary>
-    /// <param name="code"></param>
-    /// <param name="redirectUri"></param>
-    /// <returns></returns>
     private async Task<ExternalUserInfo> GetGoogleUserInfoAsync(string code, string redirectUri)
     {
         var options = _oauthOptions.Google;
-        var tokenResponse = await httpClient.PostAsync(
-            "https://accounts.google.com/o/oauth2/token",
+        var client = httpClient.CreateClient();
+
+        // Step 1: 用 code 换取 access_token
+        using var tokenResponse = await client.PostAsync(
+            "https://oauth2.googleapis.com/token",
             new FormUrlEncodedContent(new Dictionary<string, string>
             {
                 { "client_id", options.ClientId },
@@ -287,19 +237,20 @@ public class OAuthService(
                 { "code", code },
                 { "redirect_uri", redirectUri },
                 { "grant_type", "authorization_code" }
-            })
-        );
+            }));
         tokenResponse.EnsureSuccessStatusCode();
+
         var tokenJson = await tokenResponse.Content.ReadAsStringAsync();
         var tokenData = JsonSerializer.Deserialize<JsonElement>(tokenJson);
+        var accessToken = tokenData.GetProperty("access_token").GetString()!;
 
-        var accessToken = tokenData.GetProperty("access_token").GetString();
+        // Step 2: 用 access_token 获取用户信息
+        using var request = new HttpRequestMessage(HttpMethod.Get, "https://www.googleapis.com/oauth2/v2/userinfo");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
-        httpClient.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", accessToken);
-
-        var userInfoResponse = await httpClient.GetAsync("https://www.googleapis.com/oauth2/v2/userinfo");
+        using var userInfoResponse = await client.SendAsync(request);
         userInfoResponse.EnsureSuccessStatusCode();
+
         var userInfoJson = await userInfoResponse.Content.ReadAsStringAsync();
         var userData = JsonSerializer.Deserialize<JsonElement>(userInfoJson);
 
@@ -314,64 +265,46 @@ public class OAuthService(
         };
     }
 
+    /// <summary>
+    /// 获取 GitHub 用户信息。先拿 token，再拿 profile + emails。
+    /// </summary>
     private async Task<ExternalUserInfo> GetGitHubUserInfoAsync(string code, string redirectUri)
     {
         var options = _oauthOptions.GitHub;
+        var client = httpClient.CreateClient();
+        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-        var tokenResponse = await httpClient.PostAsync(
-            "https://github.com/login/oauth/access_token",
-            new StringContent(
-                $"client_id={options.ClientId}&" +
-                $"client_secret={options.ClientSecret}&" +
-                $"code={code}&" +
-                $"redirect_uri={Uri.EscapeDataString(redirectUri)}",
-                Encoding.UTF8,
-                "application/x-www-form-urlencoded"
-            )
-        );
+        // Step 1: 用 code 换取 access_token
+        var tokenRequestBody = $"client_id={options.ClientId}" +
+                               $"&client_secret={options.ClientSecret}" +
+                               $"&code={code}" +
+                               $"&redirect_uri={Uri.EscapeDataString(redirectUri)}";
 
+        using var tokenRequest = new HttpRequestMessage(HttpMethod.Post,
+            "https://github.com/login/oauth/access_token")
+        {
+            Content = new StringContent(tokenRequestBody, Encoding.UTF8, "application/x-www-form-urlencoded")
+        };
+
+        using var tokenResponse = await client.SendAsync(tokenRequest);
         tokenResponse.EnsureSuccessStatusCode();
+
         var responseContent = await tokenResponse.Content.ReadAsStringAsync();
         var queryParams = HttpUtility.ParseQueryString(responseContent);
         var accessToken = queryParams["access_token"]!;
 
-        httpClient.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("token", accessToken);
+        // Step 2: 获取用户 Profile
+        using var profileRequest = new HttpRequestMessage(HttpMethod.Get, "https://api.github.com/user");
+        profileRequest.Headers.Authorization = new AuthenticationHeaderValue("token", accessToken);
 
-        httpClient.DefaultRequestHeaders.Accept.Add(
-            new MediaTypeWithQualityHeaderValue("application/json"));
-
-        var userInfoResponse = await httpClient.GetAsync("https://api.github.com/user");
+        using var userInfoResponse = await client.SendAsync(profileRequest);
         userInfoResponse.EnsureSuccessStatusCode();
+
         var userInfoJson = await userInfoResponse.Content.ReadAsStringAsync();
         var userData = JsonSerializer.Deserialize<JsonElement>(userInfoJson);
 
-        string email = "";
-        try
-        {
-            var emailsResponse = await httpClient.GetAsync("https://api.github.com/user/emails");
-            if (emailsResponse.IsSuccessStatusCode)
-            {
-                var emailsJson = await emailsResponse.Content.ReadAsStringAsync();
-                var emailsData = JsonSerializer.Deserialize<JsonElement>(emailsJson);
-                foreach (var emailData in emailsData.EnumerateArray())
-                {
-                    if (emailData.GetProperty("primary").GetBoolean() &&
-                        emailData.GetProperty("verified").GetBoolean())
-                    {
-                        email = emailData.GetProperty("email").GetString()!;
-                        break;
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            logger.LogWarning(ex, "Failed to fetch GitHub email");
-            email = userData.TryGetProperty("email", out var emailProp)
-                ? emailProp.GetString()!
-                : $"{userData.GetProperty("login").GetString()}@github.com";
-        }
+        // Step 3: 获取邮箱（优先选 primary + verified）
+        var email = await FetchGitHubPrimaryEmailAsync(client, accessToken, userData);
 
         return new ExternalUserInfo
         {
@@ -384,32 +317,84 @@ public class OAuthService(
         };
     }
 
+    /// <summary>
+    /// 获取 GitHub 用户的主验证邮箱。失败时回退到 profile 中的 public_email 或拼接 login@github.com。
+    /// </summary>
+    private async ValueTask<string> FetchGitHubPrimaryEmailAsync(
+        HttpClient client, string accessToken, JsonElement userData)
+    {
+        try
+        {
+            using var emailRequest = new HttpRequestMessage(HttpMethod.Get,
+                "https://api.github.com/user/emails");
+            emailRequest.Headers.Authorization = new AuthenticationHeaderValue("token", accessToken);
+
+            using var emailsResponse = await client.SendAsync(emailRequest);
+            if (!emailsResponse.IsSuccessStatusCode)
+                goto Fallback;
+
+            var emailsJson = await emailsResponse.Content.ReadAsStringAsync();
+            var emailsData = JsonSerializer.Deserialize<JsonElement>(emailsJson);
+
+            foreach (var emailData in emailsData.EnumerateArray())
+            {
+                if (emailData.GetProperty("primary").GetBoolean() &&
+                    emailData.GetProperty("verified").GetBoolean())
+                {
+                    return emailData.GetProperty("email").GetString()!;
+                }
+            }
+
+            Fallback:
+            if (userData.TryGetProperty("email", out var emailProp) &&
+                !string.IsNullOrEmpty(emailProp.GetString()))
+            {
+                return emailProp.GetString()!;
+            }
+
+            return $"{userData.GetProperty("login").GetString()}@github.com";
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to fetch GitHub primary email, using fallback.");
+            return $"{userData.GetProperty("login").GetString()}@github.com";
+        }
+    }
+
+    /// <summary>
+    /// 获取 Microsoft 用户信息（通过 Microsoft Graph API）。
+    /// </summary>
     private async Task<ExternalUserInfo> GetMicrosoftUserInfoAsync(string code, string redirectUri)
     {
         var options = _oauthOptions.Microsoft;
+        var client = httpClient.CreateClient();
 
-        var tokenResponse = await httpClient.PostAsync(
+        // Step 1: 用 code 换取 access_token
+        var tokenRequestBody = $"client_id={options.ClientId}" +
+                               $"&client_secret={options.ClientSecret}" +
+                               $"&code={code}" +
+                               $"&redirect_uri={Uri.EscapeDataString(redirectUri)}" +
+                               "&grant_type=authorization_code";
+
+        using var tokenResponse = await client.PostAsync(
             "https://login.microsoftonline.com/common/oauth2/v2.0/token",
-            new StringContent(
-                $"client_id={options.ClientId}&" +
-                $"client_secret={options.ClientSecret}&" +
-                $"code={code}&" +
-                $"redirect_uri={Uri.EscapeDataString(redirectUri)}&" +
-                "grant_type=authorization_code",
-                Encoding.UTF8,
-                "application/x-www-form-urlencoded"
-            )
-        );
+            new StringContent(tokenRequestBody, Encoding.UTF8, "application/x-www-form-urlencoded"));
         tokenResponse.EnsureSuccessStatusCode();
+
         var tokenJson = await tokenResponse.Content.ReadAsStringAsync();
         var tokenData = JsonSerializer.Deserialize<JsonElement>(tokenJson);
         var accessToken = tokenData.GetProperty("access_token").GetString()!;
-        httpClient.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", accessToken);
-        var userInfoResponse = await httpClient.GetAsync("https://graph.microsoft.com/v1.0/me");
+
+        // Step 2: 获取用户信息
+        using var userRequest = new HttpRequestMessage(HttpMethod.Get, "https://graph.microsoft.com/v1.0/me");
+        userRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+        using var userInfoResponse = await client.SendAsync(userRequest);
         userInfoResponse.EnsureSuccessStatusCode();
+
         var userInfoJson = await userInfoResponse.Content.ReadAsStringAsync();
         var userData = JsonSerializer.Deserialize<JsonElement>(userInfoJson);
+
         return new ExternalUserInfo
         {
             ProviderUserId = userData.GetProperty("id").GetString()!,
@@ -421,32 +406,39 @@ public class OAuthService(
         };
     }
 
+    // ═══════════════════════════════════════════════════════════
+    //  Private helpers — 角色处理
+    // ═══════════════════════════════════════════════════════════
 
-    private string SwitchRole(IEnumerable<RoleAuthority> roles)
+    /// <summary>
+    /// 按优先级从高到低确定用户最高角色：Root > Admin > User > Guest
+    /// </summary>
+    private static string DetermineHighestRole(IReadOnlyCollection<RoleAuthority> roles)
     {
-        var roleAuthorities = roles as RoleAuthority[] ?? roles.ToArray();
-        if (roleAuthorities.Any())
-            return string.Empty;
-        if (roleAuthorities.Contains(RoleAuthority.Root))
+        if (roles.Count == 0)
+            return "Guest";
+
+        if (roles.Contains(RoleAuthority.Root))
             return "Root";
-        if (roleAuthorities.Contains(RoleAuthority.Admin))
+        if (roles.Contains(RoleAuthority.Admin))
             return "Admin";
-        if (roleAuthorities.Contains(RoleAuthority.User))
+        if (roles.Contains(RoleAuthority.User))
             return "User";
         return "Guest";
     }
 
-    private async Task<IEnumerable<RoleAuthority>> GetRoleName(User? user)
+    /// <summary>
+    /// 查询用户的所有角色权限
+    /// </summary>
+    private async Task<IReadOnlyCollection<RoleAuthority>> GetUserRolesAsync(User? user)
     {
-        if (user is null) return Enumerable.Empty<RoleAuthority>();
-        List<RoleAuthority> roleNames = new();
-        var data = await userRoleRepository.FindByUserRoleAsync(user.UserRoleGuid);
-        if (data is null) return roleNames;
-        foreach (var pr in data)
-        {
-            roleNames.Add(pr.RoleAuthority);
-        }
+        if (user is null)
+            return Array.Empty<RoleAuthority>();
 
-        return roleNames;
+        var roles = await userRoleRepository.FindByUserRoleAsync(user.UserRoleGuid);
+        if (roles is null || roles.Count == 0)
+            return Array.Empty<RoleAuthority>();
+
+        return roles.Select(r => r.RoleAuthority).ToList();
     }
 }

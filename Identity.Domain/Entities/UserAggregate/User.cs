@@ -1,4 +1,4 @@
-using Identity.Domain.Events;
+﻿using Identity.Domain.Events;
 using Notcomd.Token.JWT.Security;
 
 namespace Identity.Domain.Entities.UserAggregate;
@@ -120,8 +120,7 @@ public class User : Entity, IAggregateRoot
             CreateDatetime = DateTimeOffset.UtcNow
         };
 
-        user.AddDomainEvent(new UserStartedByEmailDomainEvent([userRoleGuid], userEmail, passwordHash, imageCover,
-            authorGuids));
+        user.AddDomainEvent(new UserStartedByEmailDomainEvent(user.UserGuid, userEmail, userRoleGuid, authorGuids));
         return user;
     }
 
@@ -169,7 +168,7 @@ public class User : Entity, IAggregateRoot
         };
 
         user.AddDomainEvent(
-            new UserStartedByPhoneDomainEvent(userRoleGuid, phoneNumber, passwordHash, imageCover, authorGuids));
+            new UserStartedByPhoneDomainEvent(user.UserGuid, userRoleGuid, phoneNumber, authorGuids));
         return user;
     }
 
@@ -250,7 +249,7 @@ public class User : Entity, IAggregateRoot
 
         if (!isValid)
         {
-            UserAccessFail.VerifyByAccessFaild(true);
+            UserAccessFail.VerifyByAccessFaild(false);
             AddDomainEvent(new AccountLockedEvent(UserGuid));
         }
 

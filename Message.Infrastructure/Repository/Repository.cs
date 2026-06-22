@@ -1,5 +1,4 @@
-using Message.Domain.SeedWork;
-using Message.Infrastructure.EntityFramework;
+﻿using Message.Infrastructure.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 
 namespace Message.Infrastructure.Repository;

@@ -73,3 +73,7 @@ F:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\RabbitMQ.Client.dll
 F:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\Dynamic.Json.dll
 F:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\Evenbus.dll
 F:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\Evenbus.pdb
+f:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\DomainInfrastructure.dll
+f:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\DomainCommons.dll
+f:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\DomainInfrastructure.pdb
+f:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\DomainCommons.pdb

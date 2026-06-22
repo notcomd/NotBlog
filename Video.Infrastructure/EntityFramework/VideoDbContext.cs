@@ -1,3 +1,4 @@
+﻿using DomainInfrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using NotMediator;
@@ -9,23 +10,17 @@ namespace Video.Infrastructure.EntityFramework;
 public class VideoDbContext(DbContextOptions<VideoDbContext> options, INotMediator notMediator)
     : DbContext(options), IUnitOfWork
 {
-    private readonly INotMediator _notMediator = notMediator ?? throw new ArgumentNullException(nameof(notMediator), "Mediator cannot be null");
+    private readonly INotMediator _notMediator =
+        notMediator ?? throw new ArgumentNullException(nameof(notMediator), "Mediator cannot be null");
+
+
+    private IDbContextTransaction _currentTransaction;
 
     public DbSet<Videos> Videos { get; set; }
 
     public DbSet<VideoCollection> VideoCollections { get; set; }
-    
 
-    private IDbContextTransaction _currentTransaction;
-    
     public bool HasActiveTransaction => _currentTransaction != null;
-    
-    
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);
-    }
 
     public async Task<int> SavaChangesAsync(CancellationToken cancellationToken = default)
     {
@@ -38,7 +33,13 @@ public class VideoDbContext(DbContextOptions<VideoDbContext> options, INotMediat
         await _notMediator.DispatchDomainEventsAsync(this);
         return await base.SaveChangesAsync(cancellationToken) > 0;
     }
-    
+
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);
+    }
+
     public async Task<IDbContextTransaction> BeginTransactionAsync()
     {
         if (_currentTransaction != null)

@@ -17,7 +17,6 @@ public class NotClient : Entity, IAggregateRoot
         NotClientType = notClientType ?? throw new ArgumentNullException(nameof(notClientType));
     }
 
-
     /// <summary>
     ///     客户端的唯一标识符
     /// </summary>

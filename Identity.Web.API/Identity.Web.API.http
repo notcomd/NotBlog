@@ -1,6 +1,11 @@
 @Identity.Web.API_HostAddress = http://localhost:5150
-
+@clientId=Iv23liuHVDjxNmZHbBiK
 GET {{Identity.Web.API_HostAddress}}/LogIn/UserLogin/UNRandom
 Accept: application/json
+
+###
+
+GET https://github.com/login/oauth/authorize?client_id={{clientId}}
+Accept:application/json
 
 ###

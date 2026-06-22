@@ -1,37 +1,59 @@
-namespace Identity.Infrastructure.EntityConfig;
+﻿namespace Identity.Infrastructure.EntityConfig;
 
-public class UserExternalLoginEntityTypeConfiguration : IEntityTypeConfiguration<Author2>
+public class UserExternalLoginEntityTypeConfiguration : IEntityTypeConfiguration<UserExternalLogin>
 {
-    public void Configure(EntityTypeBuilder<Author2> builder)
+    public void Configure(EntityTypeBuilder<UserExternalLogin> builder)
     {
-        builder.ToTable("Author2");
+        builder.ToTable("UserExternalLogins");
 
-        builder.Property(en => en.Id).UseHiLo("Author2q");
+        builder.HasKey(e => e.LoginId);
 
-        builder.HasKey(e => e.Id);
+        // 托管 EF 值生成（Guid v7 在实体层生成，不依赖 DB 默认值）
+        builder.Property(e => e.LoginId)
+            .ValueGeneratedNever();
 
-        builder.Property(e => e.LoginProvider)
+        builder.Property(e => e.UserId)
+            .IsRequired();
+
+        builder.Property(e => e.Provider)
             .IsRequired()
+            .HasConversion<string>()
             .HasMaxLength(50);
 
         builder.Property(e => e.ProviderKey)
             .IsRequired()
-            .HasMaxLength(255);
+            .HasMaxLength(450);
+
+        builder.Property(e => e.ProviderUnionId)
+            .HasMaxLength(450);
 
         builder.Property(e => e.ProviderDisplayName)
             .IsRequired()
             .HasMaxLength(100);
 
-        builder.Property(e => e.AccessToken)
+        builder.Property(e => e.EncryptedAccessToken)
             .HasMaxLength(2000);
 
-        builder.Property(e => e.RefreshToken)
+        builder.Property(e => e.EncryptedRefreshToken)
             .HasMaxLength(2000);
 
-        builder.HasIndex(e => new { e.LoginProvider, e.ProviderKey })
+        builder.Property(e => e.TokenExpiresAt);
+
+        builder.Property(e => e.CreatedAt)
+            .IsRequired();
+
+        builder.Property(e => e.LastUsedAt)
+            .IsRequired();
+
+        // 唯一索引: 同一提供商下的 ProviderKey 唯一
+        builder.HasIndex(e => new { e.Provider, e.ProviderKey })
             .IsUnique();
 
-        // 配置为聚合根的一部分，不直接修改
+        // 查询索引: 按用户 ID 查找
+        builder.HasIndex(e => e.UserId);
+
+        // 忽略基类的 Int Id（使用 LoginId 作为主键）
+        builder.Ignore(e => e.Id);
         builder.Ignore(e => e.DomainEventbus);
     }
 }

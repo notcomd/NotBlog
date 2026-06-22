@@ -1,3 +1,4 @@
+﻿global using DomainInfrastructure;
 global using Message.Domain.Entities;
 global using Message.Domain.IProvider;
 global using Message.Domain.IRepository;

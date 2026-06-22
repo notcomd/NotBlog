@@ -60,7 +60,7 @@ public class UserAccessFail : Entity
     /// <returns>是否允许访问</returns>
     public bool VerifyByAccessFaild(bool checkByPassword)
     {
-        while (AccessFaildCount <= 5)
+        if (AccessFaildCount <= 5)
         {
             if (!checkByPassword)
             {

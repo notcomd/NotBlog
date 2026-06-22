@@ -14,3 +14,7 @@ F:\NotBlog\Markdown.Infrastructure\obj\Debug\net10.0\Markdown.Infrastructure.dll
 F:\NotBlog\Markdown.Infrastructure\obj\Debug\net10.0\refint\Markdown.Infrastructure.dll
 F:\NotBlog\Markdown.Infrastructure\obj\Debug\net10.0\Markdown.Infrastructure.pdb
 F:\NotBlog\Markdown.Infrastructure\obj\Debug\net10.0\ref\Markdown.Infrastructure.dll
+f:\NotBlog\Markdown.Infrastructure\bin\Debug\net10.0\DomainInfrastructure.dll
+f:\NotBlog\Markdown.Infrastructure\bin\Debug\net10.0\DomainCommons.dll
+f:\NotBlog\Markdown.Infrastructure\bin\Debug\net10.0\DomainInfrastructure.pdb
+f:\NotBlog\Markdown.Infrastructure\bin\Debug\net10.0\DomainCommons.pdb

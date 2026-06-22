@@ -545,5 +545,5 @@
     }
   },
   "type": "object",
-  "SourceSegments": "C:\\Users\\notco\\.nuget\\packages\\aspire.stackexchange.redis\\13.1.2\\ConfigurationSchema.json;C:\\Users\\notco\\.nuget\\packages\\aspire.stackexchange.redis.distributedcaching\\13.1.2\\ConfigurationSchema.json;C:\\Users\\notco\\.nuget\\packages\\aspire.rabbitmq.client\\13.1.2\\ConfigurationSchema.json"
+  "SourceSegments": "C:\\Users\\notco\\.nuget\\packages\\aspire.stackexchange.redis\\13.4.6\\ConfigurationSchema.json;C:\\Users\\notco\\.nuget\\packages\\aspire.stackexchange.redis.distributedcaching\\13.4.6\\ConfigurationSchema.json;C:\\Users\\notco\\.nuget\\packages\\aspire.rabbitmq.client\\13.4.6\\ConfigurationSchema.json"
 }

@@ -35,9 +35,9 @@ public abstract class IdentifiedCommandHandler<T, R>(
                 var commandId = string.Empty;
                 switch (command)
                 {
-                    case CreateUserCommand createUserCommand:
-                        idProvider = nameof(createUserCommand.Email);
-                        commandId = createUserCommand.Email;
+                    case RegisterByUserCommand registerByUserCommand:
+                        idProvider = nameof(registerByUserCommand.UserEmail);
+                        commandId = registerByUserCommand.UserEmail;
                         break;
                     case GenerateCodeCommand generateCodeCommand:
                         idProvider = nameof(generateCodeCommand.Email);

@@ -6,18 +6,23 @@ namespace DomainInfrastructure;
 
 /// <summary>
 /// EF Core DbContext 自动注册扩展
-/// 扫描程序集中所有 DbContext 子类并自动注册到 DI 容器
+/// 通过反射扫描程序集中所有 DbContext 子类并自动注册到 DI 容器。
+/// 
+/// 注意：此方法依赖反射查找 EntityFrameworkServiceCollectionExtensions.AddDbContext 方法，
+/// EF Core 版本升级时若方法签名变化可能需要调整。
 /// </summary>
 public static class EFCoreInitializerHelper
 {
     /// <summary>
-    /// 自动扫描并注册所有 DbContext
+    /// 自动扫描并注册所有非抽象 DbContext 子类到 DI 容器
     /// </summary>
     /// <param name="services">服务集合</param>
-    /// <param name="optionsBuilder">DbContext 配置（如连接字符串）</param>
-    /// <param name="assemblies">要扫描的程序集</param>
+    /// <param name="optionsBuilder">DbContext 配置委托（如设置连接字符串）</param>
+    /// <param name="assemblies">要扫描的程序集集合</param>
     /// <param name="contextLifetime">DbContext 生命周期，默认 Scoped</param>
-    /// <param name="optionsLifetime">Options 生命周期，默认 Scoped</param>
+    /// <param name="optionsLifetime">DbContextOptions 生命周期，默认 Scoped</param>
+    /// <exception cref="ArgumentNullException">当任一参数为 null 时抛出</exception>
+    /// <exception cref="InvalidOperationException">当无法找到 AddDbContext 方法时抛出</exception>
     public static IServiceCollection AddAllDbContexts(
         this IServiceCollection services,
         Action<DbContextOptionsBuilder> optionsBuilder,
@@ -60,15 +65,22 @@ public static class EFCoreInitializerHelper
         return services;
     }
 
+    /// <summary>
+    /// 查找 EntityFrameworkServiceCollectionExtensions.AddDbContext 方法。
+    /// 匹配条件：名为 AddDbContext 的泛型静态方法，第一个参数为 IServiceCollection 类型，
+    /// 且参数数量 >= 3（最低要求：services、optionsAction、contextLifetime）。
+    /// </summary>
     private static MethodInfo FindAddDbContextMethod()
     {
         var method = typeof(EntityFrameworkServiceCollectionExtensions)
-            .GetMethods()
+            .GetMethods(BindingFlags.Public | BindingFlags.Static)
             .FirstOrDefault(m =>
                 m.Name == nameof(EntityFrameworkServiceCollectionExtensions.AddDbContext)
                 && m.IsGenericMethod
-                && m.GetParameters().Length == 4);
+                && m.GetParameters().Length >= 3
+                && m.GetParameters()[0].ParameterType == typeof(IServiceCollection));
 
-        return method ?? throw new InvalidOperationException("无法找到 AddDbContext 方法。");
+        return method ?? throw new InvalidOperationException(
+            "无法找到 AddDbContext 方法，请检查 EF Core 版本兼容性。");
     }
 }

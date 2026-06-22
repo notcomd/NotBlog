@@ -1,4 +1,4 @@
-using Notcomd.Token.JWT.Security;
+﻿using Notcomd.Token.JWT.Security;
 using Video.Domain.SeedWork;
 using Video.Domain.ValueObjects;
 

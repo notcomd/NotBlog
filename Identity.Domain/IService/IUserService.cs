@@ -1,60 +1,76 @@
-namespace Identity.Domain.IService;
+﻿namespace Identity.Domain.IService;
 
 public interface IUserService
 {
     /// <summary>
-    ///  登入验证
+    /// 手机号登入验证
     /// </summary>
-    /// <param name="phoneNumber"></param>
-    /// <param name="password"></param>
-    /// <param name="code"></param>
-    /// <returns></returns>
-    public Task<string> LogInByCheckPasswordAsync(PhoneNumber phoneNumber, string password, long code);
+    /// <param name="phoneNumber">手机号</param>
+    /// <param name="password">密码</param>
+    /// <param name="code">验证码</param>
+    /// <returns>成功返回 TokenResult（含 AccessToken + RefreshToken + 过期时间），失败返回 null</returns>
+    Task<TokenResult?> LogInByCheckPasswordAsync(PhoneNumber phoneNumber, string password, string code);
 
     /// <summary>
-    ///  登入验证
+    /// 邮箱登入验证
     /// </summary>
-    /// <param name="email"></param>
-    /// <param name="password"></param>
-    /// <param name="code"></param>
-    /// <returns></returns>
-    public Task<string> LogInByCheckPasswordAsync(
-        [EmailAddress(ErrorMessage = "无效邮件地址")]
-        string email,
-        string password,
+    /// <param name="email">邮箱地址</param>
+    /// <param name="password">密码</param>
+    /// <param name="code">验证码</param>
+    /// <returns>成功返回 TokenResult（含 AccessToken + RefreshToken + 过期时间），失败返回 null</returns>
+    Task<TokenResult?> LogInByCheckPasswordAsync([EmailAddress(ErrorMessage = "无效邮件地址")] string email, string password,
         string code);
 
     /// <summary>
-    ///  创建用户
+    /// 用户注册（邮箱）
     /// </summary>
-    /// <param name="email"></param>
-    /// <param name="password"></param>
-    /// <param name="code"></param>
-    /// <returns></returns>
-    public Task<bool> SignInByCreateUserAsync([EmailAddress(ErrorMessage = "无效的邮件地址")] string email, string password,
+    /// <param name="email">邮箱地址</param>
+    /// <param name="password">密码</param>
+    /// <param name="code">验证码</param>
+    /// <returns>成功返回 true，失败返回 false</returns>
+    Task<bool> RegisterByCreateUserAsync([EmailAddress(ErrorMessage = "无效的邮件地址")] string email, string password,
         string code);
 
     /// <summary>
-    ///  重置密码
+    /// 重置密码
     /// </summary>
-    /// <param name="email"></param>
-    /// <param name="password"></param>
-    /// <param name="code"></param>
-    /// <returns></returns>
-    public Task ResetPasswordAsync([EmailAddress(ErrorMessage = "无效的邮件地址")] string email, string password, string code);
+    /// <param name="email">邮箱地址</param>
+    /// <param name="password">新密码</param>
+    /// <param name="code">验证码</param>
+    /// <returns>成功返回 true，失败返回 false</returns>
+    Task ChangeByPasswordAsync([EmailAddress(ErrorMessage = "无效的邮件地址")] string email, string password, string code);
 
     /// <summary>
-    ///  发送重置密码邮件
+    /// 发送重置密码邮件
     /// </summary>
-    /// <param name="email"></param>
-    /// <returns></returns>
-    public Task SendResetPasswordEmailAsync([EmailAddress(ErrorMessage = "无效的邮件地址")] string email);
+    /// <param name="email">邮箱地址</param>
+    /// <returns>成功返回 true，失败返回 false</returns>
+    Task SendResetPasswordEmailAsync([EmailAddress(ErrorMessage = "无效的邮件地址")] string email);
 
     /// <summary>
-    ///  获取授权链接
+    /// 获取 OAuth 授权链接
     /// </summary>
-    /// <param name="provider"></param>
-    /// <param name="redirectUri"></param>
-    /// <returns></returns>
-    public Task<string> GenerateAuthorizationUrlAsync(string provider, string redirectUri);
+    /// <param name="provider">OAuth 提供商</param>
+    /// <param name="redirectUri">重定向 URI</param>
+    /// <returns>OAuth 授权链接</returns>
+    Task<string> GenerateAuthorizationUrlAsync(string provider, string redirectUri);
+
+    /// <summary>
+    /// 生成验证码
+    /// </summary>
+    /// <returns>验证码</returns>
+    Task<string> GenerateCheckCodeAsync();
+
+    /// <summary>
+    /// 根据邮箱获取用户
+    /// </summary>
+    /// <param name="email">邮箱地址</param>
+    /// <returns>用户实体</returns>
+    Task<User?> GetUserByEmailAsync(string email);
+
+    /// <summary>
+    /// 获取所有用户
+    /// </summary>
+    /// <returns>用户列表</returns>
+    Task<ICollection<User>> GetAllUsersAsync();
 }
