@@ -9,13 +9,19 @@ public static class AddIdentityServer
     public static IServiceCollection AddIdentityService(this IServiceCollection serviceCollection,
         IConfiguration configuration)
     {
+        serviceCollection.AddJwtAuthentication(configuration);
+        serviceCollection.AddScoped<IGitHubAuthService, GithubAuthService>();
+        serviceCollection.AddScoped<IUserExternalLoginRepository, UserExternalLoginRepository>();
+        serviceCollection.AddScoped<IOAuthService, OAuthService>();
+        serviceCollection.AddScoped<IRoleGroupService, RoleGroupService>();
+        //serviceCollection.AddScoped<IPermissionService, PermissionService>()
         serviceCollection.AddScoped<IUserRepository, UserRepository>();
         serviceCollection.AddScoped<IUserRoleRepository, UserRoleRepository>();
         serviceCollection.AddSingleton<IEmailCodeSend, EmailCodeSend>();
         serviceCollection.AddDistributedMemoryCache();
         serviceCollection.AddScoped<ISmsCodeSend, SmsCodeSend>();
         serviceCollection.AddScoped<UserService>();
-        serviceCollection.AddJwtAuthentication(configuration);
+
         return serviceCollection;
     }
 

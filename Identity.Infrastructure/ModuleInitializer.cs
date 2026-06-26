@@ -11,6 +11,8 @@ public class ModuleInitializer : IModuleInitializer
         service.AddScoped<IUserRoleRepository, UserRoleRepository>();
         service.AddScoped<IEmailCodeSend, EmailCodeSend>();
         service.AddDistributedMemoryCache();
+        if (!service.Any(s => s.ServiceType == typeof(IJwtTokenService)))
+            service.AddScoped<IJwtTokenService, JwtTokenService>();
         service.AddScoped<ISmsCodeSend, SmsCodeSend>();
         service.AddScoped<IUserService, UserService>();
         service.AddScoped<IUserRoleService, UserRoleService>();

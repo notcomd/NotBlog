@@ -1,4 +1,5 @@
-﻿using DomainInfrastructure;
+﻿using System.Reflection;
+using DomainInfrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,10 +18,8 @@ public static class ServiceCollectionExtensions
     /// </summary>
     public static IServiceCollection AddNotBlogServices(
         this IServiceCollection services,
-        IConfiguration configuration)
+        IConfiguration configuration, Assembly[]? assemblies = null)
     {
-        var assemblies = ReflectionHelper.GetAllReferencedAssemblies().ToArray();
-
         // 1. 模块自动初始化（扫描并执行所有 IModuleInitializer）
         services.AddAutoAddInstance(assemblies);
 
@@ -40,11 +39,12 @@ public static class ServiceCollectionExtensions
     /// 包括：模块初始化、DbContext 注册、UnitOfWork 过滤器
     /// </summary>
     public static IServiceCollection AddNotBlogServices(
-        this IServiceCollection services, string DbConnectionString)
+        this IServiceCollection services, string DbConnectionString, Assembly[]? assemblies = null)
     {
-        var assemblies = ReflectionHelper.GetAllReferencedAssemblies().ToArray();
+        // var assemblies = ReflectionHelper.GetAllReferencedAssemblies().ToArray();
 
         // 1. 模块自动初始化（扫描并执行所有 IModuleInitializer）
+
         services.AddAutoAddInstance(assemblies);
 
         // 2. 自动注册所有 DbContext

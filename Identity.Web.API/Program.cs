@@ -1,3 +1,5 @@
+using DomainInfrastructure;
+using Identity.Infrastructure;
 using Identity.Infrastructure.Services;
 using Identity.Web.API.APIs;
 using NotBlog.ServiceDefaults;
@@ -6,7 +8,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
-builder.Services.AddNotBlogServices("IdentityPostgres");
+builder.Services.AddNotBlogServices("IdentityPostgres",
+    ReflectionHelper.GetAllReferencedAssemblies().ToArray());
+
+builder.Services.AddIdentityService(builder.Configuration.GetSection("JwtOptions"));
 
 //builder.Services.AddNpgsql<IdentityDbContext>("IdentityPostgres");
 

@@ -12,18 +12,10 @@ public class JwtOptions
     public string Issuer { get; set; } = null!;
 
     /// <summary>接收者（兼容旧配置拼写，建议使用 Audience）</summary>
-    public string Audiencs
-    {
-        get => _audience ?? Issuer;
-        set => _audience = value;
-    }
+    public string Audiencs { get; set; }
 
     /// <summary>接收者（推荐使用此属性）</summary>
-    public string? Audience
-    {
-        get => _audience;
-        set => _audience = value;
-    }
+    public string? Audience { get; set; }
 
     /// <summary>签名密钥（对称算法为共享密钥，非对称为私钥路径）</summary>
     public string PrivateKey { get; set; } = null!;
