@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "F:\\NotBlog\\Video.Infrastructure\\Video.Infrastructure.csproj": {}
+    "f:\\NotBlog\\Video.Infrastructure\\Video.Infrastructure.csproj": {}
   },
   "projects": {
-    "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj": {
+    "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj",
+        "projectUniqueName": "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj",
         "projectName": "DomainCommons",
-        "projectPath": "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj",
+        "projectPath": "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "F:\\NotBlog\\DomainCommons\\obj\\",
+        "outputPath": "f:\\NotBlog\\DomainCommons\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -354,14 +354,14 @@
         }
       }
     },
-    "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj": {
+    "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj",
+        "projectUniqueName": "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj",
         "projectName": "DomainInfrastructure",
-        "projectPath": "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj",
+        "projectPath": "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "F:\\NotBlog\\DomainInfrastructure\\obj\\",
+        "outputPath": "f:\\NotBlog\\DomainInfrastructure\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -383,8 +383,8 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj": {
-                "projectPath": "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj"
+              "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj": {
+                "projectPath": "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj"
               }
             }
           }
@@ -720,14 +720,14 @@
         }
       }
     },
-    "F:\\NotBlog\\JWToken\\Token.JWT.csproj": {
+    "f:\\NotBlog\\JWToken\\Token.JWT.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\NotBlog\\JWToken\\Token.JWT.csproj",
+        "projectUniqueName": "f:\\NotBlog\\JWToken\\Token.JWT.csproj",
         "projectName": "Token.JWT",
-        "projectPath": "F:\\NotBlog\\JWToken\\Token.JWT.csproj",
+        "projectPath": "f:\\NotBlog\\JWToken\\Token.JWT.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "F:\\NotBlog\\JWToken\\obj\\",
+        "outputPath": "f:\\NotBlog\\JWToken\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -1074,14 +1074,14 @@
         }
       }
     },
-    "F:\\NotBlog\\Video.Domain\\Video.Domain.csproj": {
+    "f:\\NotBlog\\Video.Domain\\Video.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\NotBlog\\Video.Domain\\Video.Domain.csproj",
+        "projectUniqueName": "f:\\NotBlog\\Video.Domain\\Video.Domain.csproj",
         "projectName": "Video.Domain",
-        "projectPath": "F:\\NotBlog\\Video.Domain\\Video.Domain.csproj",
+        "projectPath": "f:\\NotBlog\\Video.Domain\\Video.Domain.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "F:\\NotBlog\\Video.Domain\\obj\\",
+        "outputPath": "f:\\NotBlog\\Video.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -1103,8 +1103,8 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "F:\\NotBlog\\JWToken\\Token.JWT.csproj": {
-                "projectPath": "F:\\NotBlog\\JWToken\\Token.JWT.csproj"
+              "f:\\NotBlog\\JWToken\\Token.JWT.csproj": {
+                "projectPath": "f:\\NotBlog\\JWToken\\Token.JWT.csproj"
               }
             }
           }
@@ -1440,14 +1440,14 @@
         }
       }
     },
-    "F:\\NotBlog\\Video.Infrastructure\\Video.Infrastructure.csproj": {
+    "f:\\NotBlog\\Video.Infrastructure\\Video.Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\NotBlog\\Video.Infrastructure\\Video.Infrastructure.csproj",
+        "projectUniqueName": "f:\\NotBlog\\Video.Infrastructure\\Video.Infrastructure.csproj",
         "projectName": "Video.Infrastructure",
-        "projectPath": "F:\\NotBlog\\Video.Infrastructure\\Video.Infrastructure.csproj",
+        "projectPath": "f:\\NotBlog\\Video.Infrastructure\\Video.Infrastructure.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "F:\\NotBlog\\Video.Infrastructure\\obj\\",
+        "outputPath": "f:\\NotBlog\\Video.Infrastructure\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -1469,11 +1469,11 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj": {
-                "projectPath": "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj"
+              "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj": {
+                "projectPath": "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj"
               },
-              "F:\\NotBlog\\Video.Domain\\Video.Domain.csproj": {
-                "projectPath": "F:\\NotBlog\\Video.Domain\\Video.Domain.csproj"
+              "f:\\NotBlog\\Video.Domain\\Video.Domain.csproj": {
+                "projectPath": "f:\\NotBlog\\Video.Domain\\Video.Domain.csproj"
               }
             }
           }

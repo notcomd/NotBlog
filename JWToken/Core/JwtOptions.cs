@@ -1,30 +1,24 @@
 ﻿namespace Notcomd.Token.JWT.Core;
 
 /// <summary>
-/// JWT 配置选项（兼容现有 appsettings.json 字段名）
+/// JWT 配置选项
 /// </summary>
 public class JwtOptions
 {
-    // 内部字段：用 Audience 属性兼容 Audiencs 拼写
-    private string? _audience;
-
     /// <summary>签发者</summary>
     public string Issuer { get; set; } = null!;
 
-    /// <summary>接收者（兼容旧配置拼写，建议使用 Audience）</summary>
-    public string Audiencs { get; set; }
-
-    /// <summary>接收者（推荐使用此属性）</summary>
-    public string? Audience { get; set; }
+    /// <summary>接收者</summary>
+    public string Audiences { get; set; } = string.Empty;
 
     /// <summary>签名密钥（对称算法为共享密钥，非对称为私钥路径）</summary>
     public string PrivateKey { get; set; } = null!;
 
     /// <summary>过期时间（秒）</summary>
-    public int ExpirSeconds { get; set; } = 3600;
+    public int ExpireSeconds { get; set; } = 3600;
 
     /// <summary>Refresh Token 过期时间（秒，默认 7 天）</summary>
-    public int RefreshTokenExpirSeconds { get; set; } = 604800;
+    public int RefreshTokenExpireSeconds { get; set; } = 604800;
 
     /// <summary>签名算法（默认 HS256）</summary>
     public string Algorithm { get; set; } = SecurityAlgorithms.HmacSha256;

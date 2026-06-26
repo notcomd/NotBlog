@@ -36,3 +36,6 @@ F:\NotBlog\FileGrpcService\obj\Debug\net9.0\refint\FileGrpcService.dll
 F:\NotBlog\FileGrpcService\obj\Debug\net9.0\FileGrpcService.pdb
 F:\NotBlog\FileGrpcService\obj\Debug\net9.0\FileGrpcService.genruntimeconfig.cache
 F:\NotBlog\FileGrpcService\obj\Debug\net9.0\ref\FileGrpcService.dll
+f:\NotBlog\FileGrpcService\bin\Debug\net9.0\Microsoft.DotNet.PlatformAbstractions.dll
+f:\NotBlog\FileGrpcService\bin\Debug\net9.0\Microsoft.Extensions.DependencyModel.dll
+f:\NotBlog\FileGrpcService\bin\Debug\net9.0\Newtonsoft.Json.dll

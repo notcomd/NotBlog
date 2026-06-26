@@ -19,7 +19,7 @@ builder.AddRedisDistributedCache("Redis");
 
 builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
 
-//builder.Services.AddControllers(opt => { opt.Filters.Add(new UnitOfWorkFilter()); });
+builder.Services.AddControllers(opt => { opt.Filters.Add(new UnitOfWorkFilter()); });
 
 ///c7d9264a-5c9b-45dd-a3b6-84ec3f138395
 /*builder.Services.AddNotEmailWithOAuth2Provider(() => EmailProviderConfig.OutlookOAuth2(
@@ -49,6 +49,9 @@ builder.Services.AddHttpClient<IOAuthService, OAuthService>()
         AllowAutoRedirect = false
     });
 
+// 注册 Github 认证 DI 聚合
+builder.Services.AddScoped<GithubAuthDI>();
+
 var app = builder.Build();
 
 app.MapDefaultEndpoints();
@@ -63,7 +66,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapGroup("api/Identity").NotMapIdentityApi();
-
+app.MapGroup("api").GithubAuthApis();
 // 注册 OAuth 端点
 app.MapGroup("api/auth").MapOAuthEndpoints();
 

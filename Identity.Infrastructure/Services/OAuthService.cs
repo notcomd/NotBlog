@@ -1,4 +1,4 @@
-﻿using System.Net.Http.Headers;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Web;
 using Identity.Domain.Dto.OAuth;
@@ -164,7 +164,7 @@ public class OAuthService(
         return new OAuthLoginResponse(
             token,
             string.Empty,
-            DateTimeOffset.FromUnixTimeSeconds(_jwtOptions.ExpirSeconds),
+            DateTimeOffset.FromUnixTimeSeconds(_jwtOptions.ExpireSeconds),
             new UserInfo(
                 user.UserGuid,
                 user.UserEmail,

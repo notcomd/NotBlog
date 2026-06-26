@@ -61,7 +61,7 @@ public static class AuthenticationExtensions
 
     private static TokenValidationParameters BuildValidationParameters(JwtOptions options)
     {
-        var audience = options.Audience ?? options.Issuer;
+        var audience = options.Audiences ?? options.Issuer;
         var algorithm = options.Algorithm switch
         {
             "HS384" => SecurityAlgorithms.HmacSha384,

@@ -1,4 +1,4 @@
-﻿﻿using System.Security.Claims;
+using System.Security.Claims;
 using Microsoft.Extensions.Options;
 using Notcomd.Token.JWT;
 
@@ -7,32 +7,21 @@ namespace Notcomd.Token.JWT.Tests;
 public class JwtOptionsTests
 {
     [Fact]
-    public void Audiencs_BackwardCompatibility_ShouldWork()
+    public void Audiences_DefaultShouldBeEmpty()
     {
-        var options = new JwtOptions
-        {
-            Issuer = "issuer",
-            Audiencs = "audience-old",
-            PrivateKey = "supersecretkey1234567890abcdefgh",
-            ExpirSeconds = 3600
-        };
-
-        Assert.Equal("audience-old", options.Audiencs);
-        Assert.Equal("audience-old", options.Audience);
+        var options = new JwtOptions();
+        Assert.Equal(string.Empty, options.Audiences);
     }
 
     [Fact]
-    public void Audience_NewProperty_ShouldWork()
+    public void Audiences_ShouldBeSettable()
     {
         var options = new JwtOptions
         {
-            Issuer = "issuer",
-            Audience = "new-audience",
-            PrivateKey = "key"
+            Audiences = "test-audience"
         };
 
-        Assert.Equal("new-audience", options.Audience);
-        Assert.Equal("new-audience", options.Audiencs);
+        Assert.Equal("test-audience", options.Audiences);
     }
 
     [Fact]
@@ -43,17 +32,17 @@ public class JwtOptionsTests
     }
 
     [Fact]
-    public void DefaultExpirSeconds_ShouldBe3600()
+    public void DefaultExpireSeconds_ShouldBe3600()
     {
         var options = new JwtOptions();
-        Assert.Equal(3600, options.ExpirSeconds);
+        Assert.Equal(3600, options.ExpireSeconds);
     }
 
     [Fact]
-    public void RefreshTokenExpirSeconds_DefaultShouldBe7Days()
+    public void RefreshTokenExpireSeconds_DefaultShouldBe7Days()
     {
         var options = new JwtOptions();
-        Assert.Equal(604800, options.RefreshTokenExpirSeconds);
+        Assert.Equal(604800, options.RefreshTokenExpireSeconds);
     }
 
     [Fact]
@@ -74,9 +63,9 @@ public class JwtTokenServiceTests
         _jwtOptions = new JwtOptions
         {
             Issuer = "test-issuer",
-            Audiencs = "test-audience",
+            Audiences = "test-audience",
             PrivateKey = "this-is-a-256-bit-secret-key!!-=abcdefghijklmn",
-            ExpirSeconds = 3600
+            ExpireSeconds = 3600
         };
 
         var optionsSnapshot = new OptionsSnapshotWrapper(_jwtOptions);

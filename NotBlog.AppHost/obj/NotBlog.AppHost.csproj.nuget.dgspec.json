@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "F:\\NotBlog\\NotBlog.AppHost\\NotBlog.AppHost.csproj": {}
+    "f:\\NotBlog\\NotBlog.AppHost\\NotBlog.AppHost.csproj": {}
   },
   "projects": {
-    "F:\\NotBlog\\NotBlog.AppHost\\NotBlog.AppHost.csproj": {
+    "f:\\NotBlog\\NotBlog.AppHost\\NotBlog.AppHost.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\NotBlog\\NotBlog.AppHost\\NotBlog.AppHost.csproj",
+        "projectUniqueName": "f:\\NotBlog\\NotBlog.AppHost\\NotBlog.AppHost.csproj",
         "projectName": "NotBlog.AppHost",
-        "projectPath": "F:\\NotBlog\\NotBlog.AppHost\\NotBlog.AppHost.csproj",
+        "projectPath": "f:\\NotBlog\\NotBlog.AppHost\\NotBlog.AppHost.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "F:\\NotBlog\\NotBlog.AppHost\\obj\\",
+        "outputPath": "f:\\NotBlog\\NotBlog.AppHost\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"

@@ -9,6 +9,7 @@ public class ModuleInitializer : IModuleInitializer
     {
         service.AddScoped<IUserRepository, UserRepository>();
         service.AddScoped<IUserRoleRepository, UserRoleRepository>();
+        service.AddScoped<IRoleGroupRepository, RoleGroupRepository>();
         service.AddScoped<IEmailCodeSend, EmailCodeSend>();
         service.AddDistributedMemoryCache();
         if (!service.Any(s => s.ServiceType == typeof(IJwtTokenService)))

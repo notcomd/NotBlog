@@ -36,3 +36,6 @@ F:\NotBlog\IdentityGrpc\obj\Debug\net9.0\refint\IdentityGrpc.dll
 F:\NotBlog\IdentityGrpc\obj\Debug\net9.0\IdentityGrpc.pdb
 F:\NotBlog\IdentityGrpc\obj\Debug\net9.0\IdentityGrpc.genruntimeconfig.cache
 F:\NotBlog\IdentityGrpc\obj\Debug\net9.0\ref\IdentityGrpc.dll
+f:\NotBlog\IdentityGrpc\bin\Debug\net9.0\Microsoft.DotNet.PlatformAbstractions.dll
+f:\NotBlog\IdentityGrpc\bin\Debug\net9.0\Microsoft.Extensions.DependencyModel.dll
+f:\NotBlog\IdentityGrpc\bin\Debug\net9.0\Newtonsoft.Json.dll

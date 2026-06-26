@@ -2911,11 +2911,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "F:\\NotBlog\\Message.Web.API\\Message.Web.API.csproj",
+      "projectUniqueName": "f:\\NotBlog\\Message.Web.API\\Message.Web.API.csproj",
       "projectName": "Message.Web.API",
-      "projectPath": "F:\\NotBlog\\Message.Web.API\\Message.Web.API.csproj",
+      "projectPath": "f:\\NotBlog\\Message.Web.API\\Message.Web.API.csproj",
       "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-      "outputPath": "F:\\NotBlog\\Message.Web.API\\obj\\",
+      "outputPath": "f:\\NotBlog\\Message.Web.API\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -2937,11 +2937,11 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "projectReferences": {
-            "F:\\NotBlog\\Message.Infrastructure\\Message.Infrastructure.csproj": {
-              "projectPath": "F:\\NotBlog\\Message.Infrastructure\\Message.Infrastructure.csproj"
+            "f:\\NotBlog\\Message.Infrastructure\\Message.Infrastructure.csproj": {
+              "projectPath": "f:\\NotBlog\\Message.Infrastructure\\Message.Infrastructure.csproj"
             },
-            "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj": {
-              "projectPath": "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj"
+            "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj": {
+              "projectPath": "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj"
             }
           }
         }
@@ -3433,7 +3433,7 @@
       "code": "NU1510",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "PackageReference Microsoft.AspNetCore.Mvc.Core will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary.",
+      "message": "PackageReference Microsoft.AspNetCore.Mvc.Core 将不会删除。请考虑从依赖项中移除此包，因为可能不需要它。",
       "libraryId": "Microsoft.AspNetCore.Mvc.Core",
       "targetGraphs": [
         "net10.0"
@@ -3443,7 +3443,7 @@
       "code": "NU1903",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "Package 'Newtonsoft.Json' 9.0.1 has a known high severity vulnerability, https://github.com/advisories/GHSA-5crp-9r3c-p9vr",
+      "message": "包 \"Newtonsoft.Json\" 9.0.1 具有已知的 高 严重性漏洞，https://github.com/advisories/GHSA-5crp-9r3c-p9vr",
       "libraryId": "Newtonsoft.Json",
       "targetGraphs": [
         "net10.0"

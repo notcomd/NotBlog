@@ -45,7 +45,7 @@ public class JwtTokenService : IJwtTokenService
     public Task<TokenResult> BuildTokenAsync(IEnumerable<Claim> claims, JwtOptions configuration)
     {
         var now = DateTime.UtcNow;
-        var expiry = now.AddSeconds(configuration.ExpirSeconds);
+        var expiry = now.AddSeconds(configuration.ExpireSeconds);
 
         var token = BuildTokenInternal(claims, configuration);
         var accessToken = new JwtSecurityTokenHandler().WriteToken(token);
@@ -165,7 +165,7 @@ public class JwtTokenService : IJwtTokenService
             audience: audience,
             claims: claims,
             notBefore: now,
-            expires: now.AddSeconds(config.ExpirSeconds),
+            expires: now.AddSeconds(config.ExpireSeconds),
             signingCredentials: signingCredentials);
     }
 
@@ -191,7 +191,7 @@ public class JwtTokenService : IJwtTokenService
     }
 
     private static string ResolveAudience(JwtOptions config) =>
-        config.Audience ?? config.Issuer;
+        config.Audiences ?? config.Issuer;
 
     private static string GenerateRefreshToken()
     {

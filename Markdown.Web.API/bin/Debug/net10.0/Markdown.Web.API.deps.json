@@ -377,6 +377,27 @@
           }
         }
       },
+      "DomainCommons/1.0.0": {
+        "runtime": {
+          "DomainCommons.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "DomainInfrastructure/1.0.0": {
+        "dependencies": {
+          "DomainCommons": "1.0.0",
+          "Microsoft.EntityFrameworkCore": "10.0.9",
+          "NotMediator": "1.0.5"
+        },
+        "runtime": {
+          "DomainInfrastructure.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
       "Evenbus/1.0.0": {
         "dependencies": {
           "Dynamic.Json": "1.4.2",
@@ -404,6 +425,7 @@
       },
       "Markdown.Infrastructure/1.0.0": {
         "dependencies": {
+          "DomainInfrastructure": "1.0.0",
           "Markdown.Domain": "1.0.0",
           "Microsoft.EntityFrameworkCore": "10.0.9",
           "Microsoft.EntityFrameworkCore.Abstractions": "10.0.9",
@@ -432,22 +454,6 @@
         },
         "runtime": {
           "NotBlog.ServiceDefaults.dll": {
-            "assemblyVersion": "1.0.0.0",
-            "fileVersion": "1.0.0.0"
-          }
-        }
-      },
-      "DomainInfrastructure/1.0.0.0": {
-        "runtime": {
-          "DomainInfrastructure.dll": {
-            "assemblyVersion": "1.0.0.0",
-            "fileVersion": "1.0.0.0"
-          }
-        }
-      },
-      "DomainCommons/1.0.0.0": {
-        "runtime": {
-          "DomainCommons.dll": {
             "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
@@ -706,6 +712,16 @@
       "path": "scalar.aspnetcore/2.16.4",
       "hashPath": "scalar.aspnetcore.2.16.4.nupkg.sha512"
     },
+    "DomainCommons/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "DomainInfrastructure/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
     "Evenbus/1.0.0": {
       "type": "project",
       "serviceable": false,
@@ -723,16 +739,6 @@
     },
     "NotBlog.ServiceDefaults/1.0.0": {
       "type": "project",
-      "serviceable": false,
-      "sha512": ""
-    },
-    "DomainInfrastructure/1.0.0.0": {
-      "type": "reference",
-      "serviceable": false,
-      "sha512": ""
-    },
-    "DomainCommons/1.0.0.0": {
-      "type": "reference",
       "serviceable": false,
       "sha512": ""
     }

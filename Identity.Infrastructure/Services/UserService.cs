@@ -1,5 +1,3 @@
-
-
 namespace Identity.Infrastructure.Services;
 
 public class UserService(
@@ -66,6 +64,7 @@ public class UserService(
             loggerUser.LogError($"[{DateTime.UtcNow}] 用户 {email} 不存在");
             return;
         }
+
         await userData.ChangeByPasswordAsync(password);
         //await userRepository.
         loggerUser.LogInformation($"[{DateTime.UtcNow}] 用户 {email} 密码重置成功");
@@ -94,6 +93,42 @@ public class UserService(
         throw new NotImplementedException();
     }
 
+    /// <summary>
+    /// 手机号登入验证
+    /// </summary>
+    public async Task<TokenResult?> LogInByCheckPasswordAsync(PhoneNumber phoneNumber, string password, string code)
+    {
+        var userData = await userRepository.FindOneByUserAsync(phoneNumber);
+        if (string.IsNullOrWhiteSpace(code) && string.Equals(code, "213123"))
+            if (userData is null)
+            {
+                loggerUser.LogError($"[{DateTime.UtcNow}] 用户 {phoneNumber} 不存在");
+                return null;
+            }
+
+        return await LogInByCheckPasswordCoreAsync(userData, password);
+    }
+
+    Task<TokenResult?> IUserService.LogInByCheckPasswordAsync(string email, string password, string code)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<string> GenerateCheckCodeAsync()
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<User?> GetUserByEmailAsync(string email)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<ICollection<User>> GetAllUsersAsync()
+    {
+        throw new NotImplementedException();
+    }
+
 
     /// <summary>
     ///  邮箱登入验证
@@ -114,22 +149,6 @@ public class UserService(
             loggerUser.LogError($"[{DateTime.UtcNow}] 用户 {email} 不存在");
             return null;
         }
-
-        return await LogInByCheckPasswordCoreAsync(userData, password);
-    }
-
-    /// <summary>
-    /// 手机号登入验证
-    /// </summary>
-    public async Task<TokenResult?> LogInByCheckPasswordAsync(PhoneNumber phoneNumber, string password, string code)
-    {
-        var userData = await userRepository.FindOneByUserAsync(phoneNumber);
-        if (string.IsNullOrWhiteSpace(code) && string.Equals(code, "213123"))
-            if (userData is null)
-            {
-                loggerUser.LogError($"[{DateTime.UtcNow}] 用户 {phoneNumber} 不存在");
-                return null;
-            }
 
         return await LogInByCheckPasswordCoreAsync(userData, password);
     }
@@ -180,7 +199,7 @@ public class UserService(
 
             loggerUser.LogInformation(
                 $"[{DateTime.UtcNow}] 用户 {userData.UserEmail} 验证通过，" +
-                $"Token 已生成 (AccessToken 过期: {config.ExpirSeconds} 秒，RefreshToken 过期: {config.RefreshTokenExpirSeconds} 秒)");
+                $"Token 已生成 (AccessToken 过期: {config.ExpireSeconds} 秒，RefreshToken 过期: {config.RefreshTokenExpireSeconds} 秒)");
 
             return tokenData;
         }
@@ -190,7 +209,6 @@ public class UserService(
             return null;
         }
     }
-
 
 
     /// <summary>
@@ -213,8 +231,8 @@ public class UserService(
         };
 
         var accessKey = $"{AccessTokenKeyPrefix}:{userGuid}";
-        var accessTtl = config.ExpirSeconds > 0
-            ? TimeSpan.FromSeconds(config.ExpirSeconds)
+        var accessTtl = config.ExpireSeconds > 0
+            ? TimeSpan.FromSeconds(config.ExpireSeconds)
             : TimeSpan.FromHours(1);
 
         await distributedCache.SetStringAsync(
@@ -230,14 +248,14 @@ public class UserService(
                 Token = tokenResult.RefreshToken,
                 UserGuid = userGuid,
                 CreatedAt = DateTimeOffset.UtcNow,
-                ExpiresAt = DateTimeOffset.UtcNow.AddSeconds(config.RefreshTokenExpirSeconds),
+                ExpiresAt = DateTimeOffset.UtcNow.AddSeconds(config.RefreshTokenExpireSeconds),
                 TokenType = "refresh",
                 LinkedAccessToken = tokenResult.AccessToken
             };
 
             var refreshKey = $"{RefreshTokenKeyPrefix}:{userGuid}";
-            var refreshTtl = config.RefreshTokenExpirSeconds > 0
-                ? TimeSpan.FromSeconds(config.RefreshTokenExpirSeconds)
+            var refreshTtl = config.RefreshTokenExpireSeconds > 0
+                ? TimeSpan.FromSeconds(config.RefreshTokenExpireSeconds)
                 : TimeSpan.FromDays(7);
 
             await distributedCache.SetStringAsync(
@@ -273,7 +291,6 @@ public class UserService(
 
         return claims;
     }
-
 
 
     /// <summary>
@@ -312,26 +329,6 @@ public class UserService(
         }
 
         return roleNames;
-    }
-
-    Task<TokenResult?> IUserService.LogInByCheckPasswordAsync(string email, string password, string code)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<string> GenerateCheckCodeAsync()
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<User?> GetUserByEmailAsync(string email)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<ICollection<User>> GetAllUsersAsync()
-    {
-        throw new NotImplementedException();
     }
 }
 

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "F:\\NotBlog\\Message.Web.API\\Message.Web.API.csproj": {}
+    "f:\\NotBlog\\Message.Web.API\\Message.Web.API.csproj": {}
   },
   "projects": {
-    "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj": {
+    "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj",
+        "projectUniqueName": "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj",
         "projectName": "DomainCommons",
-        "projectPath": "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj",
+        "projectPath": "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "F:\\NotBlog\\DomainCommons\\obj\\",
+        "outputPath": "f:\\NotBlog\\DomainCommons\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -354,14 +354,14 @@
         }
       }
     },
-    "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj": {
+    "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj",
+        "projectUniqueName": "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj",
         "projectName": "DomainInfrastructure",
-        "projectPath": "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj",
+        "projectPath": "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "F:\\NotBlog\\DomainInfrastructure\\obj\\",
+        "outputPath": "f:\\NotBlog\\DomainInfrastructure\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -383,8 +383,8 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj": {
-                "projectPath": "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj"
+              "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj": {
+                "projectPath": "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj"
               }
             }
           }
@@ -720,14 +720,14 @@
         }
       }
     },
-    "F:\\NotBlog\\Message.Domain\\Message.Domain.csproj": {
+    "f:\\NotBlog\\Message.Domain\\Message.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\NotBlog\\Message.Domain\\Message.Domain.csproj",
+        "projectUniqueName": "f:\\NotBlog\\Message.Domain\\Message.Domain.csproj",
         "projectName": "Message.Domain",
-        "projectPath": "F:\\NotBlog\\Message.Domain\\Message.Domain.csproj",
+        "projectPath": "f:\\NotBlog\\Message.Domain\\Message.Domain.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "F:\\NotBlog\\Message.Domain\\obj\\",
+        "outputPath": "f:\\NotBlog\\Message.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -818,14 +818,14 @@
         }
       }
     },
-    "F:\\NotBlog\\Message.Infrastructure\\Message.Infrastructure.csproj": {
+    "f:\\NotBlog\\Message.Infrastructure\\Message.Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\NotBlog\\Message.Infrastructure\\Message.Infrastructure.csproj",
+        "projectUniqueName": "f:\\NotBlog\\Message.Infrastructure\\Message.Infrastructure.csproj",
         "projectName": "Message.Infrastructure",
-        "projectPath": "F:\\NotBlog\\Message.Infrastructure\\Message.Infrastructure.csproj",
+        "projectPath": "f:\\NotBlog\\Message.Infrastructure\\Message.Infrastructure.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "F:\\NotBlog\\Message.Infrastructure\\obj\\",
+        "outputPath": "f:\\NotBlog\\Message.Infrastructure\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -847,11 +847,11 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj": {
-                "projectPath": "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj"
+              "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj": {
+                "projectPath": "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj"
               },
-              "F:\\NotBlog\\Message.Domain\\Message.Domain.csproj": {
-                "projectPath": "F:\\NotBlog\\Message.Domain\\Message.Domain.csproj"
+              "f:\\NotBlog\\Message.Domain\\Message.Domain.csproj": {
+                "projectPath": "f:\\NotBlog\\Message.Domain\\Message.Domain.csproj"
               }
             }
           }
@@ -1207,14 +1207,14 @@
         }
       }
     },
-    "F:\\NotBlog\\Message.Web.API\\Message.Web.API.csproj": {
+    "f:\\NotBlog\\Message.Web.API\\Message.Web.API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\NotBlog\\Message.Web.API\\Message.Web.API.csproj",
+        "projectUniqueName": "f:\\NotBlog\\Message.Web.API\\Message.Web.API.csproj",
         "projectName": "Message.Web.API",
-        "projectPath": "F:\\NotBlog\\Message.Web.API\\Message.Web.API.csproj",
+        "projectPath": "f:\\NotBlog\\Message.Web.API\\Message.Web.API.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "F:\\NotBlog\\Message.Web.API\\obj\\",
+        "outputPath": "f:\\NotBlog\\Message.Web.API\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -1236,11 +1236,11 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "F:\\NotBlog\\Message.Infrastructure\\Message.Infrastructure.csproj": {
-                "projectPath": "F:\\NotBlog\\Message.Infrastructure\\Message.Infrastructure.csproj"
+              "f:\\NotBlog\\Message.Infrastructure\\Message.Infrastructure.csproj": {
+                "projectPath": "f:\\NotBlog\\Message.Infrastructure\\Message.Infrastructure.csproj"
               },
-              "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj": {
-                "projectPath": "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj"
+              "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj": {
+                "projectPath": "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj"
               }
             }
           }
@@ -1727,14 +1727,14 @@
         }
       }
     },
-    "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj": {
+    "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj",
+        "projectUniqueName": "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj",
         "projectName": "NotBlog.ServiceDefaults",
-        "projectPath": "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj",
+        "projectPath": "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "F:\\NotBlog\\NotBlog.ServiceDefaults\\obj\\",
+        "outputPath": "f:\\NotBlog\\NotBlog.ServiceDefaults\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"

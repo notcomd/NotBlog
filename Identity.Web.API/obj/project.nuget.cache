@@ -89,7 +89,7 @@
     {
       "code": "NU1510",
       "level": "Warning",
-      "message": "PackageReference Microsoft.AspNetCore.Mvc.Core will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary.",
+      "message": "PackageReference Microsoft.AspNetCore.Mvc.Core 将不会删除。请考虑从依赖项中移除此包，因为可能不需要它。",
       "projectPath": "F:\\NotBlog\\Identity.Web.API\\Identity.Web.API.csproj",
       "warningLevel": 1,
       "filePath": "F:\\NotBlog\\Identity.Web.API\\Identity.Web.API.csproj",
@@ -101,7 +101,7 @@
     {
       "code": "NU1510",
       "level": "Warning",
-      "message": "PackageReference Microsoft.Extensions.DependencyInjection.Abstractions will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary.",
+      "message": "PackageReference Microsoft.Extensions.DependencyInjection.Abstractions 将不会删除。请考虑从依赖项中移除此包，因为可能不需要它。",
       "projectPath": "F:\\NotBlog\\Identity.Web.API\\Identity.Web.API.csproj",
       "warningLevel": 1,
       "filePath": "F:\\NotBlog\\Identity.Web.API\\Identity.Web.API.csproj",

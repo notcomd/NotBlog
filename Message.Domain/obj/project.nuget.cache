@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "j421oF4/poA=",
+  "dgSpecHash": "L6n1qJsHVyw=",
   "success": true,
-  "projectFilePath": "F:\\NotBlog\\Message.Domain\\Message.Domain.csproj",
+  "projectFilePath": "f:\\NotBlog\\Message.Domain\\Message.Domain.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.aspnetcore.authentication.abstractions\\2.3.9\\microsoft.aspnetcore.authentication.abstractions.2.3.9.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.aspnetcore.authentication.core\\2.3.10\\microsoft.aspnetcore.authentication.core.2.3.10.nupkg.sha512",

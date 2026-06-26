@@ -10,6 +10,7 @@
         "dependencies": {
           "CommonsInitializer": "1.0.0",
           "FileDev.Domain": "1.0.0",
+          "Microsoft.AspNetCore.Mvc.Core": "2.3.11",
           "Microsoft.EntityFrameworkCore": "10.0.9",
           "NotMediator": "1.0.5",
           "StackExchange.Redis": "3.0.0",
@@ -378,6 +379,7 @@
         "dependencies": {
           "DomainCommons": "1.0.0",
           "DomainInfrastructure": "1.0.0",
+          "Microsoft.AspNetCore.Mvc.Core": "2.3.11",
           "Microsoft.Extensions.Configuration.Binder": "10.0.9",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "10.0.2"
         },
@@ -390,6 +392,7 @@
       },
       "DomainCommons/1.0.0": {
         "dependencies": {
+          "Microsoft.AspNetCore.Mvc.Core": "2.3.11",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.9"
         },
         "runtime": {
@@ -417,6 +420,7 @@
       },
       "FileDev.Domain/1.0.0": {
         "dependencies": {
+          "Microsoft.AspNetCore.Mvc.Core": "2.3.11",
           "Microsoft.Extensions.Configuration.Abstractions": "10.0.9",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.9",
           "NotMediator": "1.0.5"
@@ -431,6 +435,7 @@
       "Token.JWT/1.0.0": {
         "dependencies": {
           "Microsoft.AspNetCore.Authentication.JwtBearer": "10.0.9",
+          "Microsoft.AspNetCore.Mvc.Core": "2.3.11",
           "System.IdentityModel.Tokens.Jwt": "8.19.1"
         },
         "runtime": {
