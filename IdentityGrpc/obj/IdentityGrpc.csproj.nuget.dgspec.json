@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "f:\\NotBlog\\IdentityGrpc\\IdentityGrpc.csproj": {}
+    "F:\\NotBlog\\IdentityGrpc\\IdentityGrpc.csproj": {}
   },
   "projects": {
-    "f:\\NotBlog\\IdentityGrpc\\IdentityGrpc.csproj": {
+    "F:\\NotBlog\\IdentityGrpc\\IdentityGrpc.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "f:\\NotBlog\\IdentityGrpc\\IdentityGrpc.csproj",
+        "projectUniqueName": "F:\\NotBlog\\IdentityGrpc\\IdentityGrpc.csproj",
         "projectName": "IdentityGrpc",
-        "projectPath": "f:\\NotBlog\\IdentityGrpc\\IdentityGrpc.csproj",
+        "projectPath": "F:\\NotBlog\\IdentityGrpc\\IdentityGrpc.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "f:\\NotBlog\\IdentityGrpc\\obj\\",
+        "outputPath": "F:\\NotBlog\\IdentityGrpc\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"

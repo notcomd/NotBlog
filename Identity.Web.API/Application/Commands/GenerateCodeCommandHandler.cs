@@ -1,4 +1,4 @@
-﻿namespace Identity.Web.API.Application.Commands;
+namespace Identity.Web.API.Application.Commands;
 
 public class GenerateCodeCommandHandler(
     ILogger<GenerateCodeCommandHandler> logger,

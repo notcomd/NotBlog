@@ -1663,11 +1663,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "f:\\NotBlog\\Markdown.Web.API\\Markdown.Web.API.csproj",
+      "projectUniqueName": "F:\\NotBlog\\Markdown.Web.API\\Markdown.Web.API.csproj",
       "projectName": "Markdown.Web.API",
-      "projectPath": "f:\\NotBlog\\Markdown.Web.API\\Markdown.Web.API.csproj",
+      "projectPath": "F:\\NotBlog\\Markdown.Web.API\\Markdown.Web.API.csproj",
       "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-      "outputPath": "f:\\NotBlog\\Markdown.Web.API\\obj\\",
+      "outputPath": "F:\\NotBlog\\Markdown.Web.API\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -1692,14 +1692,14 @@
             "F:\\NotBlog\\Evenbus\\Evenbus.csproj": {
               "projectPath": "F:\\NotBlog\\Evenbus\\Evenbus.csproj"
             },
-            "f:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj": {
-              "projectPath": "f:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj"
+            "F:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj": {
+              "projectPath": "F:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj"
             },
-            "f:\\NotBlog\\Markdown.Infrastructure\\Markdown.Infrastructure.csproj": {
-              "projectPath": "f:\\NotBlog\\Markdown.Infrastructure\\Markdown.Infrastructure.csproj"
+            "F:\\NotBlog\\Markdown.Infrastructure\\Markdown.Infrastructure.csproj": {
+              "projectPath": "F:\\NotBlog\\Markdown.Infrastructure\\Markdown.Infrastructure.csproj"
             },
-            "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj": {
-              "projectPath": "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj"
+            "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj": {
+              "projectPath": "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj"
             }
           }
         }
@@ -2187,7 +2187,7 @@
       "code": "NU1510",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "PackageReference Microsoft.AspNetCore.Mvc.Core 将不会删除。请考虑从依赖项中移除此包，因为可能不需要它。",
+      "message": "PackageReference Microsoft.AspNetCore.Mvc.Core will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary.",
       "libraryId": "Microsoft.AspNetCore.Mvc.Core",
       "targetGraphs": [
         "net10.0"
@@ -2197,7 +2197,7 @@
       "code": "NU1903",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "包 \"Newtonsoft.Json\" 9.0.1 具有已知的 高 严重性漏洞，https://github.com/advisories/GHSA-5crp-9r3c-p9vr",
+      "message": "Package 'Newtonsoft.Json' 9.0.1 has a known high severity vulnerability, https://github.com/advisories/GHSA-5crp-9r3c-p9vr",
       "libraryId": "Newtonsoft.Json",
       "targetGraphs": [
         "net10.0"

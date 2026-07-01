@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "aK2c89bwu60=",
+  "dgSpecHash": "yICKPPCIkys=",
   "success": true,
-  "projectFilePath": "f:\\NotBlog\\Video.Infrastructure\\Video.Infrastructure.csproj",
+  "projectFilePath": "F:\\NotBlog\\Video.Infrastructure\\Video.Infrastructure.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\notco\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.aspnetcore.authentication.abstractions\\2.3.9\\microsoft.aspnetcore.authentication.abstractions.2.3.9.nupkg.sha512",

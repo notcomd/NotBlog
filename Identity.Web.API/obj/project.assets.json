@@ -5284,7 +5284,7 @@
       "code": "NU1510",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "PackageReference Microsoft.AspNetCore.Mvc.Core 将不会删除。请考虑从依赖项中移除此包，因为可能不需要它。",
+      "message": "PackageReference Microsoft.AspNetCore.Mvc.Core will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary.",
       "libraryId": "Microsoft.AspNetCore.Mvc.Core",
       "targetGraphs": [
         "net10.0"
@@ -5294,7 +5294,7 @@
       "code": "NU1510",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "PackageReference Microsoft.Extensions.DependencyInjection.Abstractions 将不会删除。请考虑从依赖项中移除此包，因为可能不需要它。",
+      "message": "PackageReference Microsoft.Extensions.DependencyInjection.Abstractions will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary.",
       "libraryId": "Microsoft.Extensions.DependencyInjection.Abstractions",
       "targetGraphs": [
         "net10.0"

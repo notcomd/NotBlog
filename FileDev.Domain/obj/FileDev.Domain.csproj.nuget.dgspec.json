@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "f:\\NotBlog\\FileDev.Domain\\FileDev.Domain.csproj": {}
+    "F:\\NotBlog\\FileDev.Domain\\FileDev.Domain.csproj": {}
   },
   "projects": {
-    "f:\\NotBlog\\FileDev.Domain\\FileDev.Domain.csproj": {
+    "F:\\NotBlog\\FileDev.Domain\\FileDev.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "f:\\NotBlog\\FileDev.Domain\\FileDev.Domain.csproj",
+        "projectUniqueName": "F:\\NotBlog\\FileDev.Domain\\FileDev.Domain.csproj",
         "projectName": "FileDev.Domain",
-        "projectPath": "f:\\NotBlog\\FileDev.Domain\\FileDev.Domain.csproj",
+        "projectPath": "F:\\NotBlog\\FileDev.Domain\\FileDev.Domain.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "f:\\NotBlog\\FileDev.Domain\\obj\\",
+        "outputPath": "F:\\NotBlog\\FileDev.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"

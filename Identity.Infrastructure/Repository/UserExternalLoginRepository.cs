@@ -32,4 +32,11 @@ public class UserExternalLoginRepository(IdentityDbContext dbContext) : IUserExt
     {
         return await dbContext.UserExternalLogins.ToListAsync();
     }
+
+    public async Task<UserExternalLogin?> FindOneByUserIdAndProviderAsync(LoginProviderType provider,
+        string providerKey)
+    {
+        return await dbContext.UserExternalLogins
+            .FirstOrDefaultAsync(x => x.Provider == provider && x.ProviderKey == providerKey);
+    }
 }

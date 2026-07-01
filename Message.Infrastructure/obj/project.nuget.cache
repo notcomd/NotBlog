@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "inwNSPfCSZo=",
+  "dgSpecHash": "KoXmnb189Dw=",
   "success": true,
-  "projectFilePath": "f:\\NotBlog\\Message.Infrastructure\\Message.Infrastructure.csproj",
+  "projectFilePath": "F:\\NotBlog\\Message.Infrastructure\\Message.Infrastructure.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\notco\\.nuget\\packages\\azure.core\\1.47.1\\azure.core.1.47.1.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\azure.identity\\1.14.2\\azure.identity.1.14.2.nupkg.sha512",
@@ -83,10 +83,10 @@
     {
       "code": "NU1903",
       "level": "Warning",
-      "message": "包 \"Newtonsoft.Json\" 11.0.2 具有已知的 高 严重性漏洞，https://github.com/advisories/GHSA-5crp-9r3c-p9vr",
-      "projectPath": "f:\\NotBlog\\Message.Infrastructure\\Message.Infrastructure.csproj",
+      "message": "Package 'Newtonsoft.Json' 11.0.2 has a known high severity vulnerability, https://github.com/advisories/GHSA-5crp-9r3c-p9vr",
+      "projectPath": "F:\\NotBlog\\Message.Infrastructure\\Message.Infrastructure.csproj",
       "warningLevel": 1,
-      "filePath": "f:\\NotBlog\\Message.Infrastructure\\Message.Infrastructure.csproj",
+      "filePath": "F:\\NotBlog\\Message.Infrastructure\\Message.Infrastructure.csproj",
       "libraryId": "Newtonsoft.Json",
       "targetGraphs": [
         "net10.0"

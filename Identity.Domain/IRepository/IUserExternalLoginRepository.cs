@@ -28,4 +28,7 @@ public interface IUserExternalLoginRepository : IRepository<UserExternalLogin>
     /// 获取所有外部登录记录
     /// </summary>
     Task<IReadOnlyList<UserExternalLogin>> GetAllAsync();
+
+
+    Task<UserExternalLogin?> FindOneByUserIdAndProviderAsync(LoginProviderType provider, string providerKey);
 }

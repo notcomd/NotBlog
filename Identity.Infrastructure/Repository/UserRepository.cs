@@ -68,6 +68,18 @@ public class UserRepository(IdentityDbContext userDbContext, IDistributedCache d
         // return ValueTask.CompletedTask;
     }
 
+    public Task UpdateByUserAsync(User user)
+    {
+        userDbContext.Update(user);
+        return Task.CompletedTask;
+    }
+
+    public Task DeleteByUserAsync(User user)
+    {
+        userDbContext.Remove(user);
+        return Task.CompletedTask;
+    }
+
     public ValueTask<string> RetirievePhoneCodeAsync(PhoneNumber phoneNumber)
     {
         throw new NotImplementedException();

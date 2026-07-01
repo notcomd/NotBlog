@@ -4070,11 +4070,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "f:\\NotBlog\\Video.Web.API\\Video.Web.API.csproj",
+      "projectUniqueName": "F:\\NotBlog\\Video.Web.API\\Video.Web.API.csproj",
       "projectName": "Video.Web.API",
-      "projectPath": "f:\\NotBlog\\Video.Web.API\\Video.Web.API.csproj",
+      "projectPath": "F:\\NotBlog\\Video.Web.API\\Video.Web.API.csproj",
       "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-      "outputPath": "f:\\NotBlog\\Video.Web.API\\obj\\",
+      "outputPath": "F:\\NotBlog\\Video.Web.API\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -4096,14 +4096,14 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "projectReferences": {
-            "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj": {
-              "projectPath": "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj"
+            "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj": {
+              "projectPath": "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj"
             },
-            "f:\\NotBlog\\Video.Domain\\Video.Domain.csproj": {
-              "projectPath": "f:\\NotBlog\\Video.Domain\\Video.Domain.csproj"
+            "F:\\NotBlog\\Video.Domain\\Video.Domain.csproj": {
+              "projectPath": "F:\\NotBlog\\Video.Domain\\Video.Domain.csproj"
             },
-            "f:\\NotBlog\\Video.Infrastructure\\Video.Infrastructure.csproj": {
-              "projectPath": "f:\\NotBlog\\Video.Infrastructure\\Video.Infrastructure.csproj"
+            "F:\\NotBlog\\Video.Infrastructure\\Video.Infrastructure.csproj": {
+              "projectPath": "F:\\NotBlog\\Video.Infrastructure\\Video.Infrastructure.csproj"
             }
           }
         }
@@ -4601,7 +4601,7 @@
       "code": "NU1510",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "PackageReference Microsoft.AspNetCore.Mvc.Core 将不会删除。请考虑从依赖项中移除此包，因为可能不需要它。",
+      "message": "PackageReference Microsoft.AspNetCore.Mvc.Core will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary.",
       "libraryId": "Microsoft.AspNetCore.Mvc.Core",
       "targetGraphs": [
         "net10.0"

@@ -1,5 +1,3 @@
-using Notcomd.NotEmail.Core;
-
 namespace Identity.Web.API.EventBus;
 
 [EvenBusName("Identity.User.Code")]
@@ -17,7 +15,7 @@ public class EmailSendBus(IEmailSender email, IEmailCodeSend emailCodeSend, ILog
     public async Task Handle(EmailSendRecord notification, CancellationToken cancellationToken)
     {
         await _emailCodeSend.SendEmailCodeAsync(notification.ToEmail, notification.Code.ToString());
-        _logger.LogInformation($"date:{DateTime.UtcNow},邮件发送{notification.ToEmail}");
+        _logger.LogInformation("date:{Date},邮件发送{ToEmail}", DateTime.UtcNow, notification.ToEmail);
     }
 
     protected override Task EventDlerJson(string eventName, EmailSendRecord? eventData)

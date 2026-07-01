@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "f:\\NotBlog\\Message.Domain\\Message.Domain.csproj": {}
+    "F:\\NotBlog\\Message.Domain\\Message.Domain.csproj": {}
   },
   "projects": {
-    "f:\\NotBlog\\Message.Domain\\Message.Domain.csproj": {
+    "F:\\NotBlog\\Message.Domain\\Message.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "f:\\NotBlog\\Message.Domain\\Message.Domain.csproj",
+        "projectUniqueName": "F:\\NotBlog\\Message.Domain\\Message.Domain.csproj",
         "projectName": "Message.Domain",
-        "projectPath": "f:\\NotBlog\\Message.Domain\\Message.Domain.csproj",
+        "projectPath": "F:\\NotBlog\\Message.Domain\\Message.Domain.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "f:\\NotBlog\\Message.Domain\\obj\\",
+        "outputPath": "F:\\NotBlog\\Message.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"

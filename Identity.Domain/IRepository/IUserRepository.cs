@@ -63,4 +63,18 @@ public interface IUserRepository : IRepository<User>
     /// <param name="email">邮箱</param>
     /// <param name="code">验证码</param>
     ValueTask SaveByEmailNumberAsync(string email, string code);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="user"></param>
+    /// <returns></returns>
+    Task UpdateByUserAsync(User user);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="user"></param>
+    /// <returns></returns>
+    Task DeleteByUserAsync(User user);
 }

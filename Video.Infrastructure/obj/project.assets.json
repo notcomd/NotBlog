@@ -3890,11 +3890,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "f:\\NotBlog\\Video.Infrastructure\\Video.Infrastructure.csproj",
+      "projectUniqueName": "F:\\NotBlog\\Video.Infrastructure\\Video.Infrastructure.csproj",
       "projectName": "Video.Infrastructure",
-      "projectPath": "f:\\NotBlog\\Video.Infrastructure\\Video.Infrastructure.csproj",
+      "projectPath": "F:\\NotBlog\\Video.Infrastructure\\Video.Infrastructure.csproj",
       "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-      "outputPath": "f:\\NotBlog\\Video.Infrastructure\\obj\\",
+      "outputPath": "F:\\NotBlog\\Video.Infrastructure\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -3916,11 +3916,11 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "projectReferences": {
-            "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj": {
-              "projectPath": "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj"
+            "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj": {
+              "projectPath": "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj"
             },
-            "f:\\NotBlog\\Video.Domain\\Video.Domain.csproj": {
-              "projectPath": "f:\\NotBlog\\Video.Domain\\Video.Domain.csproj"
+            "F:\\NotBlog\\Video.Domain\\Video.Domain.csproj": {
+              "projectPath": "F:\\NotBlog\\Video.Domain\\Video.Domain.csproj"
             }
           }
         }

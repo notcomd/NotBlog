@@ -1,4 +1,4 @@
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Text;
 using System.Web;
 using Identity.Domain.Dto.OAuth;
@@ -182,7 +182,7 @@ public class OAuthService(
     private string GenerateGoogleAuthUrl(string redirectUri, string state)
     {
         return "https://accounts.google.com/o/oauth2/v2/auth" +
-               $"?client_id={_oauthOptions.Google.ClientId}" +
+               $"?client_id={_oauthOptions.GoogleOptions.ClientId}" +
                $"&redirect_uri={Uri.EscapeDataString(redirectUri)}" +
                "&response_type=code" +
                "&scope=email%20profile" +
@@ -197,7 +197,7 @@ public class OAuthService(
     private string GenerateMicrosoftAuthUrl(string redirectUri, string state)
     {
         return "https://login.microsoftonline.com/common/oauth2/v2.0/authorize" +
-               $"?client_id={_oauthOptions.Microsoft.ClientId}" +
+               $"?client_id={_oauthOptions.MicrosoftOptions.ClientId}" +
                $"&redirect_uri={Uri.EscapeDataString(redirectUri)}" +
                "&response_type=code" +
                "&scope=openid%20profile%20email" +
@@ -224,7 +224,7 @@ public class OAuthService(
 
     private async Task<ExternalUserInfo> GetGoogleUserInfoAsync(string code, string redirectUri)
     {
-        var options = _oauthOptions.Google;
+        var options = _oauthOptions.GoogleOptions;
         var client = httpClient.CreateClient();
 
         // Step 1: 用 code 换取 access_token
@@ -270,7 +270,7 @@ public class OAuthService(
     /// </summary>
     private async Task<ExternalUserInfo> GetGitHubUserInfoAsync(string code, string redirectUri)
     {
-        var options = _oauthOptions.GitHub;
+        var options = _oauthOptions.GitHubOptions;
         var client = httpClient.CreateClient();
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
@@ -366,7 +366,7 @@ public class OAuthService(
     /// </summary>
     private async Task<ExternalUserInfo> GetMicrosoftUserInfoAsync(string code, string redirectUri)
     {
-        var options = _oauthOptions.Microsoft;
+        var options = _oauthOptions.MicrosoftOptions;
         var client = httpClient.CreateClient();
 
         // Step 1: 用 code 换取 access_token

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "4XRjjhE+FV4=",
+  "dgSpecHash": "AVoeysDqGv4=",
   "success": true,
-  "projectFilePath": "f:\\NotBlog\\FileDev.Web.API\\FileDev.Web.API.csproj",
+  "projectFilePath": "F:\\NotBlog\\FileDev.Web.API\\FileDev.Web.API.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\notco\\.nuget\\packages\\aspire.rabbitmq.client\\13.4.6\\aspire.rabbitmq.client.13.4.6.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\aspire.stackexchange.redis\\13.4.6\\aspire.stackexchange.redis.13.4.6.nupkg.sha512",
@@ -69,10 +69,10 @@
     {
       "code": "NU1510",
       "level": "Warning",
-      "message": "PackageReference Microsoft.AspNetCore.Mvc.Core 将不会删除。请考虑从依赖项中移除此包，因为可能不需要它。",
-      "projectPath": "f:\\NotBlog\\FileDev.Web.API\\FileDev.Web.API.csproj",
+      "message": "PackageReference Microsoft.AspNetCore.Mvc.Core will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary.",
+      "projectPath": "F:\\NotBlog\\FileDev.Web.API\\FileDev.Web.API.csproj",
       "warningLevel": 1,
-      "filePath": "f:\\NotBlog\\FileDev.Web.API\\FileDev.Web.API.csproj",
+      "filePath": "F:\\NotBlog\\FileDev.Web.API\\FileDev.Web.API.csproj",
       "libraryId": "Microsoft.AspNetCore.Mvc.Core",
       "targetGraphs": [
         "net10.0"
@@ -81,10 +81,10 @@
     {
       "code": "NU1903",
       "level": "Warning",
-      "message": "包 \"Newtonsoft.Json\" 9.0.1 具有已知的 高 严重性漏洞，https://github.com/advisories/GHSA-5crp-9r3c-p9vr",
-      "projectPath": "f:\\NotBlog\\FileDev.Web.API\\FileDev.Web.API.csproj",
+      "message": "Package 'Newtonsoft.Json' 9.0.1 has a known high severity vulnerability, https://github.com/advisories/GHSA-5crp-9r3c-p9vr",
+      "projectPath": "F:\\NotBlog\\FileDev.Web.API\\FileDev.Web.API.csproj",
       "warningLevel": 1,
-      "filePath": "f:\\NotBlog\\FileDev.Web.API\\FileDev.Web.API.csproj",
+      "filePath": "F:\\NotBlog\\FileDev.Web.API\\FileDev.Web.API.csproj",
       "libraryId": "Newtonsoft.Json",
       "targetGraphs": [
         "net10.0"

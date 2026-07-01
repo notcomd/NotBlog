@@ -1,4 +1,4 @@
-﻿namespace Identity.Infrastructure.EntityConfig;
+namespace Identity.Infrastructure.EntityConfig;
 
 public class RoleEntityTypeConfiguration : IEntityTypeConfiguration<Roles>
 {
@@ -27,7 +27,7 @@ public class RoleEntityTypeConfiguration : IEntityTypeConfiguration<Roles>
         // 多对多: Roles ↔ RoleGroup（角色归属组）
         builder.HasMany(r => r.RoleGroups)
             .WithMany(g => g.Roles)
-            .UsingEntity<Dictionary<string, object>>("RoleGroups",
+            .UsingEntity<Dictionary<string, object>>("RoleGroupRoles",
                 j => j.HasOne<RoleGroup>().WithMany().HasForeignKey("RoleGroupGuid"),
                 j => j.HasOne<Roles>().WithMany().HasForeignKey("RoleGuid"));
     }

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "f:\\NotBlog\\Video.Domain\\Video.Domain.csproj": {}
+    "F:\\NotBlog\\Video.Domain\\Video.Domain.csproj": {}
   },
   "projects": {
-    "f:\\NotBlog\\JWToken\\Token.JWT.csproj": {
+    "F:\\NotBlog\\JWToken\\Token.JWT.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "f:\\NotBlog\\JWToken\\Token.JWT.csproj",
+        "projectUniqueName": "F:\\NotBlog\\JWToken\\Token.JWT.csproj",
         "projectName": "Token.JWT",
-        "projectPath": "f:\\NotBlog\\JWToken\\Token.JWT.csproj",
+        "projectPath": "F:\\NotBlog\\JWToken\\Token.JWT.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "f:\\NotBlog\\JWToken\\obj\\",
+        "outputPath": "F:\\NotBlog\\JWToken\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -358,14 +358,14 @@
         }
       }
     },
-    "f:\\NotBlog\\Video.Domain\\Video.Domain.csproj": {
+    "F:\\NotBlog\\Video.Domain\\Video.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "f:\\NotBlog\\Video.Domain\\Video.Domain.csproj",
+        "projectUniqueName": "F:\\NotBlog\\Video.Domain\\Video.Domain.csproj",
         "projectName": "Video.Domain",
-        "projectPath": "f:\\NotBlog\\Video.Domain\\Video.Domain.csproj",
+        "projectPath": "F:\\NotBlog\\Video.Domain\\Video.Domain.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "f:\\NotBlog\\Video.Domain\\obj\\",
+        "outputPath": "F:\\NotBlog\\Video.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -387,8 +387,8 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "f:\\NotBlog\\JWToken\\Token.JWT.csproj": {
-                "projectPath": "f:\\NotBlog\\JWToken\\Token.JWT.csproj"
+              "F:\\NotBlog\\JWToken\\Token.JWT.csproj": {
+                "projectPath": "F:\\NotBlog\\JWToken\\Token.JWT.csproj"
               }
             }
           }
