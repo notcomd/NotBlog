@@ -43,6 +43,10 @@ public abstract class IdentifiedCommandHandler<T, R>(
                         idProvider = nameof(generateCodeCommand.Email);
                         commandId = generateCodeCommand.Email;
                         break;
+                    case CreateUserExternalLoginCommand createUserExternalLoginCommand:
+                        idProvider = nameof(createUserExternalLoginCommand.ProviderKey);
+                        commandId = createUserExternalLoginCommand.ProviderKey;
+                        break;
                     // case CreateByUserCommand createByUserCommand:
                     //     idProvider = nameof(createByUserCommand.Email);
                     //     commandId = createByUserCommand.Email;

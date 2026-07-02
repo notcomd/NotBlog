@@ -1,4 +1,4 @@
-﻿namespace Notcomd.Evenbus;
+﻿namespace Notcomd.Evenbus.EventBus;
 
 public class IntegrationEventRabbitMqOptions
 {

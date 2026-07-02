@@ -3,8 +3,10 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Notcomd.Evenbus.EventBus;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using ExchangeType = Notcomd.Evenbus.EventBus.ExchangeType;
 
 namespace Notcomd.Evenbus;
 

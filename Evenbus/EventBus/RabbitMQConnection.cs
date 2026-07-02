@@ -2,7 +2,7 @@
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
-namespace Notcomd.Evenbus;
+namespace Notcomd.Evenbus.EventBus;
 
 /// <summary>
 /// RabbitMQ 连接管理（纯异步，无 sync-over-async）

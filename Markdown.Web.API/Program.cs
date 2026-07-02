@@ -2,6 +2,7 @@ using System.Reflection;
 using Markdown.Infrastructure.EntityFramework;
 using NotBlog.ServiceDefaults;
 using Notcomd.Evenbus;
+using Notcomd.Evenbus.EventBus;
 using NotMediator;
 using Scalar.AspNetCore;
 

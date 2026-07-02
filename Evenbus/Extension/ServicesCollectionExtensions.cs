@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Notcomd.Evenbus.EventBus;
 using RabbitMQ.Client;
 
 namespace Notcomd.Evenbus;

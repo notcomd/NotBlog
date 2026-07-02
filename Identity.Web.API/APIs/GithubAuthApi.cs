@@ -12,7 +12,7 @@ public static class GithubAuthApi
         return router;
     }
 
-    public static Task<string> LoginAsync(HttpContext httpContext, [FromServices] GithubAuthDI githubAuthDI)
+    private static Task<string> LoginAsync(HttpContext httpContext, [FromServices] GithubAuthDI githubAuthDI)
     {
         var clientId = githubAuthDI.options.Value.GitHubOptions.ClientId;
         Console.WriteLine(clientId);
@@ -20,11 +20,18 @@ public static class GithubAuthApi
         return Task.FromResult(redirectUri);
     }
 
-    public static async Task<ActionResult<string>> Callback([FromServices] GithubAuthDI githubAuthDI,
+    private static async Task<ActionResult<string>> Callback([FromServices] GithubAuthDI githubAuthDi,
         [FromQuery] string code)
     {
         Console.WriteLine($"我调用的该函数code: {code}");
-        var data = await githubAuthDI.GitHubAuthService.RedirectUriAsync(code);
+        var data = await githubAuthDi.GitHubAuthService.RedirectUriAsync(code);
         return new ActionResult<string>(data);
+    }
+
+
+    private static async Task<bool> LinkGithubByUserAsync([FromServices] GithubAuthDI githubAuthDi,
+        [FromBody] LinkUserRequest request)
+    {
+        return true;
     }
 }

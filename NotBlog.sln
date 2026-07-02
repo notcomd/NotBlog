@@ -1,4 +1,4 @@
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.6.33717.318
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -63,6 +63,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotBlog.AppHost", "NotBlog.AppHost\NotBlog.AppHost.csproj", "{7A278E94-78C5-4C0C-A003-260E11821283}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotBlog.ServiceDefaults", "NotBlog.ServiceDefaults\NotBlog.ServiceDefaults.csproj", "{87FD2A4E-56BB-4915-9349-AF858E2A9FC3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CacheMemory", "CacheMemory\CacheMemory.csproj", "{E492321C-AE5B-4F7D-ACB2-A1CC4351706F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -170,6 +172,10 @@ Global
 		{87FD2A4E-56BB-4915-9349-AF858E2A9FC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{87FD2A4E-56BB-4915-9349-AF858E2A9FC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{87FD2A4E-56BB-4915-9349-AF858E2A9FC3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E492321C-AE5B-4F7D-ACB2-A1CC4351706F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E492321C-AE5B-4F7D-ACB2-A1CC4351706F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E492321C-AE5B-4F7D-ACB2-A1CC4351706F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E492321C-AE5B-4F7D-ACB2-A1CC4351706F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -198,6 +204,7 @@ Global
 		{DD2906BC-4AE9-4C21-8DA3-D3009801A53A} = {BC95D609-3242-49DB-854A-D01B79CD1628}
 		{1FF3771F-7FB7-4284-88EC-F5BA16BB8BD9} = {57FA7F6A-CE2E-4CB0-84B8-7424CCF75DD8}
 		{3817FCD3-313A-486F-B23C-ADA796F6EB0E} = {57FA7F6A-CE2E-4CB0-84B8-7424CCF75DD8}
+		{E492321C-AE5B-4F7D-ACB2-A1CC4351706F} = {57FA7F6A-CE2E-4CB0-84B8-7424CCF75DD8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0F47FCB9-6213-4B6B-A805-CC85E92658D4}
