@@ -17,7 +17,7 @@ builder.Services.AddIdentityService(builder.Configuration.GetSection("JwtOptions
 
 //builder.Services.AddNpgsql<IdentityDbContext>("IdentityPostgres");
 
-builder.AddRedisDistributedCache("Redis");
+builder.Services.AddCacheMemory();
 
 builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
 

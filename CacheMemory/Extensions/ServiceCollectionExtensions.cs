@@ -1,22 +1,20 @@
 using CacheMemory.Core;
 using CacheMemory.Providers;
-using CacheMemory.Service;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
 
 namespace CacheMemory.Extensions;
 
 /// <summary>
 /// CacheMemory 库的 DI 注册扩展方法。
 /// 提供便捷的 IServiceCollection 扩展，自动注册所有必需的 Redis 服务。
+/// 同时兼容传统 appsettings.json 配置和 Aspire ConnectionStrings 配置。
 /// </summary>
 public static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// 注册 CacheMemory Redis 缓存服务。
-    /// 从 <see cref="IConfiguration"/> 的 "CacheMemory" 节读取配置。
+    /// 注册 CacheMemory Redis 缓存服务（从 IConfiguration 的 "CacheMemory" 节读取配置）。
+    /// 同时也检查 Aspire 的 ConnectionStrings:CachMemory 作为默认实例的连接字符串补充。
     /// </summary>
     /// <param name="services">服务集合</param>
     /// <param name="configuration">配置对象</param>
@@ -32,31 +30,61 @@ public static class ServiceCollectionExtensions
         var config = new CacheMemoryConfig(configuration);
         var options = config.GetOptions();
 
-        // 2. 注册配置为单例
-        services.AddSingleton(options);
-
-        // 3. 注册重试策略（每个实例独立，但此处注册默认）
-        services.TryAddSingleton<IRedisRetryPolicy>(sp =>
+        // 尝试从 Aspire ConnectionStrings 补充连接（兼容 Aspire 环境）
+        var aspireDefaultConn = configuration.GetConnectionString("CacheMemory");
+        if (!string.IsNullOrWhiteSpace(aspireDefaultConn))
         {
-            var opt = sp.GetRequiredService<CacheMemoryOption>();
-            var logger = sp.GetService<ILogger<RedisRetryPolicy>>();
-            return new RedisRetryPolicy(opt.Retry, logger);
-        });
+            options.Instances[CacheMemoryOption.DefaultInstanceName] = new RedisInstanceOptions
+            {
+                ConnectionString = aspireDefaultConn
+            };
+        }
 
-        // 4. 注册连接提供者
-        services.TryAddSingleton<IRedisConnectionProvider, RedisConnectionProvider>();
+        // 注册核心服务
+        CacheMemoryAspireExtensions.RegisterCoreServices(services, options);
 
-        // 5. 注册核心缓存服务
-        services.TryAddSingleton<IRedisCacheService, RedisCacheService>();
+        // 注册健康检查
+        services.AddHealthChecks()
+            .AddCheck<CacheMemoryHealthCheck>(CacheMemoryHealthCheck.Name, tags: ["redis", "cache"]);
 
-        // 6. 注册分布式锁服务
-        services.TryAddSingleton<RedisDistributedLock>();
+        return services;
+    }
 
-        // 7. 注册发布订阅服务
-        services.TryAddSingleton<RedisPubSubService>();
+    /// <summary>
+    /// 注册 CacheMemory Redis 缓存服务（Aspire 兼容模式）。
+    /// 同时从 CacheMemory 配置节和 Aspire ConnectionStrings 读取连接字符串。
+    /// Aspire 连接字符串优先级更高（会覆盖传统配置中的 Default 实例连接）。
+    /// </summary>
+    /// <param name="services">服务集合</param>
+    /// <param name="configuration">配置对象</param>
+    /// <param name="connectionName">Aspire 连接名称（对应 ConnectionStrings:{connectionName}）</param>
+    /// <returns>服务集合</returns>
+    /// <example>
+    /// <code>
+    /// // 在 Aspire 项目中，Redis 由 AppHost 的 AddRedis("Redis") 提供
+    /// services.AddCacheMemory(builder.Configuration, "Redis");
+    /// </code>
+    /// </example>
+    public static IServiceCollection AddCacheMemory(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        string connectionName)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configuration);
+        ArgumentException.ThrowIfNullOrWhiteSpace(connectionName);
 
-        // 8. 注册泛型缓存服务（开放式泛型）
-        services.TryAddSingleton(typeof(ICacheMemory<>), typeof(CacheMemory<>));
+        // 先加载传统配置
+        var config = new CacheMemoryConfig(configuration);
+        var options = config.GetOptions();
+
+        // Aspire 连接字符串覆盖 Default 实例（优先级更高）
+        config.ApplyAspireConnectionString(options, connectionName);
+
+        CacheMemoryAspireExtensions.RegisterCoreServices(services, options);
+
+        services.AddHealthChecks()
+            .AddCheck<CacheMemoryHealthCheck>(CacheMemoryHealthCheck.Name, tags: ["redis", "cache"]);
 
         return services;
     }
@@ -81,20 +109,10 @@ public static class ServiceCollectionExtensions
         // 应用环境变量覆盖
         ApplyEnvironmentOverrides(options);
 
-        services.AddSingleton(options);
+        CacheMemoryAspireExtensions.RegisterCoreServices(services, options);
 
-        services.TryAddSingleton<IRedisRetryPolicy>(sp =>
-        {
-            var opt = sp.GetRequiredService<CacheMemoryOption>();
-            var logger = sp.GetService<ILogger<RedisRetryPolicy>>();
-            return new RedisRetryPolicy(opt.Retry, logger);
-        });
-
-        services.TryAddSingleton<IRedisConnectionProvider, RedisConnectionProvider>();
-        services.TryAddSingleton<IRedisCacheService, RedisCacheService>();
-        services.TryAddSingleton<RedisDistributedLock>();
-        services.TryAddSingleton<RedisPubSubService>();
-        services.TryAddSingleton(typeof(ICacheMemory<>), typeof(CacheMemory<>));
+        services.AddHealthChecks()
+            .AddCheck<CacheMemoryHealthCheck>(CacheMemoryHealthCheck.Name, tags: ["redis", "cache"]);
 
         return services;
     }

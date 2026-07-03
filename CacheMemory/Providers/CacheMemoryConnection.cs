@@ -10,27 +10,20 @@ namespace CacheMemory.Providers;
 /// 负责创建、维持和自动恢复与 Redis 服务器的连接。
 /// 支持心跳检测和指数退避重连策略。
 /// </summary>
-public sealed class CacheMemoryConnection : IAsyncDisposable
+public sealed class CacheMemoryConnection(
+    RedisInstanceOptions options,
+    RetryOptions retryOptions,
+    ILogger<CacheMemoryConnection>? logger = null)
+    : IAsyncDisposable
 {
+    private readonly ConfigurationOptions? _configOptions = options.ToConfigurationOptions();
     private readonly SemaphoreSlim _connectionLock = new(1, 1);
-    private readonly ILogger<CacheMemoryConnection> _logger;
-    private readonly RedisInstanceOptions _options;
-    private readonly RetryOptions _retryOptions;
-    private ConfigurationOptions? _configOptions;
+    private readonly ILogger<CacheMemoryConnection> _logger = logger ?? NullLogger<CacheMemoryConnection>.Instance;
+    private readonly RedisInstanceOptions _options = options ?? throw new ArgumentNullException(nameof(options));
+    private readonly RetryOptions _retryOptions = retryOptions ?? throw new ArgumentNullException(nameof(retryOptions));
 
     private IConnectionMultiplexer? _connection;
     private volatile bool _isDisposed;
-
-    public CacheMemoryConnection(
-        RedisInstanceOptions options,
-        RetryOptions retryOptions,
-        ILogger<CacheMemoryConnection>? logger = null)
-    {
-        _options = options ?? throw new ArgumentNullException(nameof(options));
-        _retryOptions = retryOptions ?? throw new ArgumentNullException(nameof(retryOptions));
-        _logger = logger ?? NullLogger<CacheMemoryConnection>.Instance;
-        _configOptions = options.ToConfigurationOptions();
-    }
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()

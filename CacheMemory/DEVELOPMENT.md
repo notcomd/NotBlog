@@ -18,8 +18,9 @@ CacheMemory/
 │   ├── CacheMemoryOption.cs           # 全局配置选项 + RedisInstanceOptions
 │   └── RetryOptions.cs                # 重试策略配置
 ├── Providers/                         # 基础设施实现
-│   ├── CacheMemoryConfig.cs           # 配置加载器（IConfiguration + 环境变量）
+│   ├── CacheMemoryConfig.cs           # 配置加载器（IConfiguration + Aspire ConnectionStrings + 环境变量）
 │   ├── CacheMemoryConnection.cs       # 单实例连接管理器（自动重连）
+│   ├── CacheMemoryHealthCheck.cs      # Redis 健康检查（Aspire /health 端点集成）
 │   ├── RedisConnectionProvider.cs     # 多实例连接提供者
 │   └── RedisRetryPolicy.cs            # 指数退避重试策略
 ├── Service/                           # 业务服务实现
@@ -28,7 +29,8 @@ CacheMemory/
 │   ├── RedisDistributedLock.cs        # 分布式锁（含 LockHandle）
 │   └── RedisPubSubService.cs          # 发布/订阅服务
 ├── Extensions/                        # DI 扩展
-│   └── ServiceCollectionExtensions.cs # IServiceCollection 扩展方法
+│   ├── CacheMemoryAspireExtensions.cs # Aspire 风格扩展（IHostApplicationBuilder）
+│   └── ServiceCollectionExtensions.cs # 传统 IServiceCollection 扩展方法（兼容 Aspire）
 ├── CacheMemory.csproj                 # 项目文件
 ├── GlobalUsings.cs                    # 全局命名空间
 ├── DEVELOPMENT.md                     # 本文件
@@ -144,22 +146,25 @@ public class UserCacheMemory : CacheMemory<UserEntity>
 
 从高到低：
 
-1. 环境变量：`CacheMemory__Instances__{Name}__ConnectionString`
-2. 环境变量：`CacheMemory__ConnectionString`（简化单实例场景）
-3. `appsettings.json` 或其他 `IConfiguration` 源
-4. 代码默认值（`localhost:6379`）
+1. Aspire `ConnectionStrings:{Name}`（通过 Aspire 集成自动注入）
+2. 环境变量：`CacheMemory__Instances__{Name}__ConnectionString`
+3. 环境变量：`CacheMemory__ConnectionString`（简化单实例场景）
+4. `appsettings.json` 或其他 `IConfiguration` 源
+5. 代码默认值（`localhost:6379`）
 
 ## 依赖项
 
-| NuGet 包                                               | 版本     | 用途                      |
-|-------------------------------------------------------|--------|-------------------------|
-| StackExchange.Redis                                   | 3.0.11 | Redis 客户端核心库            |
-| Microsoft.Extensions.Caching.StackExchangeRedis       | 10.0.9 | ASP.NET Core Redis 缓存抽象 |
-| Microsoft.Extensions.Configuration.Abstractions       | 10.0.9 | 配置抽象                    |
-| Microsoft.Extensions.Configuration.Binder             | 10.0.9 | 配置绑定                    |
-| Microsoft.Extensions.DependencyInjection              | 10.0.9 | DI 容器                   |
-| Microsoft.Extensions.DependencyInjection.Abstractions | 10.0.9 | DI 抽象                   |
-| Microsoft.Extensions.Logging.Abstractions             | 10.0.9 | 日志抽象                    |
+| NuGet 包                                               | 版本     | 用途                                         |
+|-------------------------------------------------------|--------|--------------------------------------------|
+| Aspire.StackExchange.Redis                            | 13.4.6 | Aspire Redis 集成（健康检查、遥测、ConnectionStrings） |
+| StackExchange.Redis                                   | 3.0.11 | Redis 客户端核心库                               |
+| Microsoft.Extensions.Caching.StackExchangeRedis       | 10.0.9 | ASP.NET Core Redis 缓存抽象                    |
+| Microsoft.Extensions.Configuration.Abstractions       | 10.0.9 | 配置抽象                                       |
+| Microsoft.Extensions.Configuration.Binder             | 10.0.9 | 配置绑定                                       |
+| Microsoft.Extensions.DependencyInjection              | 10.0.9 | DI 容器                                      |
+| Microsoft.Extensions.DependencyInjection.Abstractions | 10.0.9 | DI 抽象                                      |
+| Microsoft.Extensions.Hosting.Abstractions             | 10.0.9 | IHostApplicationBuilder 支持                 |
+| Microsoft.Extensions.Logging.Abstractions             | 10.0.9 | 日志抽象                                       |
 
 ## 编码规范
 
@@ -170,3 +175,48 @@ public class UserCacheMemory : CacheMemory<UserEntity>
 - 私有字段以 `_` 前缀命名
 - XML 文档注释（`<summary>` / `<param>` / `<returns>` / `<remarks>`）
 - 所有 Service 方法标记为 `virtual` 支持覆写
+
+## Aspire 集成
+
+### 概述
+
+CacheMemory 原生支持 .NET Aspire，提供以下集成能力：
+
+- **连接字符串桥接**：`CacheMemoryConfig.ApplyAspireConnectionString()` 将 Aspire 的 `ConnectionStrings:{Name}` 自动映射到
+  CacheMemory 实例配置
+- **Aspire 风格扩展**：`builder.AddCacheMemory("Redis")` 在 `IHostApplicationBuilder` 上注册，遵循 Aspire 惯用模式
+- **健康检查**：`CacheMemoryHealthCheck` 自动注册，检测所有 Redis 实例的连接状态，标签 `["redis", "cache"]`
+- **双模式兼容**：同时支持传统 `IServiceCollection.AddCacheMemory()` 和 Aspire `builder.AddCacheMemory()`
+
+### 配置桥接流程
+
+```
+AppHost: builder.AddRedis("Redis")
+    ↓
+ConnectionStrings:Redis = "localhost:6379"
+    ↓
+CacheMemoryConfig.ApplyAspireConnectionString(options, "Redis")
+    ↓
+CacheMemoryOption.Instances["Default"].ConnectionString = "localhost:6379"
+```
+
+### 多实例 Aspire 支持
+
+```csharp
+// AppHost 注册多个 Redis
+var redis1 = builder.AddRedis("Redis");
+var redis2 = builder.AddRedis("SessionCache");
+
+// 服务端注册
+builder.AddCacheMemory("Redis", "SessionCache");
+```
+
+### 健康检查输出示例
+
+```json
+{
+  "status": "Healthy",
+  "description": "所有 2 个 Redis 实例连接正常",
+  "data": { "InstanceCount": 2 }
+}
+```

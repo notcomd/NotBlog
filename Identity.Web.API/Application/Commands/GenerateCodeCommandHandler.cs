@@ -1,8 +1,11 @@
+using CacheMemory.Core;
+
 namespace Identity.Web.API.Application.Commands;
 
 public class GenerateCodeCommandHandler(
     ILogger<GenerateCodeCommandHandler> logger,
-    IEmailCodeSend emailCodeSend)
+    IEmailCodeSend emailCodeSend,
+    IRedisCacheService redisCacheService)
     : NotMediator.IRequestHandler<GenerateCodeCommand, string>
 {
     public async Task<string> Handler(GenerateCodeCommand request, CancellationToken cancellationToken)

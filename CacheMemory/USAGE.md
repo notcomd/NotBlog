@@ -53,19 +53,58 @@ export CacheMemory__Instances__Cache__ConnectionString="redis-cache:6379,passwor
 
 ## 2. DI 注册
 
-### 2.1 从配置文件注册（推荐）
+### 2.1 Aspire 风格注册（推荐用于 Aspire 项目）
 
 ```csharp
-// Program.cs
+// Program.cs - Aspire 项目
 var builder = WebApplication.CreateBuilder(args);
 
-// 基础注册
+builder.AddServiceDefaults();
+
+// Aspire 原生风格：自动从 ConnectionStrings:Redis 读取连接字符串
+builder.AddCacheMemory("Redis");
+
+// 带额外配置
+builder.AddCacheMemory("Redis", options =>
+{
+    options.Retry.MaxRetryCount = 5;
+});
+
+// 多实例
+builder.AddCacheMemory("Redis", "SessionCache", "AnalyticsCache");
+
+// 纯委托模式
+builder.AddCacheMemory(options =>
+{
+    options.Instances["Default"] = new RedisInstanceOptions
+    {
+        ConnectionString = "localhost:6379"
+    };
+});
+
+var app = builder.Build();
+```
+
+### 2.2 从配置文件注册（传统 IConfiguration 方式）
+
+```csharp
+// Program.cs - 传统项目
+var builder = WebApplication.CreateBuilder(args);
+
+// 基础注册（同时检查 Aspire ConnectionStrings 作为补充）
 builder.Services.AddCacheMemory(builder.Configuration);
 
 var app = builder.Build();
 ```
 
-### 2.2 从代码委托注册
+### 2.3 Aspire 兼容的 IServiceCollection 注册
+
+```csharp
+// 明确指定 Aspire 连接名称
+builder.Services.AddCacheMemory(builder.Configuration, "Redis");
+```
+
+### 2.4 从代码委托注册
 
 ```csharp
 builder.Services.AddCacheMemory(options =>
@@ -79,7 +118,7 @@ builder.Services.AddCacheMemory(options =>
 });
 ```
 
-### 2.3 带连接预热的注册（生产环境推荐）
+### 2.5 带连接预热的注册（生产环境推荐）
 
 ```csharp
 // Program.cs 使用顶级语句异步
@@ -602,7 +641,77 @@ Console.WriteLine($"Redis 延迟: {latency.TotalMilliseconds}ms");
 await _redis.FlushDatabaseAsync(db: 0, ct);
 ```
 
-## 12. 同步 API
+## 12. Aspire 集成详解
+
+### 12.1 AppHost 配置
+
+在 `NotBlog.AppHost` 中注册 Redis：
+
+```csharp
+// AppHost/AppHost.cs
+var redis = builder.AddRedis("Redis");
+
+// 将 Redis 引用传递给各个微服务
+builder.AddProject<Projects.Identity_Web_API>("identity-web-api")
+    .WithReference(redis);
+```
+
+### 12.2 服务端使用
+
+```csharp
+// Identity.Web.API/Program.cs
+var builder = WebApplication.CreateBuilder(args);
+
+builder.AddServiceDefaults();
+builder.AddCacheMemory("Redis");  // 自动读取 ConnectionStrings:Redis
+```
+
+### 12.3 健康检查
+
+CacheMemory 自动注册 `CacheMemoryHealthCheck`（标签 `["redis", "cache"]`），
+与 Aspire 的 `/health` 和 `/alive` 端点无缝集成：
+
+```bash
+# 查看健康状态
+curl https://localhost:5001/health
+
+# 仅检查存活状态（含 Redis）
+curl https://localhost:5001/alive
+```
+
+健康检查会 Ping 所有已注册的 Redis 实例，返回聚合状态：
+
+| 状态          | 含义       |
+|-------------|----------|
+| `Healthy`   | 所有实例连接正常 |
+| `Degraded`  | 部分实例连接失败 |
+| `Unhealthy` | 全部实例连接失败 |
+
+### 12.4 ConnectionStrings 配置格式
+
+Aspire 自动在 `appsettings.json` 中注入连接字符串：
+
+```json
+{
+  "ConnectionStrings": {
+    "Redis": "localhost:6379"
+  }
+}
+```
+
+多个 Redis 实例：
+
+```json
+{
+  "ConnectionStrings": {
+    "Redis": "localhost:6379",
+    "SessionCache": "session-redis:6379,password=xxx",
+    "AnalyticsCache": "analytics-redis:6379,password=xxx"
+  }
+}
+```
+
+## 13. 同步 API
 
 所有异步方法均提供对应的同步重载，适用于无法使用异步的场景：
 

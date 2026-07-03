@@ -23,6 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\CacheMemory\CacheMemory.csproj"/>
         <ProjectReference Include="..\CommonsInitializer\CommonsInitializer.csproj"/>
         <ProjectReference Include="..\Evenbus\Evenbus.csproj"/>
         <ProjectReference Include="..\NotBlog.ServiceDefaults\NotBlog.ServiceDefaults.csproj" />
