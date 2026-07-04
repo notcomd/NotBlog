@@ -1,6 +1,3 @@
-using FileDev.Domain.Events;
-using FileDev.Domain.SeedWork;
-
 namespace FileDev.Domain.Entities;
 
 public class NotFile : Entity, IAggregateRoot
@@ -63,6 +60,7 @@ public class NotFile : Entity, IAggregateRoot
     public bool IsDeleted { get; private set; }
 
     public DateTime? DeleteTime { get; private set; }
+
 
     public void UpdateFileData(string? fileName, HashSet<string>? tags, string? fileDescription,
         FileIdentity? fileIdentity, string fileMd5)

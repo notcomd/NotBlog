@@ -4,4 +4,5 @@ public record IdentityService(
     IEmailCodeSend EmailCodeSend,
     IUserRepository UserRepository,
     INotMediator NotMediator,
-    ILogger Logger);
+    ILogger<IdentityService> Logger,
+    IUserService UserService);

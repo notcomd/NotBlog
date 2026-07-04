@@ -58,7 +58,10 @@ public static class IdentityApis
     private static async Task<IResult> Login([FromServices] IdentityService identityService,
         [FromBody] LoginRequest loginRequest)
     {
-        return Results.Ok(new { message = "登录成功" });
+        var data = await identityService.UserService
+            .LogInByCheckPasswordAsync(loginRequest.Email, loginRequest.Password, loginRequest.Code);
+
+        return Results.Ok(data);
     }
 
 

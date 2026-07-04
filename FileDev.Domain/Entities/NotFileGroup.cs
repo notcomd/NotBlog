@@ -1,5 +1,3 @@
-using FileDev.Domain.SeedWork;
-
 namespace FileDev.Domain.Entities;
 
 public class NotFileGroup : Entity, IAggregateRoot
@@ -46,6 +44,7 @@ public class NotFileGroup : Entity, IAggregateRoot
     public FileIdentity FileIdentity { get; private set; }
 
     public FileType FileType { get; private set; }
+
 
     public void UpdateFileGroup(string fileGroupName, HashSet<string>? fileGroupTags, string? fileGroupDescription,
         FileIdentity fileIdentity, FileType fileType)
@@ -100,7 +99,7 @@ public class NotFileGroup : Entity, IAggregateRoot
             _fileIdentity = FileIdentity.FilePublic;
             _fileType = FileType.CompressFiles;
         }
-        
+
         public NotFileGroupBuilder WithUserId(Guid userId)
         {
             _userId = userId;

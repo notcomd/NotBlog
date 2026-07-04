@@ -2227,6 +2227,9 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
+              "F:\\NotBlog\\CacheMemory\\CacheMemory.csproj": {
+                "projectPath": "F:\\NotBlog\\CacheMemory\\CacheMemory.csproj"
+              },
               "F:\\NotBlog\\CommonsInitializer\\CommonsInitializer.csproj": {
                 "projectPath": "F:\\NotBlog\\CommonsInitializer\\CommonsInitializer.csproj"
               },

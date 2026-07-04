@@ -47,19 +47,6 @@ public interface IUserService
     /// <returns>成功返回 true，失败返回 false</returns>
     Task SendResetPasswordEmailAsync([EmailAddress(ErrorMessage = "无效的邮件地址")] string email);
 
-    /// <summary>
-    /// 获取 OAuth 授权链接
-    /// </summary>
-    /// <param name="provider">OAuth 提供商</param>
-    /// <param name="redirectUri">重定向 URI</param>
-    /// <returns>OAuth 授权链接</returns>
-    Task<string> GenerateAuthorizationUrlAsync(string provider, string redirectUri);
-
-    /// <summary>
-    /// 生成验证码
-    /// </summary>
-    /// <returns>验证码</returns>
-    Task<string> GenerateCheckCodeAsync();
 
     /// <summary>
     /// 根据邮箱获取用户

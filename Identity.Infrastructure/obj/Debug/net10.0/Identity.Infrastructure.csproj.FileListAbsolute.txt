@@ -24,3 +24,5 @@ f:\NotBlog\Identity.Infrastructure\obj\Debug\net10.0\Identity.Infrastructure.dll
 f:\NotBlog\Identity.Infrastructure\obj\Debug\net10.0\refint\Identity.Infrastructure.dll
 f:\NotBlog\Identity.Infrastructure\obj\Debug\net10.0\Identity.Infrastructure.pdb
 f:\NotBlog\Identity.Infrastructure\obj\Debug\net10.0\ref\Identity.Infrastructure.dll
+F:\NotBlog\Identity.Infrastructure\bin\Debug\net10.0\CacheMemory.dll
+F:\NotBlog\Identity.Infrastructure\bin\Debug\net10.0\CacheMemory.pdb

@@ -1,8 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 using FileDev.Domain.Entities;
-using FileDev.Domain.IServices;
-using FileDev.Infrastructure.Service;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FileDev.Web.API.APIs;

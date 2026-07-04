@@ -66,6 +66,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotBlog.ServiceDefaults", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CacheMemory", "CacheMemory\CacheMemory.csproj", "{E492321C-AE5B-4F7D-ACB2-A1CC4351706F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotBlog_Yarp", "NotBlog_Yarp\NotBlog_Yarp.csproj", "{5FD4C6A2-E77C-4369-88C5-1993B9E60ED2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -176,6 +178,10 @@ Global
 		{E492321C-AE5B-4F7D-ACB2-A1CC4351706F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E492321C-AE5B-4F7D-ACB2-A1CC4351706F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E492321C-AE5B-4F7D-ACB2-A1CC4351706F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5FD4C6A2-E77C-4369-88C5-1993B9E60ED2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5FD4C6A2-E77C-4369-88C5-1993B9E60ED2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5FD4C6A2-E77C-4369-88C5-1993B9E60ED2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5FD4C6A2-E77C-4369-88C5-1993B9E60ED2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

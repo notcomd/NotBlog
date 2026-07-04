@@ -2,7 +2,7 @@
 
 namespace Identity.Infrastructure.Repository;
 
-public class EmailCodeSend(IEmailManager emailManager, IMemoryRepository<string> memoryRepository) : IEmailCodeSend
+public class EmailCodeSend(IEmailManager emailManager) : IEmailCodeSend
 {
     public async ValueTask SendEmailCodeAsync(string toEmail, string code)
     {

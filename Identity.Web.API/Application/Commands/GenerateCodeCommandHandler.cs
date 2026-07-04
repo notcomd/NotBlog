@@ -13,10 +13,21 @@ public class GenerateCodeCommandHandler(
         try
         {
             var code = await JwtRandom.CreateRandomStringValueTask();
+
+            var b = await redisCacheService.SetAddAsync($"Login_{request.Email}", code, cancellationToken);
+
+            if (!b)
+            {
+                logger.LogError("redis error");
+                return string.Empty;
+            }
+
             logger.LogInformation("[{Time}] 创建验证码: {Code}", DateTime.UtcNow, code);
 
             await emailCodeSend.SendEmailCodeAsync(request.Email, code);
+
             logger.LogInformation("[{Time}] 验证码已发送至: {Email}", DateTime.UtcNow, request.Email);
+
             return code;
         }
         catch (Exception ex)

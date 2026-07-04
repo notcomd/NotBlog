@@ -1,4 +1,4 @@
-﻿using Identity.Domain.Options;
+using Identity.Domain.Options;
 using Identity.Infrastructure.Services;
 using Notcomd.Token.JWT.Extensions;
 
@@ -17,7 +17,7 @@ public static class AddIdentityServer
         //serviceCollection.AddScoped<IPermissionService, PermissionService>()
         serviceCollection.AddScoped<IUserRepository, UserRepository>();
         serviceCollection.AddScoped<IUserRoleRepository, UserRoleRepository>();
-        serviceCollection.AddSingleton<IEmailCodeSend, EmailCodeSend>();
+        serviceCollection.AddScoped<IEmailCodeSend, EmailCodeSend>();
         serviceCollection.AddDistributedMemoryCache();
         serviceCollection.AddScoped<ISmsCodeSend, SmsCodeSend>();
         serviceCollection.AddScoped<UserService>();

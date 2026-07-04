@@ -11,21 +11,19 @@ using System;
 using System.Reflection;
 
 [assembly: Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute("c0caf067-0b8a-49df-99bc-69c3ff5c1031")]
-[assembly: System.Reflection.AssemblyMetadata("dcpclipath", ("C:\\Users\\notco\\.nuget\\packages\\aspire.hosting.orchestration.win-x64\\13.1.2\\tools\\" +
+[assembly: System.Reflection.AssemblyMetadata("dcpclipath", ("C:\\Users\\notco\\.nuget\\packages\\aspire.hosting.orchestration.win-x64\\13.4.6\\tools\\" +
     "dcp.exe"))]
-[assembly: System.Reflection.AssemblyMetadata("dcpextensionpaths", ("C:\\Users\\notco\\.nuget\\packages\\aspire.hosting.orchestration.win-x64\\13.1.2\\tools\\" +
+[assembly: System.Reflection.AssemblyMetadata("dcpextensionpaths", ("C:\\Users\\notco\\.nuget\\packages\\aspire.hosting.orchestration.win-x64\\13.4.6\\tools\\" +
     "ext\\"))]
-[assembly: System.Reflection.AssemblyMetadata("dcpbinpath", ("C:\\Users\\notco\\.nuget\\packages\\aspire.hosting.orchestration.win-x64\\13.1.2\\tools\\" +
-    "ext\\bin\\"))]
 [assembly: System.Reflection.AssemblyMetadata("apphostprojectpath", "F:\\NotBlog\\NotBlog.AppHost")]
 [assembly: System.Reflection.AssemblyMetadata("apphostprojectname", "NotBlog.AppHost.csproj")]
-[assembly: System.Reflection.AssemblyMetadata("aspiredashboardpath", ("C:\\Users\\notco\\.nuget\\packages\\aspire.dashboard.sdk.win-x64\\13.1.2\\tools\\Aspire.D" +
+[assembly: System.Reflection.AssemblyMetadata("aspiredashboardpath", ("C:\\Users\\notco\\.nuget\\packages\\aspire.dashboard.sdk.win-x64\\13.4.6\\tools\\Aspire.D" +
     "ashboard.exe"))]
 [assembly: System.Reflection.AssemblyMetadataAttribute("apphostprojectbaseintermediateoutputpath", "F:\\NotBlog\\NotBlog.AppHost\\obj\\")]
 [assembly: System.Reflection.AssemblyCompanyAttribute("NotBlog.AppHost")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ed669d2a890da1cc9c33325a2938c13cf9f6d2bf")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+83412079af1798663456ed39a50920819955a1ec")]
 [assembly: System.Reflection.AssemblyProductAttribute("NotBlog.AppHost")]
 [assembly: System.Reflection.AssemblyTitleAttribute("NotBlog.AppHost")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

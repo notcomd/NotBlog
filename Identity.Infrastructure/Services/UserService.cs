@@ -1,3 +1,5 @@
+using CacheMemory.Core;
+
 namespace Identity.Infrastructure.Services;
 
 public class UserService(
@@ -7,6 +9,7 @@ public class UserService(
     IUserRepository userRepository,
     IUserRoleRepository userRoleRepository,
     IJwtTokenService jwtTokenServer,
+    ICacheMemory<TokenCacheEntry> cacheMemory,
     ILogger<IUserRoleRepository> loggerUserRole)
     : IUserService
 {
@@ -80,15 +83,12 @@ public class UserService(
         throw new NotImplementedException();
     }
 
-    /// <summary>
-    /// 获取 OAuth 授权链接
-    /// </summary>
-    /// <param name="provider">OAuth提供程序</param>
-    /// <param name="redirectUri">重定向 URI</param>
-    /// <returns>OAuth 授权链接</returns>
-    /// <exception cref="ArgumentException">提供程序无效</exception>
-    /// <exception cref="ArgumentNullException">重定向 URI 为空</exception>
-    public Task<string> GenerateAuthorizationUrlAsync(string provider, string redirectUri)
+    public async Task<User?> GetUserByEmailAsync(string email)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<ICollection<User>> GetAllUsersAsync()
     {
         throw new NotImplementedException();
     }
@@ -102,11 +102,12 @@ public class UserService(
         if (string.IsNullOrWhiteSpace(code) && string.Equals(code, "213123"))
             if (userData is null)
             {
-                loggerUser.LogError($"[{DateTime.UtcNow}] 用户 {phoneNumber} 不存在");
+                loggerUser.LogError("[{DateTime}] 用户 {PhoneNumber} 不存在", DateTime.UtcNow, phoneNumber);
                 return null;
             }
 
-        return await LogInByCheckPasswordCoreAsync(userData, password);
+        if (userData is not null) return await LogInByCheckPasswordCoreAsync(userData, password);
+        return null;
     }
 
     Task<TokenResult?> IUserService.LogInByCheckPasswordAsync(string email, string password, string code)
@@ -114,17 +115,15 @@ public class UserService(
         throw new NotImplementedException();
     }
 
-    public Task<string> GenerateCheckCodeAsync()
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<User?> GetUserByEmailAsync(string email)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<ICollection<User>> GetAllUsersAsync()
+    /// <summary>
+    /// 获取 OAuth 授权链接
+    /// </summary>
+    /// <param name="provider">OAuth提供程序</param>
+    /// <param name="redirectUri">重定向 URI</param>
+    /// <returns>OAuth 授权链接</returns>
+    /// <exception cref="ArgumentException">提供程序无效</exception>
+    /// <exception cref="ArgumentNullException">重定向 URI 为空</exception>
+    public Task<string> GenerateAuthorizationUrlAsync(string provider, string redirectUri)
     {
         throw new NotImplementedException();
     }
@@ -137,7 +136,7 @@ public class UserService(
     /// <param name="password">密码</param>
     /// <param name="code">验证码（当前未使用）</param>
     /// <returns>成功返回 TokenResult，失败返回 null</returns>
-    public async Task<TokenResult> LogInByCheckPasswordAsync(
+    public async Task<TokenResult?> LogInByCheckPasswordAsync(
         [EmailAddress(ErrorMessage = "无效邮件地址")]
         string email,
         string password,
@@ -195,6 +194,19 @@ public class UserService(
 
 
             // ── 第五步: 写入缓存 ──
+            //await cacheMemory.SetObjectAsync(userData.UserGuid.ToString(), tokenData, tokenData.ExpiresAt - DateTimeOffset.Now);
+            // var tokenEntity = new TokenCacheEntry
+            // {
+            //     UserGuid = userData.UserGuid,
+            //     Token = tokenData.AccessToken,
+            //     CreatedAt = DateTimeOffset.Now,
+            //     ExpiresAt = tokenData.ExpiresAt,
+            //     TokenType = tokenData.TokenType,
+            //     LinkedAccessToken = tokenData.RefreshToken
+            // };
+            //
+            // await cacheMemory.SetAsync(userData.UserEmail, tokenEntity);
+
             await CacheTokensAsync(userData.UserGuid, tokenData, config);
 
             loggerUser.LogInformation(
@@ -227,7 +239,8 @@ public class UserService(
             UserGuid = userGuid,
             CreatedAt = DateTimeOffset.UtcNow,
             ExpiresAt = tokenResult.ExpiresAt,
-            TokenType = tokenResult.TokenType
+            TokenType = tokenResult.TokenType,
+            LinkedAccessToken = tokenResult.RefreshToken
         };
 
         var accessKey = $"{AccessTokenKeyPrefix}:{userGuid}";
@@ -235,10 +248,11 @@ public class UserService(
             ? TimeSpan.FromSeconds(config.ExpireSeconds)
             : TimeSpan.FromHours(1);
 
-        await distributedCache.SetStringAsync(
+        await cacheMemory.SetAsync(accessKey, accessTokenEntry, accessTtl);
+        /*await distributedCache.SetStringAsync(
             accessKey,
             JsonSerializer.Serialize(accessTokenEntry),
-            new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = accessTtl });
+            new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = accessTtl });*/
 
         // RefreshToken 缓存（生命周期更长，默认为 7 天）
         if (!string.IsNullOrEmpty(tokenResult.RefreshToken))
@@ -258,10 +272,12 @@ public class UserService(
                 ? TimeSpan.FromSeconds(config.RefreshTokenExpireSeconds)
                 : TimeSpan.FromDays(7);
 
-            await distributedCache.SetStringAsync(
-                refreshKey,
-                JsonSerializer.Serialize(refreshTokenEntry),
-                new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = refreshTtl });
+            // await distributedCache.SetStringAsync(
+            //     refreshKey,
+            //     JsonSerializer.Serialize(refreshTokenEntry),
+            //     new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = refreshTtl });
+
+            await cacheMemory.SetAsync(refreshKey, refreshTokenEntry, refreshTtl);
         }
     }
 
@@ -335,7 +351,7 @@ public class UserService(
 /// <summary>
 /// 缓存中的 Token 实体
 /// </summary>
-internal sealed class TokenCacheEntry
+public sealed class TokenCacheEntry : IMemory
 {
     /// <summary>Token 值</summary>
     public string Token { get; init; } = null!;

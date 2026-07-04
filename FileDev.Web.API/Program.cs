@@ -1,8 +1,11 @@
+using DomainInfrastructure;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
-builder.Services.AddNotBlogServices(builder.Configuration.GetSection("DbContextConnect"));
+builder.Services.AddNotBlogServices(builder.Configuration.GetSection("DbContextConnect"),
+    ReflectionHelper.GetAllReferencedAssemblies().ToArray());
 
 builder.Services.AddNpgsql<NotFileDbContext>("PostgresSQL");
 builder.Services.AddScoped<INotFileService, NotFileService>();

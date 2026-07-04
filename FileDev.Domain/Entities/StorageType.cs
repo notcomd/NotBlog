@@ -4,11 +4,11 @@ public enum StorageType
 {
     Local = 0,
 
-    Aliyun = 1,
+    ALiYun = 1,
 
     Tencent = 2,
 
-    Qcloud = 3,
+    QCloud = 3,
 
     Aws = 4,
 
@@ -20,9 +20,9 @@ public enum StorageType
 
     DigitalOcean = 8,
 
-    Backblaze = 9,
+    BackBlaze = 9,
 
-    Scaleway = 10,
+    ScaleWay = 10,
 
     Linode = 11,
 

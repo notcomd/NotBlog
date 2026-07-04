@@ -14,6 +14,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\CacheMemory\CacheMemory.csproj"/>
         <ProjectReference Include="..\CommonsInitializer\CommonsInitializer.csproj"/>
         <ProjectReference Include="..\DomainInfrastructure\DomainInfrastructure.csproj"/>
         <ProjectReference Include="..\NotEmail\NotEmail.csproj"/>

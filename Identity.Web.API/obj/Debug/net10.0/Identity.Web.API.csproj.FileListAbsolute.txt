@@ -73,7 +73,6 @@ F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\OpenTelemetry.Extensions.Hosting.d
 F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\OpenTelemetry.Instrumentation.AspNetCore.dll
 F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\OpenTelemetry.Instrumentation.Http.dll
 F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\OpenTelemetry.Instrumentation.Runtime.dll
-F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\Pipelines.Sockets.Unofficial.dll
 F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\Polly.Core.dll
 F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\Polly.Extensions.dll
 F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\Polly.RateLimiting.dll
@@ -187,3 +186,6 @@ F:\NotBlog\Identity.Web.API\obj\Debug\net10.0\refint\Identity.Web.API.dll
 F:\NotBlog\Identity.Web.API\obj\Debug\net10.0\Identity.Web.API.pdb
 F:\NotBlog\Identity.Web.API\obj\Debug\net10.0\Identity.Web.API.genruntimeconfig.cache
 F:\NotBlog\Identity.Web.API\obj\Debug\net10.0\ref\Identity.Web.API.dll
+F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\RESPite.dll
+F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\CacheMemory.dll
+F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\CacheMemory.pdb

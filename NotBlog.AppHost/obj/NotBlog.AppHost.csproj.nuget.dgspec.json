@@ -53,17 +53,16 @@
           "dependencies": {
             "Aspire.Dashboard.Sdk.win-x64": {
               "target": "Package",
-              "version": "[13.1.2, )",
+              "version": "[13.4.6, )",
               "autoReferenced": true
             },
             "Aspire.Hosting.AppHost": {
               "target": "Package",
-              "version": "[13.1.2, )",
-              "autoReferenced": true
+              "version": "[13.4.6, )"
             },
             "Aspire.Hosting.Orchestration.win-x64": {
               "target": "Package",
-              "version": "[13.1.2, )",
+              "version": "[13.4.6, )",
               "autoReferenced": true
             },
             "Aspire.Hosting.PostgreSQL": {

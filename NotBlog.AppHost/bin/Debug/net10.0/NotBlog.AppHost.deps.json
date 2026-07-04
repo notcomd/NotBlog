@@ -8,7 +8,7 @@
     ".NETCoreApp,Version=v10.0": {
       "NotBlog.AppHost/1.0.0": {
         "dependencies": {
-          "Aspire.Hosting.AppHost": "13.1.2",
+          "Aspire.Hosting.AppHost": "13.4.6",
           "Aspire.Hosting.PostgreSQL": "13.4.6",
           "Aspire.Hosting.RabbitMQ": "13.4.6",
           "Aspire.Hosting.Redis": "13.4.6",
@@ -30,6 +30,7 @@
           "Microsoft.Extensions.Configuration.Abstractions": "10.0.8",
           "Microsoft.Extensions.Configuration.Binder": "10.0.8",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.8",
+          "Microsoft.Extensions.Diagnostics.HealthChecks": "10.0.8",
           "Microsoft.Extensions.FileSystemGlobbing": "10.0.8",
           "Microsoft.Extensions.Hosting": "10.0.8",
           "Microsoft.Extensions.Hosting.Abstractions": "10.0.8",
@@ -95,7 +96,7 @@
           }
         }
       },
-      "Aspire.Hosting.AppHost/13.1.2": {
+      "Aspire.Hosting.AppHost/13.4.6": {
         "dependencies": {
           "AspNetCore.HealthChecks.Uris": "9.0.0",
           "Aspire.Hosting": "13.4.6",
@@ -108,14 +109,19 @@
           "Microsoft.Extensions.Configuration.Abstractions": "10.0.8",
           "Microsoft.Extensions.Configuration.Binder": "10.0.8",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.8",
+          "Microsoft.Extensions.Diagnostics.HealthChecks": "10.0.8",
           "Microsoft.Extensions.FileSystemGlobbing": "10.0.8",
           "Microsoft.Extensions.Hosting": "10.0.8",
           "Microsoft.Extensions.Hosting.Abstractions": "10.0.8",
           "Microsoft.Extensions.Http": "10.0.8",
+          "Microsoft.Extensions.Logging": "10.0.8",
           "Microsoft.Extensions.Logging.Abstractions": "10.0.8",
           "Microsoft.Extensions.Options": "10.0.8",
           "Microsoft.Extensions.Primitives": "10.0.8",
+          "ModelContextProtocol": "1.3.0",
           "Newtonsoft.Json": "13.0.4",
+          "OpenTelemetry.Exporter.OpenTelemetryProtocol": "1.15.3",
+          "OpenTelemetry.Extensions.Hosting": "1.15.3",
           "Polly.Core": "8.6.6",
           "Semver": "3.0.0",
           "StreamJsonRpc": "2.25.29",
@@ -123,8 +129,8 @@
         },
         "runtime": {
           "lib/net10.0/Aspire.Hosting.AppHost.dll": {
-            "assemblyVersion": "13.1.2.0",
-            "fileVersion": "13.100.226.12513"
+            "assemblyVersion": "13.4.6.0",
+            "fileVersion": "13.400.626.31906"
           }
         }
       },
@@ -142,6 +148,7 @@
           "Microsoft.Extensions.Configuration.Abstractions": "10.0.8",
           "Microsoft.Extensions.Configuration.Binder": "10.0.8",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.8",
+          "Microsoft.Extensions.Diagnostics.HealthChecks": "10.0.8",
           "Microsoft.Extensions.FileSystemGlobbing": "10.0.8",
           "Microsoft.Extensions.Hosting": "10.0.8",
           "Microsoft.Extensions.Hosting.Abstractions": "10.0.8",
@@ -180,6 +187,7 @@
           "Microsoft.Extensions.Configuration.Abstractions": "10.0.8",
           "Microsoft.Extensions.Configuration.Binder": "10.0.8",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.8",
+          "Microsoft.Extensions.Diagnostics.HealthChecks": "10.0.8",
           "Microsoft.Extensions.FileSystemGlobbing": "10.0.8",
           "Microsoft.Extensions.Hosting": "10.0.8",
           "Microsoft.Extensions.Hosting.Abstractions": "10.0.8",
@@ -219,6 +227,7 @@
           "Microsoft.Extensions.Configuration.Abstractions": "10.0.8",
           "Microsoft.Extensions.Configuration.Binder": "10.0.8",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.8",
+          "Microsoft.Extensions.Diagnostics.HealthChecks": "10.0.8",
           "Microsoft.Extensions.FileSystemGlobbing": "10.0.8",
           "Microsoft.Extensions.Hosting": "10.0.8",
           "Microsoft.Extensions.Hosting.Abstractions": "10.0.8",
@@ -246,6 +255,7 @@
       },
       "AspNetCore.HealthChecks.NpgSql/9.0.0": {
         "dependencies": {
+          "Microsoft.Extensions.Diagnostics.HealthChecks": "10.0.8",
           "Npgsql": "8.0.3"
         },
         "runtime": {
@@ -257,6 +267,7 @@
       },
       "AspNetCore.HealthChecks.Rabbitmq/9.0.0": {
         "dependencies": {
+          "Microsoft.Extensions.Diagnostics.HealthChecks": "10.0.8",
           "RabbitMQ.Client": "7.2.1"
         },
         "runtime": {
@@ -268,6 +279,7 @@
       },
       "AspNetCore.HealthChecks.Redis/9.0.0": {
         "dependencies": {
+          "Microsoft.Extensions.Diagnostics.HealthChecks": "10.0.8",
           "StackExchange.Redis": "2.13.1"
         },
         "runtime": {
@@ -279,6 +291,7 @@
       },
       "AspNetCore.HealthChecks.Uris/9.0.0": {
         "dependencies": {
+          "Microsoft.Extensions.Diagnostics.HealthChecks": "10.0.8",
           "Microsoft.Extensions.Http": "10.0.8"
         },
         "runtime": {
@@ -635,6 +648,28 @@
         },
         "runtime": {
           "lib/net10.0/Microsoft.Extensions.Diagnostics.Abstractions.dll": {
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.826.23019"
+          }
+        }
+      },
+      "Microsoft.Extensions.Diagnostics.HealthChecks/10.0.8": {
+        "dependencies": {
+          "Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions": "10.0.8",
+          "Microsoft.Extensions.Hosting.Abstractions": "10.0.8",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.8",
+          "Microsoft.Extensions.Options": "10.0.8"
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Extensions.Diagnostics.HealthChecks.dll": {
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.826.23019"
+          }
+        }
+      },
+      "Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions/10.0.8": {
+        "runtime": {
+          "lib/net10.0/Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions.dll": {
             "assemblyVersion": "10.0.0.0",
             "fileVersion": "10.0.826.23019"
           }
@@ -1264,12 +1299,12 @@
       "path": "aspire.hosting/13.4.6",
       "hashPath": "aspire.hosting.13.4.6.nupkg.sha512"
     },
-    "Aspire.Hosting.AppHost/13.1.2": {
+    "Aspire.Hosting.AppHost/13.4.6": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-w4VCvBM7aHEN6xogV+G4ie4SxTTeLDuZEf0tze6kqYT4tf9jfTh+SPO00vLnZLS4gX+rUfUOTGuO56jwzIaawA==",
-      "path": "aspire.hosting.apphost/13.1.2",
-      "hashPath": "aspire.hosting.apphost.13.1.2.nupkg.sha512"
+      "sha512": "sha512-+4BxGpb2JQDk3+uOmk5eDpK0Brg2d3hwqrK/7d/aDBAUoHYbjfwbItIfdYJjKjbxUkBiaotokcWdVbLNsMo9Nw==",
+      "path": "aspire.hosting.apphost/13.4.6",
+      "hashPath": "aspire.hosting.apphost.13.4.6.nupkg.sha512"
     },
     "Aspire.Hosting.PostgreSQL/13.4.6": {
       "type": "package",
@@ -1550,6 +1585,20 @@
       "sha512": "sha512-+f4C5g78QCGNyxzUfrTYsB7qYx06Zca0e88s3qFlea9/lQhgPImYdNprlgzl1uHhRU3fVHLfmbijayU2sJEZ6w==",
       "path": "microsoft.extensions.diagnostics.abstractions/10.0.8",
       "hashPath": "microsoft.extensions.diagnostics.abstractions.10.0.8.nupkg.sha512"
+    },
+    "Microsoft.Extensions.Diagnostics.HealthChecks/10.0.8": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-IlXZUZIA9b99yQURc8jOLmmS6GD42vj6t+LqWs6Dd+naggObSbEXDw8DU8DUu2tL8CnyG96F4pDLhjd7BmZPAQ==",
+      "path": "microsoft.extensions.diagnostics.healthchecks/10.0.8",
+      "hashPath": "microsoft.extensions.diagnostics.healthchecks.10.0.8.nupkg.sha512"
+    },
+    "Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions/10.0.8": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-0j06qq5I1YGSIi4M86UaVITBprvn3bTWKmQiLDNEqnZ2d+UxaFb+tVqemxVzr5lkr6GTR83ExUfSIpCnBaTZFA==",
+      "path": "microsoft.extensions.diagnostics.healthchecks.abstractions/10.0.8",
+      "hashPath": "microsoft.extensions.diagnostics.healthchecks.abstractions.10.0.8.nupkg.sha512"
     },
     "Microsoft.Extensions.FileProviders.Abstractions/10.0.8": {
       "type": "package",
