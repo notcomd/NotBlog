@@ -13,6 +13,7 @@
       <ProjectReference Include="..\Identity.Web.API\Identity.Web.API.csproj" />
       <ProjectReference Include="..\Markdown.Web.API\Markdown.Web.API.csproj" />
       <ProjectReference Include="..\Message.Web.API\Message.Web.API.csproj" />
+        <ProjectReference Include="..\NotBlog_Yarp\NotBlog_Yarp.csproj"/>
       <ProjectReference Include="..\Video.Web.API\Video.Web.API.csproj" />
     </ItemGroup>
 

@@ -17,11 +17,11 @@ public static class UserManagerApi
     public static Task<IResult> GetUserInfo([FromServices] IdentityService identityService,
         [FromQuery] string userQuery)
     {
-        return Task.FromResult<IResult>(Results.Json(identityService.UserService.GetUserInfo(userQuery)));
+        return Task.FromResult<IResult>(Results.Json(identityService.UserService.GetUserInfoAsync(userQuery)));
     }
 
     public static Task<IResult> GetUserAllAsync([FromServices] IdentityService identityService)
     {
-        return Task.FromResult<IResult>(Results.Json(identityService.UserService.GetUserAll()));
+        return Task.FromResult<IResult>(Results.Empty);
     }
 }

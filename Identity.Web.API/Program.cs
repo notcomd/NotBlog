@@ -1,13 +1,3 @@
-using CacheMemory.Extensions;
-using DomainInfrastructure;
-using Identity.Infrastructure;
-using Identity.Infrastructure.Services;
-using Identity.Web.API.APIs;
-using Microsoft.Extensions.Http.Resilience;
-using NotBlog.ServiceDefaults;
-using Notcomd.NotEmail.Extensions;
-using Polly;
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
@@ -16,12 +6,21 @@ builder.AddCacheMemory("Redis");
 
 builder.Services.AddNotEmail(opt => { builder.Configuration.GetSection("NotEmail").Bind(opt); });
 
-builder.Services.AddNotBlogServices("IdentityPostgres",
+
+#if DEBUG
+
+builder.Services.AddNotBlogServices(builder.Configuration.GetSection("DbContextOption"),
     ReflectionHelper.GetAllReferencedAssemblies().ToArray());
 
+#else
+builder.Services.AddNotBlogServices(builder.Configuration.GetConnectionString("IdentityPostgres") ?? throw new InvalidOperationException(),
+    ReflectionHelper.GetAllReferencedAssemblies().ToArray());
+#endif
 builder.Services.AddIdentityService(builder.Configuration.GetSection("JwtOptions"));
 
 builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
+
+builder.Services.AddScoped<IdentityService>();
 
 builder.Services.AddControllers();
 

@@ -25,7 +25,6 @@ public record LoginRequest(
     /// <summary>
     /// 验证码（当前未使用）
     /// </summary>
-    [Required(ErrorMessage = "验证码不能为空")]
     public string Code { get; set; } = string.Empty;
 
     /// <summary>

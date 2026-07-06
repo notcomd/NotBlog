@@ -1,4 +1,5 @@
 using CacheMemory.Core;
+using Identity.Infrastructure.Idempotent;
 
 namespace Identity.Web.API.Application.Commands;
 
@@ -35,5 +36,17 @@ public class GenerateCodeCommandHandler(
             logger.LogError(ex, "[{Time}] 发送验证码失败: {Email}", DateTime.UtcNow, request.Email);
             throw;
         }
+    }
+}
+
+public class GenerateCodeIdentifiedCommandHandler(
+    ILogger<IdentifiedCommandHandler<GenerateCodeCommand, string>> logger,
+    INotMediator mediator,
+    IRequestManagement requestManagement)
+    : IdentifiedCommandHandler<GenerateCodeCommand, string>(logger, mediator, requestManagement)
+{
+    protected override string CreateResultForDuplicateRequest()
+    {
+        return string.Empty;
     }
 }

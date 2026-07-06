@@ -8,4 +8,8 @@ public record CreateUserExternalLoginCommand(
     string? ProviderAccessToken,
     string? ProviderRefreshToken,
     string? ProviderExpiresAt
-) : IRequest<bool>;
+) : IRequest<bool>, ILoggableCommand
+{
+    public string IdProperty => nameof(ProviderKey);
+    public string IdValue => ProviderKey;
+}

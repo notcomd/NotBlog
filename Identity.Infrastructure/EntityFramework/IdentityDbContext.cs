@@ -1,4 +1,4 @@
-﻿namespace Identity.Infrastructure.EntityFramework;
+namespace Identity.Infrastructure.EntityFramework;
 
 public class IdentityDbContext : DbContext, IUnitOfWork
 {
@@ -55,7 +55,7 @@ public class IdentityDbContext : DbContext, IUnitOfWork
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        modelBuilder.HasDefaultSchema("identity");
+        //modelBuilder.HasDefaultSchema("identity");
 
         modelBuilder.ApplyConfiguration(new UserEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new RoleEntityTypeConfiguration());
@@ -64,6 +64,7 @@ public class IdentityDbContext : DbContext, IUnitOfWork
         modelBuilder.ApplyConfiguration(new UserSafetyEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new NotClientEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new UserExternalLoginEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new ClientRequestTypeConfiguration());
     }
 
     public async Task<IDbContextTransaction> BeginTransactionAsync()

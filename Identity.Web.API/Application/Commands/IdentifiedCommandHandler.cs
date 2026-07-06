@@ -24,56 +24,29 @@ public abstract class IdentifiedCommandHandler<T, R>(
         {
             return CreateResultForDuplicateRequest();
         }
-        else
-        {
-            await _requestManagement.CreateRequestForCommandAsync<T>(request.Id);
-            try
-            {
-                var command = request.Command;
-                var commandName = command.GetGenericTypeName();
-                var idProvider = string.Empty;
-                var commandId = string.Empty;
-                switch (command)
-                {
-                    case RegisterByUserCommand registerByUserCommand:
-                        idProvider = nameof(registerByUserCommand.UserEmail);
-                        commandId = registerByUserCommand.UserEmail;
-                        break;
-                    case GenerateCodeCommand generateCodeCommand:
-                        idProvider = nameof(generateCodeCommand.Email);
-                        commandId = generateCodeCommand.Email;
-                        break;
-                    case CreateUserExternalLoginCommand createUserExternalLoginCommand:
-                        idProvider = nameof(createUserExternalLoginCommand.ProviderKey);
-                        commandId = createUserExternalLoginCommand.ProviderKey;
-                        break;
-                    // case CreateByUserCommand createByUserCommand:
-                    //     idProvider = nameof(createByUserCommand.Email);
-                    //     commandId = createByUserCommand.Email;
-                    //     break;
-                    default:
-                        idProvider = "id/?";
-                        commandId = "?";
-                        break;
-                }
 
-                _logger.LogInformation(
-                    "Sending command: {CommandName} - {IdProperty}: {CommandId} ({@Command})",
-                    commandName,
-                    idProvider,
-                    commandId,
-                    command);
-                var response = await _mediator.SendAsync(command, cancellationToken);
-                _logger.LogInformation("Handled Command {CommandName} {@Command} with response {@Response}:",
-                    commandName, command, response);
-                return response;
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "Error handling command  {@Command}: {Error}",
-                    request.Command, e.Message);
-                throw;
-            }
+        await _requestManagement.CreateRequestForCommandAsync<T>(request.Id);
+        try
+        {
+            var command = request.Command;
+            var commandName = command.GetGenericTypeName();
+            var (idProvider, commandId) = command is ILoggableCommand loggable
+                ? (loggable.IdProperty, loggable.IdValue)
+                : ("unknown", "?");
+
+            _logger.LogInformation(
+                "Sending command: {CommandName} - {IdProperty}: {CommandId} ({@Command})",
+                commandName, idProvider, commandId, command);
+            var response = await _mediator.SendAsync(command, cancellationToken);
+            _logger.LogInformation("Handled Command {CommandName} {@Command} with response {@Response}:",
+                commandName, command, response);
+            return response;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error handling command  {@Command}: {Error}",
+                request.Command, e.Message);
+            throw;
         }
     }
 

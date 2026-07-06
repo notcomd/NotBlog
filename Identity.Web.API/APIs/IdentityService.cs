@@ -5,4 +5,5 @@ public record IdentityService(
     IUserRepository UserRepository,
     INotMediator NotMediator,
     ILogger<IdentityService> Logger,
-    IUserService UserService);
+    IUserService UserService,
+    IUserRoleRepository UserRoleRepository);

@@ -5,7 +5,7 @@ public class CreateByRoleCommandHandler(IUserRoleRepository userRoleRepository)
 {
     public async Task<bool> Handler(CreateByRoleCommand request, CancellationToken cancellationToken)
     {
-        var data = await userRoleRepository.FindByUserRoleAsync();
+        var data = await userRoleRepository.FindByUserRoleAsync(request.RoleName);
 
         return true;
     }

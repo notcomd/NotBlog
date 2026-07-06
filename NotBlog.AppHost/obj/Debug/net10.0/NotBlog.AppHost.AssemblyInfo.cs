@@ -23,7 +23,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("NotBlog.AppHost")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+83412079af1798663456ed39a50920819955a1ec")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0ad5f8be610f3ccf476029e855c787e57669615c")]
 [assembly: System.Reflection.AssemblyProductAttribute("NotBlog.AppHost")]
 [assembly: System.Reflection.AssemblyTitleAttribute("NotBlog.AppHost")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

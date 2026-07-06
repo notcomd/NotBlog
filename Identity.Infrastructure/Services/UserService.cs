@@ -4,12 +4,12 @@ namespace Identity.Infrastructure.Services;
 
 public class UserService(
     IOptionsSnapshot<JwtOptions> optionsSnapshot,
-    IDistributedCache distributedCache,
     ILogger<IUserRepository> loggerUser,
     IUserRepository userRepository,
     IUserRoleRepository userRoleRepository,
     IJwtTokenService jwtTokenServer,
     ICacheMemory<TokenCacheEntry> cacheMemory,
+    IRedisCacheService redisCacheService,
     ILogger<IUserRoleRepository> loggerUserRole)
     : IUserService
 {
@@ -18,48 +18,7 @@ public class UserService(
     private const string RefreshTokenKeyPrefix = "auth:refresh";
 
 
-    /// <summary>
-    /// 创建用户
-    /// </summary>
-    /// <param name="email">电子邮件地址</param>
-    /// <param name="password">密码</param>
-    /// <param name="code">验证码（当前未使用）</param>
-    /// <returns>成功返回 true，失败返回 false</returns>
-    public async Task<bool> RegisterByCreateUserAsync(string email, string password, string code)
-    {
-        var userData = await userRepository.FindOneByUserAsync(email);
-        if (userData is not null)
-        {
-            loggerUser.LogError($"[{DateTime.UtcNow}] 用户 {email} 已存在");
-            return false;
-        }
-
-        Roles? userRole = null;
-        if (!await userRoleRepository.IsUserRoleAsync("User"))
-            userRole = Roles.RoleFactory.CreateUserRole();
-        if (userRole is null)
-        {
-            loggerUserRole.LogError($"[{DateTime.UtcNow}] 创建用户角色失败");
-            return false;
-        }
-
-        var newUser = await User.CreateByEmailUser(
-            userRole.RoleGuid, email,
-            password,
-            null, null);
-        await userRepository.AddOneByUserAsync(newUser);
-
-        return true;
-    }
-
-    /// <summary>
-    /// 重置密码
-    /// </summary>
-    /// <param name="email">电子邮件地址</param>
-    /// <param name="password">新密码</param>
-    /// <param name="code">验证码（当前未使用）</param>
-    /// <returns>成功返回 true，失败返回 false</returns>
-    public async Task ChangeByPasswordAsync(string email, string password, string code)
+    /*public async Task ChangeByPasswordAsync(string email, string password, string code)
     {
         var userData = await userRepository.FindOneByUserAsync(email);
         if (userData is null)
@@ -71,24 +30,29 @@ public class UserService(
         await userData.ChangeByPasswordAsync(password);
         //await userRepository.
         loggerUser.LogInformation($"[{DateTime.UtcNow}] 用户 {email} 密码重置成功");
+    }*/
+
+
+    public async Task<TokenResult?> LogInByCheckPasswordAsync([EmailAddress(ErrorMessage = "邮件地址不符合要求喵！")] string email,
+        string password, string? code)
+    {
+        var userData = await userRepository.FindOneByUserAsync(email);
+        if (userData is null)
+        {
+            throw new ArgumentNullException($"没有相关{email}用户信息喵！");
+        }
+
+        var tokenResult = await LogInByCheckPasswordCoreAsync(userData, password);
+
+        return tokenResult ?? null;
     }
 
-    /// <summary>
-    /// 发送重置密码邮件
-    /// </summary>
-    /// <param name="email">电子邮件地址</param>
-    /// <returns>成功返回 true，失败返回 false</returns>
-    public Task SendResetPasswordEmailAsync(string email)
+    public async Task<User?> GetUserInfoAsync(string email)
     {
         throw new NotImplementedException();
     }
 
-    public async Task<User?> GetUserByEmailAsync(string email)
-    {
-        throw new NotImplementedException();
-    }
-
-    public async Task<ICollection<User>> GetAllUsersAsync()
+    public async Task<ICollection<User>> FindUserByVagueAsync()
     {
         throw new NotImplementedException();
     }
@@ -110,47 +74,57 @@ public class UserService(
         return null;
     }
 
-    Task<TokenResult?> IUserService.LogInByCheckPasswordAsync(string email, string password, string code)
-    {
-        throw new NotImplementedException();
-    }
 
     /// <summary>
-    /// 获取 OAuth 授权链接
-    /// </summary>
-    /// <param name="provider">OAuth提供程序</param>
-    /// <param name="redirectUri">重定向 URI</param>
-    /// <returns>OAuth 授权链接</returns>
-    /// <exception cref="ArgumentException">提供程序无效</exception>
-    /// <exception cref="ArgumentNullException">重定向 URI 为空</exception>
-    public Task<string> GenerateAuthorizationUrlAsync(string provider, string redirectUri)
-    {
-        throw new NotImplementedException();
-    }
-
-
-    /// <summary>
-    ///  邮箱登入验证
+    /// 创建用户
     /// </summary>
     /// <param name="email">电子邮件地址</param>
     /// <param name="password">密码</param>
     /// <param name="code">验证码（当前未使用）</param>
-    /// <returns>成功返回 TokenResult，失败返回 null</returns>
-    public async Task<TokenResult?> LogInByCheckPasswordAsync(
-        [EmailAddress(ErrorMessage = "无效邮件地址")]
-        string email,
-        string password,
-        string code)
+    /// <returns>成功返回 true，失败返回 false</returns>
+    public async Task<bool> RegisterByCreateUserAsync(string email, string password, string code)
     {
         var userData = await userRepository.FindOneByUserAsync(email);
-        if (userData is null)
+        if (userData is not null)
         {
-            loggerUser.LogError($"[{DateTime.UtcNow}] 用户 {email} 不存在");
-            return null;
+            loggerUser.LogError("[{DateTime}] 用户 {Email} 已存在", DateTime.UtcNow, email);
+            return false;
         }
 
-        return await LogInByCheckPasswordCoreAsync(userData, password);
+        Roles? userRole = null;
+        if (!await userRoleRepository.IsUserRoleAsync("User"))
+            userRole = Roles.RoleFactory.CreateUserRole();
+        if (userRole is null)
+        {
+            loggerUserRole.LogError("[{DateTime}] 创建用户角色失败", DateTime.UtcNow);
+            return false;
+        }
+
+        var newUser = await User.CreateByEmailUser(
+            userRole.RoleGuid, email,
+            password,
+            null, null);
+        await userRepository.AddOneByUserAsync(newUser);
+
+        return true;
     }
+
+
+    // public async Task<TokenResult?> LogInByCheckPasswordAsync(
+    //     [EmailAddress(ErrorMessage = "无效邮件地址")]
+    //     string email,
+    //     string password,
+    //     string code)
+    // {
+    //     var userData = await userRepository.FindOneByUserAsync(email);
+    //     if (userData is null)
+    //     {
+    //         loggerUser.LogError($"[{DateTime.UtcNow}] 用户 {email} 不存在");
+    //         return null;
+    //     }
+    //
+    //     return await LogInByCheckPasswordCoreAsync(userData, password);
+    // }
 
 
     /// <summary>
@@ -185,27 +159,13 @@ public class UserService(
         try
         {
             // ── 第三步: 构建 Claims ──
-            var roleName = SwitchRole(await GetRoleName(userData));
-            var claims = BuildClaims(userData, roleName);
+            var roleName = await GetRoleNameAsync(userData.UserRoleGuid);
+            var claims = BuildClaims(userData, roleName.ToHashSet());
 
             // ── 第四步: 生成双 Token ──
             var config = optionsSnapshot.Value;
             var tokenData = await jwtTokenServer.BuildTokenAsync(claims, config);
 
-
-            // ── 第五步: 写入缓存 ──
-            //await cacheMemory.SetObjectAsync(userData.UserGuid.ToString(), tokenData, tokenData.ExpiresAt - DateTimeOffset.Now);
-            // var tokenEntity = new TokenCacheEntry
-            // {
-            //     UserGuid = userData.UserGuid,
-            //     Token = tokenData.AccessToken,
-            //     CreatedAt = DateTimeOffset.Now,
-            //     ExpiresAt = tokenData.ExpiresAt,
-            //     TokenType = tokenData.TokenType,
-            //     LinkedAccessToken = tokenData.RefreshToken
-            // };
-            //
-            // await cacheMemory.SetAsync(userData.UserEmail, tokenEntity);
 
             await CacheTokensAsync(userData.UserGuid, tokenData, config);
 
@@ -288,7 +248,7 @@ public class UserService(
     /// <param name="userData">用户实体</param>
     /// <param name="roleName">角色名称</param>
     /// <returns>JWT Claims 列表</returns>
-    private static List<Claim> BuildClaims(User userData, string roleName)
+    private static List<Claim> BuildClaims(User userData, HashSet<string> roleName)
     {
         var claims = new List<Claim>
         {
@@ -297,7 +257,7 @@ public class UserService(
                                  throw new InvalidOperationException("用户名不能为空")),
             new(ClaimTypes.Email, userData.UserEmail ??
                                   throw new InvalidOperationException("用户邮箱不能为空")),
-            new(ClaimTypes.Role, roleName),
+            new(ClaimTypes.Role, string.Join(",", roleName)),
             new("user_guid", userData.UserGuid.ToString())
         };
 
@@ -317,15 +277,13 @@ public class UserService(
     private string SwitchRole(IEnumerable<RoleAuthority> roles)
     {
         var roleAuthorities = roles as RoleAuthority[] ?? roles.ToArray();
-        if (!roleAuthorities.Any())
+        if (roleAuthorities.Length == 0)
             return "User";
         if (roleAuthorities.Contains(RoleAuthority.Root))
             return "Root";
         if (roleAuthorities.Contains(RoleAuthority.Admin))
             return "Admin";
-        if (roleAuthorities.Contains(RoleAuthority.User))
-            return "User";
-        return "Guest";
+        return roleAuthorities.Contains(RoleAuthority.User) ? "User" : "Guest";
     }
 
     /// <summary>
@@ -333,10 +291,10 @@ public class UserService(
     /// </summary>
     /// <param name="user">用户实体</param>
     /// <returns>角色权限列表</returns>
-    private async Task<IEnumerable<RoleAuthority>> GetRoleName(User? user)
+    private async Task<IEnumerable<RoleAuthority>> GetUserAuthorityAsync(User? user)
     {
-        if (user is null) return Enumerable.Empty<RoleAuthority>();
-        List<RoleAuthority> roleNames = new();
+        if (user is null) return [];
+        List<RoleAuthority> roleNames = [];
         foreach (var roleGuid in user.UserRoleGuid)
         {
             var role = await userRoleRepository.FindByUserRoleAsync(roleGuid);
@@ -345,6 +303,38 @@ public class UserService(
         }
 
         return roleNames;
+    }
+
+
+    /// <summary>
+    /// 获取角色名称
+    /// </summary>
+    /// <param name="roleGuids"></param>
+    /// <returns></returns>
+    private async Task<IEnumerable<string>> GetRoleNameAsync(IEnumerable<Guid> roleGuids)
+    {
+        var roleNames = new List<string>();
+        foreach (var roleGuid in roleGuids)
+        {
+            var role = await userRoleRepository.FindByUserRoleAsync(roleGuid);
+            if (role is null) continue;
+            roleNames.Add(role.RoleName);
+        }
+
+        return roleNames;
+    }
+
+
+    /// <summary>
+    ///  获取缓存验证码
+    /// </summary>
+    /// <param name="queryKey"></param>
+    /// <returns></returns>
+    private async Task<string?> GetGenerateAsync(string queryKey)
+    {
+        if (string.IsNullOrEmpty(queryKey))
+            return string.Empty;
+        return await redisCacheService.StringGetAsync(queryKey) ?? string.Empty;
     }
 }
 
