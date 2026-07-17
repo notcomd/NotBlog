@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "Eoyg93jPDcs=",
+  "dgSpecHash": "Mqu0bC+XsD4=",
   "success": true,
-  "projectFilePath": "F:\\NotBlog\\NotEmail\\NotEmail.csproj",
+  "projectFilePath": "f:\\NotBlog\\NotEmail\\NotEmail.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\notco\\.nuget\\packages\\bouncycastle.cryptography\\2.6.2\\bouncycastle.cryptography.2.6.2.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\mailkit\\4.17.0\\mailkit.4.17.0.nupkg.sha512",
@@ -47,10 +47,10 @@
     {
       "code": "NU1903",
       "level": "Warning",
-      "message": "Package 'Newtonsoft.Json' 9.0.1 has a known high severity vulnerability, https://github.com/advisories/GHSA-5crp-9r3c-p9vr",
-      "projectPath": "F:\\NotBlog\\NotEmail\\NotEmail.csproj",
+      "message": "包 \"Newtonsoft.Json\" 9.0.1 具有已知的 高 严重性漏洞，https://github.com/advisories/GHSA-5crp-9r3c-p9vr",
+      "projectPath": "f:\\NotBlog\\NotEmail\\NotEmail.csproj",
       "warningLevel": 1,
-      "filePath": "F:\\NotBlog\\NotEmail\\NotEmail.csproj",
+      "filePath": "f:\\NotBlog\\NotEmail\\NotEmail.csproj",
       "libraryId": "Newtonsoft.Json",
       "targetGraphs": [
         "net10.0"

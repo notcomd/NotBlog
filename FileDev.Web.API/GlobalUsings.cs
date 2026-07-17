@@ -1,5 +1,9 @@
-﻿global using Notcomd.Evenbus;
+global using CacheMemory.Extensions;
+global using Notcomd.Evenbus;
 global using NotMediator;
+global using FileDev.Domain.Dto.Request;
+global using FileDev.Domain.Dto.Response;
+global using FileDev.Domain.Entities;
 global using FileDev.Domain.IServices;
 global using FileDev.Domain.Options;
 global using FileDev.Infrastructure.Idempotent;
@@ -10,6 +14,7 @@ global using DomainCommons;
 global using FileDev.Infrastructure.EntityFramework;
 global using FileDev.Infrastructure.Service;
 global using FileDev.Web.API.APIs;
+global using FileDev.Web.API.Middleware;
 global using Microsoft.AspNetCore.Http.Features;
 global using NotBlog.ServiceDefaults;
 global using Scalar.AspNetCore;

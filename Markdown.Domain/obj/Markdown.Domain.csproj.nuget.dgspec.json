@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "F:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj": {}
+    "f:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj": {}
   },
   "projects": {
-    "F:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj": {
+    "f:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj",
+        "projectUniqueName": "f:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj",
         "projectName": "Markdown.Domain",
-        "projectPath": "F:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj",
+        "projectPath": "f:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "F:\\NotBlog\\Markdown.Domain\\obj\\",
+        "outputPath": "f:\\NotBlog\\Markdown.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"

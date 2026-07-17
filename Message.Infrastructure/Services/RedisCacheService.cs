@@ -5,7 +5,7 @@ using StackExchange.Redis;
 
 namespace Message.Infrastructure.Services;
 
-public class RedisCacheService : ICacheService
+public class RedisCacheService 
 {
     private readonly IDatabase _database;
     private readonly ILogger<RedisCacheService> _logger;

@@ -14,7 +14,7 @@ public class UserRepository(IdentityDbContext userDbContext, IDistributedCache d
     public async ValueTask<User?> FindOneByUserAsync(PhoneNumber phoneNumber)
     {
         if (phoneNumber is null)
-            throw new ArgumentNullException("数据为空");
+            throw new ArgumentNullException(nameof(phoneNumber));
         return await userDbContext.Users
             .Where(en => en.PhoneNumber!.AddressRegion == phoneNumber.AddressRegion &&
                          en.PhoneNumber.PhoneCode == phoneNumber.PhoneCode)

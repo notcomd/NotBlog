@@ -1,7 +1,9 @@
 using Message.Domain.Entities;
 
 namespace Message.Domain.IRepository;
-
+/// <summary>
+/// 文件附件仓储接口
+/// </summary>
 public interface IFileAttachmentRepository
 {
     Task<FileAttachment?> GetByIdAsync(Guid attachmentId);

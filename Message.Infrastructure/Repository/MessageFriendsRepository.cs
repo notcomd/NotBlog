@@ -1,12 +1,15 @@
-﻿using Message.Domain.Enums;
+﻿﻿using Message.Domain.Enums;
 using Message.Infrastructure.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 
 namespace Message.Infrastructure.Repository;
 
 public class MessageFriendsRepository(MessageDbContext context)
-    : Repository<MessageFriends>(context), IMessageFriendsRepository
+    : IMessageFriendsRepository
 {
+   
+    private readonly DbSet<MessageFriends> DbSet = context.MessageFriends;
+
     public async Task<MessageFriends?> GetByIdAsync(Guid friendshipId)
     {
         return await DbSet.FirstOrDefaultAsync(f => f.FriendshipId == friendshipId);

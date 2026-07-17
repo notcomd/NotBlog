@@ -4,9 +4,11 @@ namespace FileDev.Domain.SeedWork;
 
 public abstract class Entity
 {
+
     private List<INotifications> _domainEventbus;
 
     private int _id;
+
     private int? _requestedHashCode;
 
     public virtual int Id
@@ -20,7 +22,7 @@ public abstract class Entity
 
     public void AddDomainEvent(INotifications notification)
     {
-        _domainEventbus = _domainEventbus ?? new List<INotifications>();
+        _domainEventbus = _domainEventbus ?? [];
         _domainEventbus.Add(notification);
     }
 

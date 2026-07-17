@@ -58,6 +58,9 @@ public class NotFileService(INotFileRepository notFileRepository, ILogger<INotFi
         await notFileRepository.UpdateFileAsync(file);
     }
 
+    /// <summary>
+    /// 删除文件
+    /// </summary>
     public async Task DeleteFileAsync(Guid fileId, Guid userId)
     {
         var file = await GetFileByIdAsync(fileId);
@@ -69,12 +72,14 @@ public class NotFileService(INotFileRepository notFileRepository, ILogger<INotFi
 
         if (file.UserId != userId)
         {
-            logger.LogError("User not authorized to delete file {FileId}", fileId);
-            throw new UnauthorizedAccessException();
+            logger.LogError("User not authorized to delete file {FileId}",
+                          fileId);
+            return;
         }
 
         file.SoftDelete();
         await notFileRepository.UpdateFileAsync(file);
-        logger.LogInformation("File deleted {FileId}", fileId);
+        logger.LogInformation("File deleted {FileId}",
+                              fileId);
     }
 }

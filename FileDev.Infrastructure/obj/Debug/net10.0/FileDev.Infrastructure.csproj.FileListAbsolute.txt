@@ -22,3 +22,5 @@ F:\NotBlog\FileDev.Infrastructure\obj\Debug\net10.0\FileDev.Infrastructure.dll
 F:\NotBlog\FileDev.Infrastructure\obj\Debug\net10.0\refint\FileDev.Infrastructure.dll
 F:\NotBlog\FileDev.Infrastructure\obj\Debug\net10.0\FileDev.Infrastructure.pdb
 F:\NotBlog\FileDev.Infrastructure\obj\Debug\net10.0\ref\FileDev.Infrastructure.dll
+f:\NotBlog\FileDev.Infrastructure\bin\Debug\net10.0\CacheMemory.dll
+f:\NotBlog\FileDev.Infrastructure\bin\Debug\net10.0\CacheMemory.pdb

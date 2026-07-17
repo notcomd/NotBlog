@@ -136,6 +136,8 @@ public class PagedResult<T>
     public int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
     public bool HasNextPage => Page < TotalPages;
     public bool HasPreviousPage => Page > 1;
+
+    public int Total { get; internal set; }
 }
 
 public class UnreadCountDto

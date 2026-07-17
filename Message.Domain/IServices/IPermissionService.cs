@@ -1,4 +1,4 @@
-﻿namespace Message.Domain.IServices;
+﻿﻿namespace Message.Domain.IServices;
 
 /// <summary>
 /// 权限验证服务接口

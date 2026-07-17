@@ -1,4 +1,4 @@
-﻿namespace Notcomd.Evenbus;
+﻿﻿namespace Notcomd.Evenbus;
 
 /// <summary>
 /// Outbox 消息存储接口（分布式事务模式）

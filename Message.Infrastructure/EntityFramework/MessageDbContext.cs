@@ -1,5 +1,6 @@
 using Message.Domain.Entities;
 using Message.Domain.Entities.Group;
+using Message.Domain.Entities.Tweet;
 using Message.Domain.SeedWork;
 using Microsoft.EntityFrameworkCore;
 using NotMediator;
@@ -28,6 +29,13 @@ public class MessageDbContext : DbContext, IUnitOfWork
 
     public DbSet<FileAttachment> FileAttachments { get; set; } = null!;
 
+    public DbSet<Tweet> Tweets { get; set; } = null!;
+    public DbSet<Comment> Comments { get; set; } = null!;
+    public DbSet<TweetInteraction> TweetInteractions { get; set; } = null!;
+    public DbSet<TweetAuditLog> TweetAuditLogs { get; set; } = null!;
+    public DbSet<TweetReport> TweetReports { get; set; } = null!;
+    public DbSet<TweetNotification> TweetNotifications { get; set; } = null!;
+
     public IUnitOfWork UnitOfWork => this;
 
     public async Task<int> SavaChangesAsync(CancellationToken cancellationToken = default)
@@ -44,7 +52,9 @@ public class MessageDbContext : DbContext, IUnitOfWork
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(MessageDbContext).Assembly);
+        
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

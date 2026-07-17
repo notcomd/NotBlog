@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "g1Y9VCvTz3Q=",
+  "dgSpecHash": "I6LG5Pnd2ek=",
   "success": true,
-  "projectFilePath": "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj",
+  "projectFilePath": "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.aspnetcore.authentication.abstractions\\2.3.9\\microsoft.aspnetcore.authentication.abstractions.2.3.9.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.aspnetcore.authentication.core\\2.3.10\\microsoft.aspnetcore.authentication.core.2.3.10.nupkg.sha512",
@@ -39,10 +39,10 @@
     {
       "code": "NU1903",
       "level": "Warning",
-      "message": "Package 'Newtonsoft.Json' 9.0.1 has a known high severity vulnerability, https://github.com/advisories/GHSA-5crp-9r3c-p9vr",
-      "projectPath": "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj",
+      "message": "包 \"Newtonsoft.Json\" 9.0.1 具有已知的 高 严重性漏洞，https://github.com/advisories/GHSA-5crp-9r3c-p9vr",
+      "projectPath": "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj",
       "warningLevel": 1,
-      "filePath": "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj",
+      "filePath": "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj",
       "libraryId": "Newtonsoft.Json",
       "targetGraphs": [
         "net10.0"

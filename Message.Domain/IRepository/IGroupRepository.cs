@@ -4,7 +4,7 @@ using Message.Domain.SeedWork;
 
 namespace Message.Domain.IRepository;
 
-public interface IGroupRepository : IRepository<Group>
+public interface IGroupRepository
 {
     Task<Group?> GetByIdAsync(Guid groupId);
     Task<Group?> GetByOwnerIdAsync(Guid ownerId);

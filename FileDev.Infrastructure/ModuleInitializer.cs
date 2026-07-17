@@ -16,6 +16,9 @@ public class ModuleInitializer : IModuleInitializer
         service.AddScoped<INotFileStorageService, NotFileStorageService>();
         service.AddScoped<INotFileService, NotFileService>();
         service.AddScoped<INotFileGroupService, NotFileGroupService>();
+        service.AddScoped<IFileChunkRepository, FileChunkRepository>();
+        service.AddScoped<IFileChunkManager, FileChunkManager>();
+        service.AddScoped<IRequestManagement, RequestManagement>();
         service.AddScoped<FileStorageService>();
     }
 }

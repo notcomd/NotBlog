@@ -1,3 +1,5 @@
+using Notcomd.Evenbus;
+
 namespace Markdown.Web.API.Application.IntegrationEvents;
 
 /// <summary>
@@ -10,7 +12,7 @@ public record MarkReviewCreatedIntegrationEvent(
     string UserName,
     string Content,
     DateTime CreatedAt
-);
+) : IntegrationEvent;
 
 /// <summary>
 ///     MarkReview 删除集成事件
@@ -19,7 +21,7 @@ public record MarkReviewDeletedIntegrationEvent(
     Guid MarkReviewGuid,
     Guid MarkDownGuid,
     DateTime DeletedAt
-);
+) : IntegrationEvent;
 
 /// <summary>
 ///     MarkReview 点赞集成事件
@@ -30,7 +32,7 @@ public record MarkReviewLikedIntegrationEvent(
     Guid LikedByUserId,
     long NewLoveCount,
     DateTime LikedAt
-);
+) : IntegrationEvent;
 
 /// <summary>
 ///     子评论添加集成事件
@@ -41,4 +43,4 @@ public record ChildReviewAddedIntegrationEvent(
     Guid MarkDownGuid,
     Guid UserId,
     DateTime AddedAt
-);
+) : IntegrationEvent;

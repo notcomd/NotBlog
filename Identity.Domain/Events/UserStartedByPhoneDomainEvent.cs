@@ -1,4 +1,4 @@
-﻿namespace Identity.Domain.Events;
+﻿﻿namespace Identity.Domain.Events;
 
 /// <summary>
 /// 用户手机号注册事件

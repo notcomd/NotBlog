@@ -5,7 +5,7 @@ using StackExchange.Redis;
 
 namespace Message.Infrastructure.Services;
 
-public class UserStatusCacheService : IUserStatusCacheService
+public class UserStatusCacheService 
 {
     private const string UserStatusPrefix = "message:user:status:";
     private const string OnlineUsersKey = "message:online:users";

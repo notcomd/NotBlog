@@ -68,6 +68,13 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IMessageFriendsRepository, MessageFriendsRepository>();
         services.AddScoped<IGroupRepository, GroupRepository>();
         services.AddScoped<IFileAttachmentRepository, FileAttachmentRepository>();
+
+        services.AddScoped<ITweetRepository, TweetRepository>();
+        services.AddScoped<ITweetInteractionRepository, TweetInteractionRepository>();
+        services.AddScoped<ICommentRepository, CommentRepository>();
+        services.AddScoped<ITweetAuditRepository, TweetAuditRepository>();
+        services.AddScoped<ITweetReportRepository, TweetReportRepository>();
+        services.AddScoped<ITweetNotificationRepository, TweetNotificationRepository>();
     }
 
     private static void RegisterProviders(IServiceCollection services)
@@ -77,15 +84,22 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IFriendProvider, FriendProvider>();
         services.AddScoped<IGroupProvider, GroupProvider>();
         services.AddScoped<IFileProvider, FileProvider>();
+
+        services.AddScoped<ITweetProvider, TweetProvider>();
+        services.AddScoped<ICommentProvider, CommentProvider>();
+        services.AddScoped<IAuditProvider, AuditProvider>();
+        services.AddScoped<IReportProvider, ReportProvider>();
     }
 
     private static void RegisterServices(IServiceCollection services)
     {
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IConnectionManager, RedisConnectionManager>();
-        services.AddScoped<ICacheService, RedisCacheService>();
-        services.AddScoped<IUserStatusCacheService, UserStatusCacheService>();
-        services.AddScoped<ISessionCacheService, SessionCacheService>();
-        services.AddScoped<IUnreadCountCacheService, UnreadCountCacheService>();
+
+
+        services.AddScoped<ISensitiveWordFilter, DefaultSensitiveWordFilter>();
+        services.AddScoped<IImageModerationService, DefaultImageModerationService>();
+        services.AddScoped<IEmailSender, DefaultEmailSender>();
+        services.AddScoped<ILocalizationService, DefaultLocalizationService>();
     }
 }

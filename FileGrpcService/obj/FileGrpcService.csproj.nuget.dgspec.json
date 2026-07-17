@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "F:\\NotBlog\\FileGrpcService\\FileGrpcService.csproj": {}
+    "f:\\NotBlog\\FileGrpcService\\FileGrpcService.csproj": {}
   },
   "projects": {
-    "F:\\NotBlog\\FileGrpcService\\FileGrpcService.csproj": {
+    "f:\\NotBlog\\FileGrpcService\\FileGrpcService.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\NotBlog\\FileGrpcService\\FileGrpcService.csproj",
+        "projectUniqueName": "f:\\NotBlog\\FileGrpcService\\FileGrpcService.csproj",
         "projectName": "FileGrpcService",
-        "projectPath": "F:\\NotBlog\\FileGrpcService\\FileGrpcService.csproj",
+        "projectPath": "f:\\NotBlog\\FileGrpcService\\FileGrpcService.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "F:\\NotBlog\\FileGrpcService\\obj\\",
+        "outputPath": "f:\\NotBlog\\FileGrpcService\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"

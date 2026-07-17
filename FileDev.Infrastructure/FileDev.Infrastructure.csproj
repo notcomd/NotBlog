@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
@@ -11,10 +11,11 @@
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.11"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.9"/>
         <PackageReference Include="NotMediator" Version="1.0.5" />
-        <PackageReference Include="StackExchange.Redis" Version="3.0.0"/>
+        <PackageReference Include="StackExchange.Redis" Version="*"/>
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\CacheMemory\CacheMemory.csproj"/>
         <ProjectReference Include="..\CommonsInitializer\CommonsInitializer.csproj" />
         <ProjectReference Include="..\FileDev.Domain\FileDev.Domain.csproj"/>
         <ProjectReference Include="..\JWToken\Token.JWT.csproj"/>

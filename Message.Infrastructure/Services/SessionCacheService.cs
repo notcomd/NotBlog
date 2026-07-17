@@ -5,7 +5,7 @@ using StackExchange.Redis;
 
 namespace Message.Infrastructure.Services;
 
-public class SessionCacheService : ISessionCacheService
+public class SessionCacheService 
 {
     private const string SessionPrefix = "message:session:";
     private static readonly TimeSpan SessionTtl = TimeSpan.FromMinutes(30);

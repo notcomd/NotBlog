@@ -23,13 +23,13 @@ public sealed class RedisConnectionProvider : IRedisConnectionProvider
         _logger = logger ?? NullLogger<RedisConnectionProvider>.Instance;
     }
 
-    /// <inheritdoc />
+    
     public IConnectionMultiplexer GetConnection()
     {
         return GetConnection(null);
     }
 
-    /// <inheritdoc />
+   
     public IConnectionMultiplexer GetConnection(string? instanceName)
     {
         EnsureNotDisposed();
@@ -38,40 +38,40 @@ public sealed class RedisConnectionProvider : IRedisConnectionProvider
         return connection.GetConnection();
     }
 
-    /// <inheritdoc />
+    
     public async Task<IDatabase> GetDatabaseAsync(int db = -1)
     {
         var conn = GetConnection();
         return conn.GetDatabase(db);
     }
 
-    /// <inheritdoc />
+    
     public async Task<IDatabase> GetDatabaseAsync(string instanceName, int db = -1)
     {
         var conn = GetConnection(instanceName);
         return conn.GetDatabase(db);
     }
 
-    /// <inheritdoc />
+    
     public ISubscriber GetSubscriber()
     {
         return GetSubscriber(null);
     }
 
-    /// <inheritdoc />
+    
     public ISubscriber GetSubscriber(string? instanceName)
     {
         var conn = GetConnection(instanceName);
         return conn.GetSubscriber();
     }
 
-    /// <inheritdoc />
+    
     public IReadOnlyCollection<string> GetInstanceNames()
     {
         return _options.Instances.Keys.ToList().AsReadOnly();
     }
 
-    /// <inheritdoc />
+    
     public async ValueTask DisposeAsync()
     {
         if (_isDisposed) return;
@@ -94,6 +94,13 @@ public sealed class RedisConnectionProvider : IRedisConnectionProvider
         await Task.WhenAll(tasks).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// 异步预热指定 Redis 实例的连接。
+    /// 不阻塞调用方，连接在后台建立。
+    /// </summary>
+    /// <param name="instanceName">Redis 实例名称。</param>
+    /// <param name="ct">取消令牌，用于取消预热操作。</param>
+    /// <returns>异步任务，用于等待预热完成。</returns>
     private async Task WarmUpConnectionAsync(string instanceName, CancellationToken ct)
     {
         try
@@ -107,6 +114,12 @@ public sealed class RedisConnectionProvider : IRedisConnectionProvider
         }
     }
 
+    /// <summary>
+    /// 获取或创建指定 Redis 实例的连接。
+    /// 如果连接不存在，会尝试创建并初始化。
+    /// </summary>
+    /// <param name="instanceName">Redis 实例名称。</param>
+    /// <returns>Redis 连接实例。</returns>
     private CacheMemoryConnection GetOrCreateConnection(string instanceName)
     {
         if (_connections.TryGetValue(instanceName, out var existing))
@@ -139,6 +152,12 @@ public sealed class RedisConnectionProvider : IRedisConnectionProvider
         }
     }
 
+    /// <summary>
+    /// 归一化 Redis 实例名称，确保它不为空。
+    /// 如果实例名称为空或 null，返回默认实例名称。
+    /// </summary>
+    /// <param name="instanceName">Redis 实例名称。</param>
+    /// <returns>归一化后的实例名称。</returns>
     private static string NormalizeInstanceName(string? instanceName)
     {
         return string.IsNullOrWhiteSpace(instanceName)
@@ -146,7 +165,11 @@ public sealed class RedisConnectionProvider : IRedisConnectionProvider
             : instanceName;
     }
 
-    private void EnsureNotDisposed()
+    /// <summary>
+    /// 确保连接提供程序未被处置。
+    /// 如果已处置，会抛出异常。
+    /// </summary>
+       private void EnsureNotDisposed()
     {
         if (_isDisposed)
             throw new ObjectDisposedException(nameof(RedisConnectionProvider));

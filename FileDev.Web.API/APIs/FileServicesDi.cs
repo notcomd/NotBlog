@@ -7,4 +7,5 @@ public record FileServicesDi(
     ILogger<FileServicesDi> Logger,
     INotFileGroupRepository NotFileGroupRepository,
     INotFileStorageService NotFileStorageService,
+    INotMediator NotMediator,
     INotFileService NotFileService);

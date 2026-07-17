@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "F:\\NotBlog\\Markdown.Web.API\\Markdown.Web.API.csproj": {}
+    "f:\\NotBlog\\Markdown.Web.API\\Markdown.Web.API.csproj": {}
   },
   "projects": {
-    "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj": {
+    "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj",
+        "projectUniqueName": "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj",
         "projectName": "DomainCommons",
-        "projectPath": "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj",
+        "projectPath": "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "F:\\NotBlog\\DomainCommons\\obj\\",
+        "outputPath": "f:\\NotBlog\\DomainCommons\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -354,14 +354,14 @@
         }
       }
     },
-    "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj": {
+    "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj",
+        "projectUniqueName": "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj",
         "projectName": "DomainInfrastructure",
-        "projectPath": "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj",
+        "projectPath": "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "F:\\NotBlog\\DomainInfrastructure\\obj\\",
+        "outputPath": "f:\\NotBlog\\DomainInfrastructure\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -383,8 +383,8 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj": {
-                "projectPath": "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj"
+              "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj": {
+                "projectPath": "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj"
               }
             }
           }
@@ -720,14 +720,14 @@
         }
       }
     },
-    "F:\\NotBlog\\Evenbus\\Evenbus.csproj": {
+    "f:\\NotBlog\\Evenbus\\Evenbus.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\NotBlog\\Evenbus\\Evenbus.csproj",
+        "projectUniqueName": "f:\\NotBlog\\Evenbus\\Evenbus.csproj",
         "projectName": "Evenbus",
-        "projectPath": "F:\\NotBlog\\Evenbus\\Evenbus.csproj",
+        "projectPath": "f:\\NotBlog\\Evenbus\\Evenbus.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "F:\\NotBlog\\Evenbus\\obj\\",
+        "outputPath": "f:\\NotBlog\\Evenbus\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -771,14 +771,6 @@
               "target": "Package",
               "version": "[1.4.2, )"
             },
-            "Microsoft.AspNetCore.Http.Abstractions": {
-              "target": "Package",
-              "version": "[2.3.11, )"
-            },
-            "Microsoft.AspNetCore.Mvc.Core": {
-              "target": "Package",
-              "version": "[2.3.11, )"
-            },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
               "version": "[10.0.9, )"
@@ -793,7 +785,7 @@
             },
             "Microsoft.Extensions.Hosting.Abstractions": {
               "target": "Package",
-              "version": "[*, )"
+              "version": "[10.0.9, )"
             },
             "Microsoft.Extensions.Logging.Abstractions": {
               "target": "Package",
@@ -801,7 +793,15 @@
             },
             "Microsoft.Extensions.Options": {
               "target": "Package",
-              "version": "[*, )"
+              "version": "[10.0.9, )"
+            },
+            "OpenTelemetry.Extensions.Hosting": {
+              "target": "Package",
+              "version": "[1.13.0, )"
+            },
+            "Polly.Core": {
+              "target": "Package",
+              "version": "[8.5.2, )"
             },
             "RabbitMQ.Client": {
               "target": "Package",
@@ -1102,14 +1102,14 @@
         }
       }
     },
-    "F:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj": {
+    "f:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj",
+        "projectUniqueName": "f:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj",
         "projectName": "Markdown.Domain",
-        "projectPath": "F:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj",
+        "projectPath": "f:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "F:\\NotBlog\\Markdown.Domain\\obj\\",
+        "outputPath": "f:\\NotBlog\\Markdown.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -1452,14 +1452,14 @@
         }
       }
     },
-    "F:\\NotBlog\\Markdown.Infrastructure\\Markdown.Infrastructure.csproj": {
+    "f:\\NotBlog\\Markdown.Infrastructure\\Markdown.Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\NotBlog\\Markdown.Infrastructure\\Markdown.Infrastructure.csproj",
+        "projectUniqueName": "f:\\NotBlog\\Markdown.Infrastructure\\Markdown.Infrastructure.csproj",
         "projectName": "Markdown.Infrastructure",
-        "projectPath": "F:\\NotBlog\\Markdown.Infrastructure\\Markdown.Infrastructure.csproj",
+        "projectPath": "f:\\NotBlog\\Markdown.Infrastructure\\Markdown.Infrastructure.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "F:\\NotBlog\\Markdown.Infrastructure\\obj\\",
+        "outputPath": "f:\\NotBlog\\Markdown.Infrastructure\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -1481,11 +1481,11 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj": {
-                "projectPath": "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj"
+              "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj": {
+                "projectPath": "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj"
               },
-              "F:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj": {
-                "projectPath": "F:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj"
+              "f:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj": {
+                "projectPath": "f:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj"
               }
             }
           }
@@ -1833,14 +1833,14 @@
         }
       }
     },
-    "F:\\NotBlog\\Markdown.Web.API\\Markdown.Web.API.csproj": {
+    "f:\\NotBlog\\Markdown.Web.API\\Markdown.Web.API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\NotBlog\\Markdown.Web.API\\Markdown.Web.API.csproj",
+        "projectUniqueName": "f:\\NotBlog\\Markdown.Web.API\\Markdown.Web.API.csproj",
         "projectName": "Markdown.Web.API",
-        "projectPath": "F:\\NotBlog\\Markdown.Web.API\\Markdown.Web.API.csproj",
+        "projectPath": "f:\\NotBlog\\Markdown.Web.API\\Markdown.Web.API.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "F:\\NotBlog\\Markdown.Web.API\\obj\\",
+        "outputPath": "f:\\NotBlog\\Markdown.Web.API\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -1862,17 +1862,17 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "F:\\NotBlog\\Evenbus\\Evenbus.csproj": {
-                "projectPath": "F:\\NotBlog\\Evenbus\\Evenbus.csproj"
+              "f:\\NotBlog\\Evenbus\\Evenbus.csproj": {
+                "projectPath": "f:\\NotBlog\\Evenbus\\Evenbus.csproj"
               },
-              "F:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj": {
-                "projectPath": "F:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj"
+              "f:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj": {
+                "projectPath": "f:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj"
               },
-              "F:\\NotBlog\\Markdown.Infrastructure\\Markdown.Infrastructure.csproj": {
-                "projectPath": "F:\\NotBlog\\Markdown.Infrastructure\\Markdown.Infrastructure.csproj"
+              "f:\\NotBlog\\Markdown.Infrastructure\\Markdown.Infrastructure.csproj": {
+                "projectPath": "f:\\NotBlog\\Markdown.Infrastructure\\Markdown.Infrastructure.csproj"
               },
-              "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj": {
-                "projectPath": "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj"
+              "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj": {
+                "projectPath": "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj"
               }
             }
           }
@@ -2355,14 +2355,14 @@
         }
       }
     },
-    "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj": {
+    "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj",
+        "projectUniqueName": "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj",
         "projectName": "NotBlog.ServiceDefaults",
-        "projectPath": "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj",
+        "projectPath": "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "F:\\NotBlog\\NotBlog.ServiceDefaults\\obj\\",
+        "outputPath": "f:\\NotBlog\\NotBlog.ServiceDefaults\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"

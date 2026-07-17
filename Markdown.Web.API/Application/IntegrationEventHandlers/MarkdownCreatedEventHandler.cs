@@ -1,3 +1,4 @@
+using Evenbus.Core;
 using Notcomd.Evenbus;
 
 namespace Markdown.Web.API.Application.IntegrationEventHandlers;
@@ -8,11 +9,8 @@ namespace Markdown.Web.API.Application.IntegrationEventHandlers;
 [EvenBusName("MarkdownCreated")]
 public class MarkdownCreatedEventHandler : JsonIntegrationEventHandler<MarkdownCreatedEventData>
 {
-    protected override Task EventDlerJson(string eventName, MarkdownCreatedEventData? eventData)
+    public override Task Handler(MarkdownCreatedEventData eventData)
     {
-        if (eventData == null)
-            return Task.CompletedTask;
-
         // TODO: 处理 Markdown 文档创建后的业务逻辑
         // 例如：发送通知、更新索引、触发工作流等
 
@@ -25,7 +23,7 @@ public class MarkdownCreatedEventHandler : JsonIntegrationEventHandler<MarkdownC
 /// <summary>
 ///     Markdown 文档创建事件数据
 /// </summary>
-public record MarkdownCreatedEventData
+public record MarkdownCreatedEventData : IntegrationEvent
 {
     public Guid MarkDownGuid { get; init; }
     public Guid MarkUserGuid { get; init; }

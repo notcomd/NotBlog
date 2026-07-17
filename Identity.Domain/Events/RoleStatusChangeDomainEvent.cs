@@ -1,5 +1,8 @@
-﻿namespace Identity.Domain.Events;
+using Identity.Domain.Entities.RoleAggregate;
 
-public class RoleStatusChangeDomainEvent : INotifications
-{
-}
+namespace Identity.Domain.Events;
+
+public record RoleStatusChangeDomainEvent(
+    Guid RoleGuid,
+    RoleStatus RoleStatus
+) : INotifications;

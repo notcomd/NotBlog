@@ -2,26 +2,6 @@ namespace FileDev.Domain.Entities;
 
 public class NotFileGroup : Entity, IAggregateRoot
 {
-    public NotFileGroup()
-    {
-        NotFileGroupId = Guid.CreateVersion7();
-        UploadTime = DateTime.Now;
-        UpdateTime = DateTime.Now;
-        IsDeleted = false;
-        FileIdentity = FileIdentity.FilePublic;
-        FileType = FileType.CompressFiles;
-    }
-
-    public NotFileGroup(Guid userId, string fileGroupName, HashSet<string>? fileGroupTags, string? fileGroupDescription,
-        FileIdentity fileIdentity, FileType fileType) : this()
-    {
-        UserId = userId;
-        FileGroupName = fileGroupName;
-        FileGroupTags = fileGroupTags ?? new HashSet<string>();
-        FileGroupDescription = fileGroupDescription;
-        FileIdentity = fileIdentity;
-        FileType = fileType;
-    }
 
     public Guid NotFileGroupId { get; init; }
 
@@ -29,9 +9,9 @@ public class NotFileGroup : Entity, IAggregateRoot
 
     public string FileGroupName { get; private set; } = null!;
 
-    public HashSet<string> FileGroupTags { get; private set; } = new();
+    public HashSet<string> FileGroupTags { get; private set; } = [];
 
-    public HashSet<Guid> FileIds { get; } = new();
+    public HashSet<Guid> FileIds { get; } = [];
 
     public string? FileGroupDescription { get; private set; } = string.Empty;
 
@@ -43,17 +23,38 @@ public class NotFileGroup : Entity, IAggregateRoot
 
     public FileIdentity FileIdentity { get; private set; }
 
-    public FileType FileType { get; private set; }
+   // public FileType FileType { get; private set; }
 
-
-    public void UpdateFileGroup(string fileGroupName, HashSet<string>? fileGroupTags, string? fileGroupDescription,
-        FileIdentity fileIdentity, FileType fileType)
+    public NotFileGroup()
     {
+        NotFileGroupId = Guid.CreateVersion7();
+        UploadTime = DateTime.Now;
+        UpdateTime = DateTime.Now;
+        IsDeleted = false;
+        FileIdentity = FileIdentity.FilePublic;
+      //  FileType = FileType.CompressFiles;
+    }
+
+    public NotFileGroup(Guid userId, string fileGroupName, HashSet<string>? fileGroupTags, string? fileGroupDescription,
+        FileIdentity fileIdentity) : this()
+    {
+        UserId = userId;
         FileGroupName = fileGroupName;
-        FileGroupTags = fileGroupTags ?? new HashSet<string>();
+        FileGroupTags = fileGroupTags ?? [];
         FileGroupDescription = fileGroupDescription;
         FileIdentity = fileIdentity;
-        FileType = fileType;
+        //FileType = fileType;
+        AddDomainEvent(new CreateFileGroupEvent(NotFileGroupId, userId, fileGroupName, fileGroupTags, fileGroupDescription, fileIdentity));
+    }
+
+    public void UpdateFileGroup(string fileGroupName, HashSet<string>? fileGroupTags, string? fileGroupDescription,
+        FileIdentity fileIdentity)
+    {
+        FileGroupName = fileGroupName;
+        FileGroupTags = fileGroupTags ?? [];
+        FileGroupDescription = fileGroupDescription;
+        FileIdentity = fileIdentity;
+       // FileType = fileType;
         UpdateTime = DateTime.Now;
     }
 
@@ -88,16 +89,16 @@ public class NotFileGroup : Entity, IAggregateRoot
         private string _fileGroupName = null!;
         private HashSet<string>? _fileGroupTags;
         private FileIdentity _fileIdentity;
-        private FileType _fileType;
+       // private FileType _fileType;
         private Guid _userId;
 
         public NotFileGroupBuilder()
         {
             _fileGroupName = string.Empty;
-            _fileGroupTags = new HashSet<string>();
+            _fileGroupTags = [];
             _fileGroupDescription = string.Empty;
             _fileIdentity = FileIdentity.FilePublic;
-            _fileType = FileType.CompressFiles;
+            //_fileType = FileType.CompressFiles;
         }
 
         public NotFileGroupBuilder WithUserId(Guid userId)
@@ -130,16 +131,15 @@ public class NotFileGroup : Entity, IAggregateRoot
             return this;
         }
 
-        public NotFileGroupBuilder WithFileType(FileType fileType)
-        {
-            _fileType = fileType;
-            return this;
-        }
+        // public NotFileGroupBuilder WithFileType(FileType fileType)
+        // {
+        //     _fileType = fileType;
+        //     return this;
+        // }
 
         public NotFileGroup Build()
         {
-            return new NotFileGroup(_userId, _fileGroupName, _fileGroupTags, _fileGroupDescription, _fileIdentity,
-                _fileType);
+            return new NotFileGroup(_userId, _fileGroupName, _fileGroupTags, _fileGroupDescription, _fileIdentity);
         }
     }
 }

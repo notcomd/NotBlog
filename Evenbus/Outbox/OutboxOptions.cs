@@ -1,4 +1,4 @@
-﻿namespace Notcomd.Evenbus;
+﻿﻿namespace Notcomd.Evenbus;
 
 /// <summary>
 /// Outbox 配置选项

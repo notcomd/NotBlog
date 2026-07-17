@@ -1,4 +1,5 @@
-﻿global using FileDev.Domain.Entities;
+global using CacheMemory.Core;
+global using FileDev.Domain.Entities;
 global using FileDev.Domain.SeedWork;
 global using FileDev.Infrastructure.EntityConfig;
 global using FileDev.Infrastructure.Idempotent;

@@ -1,12 +1,15 @@
-﻿using Message.Domain.Entities.Group;
+﻿﻿using Message.Domain.Entities.Group;
 using Message.Domain.Enums;
 using Message.Infrastructure.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 
 namespace Message.Infrastructure.Repository;
 
-public class GroupRepository(MessageDbContext context) : Repository<Group>(context), IGroupRepository
+public class GroupRepository(MessageDbContext context) : IGroupRepository
 {
+    public MessageDbContext Context => context;
+    private readonly DbSet<Group> DbSet = context.Groups;
+
     public async Task<Group?> GetByIdAsync(Guid groupId)
     {
         return await DbSet
@@ -65,7 +68,7 @@ public class GroupRepository(MessageDbContext context) : Repository<Group>(conte
                         (g.GroupName.Contains(searchTerm) ||
                          (g.Description != null && g.Description.Contains(searchTerm))));
 
-        return await ApplyPaging(query.OrderBy(g => g.GroupName), page, pageSize).ToListAsync();
+        return await query.OrderBy(g => g.GroupName).ToListAsync();
     }
 
 

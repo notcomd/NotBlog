@@ -1,4 +1,4 @@
-﻿namespace Identity.Domain.Entities.UserAggregate;
+﻿﻿namespace Identity.Domain.Entities.UserAggregate;
 
 /// <summary>
 /// 用户访问失败

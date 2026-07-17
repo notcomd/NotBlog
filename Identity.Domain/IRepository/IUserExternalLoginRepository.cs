@@ -1,4 +1,4 @@
-﻿using Identity.Domain.Entities.UserExternalLoginAggregate;
+﻿﻿using Identity.Domain.Entities.UserExternalLoginAggregate;
 
 namespace Identity.Domain.IRepository;
 

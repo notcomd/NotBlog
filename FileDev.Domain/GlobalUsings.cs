@@ -6,3 +6,4 @@ global using FileDev.Domain.Events;
 global using FileDev.Domain.IRepository;
 global using FileDev.Domain.Options;
 global using FileDev.Domain.IServices;
+global using NotMediator;

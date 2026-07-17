@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "F:\\NotBlog\\Identity.Web.API\\Identity.Web.API.csproj": {}
+    "f:\\NotBlog\\Identity.Web.API\\Identity.Web.API.csproj": {}
   },
   "projects": {
-    "F:\\NotBlog\\CacheMemory\\CacheMemory.csproj": {
+    "f:\\NotBlog\\CacheMemory\\CacheMemory.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\NotBlog\\CacheMemory\\CacheMemory.csproj",
+        "projectUniqueName": "f:\\NotBlog\\CacheMemory\\CacheMemory.csproj",
         "projectName": "CacheMemory",
-        "projectPath": "F:\\NotBlog\\CacheMemory\\CacheMemory.csproj",
+        "projectPath": "f:\\NotBlog\\CacheMemory\\CacheMemory.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "F:\\NotBlog\\CacheMemory\\obj\\",
+        "outputPath": "f:\\NotBlog\\CacheMemory\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -382,14 +382,14 @@
         }
       }
     },
-    "F:\\NotBlog\\CommonsInitializer\\CommonsInitializer.csproj": {
+    "f:\\NotBlog\\CommonsInitializer\\CommonsInitializer.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\NotBlog\\CommonsInitializer\\CommonsInitializer.csproj",
+        "projectUniqueName": "f:\\NotBlog\\CommonsInitializer\\CommonsInitializer.csproj",
         "projectName": "CommonsInitializer",
-        "projectPath": "F:\\NotBlog\\CommonsInitializer\\CommonsInitializer.csproj",
+        "projectPath": "f:\\NotBlog\\CommonsInitializer\\CommonsInitializer.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "F:\\NotBlog\\CommonsInitializer\\obj\\",
+        "outputPath": "f:\\NotBlog\\CommonsInitializer\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -411,11 +411,11 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj": {
-                "projectPath": "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj"
+              "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj": {
+                "projectPath": "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj"
               },
-              "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj": {
-                "projectPath": "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj"
+              "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj": {
+                "projectPath": "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj"
               }
             }
           }
@@ -743,14 +743,14 @@
         }
       }
     },
-    "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj": {
+    "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj",
+        "projectUniqueName": "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj",
         "projectName": "DomainCommons",
-        "projectPath": "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj",
+        "projectPath": "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "F:\\NotBlog\\DomainCommons\\obj\\",
+        "outputPath": "f:\\NotBlog\\DomainCommons\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -1093,14 +1093,14 @@
         }
       }
     },
-    "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj": {
+    "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj",
+        "projectUniqueName": "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj",
         "projectName": "DomainInfrastructure",
-        "projectPath": "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj",
+        "projectPath": "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "F:\\NotBlog\\DomainInfrastructure\\obj\\",
+        "outputPath": "f:\\NotBlog\\DomainInfrastructure\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -1122,8 +1122,8 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj": {
-                "projectPath": "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj"
+              "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj": {
+                "projectPath": "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj"
               }
             }
           }
@@ -1459,14 +1459,14 @@
         }
       }
     },
-    "F:\\NotBlog\\Evenbus\\Evenbus.csproj": {
+    "f:\\NotBlog\\Evenbus\\Evenbus.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\NotBlog\\Evenbus\\Evenbus.csproj",
+        "projectUniqueName": "f:\\NotBlog\\Evenbus\\Evenbus.csproj",
         "projectName": "Evenbus",
-        "projectPath": "F:\\NotBlog\\Evenbus\\Evenbus.csproj",
+        "projectPath": "f:\\NotBlog\\Evenbus\\Evenbus.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "F:\\NotBlog\\Evenbus\\obj\\",
+        "outputPath": "f:\\NotBlog\\Evenbus\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -1510,14 +1510,6 @@
               "target": "Package",
               "version": "[1.4.2, )"
             },
-            "Microsoft.AspNetCore.Http.Abstractions": {
-              "target": "Package",
-              "version": "[2.3.11, )"
-            },
-            "Microsoft.AspNetCore.Mvc.Core": {
-              "target": "Package",
-              "version": "[2.3.11, )"
-            },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
               "version": "[10.0.9, )"
@@ -1532,7 +1524,7 @@
             },
             "Microsoft.Extensions.Hosting.Abstractions": {
               "target": "Package",
-              "version": "[*, )"
+              "version": "[10.0.9, )"
             },
             "Microsoft.Extensions.Logging.Abstractions": {
               "target": "Package",
@@ -1540,7 +1532,15 @@
             },
             "Microsoft.Extensions.Options": {
               "target": "Package",
-              "version": "[*, )"
+              "version": "[10.0.9, )"
+            },
+            "OpenTelemetry.Extensions.Hosting": {
+              "target": "Package",
+              "version": "[1.13.0, )"
+            },
+            "Polly.Core": {
+              "target": "Package",
+              "version": "[8.5.2, )"
             },
             "RabbitMQ.Client": {
               "target": "Package",
@@ -1841,14 +1841,14 @@
         }
       }
     },
-    "F:\\NotBlog\\Identity.Domain\\Identity.Domain.csproj": {
+    "f:\\NotBlog\\Identity.Domain\\Identity.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\NotBlog\\Identity.Domain\\Identity.Domain.csproj",
+        "projectUniqueName": "f:\\NotBlog\\Identity.Domain\\Identity.Domain.csproj",
         "projectName": "Identity.Domain",
-        "projectPath": "F:\\NotBlog\\Identity.Domain\\Identity.Domain.csproj",
+        "projectPath": "f:\\NotBlog\\Identity.Domain\\Identity.Domain.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "F:\\NotBlog\\Identity.Domain\\obj\\",
+        "outputPath": "f:\\NotBlog\\Identity.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -1870,11 +1870,11 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj": {
-                "projectPath": "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj"
+              "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj": {
+                "projectPath": "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj"
               },
-              "F:\\NotBlog\\JWToken\\Token.JWT.csproj": {
-                "projectPath": "F:\\NotBlog\\JWToken\\Token.JWT.csproj"
+              "f:\\NotBlog\\JWToken\\Token.JWT.csproj": {
+                "projectPath": "f:\\NotBlog\\JWToken\\Token.JWT.csproj"
               }
             }
           }
@@ -2198,14 +2198,14 @@
         }
       }
     },
-    "F:\\NotBlog\\Identity.Infrastructure\\Identity.Infrastructure.csproj": {
+    "f:\\NotBlog\\Identity.Infrastructure\\Identity.Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\NotBlog\\Identity.Infrastructure\\Identity.Infrastructure.csproj",
+        "projectUniqueName": "f:\\NotBlog\\Identity.Infrastructure\\Identity.Infrastructure.csproj",
         "projectName": "Identity.Infrastructure",
-        "projectPath": "F:\\NotBlog\\Identity.Infrastructure\\Identity.Infrastructure.csproj",
+        "projectPath": "f:\\NotBlog\\Identity.Infrastructure\\Identity.Infrastructure.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "F:\\NotBlog\\Identity.Infrastructure\\obj\\",
+        "outputPath": "f:\\NotBlog\\Identity.Infrastructure\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -2227,23 +2227,23 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "F:\\NotBlog\\CacheMemory\\CacheMemory.csproj": {
-                "projectPath": "F:\\NotBlog\\CacheMemory\\CacheMemory.csproj"
+              "f:\\NotBlog\\CacheMemory\\CacheMemory.csproj": {
+                "projectPath": "f:\\NotBlog\\CacheMemory\\CacheMemory.csproj"
               },
-              "F:\\NotBlog\\CommonsInitializer\\CommonsInitializer.csproj": {
-                "projectPath": "F:\\NotBlog\\CommonsInitializer\\CommonsInitializer.csproj"
+              "f:\\NotBlog\\CommonsInitializer\\CommonsInitializer.csproj": {
+                "projectPath": "f:\\NotBlog\\CommonsInitializer\\CommonsInitializer.csproj"
               },
-              "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj": {
-                "projectPath": "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj"
+              "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj": {
+                "projectPath": "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj"
               },
-              "F:\\NotBlog\\Identity.Domain\\Identity.Domain.csproj": {
-                "projectPath": "F:\\NotBlog\\Identity.Domain\\Identity.Domain.csproj"
+              "f:\\NotBlog\\Identity.Domain\\Identity.Domain.csproj": {
+                "projectPath": "f:\\NotBlog\\Identity.Domain\\Identity.Domain.csproj"
               },
-              "F:\\NotBlog\\JWToken\\Token.JWT.csproj": {
-                "projectPath": "F:\\NotBlog\\JWToken\\Token.JWT.csproj"
+              "f:\\NotBlog\\JWToken\\Token.JWT.csproj": {
+                "projectPath": "f:\\NotBlog\\JWToken\\Token.JWT.csproj"
               },
-              "F:\\NotBlog\\NotEmail\\NotEmail.csproj": {
-                "projectPath": "F:\\NotBlog\\NotEmail\\NotEmail.csproj"
+              "f:\\NotBlog\\NotEmail\\NotEmail.csproj": {
+                "projectPath": "f:\\NotBlog\\NotEmail\\NotEmail.csproj"
               }
             }
           }
@@ -2575,14 +2575,14 @@
         }
       }
     },
-    "F:\\NotBlog\\Identity.Web.API\\Identity.Web.API.csproj": {
+    "f:\\NotBlog\\Identity.Web.API\\Identity.Web.API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\NotBlog\\Identity.Web.API\\Identity.Web.API.csproj",
+        "projectUniqueName": "f:\\NotBlog\\Identity.Web.API\\Identity.Web.API.csproj",
         "projectName": "Identity.Web.API",
-        "projectPath": "F:\\NotBlog\\Identity.Web.API\\Identity.Web.API.csproj",
+        "projectPath": "f:\\NotBlog\\Identity.Web.API\\Identity.Web.API.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "F:\\NotBlog\\Identity.Web.API\\obj\\",
+        "outputPath": "f:\\NotBlog\\Identity.Web.API\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -2604,26 +2604,26 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "F:\\NotBlog\\CacheMemory\\CacheMemory.csproj": {
-                "projectPath": "F:\\NotBlog\\CacheMemory\\CacheMemory.csproj"
+              "f:\\NotBlog\\CacheMemory\\CacheMemory.csproj": {
+                "projectPath": "f:\\NotBlog\\CacheMemory\\CacheMemory.csproj"
               },
-              "F:\\NotBlog\\CommonsInitializer\\CommonsInitializer.csproj": {
-                "projectPath": "F:\\NotBlog\\CommonsInitializer\\CommonsInitializer.csproj"
+              "f:\\NotBlog\\CommonsInitializer\\CommonsInitializer.csproj": {
+                "projectPath": "f:\\NotBlog\\CommonsInitializer\\CommonsInitializer.csproj"
               },
-              "F:\\NotBlog\\Evenbus\\Evenbus.csproj": {
-                "projectPath": "F:\\NotBlog\\Evenbus\\Evenbus.csproj"
+              "f:\\NotBlog\\Evenbus\\Evenbus.csproj": {
+                "projectPath": "f:\\NotBlog\\Evenbus\\Evenbus.csproj"
               },
-              "F:\\NotBlog\\Identity.Infrastructure\\Identity.Infrastructure.csproj": {
-                "projectPath": "F:\\NotBlog\\Identity.Infrastructure\\Identity.Infrastructure.csproj"
+              "f:\\NotBlog\\Identity.Infrastructure\\Identity.Infrastructure.csproj": {
+                "projectPath": "f:\\NotBlog\\Identity.Infrastructure\\Identity.Infrastructure.csproj"
               },
-              "F:\\NotBlog\\JWToken\\Token.JWT.csproj": {
-                "projectPath": "F:\\NotBlog\\JWToken\\Token.JWT.csproj"
+              "f:\\NotBlog\\JWToken\\Token.JWT.csproj": {
+                "projectPath": "f:\\NotBlog\\JWToken\\Token.JWT.csproj"
               },
-              "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj": {
-                "projectPath": "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj"
+              "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj": {
+                "projectPath": "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj"
               },
-              "F:\\NotBlog\\NotEmail\\NotEmail.csproj": {
-                "projectPath": "F:\\NotBlog\\NotEmail\\NotEmail.csproj"
+              "f:\\NotBlog\\NotEmail\\NotEmail.csproj": {
+                "projectPath": "f:\\NotBlog\\NotEmail\\NotEmail.csproj"
               }
             }
           }
@@ -3124,14 +3124,14 @@
         }
       }
     },
-    "F:\\NotBlog\\JWToken\\Token.JWT.csproj": {
+    "f:\\NotBlog\\JWToken\\Token.JWT.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\NotBlog\\JWToken\\Token.JWT.csproj",
+        "projectUniqueName": "f:\\NotBlog\\JWToken\\Token.JWT.csproj",
         "projectName": "Token.JWT",
-        "projectPath": "F:\\NotBlog\\JWToken\\Token.JWT.csproj",
+        "projectPath": "f:\\NotBlog\\JWToken\\Token.JWT.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "F:\\NotBlog\\JWToken\\obj\\",
+        "outputPath": "f:\\NotBlog\\JWToken\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -3478,14 +3478,14 @@
         }
       }
     },
-    "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj": {
+    "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj",
+        "projectUniqueName": "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj",
         "projectName": "NotBlog.ServiceDefaults",
-        "projectPath": "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj",
+        "projectPath": "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "F:\\NotBlog\\NotBlog.ServiceDefaults\\obj\\",
+        "outputPath": "f:\\NotBlog\\NotBlog.ServiceDefaults\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -3999,14 +3999,14 @@
         }
       }
     },
-    "F:\\NotBlog\\NotEmail\\NotEmail.csproj": {
+    "f:\\NotBlog\\NotEmail\\NotEmail.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\NotBlog\\NotEmail\\NotEmail.csproj",
+        "projectUniqueName": "f:\\NotBlog\\NotEmail\\NotEmail.csproj",
         "projectName": "NotEmail",
-        "projectPath": "F:\\NotBlog\\NotEmail\\NotEmail.csproj",
+        "projectPath": "f:\\NotBlog\\NotEmail\\NotEmail.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "F:\\NotBlog\\NotEmail\\obj\\",
+        "outputPath": "f:\\NotBlog\\NotEmail\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"

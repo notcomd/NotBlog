@@ -43,7 +43,7 @@ public class CreateMarkdownCommandHandler(
         await dbContext.SavaChangesAsync(cancellationToken);
 
         // 发布集成事件
-        await eventBus.Publish("MarkdownCreated", new MarkdownCreatedEventData
+        await eventBus.PublishAsync(new MarkdownCreatedEventData
         {
             MarkDownGuid = markdownEntity.MarkDownGuid,
             MarkUserGuid = markdownEntity.MarkUserGuid,

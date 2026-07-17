@@ -6,8 +6,13 @@ using MessageEntity = Message.Domain.Entities.Message;
 
 namespace Message.Infrastructure.Repository;
 
-public class MessageRepository(MessageDbContext context) : Repository<MessageEntity>(context), IMessageRepository
+public class MessageRepository(MessageDbContext context) :  IMessageRepository
 {
+  
+    public IUnitOfWork UnitOfWork => context;
+
+    private readonly DbSet<MessageEntity> DbSet = context.Messages;
+
     public async Task<MessageEntity?> GetByIdAsync(Guid messageId)
     {
         return await DbSet
@@ -22,7 +27,7 @@ public class MessageRepository(MessageDbContext context) : Repository<MessageEnt
             .Where(m => m.SessionId == sessionId && !m.IsRecalled)
             .OrderByDescending(m => m.SentTime);
 
-        return await ApplyPaging(query, page, pageSize).ToListAsync();
+        return await query.ToListAsync();
     }
 
     public async Task<IEnumerable<MessageEntity>> GetBySenderIdAsync(Guid senderId, int page = 1, int pageSize = 50)
@@ -32,7 +37,7 @@ public class MessageRepository(MessageDbContext context) : Repository<MessageEnt
             .Where(m => m.SenderId == senderId)
             .OrderByDescending(m => m.SentTime);
 
-        return await ApplyPaging(query, page, pageSize).ToListAsync();
+        return await query.ToListAsync();
     }
 
     public async Task<IEnumerable<MessageEntity>> GetByReceiverIdAsync(Guid receiverId, int page = 1, int pageSize = 50)
@@ -42,7 +47,7 @@ public class MessageRepository(MessageDbContext context) : Repository<MessageEnt
             .Where(m => m.ReceiverId == receiverId)
             .OrderByDescending(m => m.SentTime);
 
-        return await ApplyPaging(query, page, pageSize).ToListAsync();
+        return await query.ToListAsync();
     }
 
     public async Task<IEnumerable<MessageEntity>> GetUnreadMessagesAsync(Guid userId)
@@ -156,7 +161,7 @@ public class MessageRepository(MessageDbContext context) : Repository<MessageEnt
                         !m.IsRecalled &&
                         (m.Content != null && m.Content.Contains(searchTerm)));
 
-        return await ApplyPaging(query.OrderByDescending(m => m.SentTime), page, pageSize).ToListAsync();
+        return await query.OrderByDescending(m => m.SentTime).ToListAsync();
     }
 
     public async Task<IEnumerable<MessageEntity>> GetForwardedMessagesAsync(Guid originalMessageId)

@@ -16,6 +16,8 @@ public class NotFileDbContext(DbContextOptions<NotFileDbContext> options, INotMe
 
     public DbSet<NotFileGroup> NotFileGroups { get; set; }
 
+    public DbSet<FileChunkRecord> FileChunkRecords { get; set; }
+
     public bool HasActiveTransaction => _currentTransaction is not null;
 
     public async Task<int> SavaChangesAsync(CancellationToken cancellationToken = default)
@@ -90,5 +92,7 @@ public class NotFileDbContext(DbContextOptions<NotFileDbContext> options, INotMe
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfiguration(new NotFileEntityConfiguration());
         modelBuilder.ApplyConfiguration(new NotFileGroupEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new FileChunkRecordEntityConfig());
+        modelBuilder.ApplyConfiguration(new ClientRequestTypeConfiguration());
     }
 }

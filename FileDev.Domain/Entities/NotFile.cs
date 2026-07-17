@@ -2,36 +2,6 @@ namespace FileDev.Domain.Entities;
 
 public class NotFile : Entity, IAggregateRoot
 {
-    public NotFile(Guid userId, string fileName, HashSet<string>? fileTags, string fileDescription,
-        FileType fileType, long fileSize, Uri fileUri, string fileMd5,
-        FileIdentity fileIdentity = FileIdentity.FilePrivate) : this()
-    {
-        if (userId == Guid.Empty) throw new ArgumentNullException(nameof(userId), "用户ID不能为空");
-        if (string.IsNullOrWhiteSpace(fileName)) throw new ArgumentException("文件名不能为 null 或空白", nameof(fileName));
-        if (fileSize < 0) throw new ArgumentOutOfRangeException(nameof(fileSize), "文件大小不能为负数");
-        if (fileUri == null) throw new ArgumentNullException(nameof(fileUri));
-
-        UserId = userId;
-        FileName = fileName;
-        FileDescription = fileDescription;
-        FileTags = fileTags ?? new HashSet<string>();
-        FileType = fileType;
-        FileSize = fileSize;
-        FileMd5 = fileMd5;
-        FileUri = fileUri;
-        FileIdentity = fileIdentity;
-        /// 添加领域事件
-        AddDomainEvent(userId, fileName, fileUri, fileSize, fileMd5, fileIdentity, fileType);
-    }
-
-    private NotFile()
-    {
-        FileId = Guid.CreateVersion7();
-        UploadTime = DateTime.UtcNow;
-        UpdateTime = DateTime.UtcNow;
-        FileTags = new HashSet<string>();
-        IsDeleted = false;
-    }
 
     public Guid FileId { get; init; }
 
@@ -43,7 +13,7 @@ public class NotFile : Entity, IAggregateRoot
 
     public string FileDescription { get; set; } = string.Empty;
 
-    public FileType FileType { get; private set; }
+    //public FileType FileType { get; private set; }
 
     public long FileSize { get; private set; }
 
@@ -61,6 +31,36 @@ public class NotFile : Entity, IAggregateRoot
 
     public DateTime? DeleteTime { get; private set; }
 
+    public NotFile(Guid userId, string fileName, HashSet<string>? fileTags, string fileDescription,
+           long fileSize, Uri fileUri, string fileMd5,
+           FileIdentity fileIdentity = FileIdentity.FilePrivate) : this()
+    {
+        if (userId == Guid.Empty) throw new ArgumentNullException(nameof(userId), "用户ID不能为空");
+        if (string.IsNullOrWhiteSpace(fileName)) throw new ArgumentException("文件名不能为 null 或空白", nameof(fileName));
+        if (fileSize < 0) throw new ArgumentOutOfRangeException(nameof(fileSize), "文件大小不能为负数");
+        ArgumentNullException.ThrowIfNull(fileUri);
+
+        UserId = userId;
+        FileName = fileName;
+        FileDescription = fileDescription;
+        FileTags = fileTags ?? [];
+        FileSize = fileSize;
+        FileMd5 = fileMd5;
+        FileUri = fileUri;
+        FileIdentity = fileIdentity;
+        /// 添加领域事件
+        AddDomainEvent(new UploadNotFileEvent(this, userId, fileName, fileUri, fileSize, fileMd5, fileIdentity));
+    }
+
+    private NotFile()
+    {
+        FileId = Guid.CreateVersion7();
+        UploadTime = DateTime.UtcNow;
+        UpdateTime = DateTime.UtcNow;
+        FileTags = [];
+        IsDeleted = false;
+    }
+
 
     public void UpdateFileData(string? fileName, HashSet<string>? tags, string? fileDescription,
         FileIdentity? fileIdentity, string fileMd5)
@@ -72,7 +72,7 @@ public class NotFile : Entity, IAggregateRoot
             FileName = fileName.Trim();
 
         if (tags != null && (!FileTags.SetEquals(tags)))
-            FileTags = [..tags];
+            FileTags = [.. tags];
 
         if (!string.IsNullOrWhiteSpace(fileDescription) && !FileDescription.Equals(fileDescription.Trim()))
             FileDescription = fileDescription.Trim();
@@ -89,6 +89,11 @@ public class NotFile : Entity, IAggregateRoot
     public void SetFileMd5(string fileMd5)
     {
         FileMd5 = fileMd5;
+    }
+
+    public bool IsFileEqualMd5(string fileMd5)
+    {
+        return fileMd5 == FileMd5;
     }
 
     public void AddTag(string tag)
@@ -132,10 +137,10 @@ public class NotFile : Entity, IAggregateRoot
     }
 
     private void AddDomainEvent(Guid userId, string fileName, Uri fileUri, long fileSize, string fileMd5,
-        FileIdentity fileIdentity, FileType fileType)
+        FileIdentity fileIdentity)
     {
         var domainEvent =
-            new CreateNotFileEvent(this, userId, fileName, fileUri, fileSize, fileMd5, fileIdentity, fileType);
+            new UploadNotFileEvent(this, userId, fileName, fileUri, fileSize, fileMd5, fileIdentity);
         AddDomainEvent(domainEvent);
     }
 
@@ -147,7 +152,7 @@ public class NotFile : Entity, IAggregateRoot
         private string _fileMd5 = string.Empty;
         private string _fileName = null!;
         private long _fileSize;
-        private HashSet<string> _fileTags = new();
+        private HashSet<string> _fileTags = [];
         private FileType _fileType;
         private Uri _fileUri = null!;
         private Guid _userId;
@@ -166,7 +171,7 @@ public class NotFile : Entity, IAggregateRoot
 
         public NotFileBuilder WithFileTags(IEnumerable<string>? fileTags)
         {
-            _fileTags = fileTags == null ? new HashSet<string>() : [..fileTags];
+            _fileTags = fileTags == null ? [] : [.. fileTags];
             return this;
         }
 
@@ -221,7 +226,7 @@ public class NotFile : Entity, IAggregateRoot
                 _fileName,
                 _fileTags, // 保证非null
                 _fileDescription,
-                _fileType,
+               // _fileType,
                 _fileSize,
                 _fileUri,
                 _fileMd5,

@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+﻿﻿﻿﻿using System.Diagnostics;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
@@ -6,6 +6,8 @@ namespace Notcomd.Evenbus.EventBus;
 
 /// <summary>
 /// RabbitMQ 连接管理（纯异步，无 sync-over-async）
+/// 
+/// 使用 IConnectionFactory（由 DI 注册），支持 Aspire.RabbitMQ.Client 或手动配置。
 /// </summary>
 public class RabbitMqConnection : IAsyncDisposable
 {
@@ -31,7 +33,7 @@ public class RabbitMqConnection : IAsyncDisposable
     /// <summary>
     /// 创建 Channel（异步版本，替代 CreateModel）
     /// </summary>
-    public async Task<IChannel> CreateChannelAsync(CancellationToken cancellationToken = default)
+    public virtual async Task<IChannel> CreateChannelAsync(CancellationToken cancellationToken = default)
     {
         if (!IsConnected)
             await TryConnectAsync(cancellationToken).ConfigureAwait(false);
@@ -43,7 +45,7 @@ public class RabbitMqConnection : IAsyncDisposable
     /// <summary>
     /// 异步连接（修复原版 sync-over-async 死锁风险）
     /// </summary>
-    public async Task<bool> TryConnectAsync(CancellationToken cancellationToken = default)
+    public virtual async Task<bool> TryConnectAsync(CancellationToken cancellationToken = default)
     {
         lock (_syncRoot)
         {

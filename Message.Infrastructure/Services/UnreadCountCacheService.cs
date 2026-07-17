@@ -4,7 +4,7 @@ using StackExchange.Redis;
 
 namespace Message.Infrastructure.Services;
 
-public class UnreadCountCacheService : IUnreadCountCacheService
+public class UnreadCountCacheService 
 {
     private const string UnreadCountPrefix = "message:user:unread:";
     private static readonly TimeSpan UnreadCountTtl = TimeSpan.FromHours(1);

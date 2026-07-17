@@ -4,7 +4,7 @@ using Message.Domain.SeedWork;
 
 namespace Message.Domain.IRepository;
 
-public interface IMessageFriendsRepository : IRepository<MessageFriends>
+public interface IMessageFriendsRepository 
 {
     Task<MessageFriends?> GetByIdAsync(Guid friendshipId);
     Task<MessageFriends?> GetByUserAndFriendAsync(Guid userId, Guid friendId);

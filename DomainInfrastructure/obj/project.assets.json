@@ -1452,11 +1452,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj",
+      "projectUniqueName": "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj",
       "projectName": "DomainInfrastructure",
-      "projectPath": "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj",
+      "projectPath": "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj",
       "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-      "outputPath": "F:\\NotBlog\\DomainInfrastructure\\obj\\",
+      "outputPath": "f:\\NotBlog\\DomainInfrastructure\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -1478,8 +1478,8 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "projectReferences": {
-            "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj": {
-              "projectPath": "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj"
+            "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj": {
+              "projectPath": "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj"
             }
           }
         }
@@ -1820,7 +1820,7 @@
       "code": "NU1903",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "Package 'Newtonsoft.Json' 9.0.1 has a known high severity vulnerability, https://github.com/advisories/GHSA-5crp-9r3c-p9vr",
+      "message": "包 \"Newtonsoft.Json\" 9.0.1 具有已知的 高 严重性漏洞，https://github.com/advisories/GHSA-5crp-9r3c-p9vr",
       "libraryId": "Newtonsoft.Json",
       "targetGraphs": [
         "net10.0"

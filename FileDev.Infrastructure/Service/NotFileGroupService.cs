@@ -1,15 +1,13 @@
-using FileDev.Domain.Entities;
-using FileDev.Domain.IRepository;
-using FileDev.Domain.IServices;
-using Microsoft.Extensions.Logging;
 
+using FileDev.Domain.IRepository;
+using Microsoft.Extensions.Logging;
 namespace FileDev.Infrastructure.Service;
 
 public class NotFileGroupService(INotFileGroupRepository notFileGroupRepository, ILogger<NotFileGroupService> logger)
     : INotFileGroupService
 {
     public async Task CreateNotFileGroupAsync(Guid userId, string groupName, string? groupDescription,
-        HashSet<string>? tags = null, FileType fileType = FileType.CompressFiles,
+        HashSet<string>? tags = null,
         FileIdentity fileIdentity = FileIdentity.FilePublic)
     {
         if (string.IsNullOrEmpty(groupName))
@@ -38,7 +36,8 @@ public class NotFileGroupService(INotFileGroupRepository notFileGroupRepository,
             .WithFileGroupTags(tags ?? [])
             .WithFileIdentity(fileIdentity)
             .Build();
-        logger.LogInformation("File group created successfully {GroupName}", groupName);
+        logger.LogInformation("File group created successfully {GroupName}",
+                              groupName);
         await notFileGroupRepository.InsertNotFileGroupAsync(data);
     }
 
@@ -59,17 +58,20 @@ public class NotFileGroupService(INotFileGroupRepository notFileGroupRepository,
         var groupData = await notFileGroupRepository.GetNotFileGroupByIdAsync(notFileGroupId);
         if (groupData == null)
         {
-            throw new ArgumentNullException(nameof(groupData), "File group not found");
+            logger.LogError("File group not found");
+            return;
         }
 
         if (!groupData.FileIds.Contains(fileId))
         {
             groupData.AddFile(fileId);
-            logger.LogInformation("File added to file group successfully {FileId}", fileId);
+            logger.LogInformation("File added to file group successfully {FileId}",
+                                  fileId);
         }
         else
         {
-            logger.LogError("File already exists in file group {FileId}", fileId);
+            logger.LogError("File already exists in file group {FileId}",
+                          fileId);
         }
     }
 
@@ -79,10 +81,12 @@ public class NotFileGroupService(INotFileGroupRepository notFileGroupRepository,
         if (groupData.FileIds.Contains(fileId))
         {
             groupData.RemoveFile(fileId);
-            logger.LogInformation("File removed from file group successfully {FileId}", fileId);
+            logger.LogInformation("File removed from file group successfully {FileId}",
+                                  fileId);
         }
 
-        logger.LogError("File not found in file group {FileId}", fileId);
+        logger.LogError("File not found in file group {FileId}",
+                      fileId);
     }
 
     public async Task UpdateNotFileGroupAsync(Guid notFileGroupId, string groupName, string? groupDescription,
