@@ -93,7 +93,7 @@ public class NotFileGroupService(INotFileGroupRepository notFileGroupRepository,
         HashSet<string>? tags = null)
     {
         var data = await notFileGroupRepository.GetNotFileGroupByIdAsync(notFileGroupId);
-        data.UpdateFileGroup(groupName, tags, groupDescription, FileIdentity.FilePublic, FileType.CompressFiles);
+        data.UpdateFileGroup(groupName, tags, groupDescription, FileIdentity.FilePublic);
         await notFileGroupRepository.UpdateNotFileGroupAsync(data);
         logger.LogInformation("File group updated successfully {GroupName}", data.FileGroupName);
     }

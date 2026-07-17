@@ -21,10 +21,10 @@ public class CreateNotFileCommandHandler(INotFileStorageService storageProvider,
     {
         // 1. 校验
         if (request.UserGuid == Guid.Empty)
-            throw new ArgumentException("用户ID不能为空", nameof(request.UserGuid));
+            throw new ArgumentException("用户ID不能为空", nameof(request));
         if (string.IsNullOrWhiteSpace(request.FileName))
             throw new ArgumentException("文件名不能为空",
-                                        nameof(request.FileName));
+                                        nameof(request));
 
         var ext = Path.GetExtension(request.FileName).ToLowerInvariant();
         if (!_config.AllowedExtensions.Contains(ext))

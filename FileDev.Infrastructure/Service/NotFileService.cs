@@ -54,7 +54,7 @@ public class NotFileService(INotFileRepository notFileRepository, ILogger<INotFi
             return;
         }
 
-        file.UpdateFileData(fileName, fileTags, fileDescription, fileIdentity, fileMd5);
+        file.ChangeFileData(fileName, fileTags, fileDescription, fileIdentity, fileMd5);
         await notFileRepository.UpdateFileAsync(file);
     }
 

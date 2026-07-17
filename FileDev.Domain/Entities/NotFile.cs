@@ -2,7 +2,6 @@ namespace FileDev.Domain.Entities;
 
 public class NotFile : Entity, IAggregateRoot
 {
-
     public Guid FileId { get; init; }
 
     public Guid UserId { get; init; }
@@ -62,7 +61,7 @@ public class NotFile : Entity, IAggregateRoot
     }
 
 
-    public void UpdateFileData(string? fileName, HashSet<string>? tags, string? fileDescription,
+    public void ChangeFileData(string? fileName, HashSet<string>? tags, string? fileDescription,
         FileIdentity? fileIdentity, string fileMd5)
     {
         if (string.IsNullOrEmpty(fileMd5))
@@ -84,6 +83,8 @@ public class NotFile : Entity, IAggregateRoot
             FileMd5 = fileMd5;
 
         UpdateTime = DateTime.UtcNow;
+        AddDomainEvent(new ChangeFileDataEvent(this.FileId, this.UserId, this.FileName, this.FileTags,
+            fileDescription ?? this.FileDescription, this.FileIdentity, this.FileMd5));
     }
 
     public void SetFileMd5(string fileMd5)
@@ -125,7 +126,9 @@ public class NotFile : Entity, IAggregateRoot
         IsDeleted = true;
         DeleteTime = DateTime.UtcNow;
         UpdateTime = DateTime.UtcNow;
-    }
+        /// 添加领域事件
+        AddDomainEvent(new DeleteFileEvent(this.FileId, this.UserId));
+       }
 
     public void Restore()
     {
@@ -134,14 +137,6 @@ public class NotFile : Entity, IAggregateRoot
         IsDeleted = false;
         DeleteTime = null;
         UpdateTime = DateTime.UtcNow;
-    }
-
-    private void AddDomainEvent(Guid userId, string fileName, Uri fileUri, long fileSize, string fileMd5,
-        FileIdentity fileIdentity)
-    {
-        var domainEvent =
-            new UploadNotFileEvent(this, userId, fileName, fileUri, fileSize, fileMd5, fileIdentity);
-        AddDomainEvent(domainEvent);
     }
 
 

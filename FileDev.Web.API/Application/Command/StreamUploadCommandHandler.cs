@@ -58,7 +58,7 @@ public class StreamUploadCommandHandler(
             request.FileName, content.Length);
 
         return new NotFile(request.UserId, request.FileName, request.FileTags,
-            request.FileDescription ?? string.Empty, request.FileType,
+            request.FileDescription ?? string.Empty,
             content.Length, fileUri, actualHash, request.FileIdentity);
     }
 }

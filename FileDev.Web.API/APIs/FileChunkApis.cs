@@ -173,6 +173,7 @@ public static class FileChunkApis
         }
         catch (Exception ex)
         {
+            
             return Results.Json(new { error = ex.Message }, statusCode: 404);
         }
     }

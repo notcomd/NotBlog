@@ -7,7 +7,7 @@ public class FileResult
     public string FileName { get; set; } = string.Empty;
     public HashSet<string> FileTags { get; set; } = new();
     public string FileDescription { get; set; } = string.Empty;
-    public FileType FileType { get; set; }
+    //public FileType FileType { get; set; }
     public double FileSize { get; set; }
     public Uri FileUri { get; set; } = null!;
     public FileIdentity FileIdentity { get; set; }
@@ -25,7 +25,7 @@ public class FileResult
             FileName = file.FileName,
             FileTags = new HashSet<string>(file.FileTags),
             FileDescription = file.FileDescription,
-            FileType = file.FileType,
+            //FileType = file.FileType,
             FileSize = file.FileSize,
             FileUri = file.FileUri,
             FileIdentity = file.FileIdentity,

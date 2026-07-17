@@ -50,7 +50,7 @@ public class MergeChunksCommandHandler(
         // 返回一个简化的 NotFile 标记
         return new NotFile(
             record.UserId, record.FileName, record.FileTags,
-            record.FileDescription ?? string.Empty, record.FileType,
+            record.FileDescription ?? string.Empty,
             record.TotalSize, fileUri,
             mergeResult.ActualHash ?? record.FileMd5, record.FileIdentity);
     }

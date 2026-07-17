@@ -60,13 +60,13 @@ public class NotFileGroupRepository(NotFileDbContext notFileDbContext) : INotFil
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<NotFileGroup>> GetNotFileGroupsByTypeAsync(FileType fileType)
-    {
+    // public async Task<IEnumerable<NotFileGroup>> GetNotFileGroupsByTypeAsync(FileType fileType)
+    // {
         
-        return await _notFileDbContext.NotFileGroups
-            .Where(x => x.FileType == fileType)
-            .ToListAsync();
-    }
+    //     return await _notFileDbContext.NotFileGroups
+    //         .Where(x => x.FileType == fileType)
+    //         .ToListAsync();
+    // }
 
     public async Task<NotFileGroup?> GetNotFileGroupByNameAsync(string fileGroupName)
     {

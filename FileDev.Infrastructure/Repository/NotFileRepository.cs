@@ -42,12 +42,12 @@ public class NotFileRepository(NotFileDbContext notFileDbContext) : INotFileRepo
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<NotFile>?> GetFilesByTypeAsync(FileType fileType)
-    {
-        return await _notFileDbContext.NotFiles
-            .Where(x => x.FileType.Equals(fileType) && !x.IsDeleted)
-            .ToListAsync();
-    }
+    // public async Task<IEnumerable<NotFile>?> GetFilesByTypeAsync(FileType fileType)
+    // {
+    //     return await _notFileDbContext.NotFiles
+    //         .Where(x => x.FileType.Equals(fileType) && !x.IsDeleted)
+    //         .ToListAsync();
+    // }
 
     public async Task<IEnumerable<NotFile>?> GetFilesByTagsAsync(HashSet<string> tags)
     {

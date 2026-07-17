@@ -15,7 +15,7 @@ public interface INotFileGroupRepository: IRepository<NotFileGroup>
     
     Task<IEnumerable<NotFileGroup>> GetPublicNotFileGroupsAsync();
     
-    Task<IEnumerable<NotFileGroup>> GetNotFileGroupsByTypeAsync(FileType fileType);
+    // Task<IEnumerable<NotFileGroup>> GetNotFileGroupsByTypeAsync(FileType fileType);
     
     Task<NotFileGroup?> GetNotFileGroupByNameAsync(string fileGroupName);
     

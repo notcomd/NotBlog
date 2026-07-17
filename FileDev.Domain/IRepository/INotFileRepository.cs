@@ -12,7 +12,7 @@ public interface INotFileRepository:IRepository<NotFile>
 
     Task<IEnumerable<NotFile>> GetPublicFilesAsync();
 
-    Task<IEnumerable<NotFile>?> GetFilesByTypeAsync(FileType fileType);
+   // Task<IEnumerable<NotFile>?> GetFilesByTypeAsync(FileType fileType);
 
     Task<IEnumerable<NotFile>?> GetFilesByTagsAsync(HashSet<string> tags);
 
