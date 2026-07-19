@@ -3,7 +3,7 @@ using Notcomd.Evenbus;
 
 namespace Identity.Web.API.Application.IntegrationEvents;
 
-    [EvenBusName("Identity.User.Code")]
+    [EventBusName("Identity.User.Code")]
     public class EmailSendBus(IEmailSender email, IEmailCodeSend emailCodeSend, ILogger<IEmailCodeSend> logger)
         : JsonIntegrationEventHandler<EmailSendRecord>
     {

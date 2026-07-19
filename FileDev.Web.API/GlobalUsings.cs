@@ -1,5 +1,6 @@
 global using CacheMemory.Extensions;
 global using Notcomd.Evenbus;
+global using Notcomd.Evenbus.Extension;
 global using NotMediator;
 global using FileDev.Domain.Dto.Request;
 global using FileDev.Domain.Dto.Response;
@@ -17,4 +18,5 @@ global using FileDev.Web.API.APIs;
 global using FileDev.Web.API.Middleware;
 global using Microsoft.AspNetCore.Http.Features;
 global using NotBlog.ServiceDefaults;
+global using RabbitMQ.Client;
 global using Scalar.AspNetCore;

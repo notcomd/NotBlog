@@ -88,4 +88,33 @@ public class NotFileGroupRepository(NotFileDbContext notFileDbContext) : INotFil
             throw new NotFileException("NotFileGroup is null");
         _notFileDbContext.NotFileGroups.Remove(data);
     }
+
+    // ---- 树形结构查询 ----
+
+    public async Task<bool> ExistsByNameAtSameLevelAsync(Guid? parentGroupId, string name, Guid? excludeId = null)
+    {
+        var query = _notFileDbContext.NotFileGroups
+            .Where(x => x.IsDeleted == false)
+            .Where(x => x.ParentGroupId == parentGroupId)
+            .Where(x => x.FileGroupName == name);
+
+        if (excludeId.HasValue)
+            query = query.Where(x => x.NotFileGroupId != excludeId.Value);
+
+        return await query.AnyAsync();
+    }
+
+    public async Task<IEnumerable<NotFileGroup>> GetChildrenAsync(Guid parentGroupId)
+    {
+        return await _notFileDbContext.NotFileGroups
+            .Where(x => x.ParentGroupId == parentGroupId && x.IsDeleted == false)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<NotFileGroup>> GetRootGroupsByUserIdAsync(Guid userId)
+    {
+        return await _notFileDbContext.NotFileGroups
+            .Where(x => x.UserId == userId && x.ParentGroupId == null && x.IsDeleted == false)
+            .ToListAsync();
+    }
 }

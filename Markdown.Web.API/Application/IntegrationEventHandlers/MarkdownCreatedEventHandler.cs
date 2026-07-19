@@ -6,7 +6,7 @@ namespace Markdown.Web.API.Application.IntegrationEventHandlers;
 /// <summary>
 ///     Markdown 文档创建事件处理器（集成事件）
 /// </summary>
-[EvenBusName("MarkdownCreated")]
+[EventBusName("MarkdownCreated")]
 public class MarkdownCreatedEventHandler : JsonIntegrationEventHandler<MarkdownCreatedEventData>
 {
     public override Task Handler(MarkdownCreatedEventData eventData)

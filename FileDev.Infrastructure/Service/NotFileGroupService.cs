@@ -6,41 +6,6 @@ namespace FileDev.Infrastructure.Service;
 public class NotFileGroupService(INotFileGroupRepository notFileGroupRepository, ILogger<NotFileGroupService> logger)
     : INotFileGroupService
 {
-    public async Task CreateNotFileGroupAsync(Guid userId, string groupName, string? groupDescription,
-        HashSet<string>? tags = null,
-        FileIdentity fileIdentity = FileIdentity.FilePublic)
-    {
-        if (string.IsNullOrEmpty(groupName))
-        {
-            logger.LogError("File group name is empty");
-            return;
-        }
-
-        if (userId == Guid.Empty)
-        {
-            logger.LogError("User id is empty");
-            return;
-        }
-
-        var group = await notFileGroupRepository.GetNotFileGroupByNameAsync(groupName);
-        if (group != null)
-        {
-            logger.LogError("File group name already exists {GroupName}", groupName);
-            return;
-        }
-
-        var data = new NotFileGroup.NotFileGroupBuilder()
-            .WithUserId(userId)
-            .WithFileGroupName(groupName)
-            .WithFileGroupDescription(groupDescription ?? string.Empty)
-            .WithFileGroupTags(tags ?? [])
-            .WithFileIdentity(fileIdentity)
-            .Build();
-        logger.LogInformation("File group created successfully {GroupName}",
-                              groupName);
-        await notFileGroupRepository.InsertNotFileGroupAsync(data);
-    }
-
     public async Task<IEnumerable<NotFileGroup>> GetNotFileGroupsByUserIdAsync(Guid userId)
     {
         var listData = await notFileGroupRepository.GetNotFileGroupsByUserIdAsync(userId);
@@ -49,60 +14,16 @@ public class NotFileGroupService(INotFileGroupRepository notFileGroupRepository,
 
     public async Task<NotFileGroup> GetNotFileGroupByIdAsync(Guid notFileGroupId)
     {
-        var data = await notFileGroupRepository.GetNotFileGroupByIdAsync(notFileGroupId);
-        return data;
+        return await notFileGroupRepository.GetNotFileGroupByIdAsync(notFileGroupId);
     }
 
-    public async Task AddFileToNotFileGroupAsync(Guid notFileGroupId, Guid fileId)
+    public async Task<IEnumerable<NotFileGroup>> GetRootGroupsByUserIdAsync(Guid userId)
     {
-        var groupData = await notFileGroupRepository.GetNotFileGroupByIdAsync(notFileGroupId);
-        if (groupData == null)
-        {
-            logger.LogError("File group not found");
-            return;
-        }
-
-        if (!groupData.FileIds.Contains(fileId))
-        {
-            groupData.AddFile(fileId);
-            logger.LogInformation("File added to file group successfully {FileId}",
-                                  fileId);
-        }
-        else
-        {
-            logger.LogError("File already exists in file group {FileId}",
-                          fileId);
-        }
+        return await notFileGroupRepository.GetRootGroupsByUserIdAsync(userId);
     }
 
-    public async Task RemoveFileFromNotFileGroupAsync(Guid notFileGroupId, Guid fileId)
+    public async Task<IEnumerable<NotFileGroup>> GetChildrenAsync(Guid parentGroupId)
     {
-        var groupData = await notFileGroupRepository.GetNotFileGroupByIdAsync(notFileGroupId);
-        if (groupData.FileIds.Contains(fileId))
-        {
-            groupData.RemoveFile(fileId);
-            logger.LogInformation("File removed from file group successfully {FileId}",
-                                  fileId);
-        }
-
-        logger.LogError("File not found in file group {FileId}",
-                      fileId);
-    }
-
-    public async Task UpdateNotFileGroupAsync(Guid notFileGroupId, string groupName, string? groupDescription,
-        HashSet<string>? tags = null)
-    {
-        var data = await notFileGroupRepository.GetNotFileGroupByIdAsync(notFileGroupId);
-        data.UpdateFileGroup(groupName, tags, groupDescription, FileIdentity.FilePublic);
-        await notFileGroupRepository.UpdateNotFileGroupAsync(data);
-        logger.LogInformation("File group updated successfully {GroupName}", data.FileGroupName);
-    }
-
-    public async Task DeleteNotFileGroupAsync(Guid notFileGroupId)
-    {
-        var data = await notFileGroupRepository.GetNotFileGroupByIdAsync(notFileGroupId);
-        data.SoftDelete();
-        await notFileGroupRepository.UpdateNotFileGroupAsync(data);
-        logger.LogInformation("File group deleted successfully {GroupName}", data.FileGroupName);
+        return await notFileGroupRepository.GetChildrenAsync(parentGroupId);
     }
 }

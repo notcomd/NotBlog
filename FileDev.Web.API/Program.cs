@@ -20,6 +20,21 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddProblemDetails();
 // 添加这行来注册 IHttpContextAccessor
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddTransient<FileCheckTypeMiddleware>();
+
+// ═══ EventBus 注册 ═══
+builder.Services.AddSingleton<IConnectionFactory>(_ => new ConnectionFactory
+{
+    HostName = builder.Configuration.GetValue<string?>("IntegrationEventRabbitMQOptions:HostName") ?? "localhost",
+    UserName = builder.Configuration.GetValue<string?>("IntegrationEventRabbitMQOptions:UserName") ?? "guest",
+    Password = builder.Configuration.GetValue<string?>("IntegrationEventRabbitMQOptions:Password") ?? "guest",
+    Port = builder.Configuration.GetValue<int?>("IntegrationEventRabbitMQOptions:Port") ?? 5672
+});
+builder.Services.AddEventBus("filedev_events", Assembly.GetExecutingAssembly());
+
+// 绑定文件存储配置（包括 AllowedExtensions 白名单）
+builder.Services.Configure<NotFileStorageOptions>(
+    builder.Configuration.GetSection("NotFileStorage"));
 
 builder.Services.Configure<FormOptions>(options => { options.MultipartBoundaryLengthLimit = 1024 * 1024 * 1024; }
 );
@@ -39,6 +54,7 @@ app.UseNotBlogPipeline();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseFileAccess();
+app.UseMiddleware<FileCheckTypeMiddleware>();
 app.MapDefaultEndpoints();
 
 

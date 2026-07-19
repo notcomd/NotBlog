@@ -1,15 +1,13 @@
+using FileDev.Domain.Entities;
+using FileDev.Domain.IRepository;
+
 namespace FileDev.Web.API.Application.Command;
 
 public class CreateNotFileGroupCommandHandler(
-    INotFileStorageService storageProvider,
-    IOptionsSnapshot<NotFileStorageOptions> configOptions,
-    INotFileService notFileService,
-    INotFileGroupService notFileGroupService)
+    INotFileGroupRepository notFileGroupRepository
+    )
     : NotMediator.IRequestHandler<CreateNotFileGroupCommand, bool>
 {
-    private readonly INotFileGroupService _notFileGroupService =
-        notFileGroupService ?? throw new ArgumentNullException(nameof(notFileGroupService));
-
     public async Task<bool> Handler(CreateNotFileGroupCommand request, CancellationToken cancellationToken)
     {
         if (request.UserGuid == Guid.Empty)
@@ -17,12 +15,21 @@ public class CreateNotFileGroupCommandHandler(
         if (string.IsNullOrWhiteSpace(request.FileGroupName))
             throw new ArgumentException("文件组名称不能为空");
 
-        await _notFileGroupService.CreateNotFileGroupAsync(
-            request.UserGuid,
-            request.FileGroupName,
-            request.FileGroupDescription,
-            request.FileGroupTags,
-            request.FileIdentity);
+        // 同级（根级）名称唯一性校验
+        if (await notFileGroupRepository.ExistsByNameAtSameLevelAsync(null, request.FileGroupName))
+            throw new InvalidOperationException($"文件组名称 '{request.FileGroupName}' 已存在");
+
+        var data = new NotFileGroup.NotFileGroupBuilder()
+            .WithUserId(request.UserGuid)
+            .WithFileGroupName(request.FileGroupName)
+            .WithFileGroupDescription(request.FileGroupDescription)
+            .WithFileGroupTags(request.FileGroupTags)
+            .WithFileIdentity(request.FileIdentity)
+            .WithParentGroupId(request.ParentGroupId)
+            .Build();
+
+        await notFileGroupRepository.InsertNotFileGroupAsync(data);
+        await notFileGroupRepository.UnitOfWork.SavaEntitiesAsync(cancellationToken);
 
         return true;
     }

@@ -1,7 +1,6 @@
 using System.Reflection;
 using Markdown.Infrastructure.EntityFramework;
 using NotBlog.ServiceDefaults;
-using Notcomd.Evenbus.EventBus;
 using Notcomd.Evenbus.Extension;
 using NotMediator;
 using Scalar.AspNetCore;
@@ -17,13 +16,15 @@ builder.Services.AddNpgsql<MarkDownDbContext>("MarkDownPostgres");
 builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
 
 
-// 配置 EventBus（RabbitMQ 消息总线）
-// IConnectionFactory 由 ServiceDefaults（Aspire）或手动注册
+// 配置 EventBus（通过 IConfiguration 配置驱动）
+// IConnectionFactory 来源：Aspire AddRabbitMQClient("EventBus") 或手动注册
+var eventBusCfg = builder.Configuration.GetSection("EventBus");
+#if DEBUG
 builder.Services.AddSingleton<RabbitMQ.Client.IConnectionFactory>(_ =>
 {
-    var host = builder.Configuration["EventBus:HostName"] ?? "localhost";
-    var userName = builder.Configuration["EventBus:UserName"] ?? "guest";
-    var password = builder.Configuration["EventBus:Password"] ?? "guest";
+    var host = eventBusCfg["HostName"] ?? "localhost";
+    var userName = eventBusCfg["UserName"] ?? "guest";
+    var password = eventBusCfg["Password"] ?? "guest";
     return new RabbitMQ.Client.ConnectionFactory
     {
         HostName = host,
@@ -31,13 +32,10 @@ builder.Services.AddSingleton<RabbitMQ.Client.IConnectionFactory>(_ =>
         Password = password
     };
 });
-
-builder.Services.Configure<IntegrationEventRabbitMqOptions>(options =>
-{
-    options.ExchangeName = builder.Configuration["EventBus:ExchangeName"] ?? "markdown_events";
-});
-
-builder.Services.AddEventBus("markdown_queue", Assembly.GetExecutingAssembly());
+#else
+builder.AddRabbitMQClient("EventBus");
+#endif
+builder.Services.AddEventBus(eventBusCfg, Assembly.GetExecutingAssembly());
 
 // 添加控制器服务
 builder.Services.AddControllers();

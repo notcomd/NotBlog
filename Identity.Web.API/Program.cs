@@ -4,17 +4,19 @@ builder.AddServiceDefaults();
 
 builder.AddCacheMemory("Redis");
 
+builder.AddRabbitMQClient("EventBus");
+
 builder.Services.AddNotEmail(opt => { builder.Configuration.GetSection("NotEmail").Bind(opt); });
 
 
 #if DEBUG
 
 builder.Services.AddNotBlogServices(builder.Configuration.GetSection("DbContextOption"),
-    ReflectionHelper.GetAllReferencedAssemblies().ToArray());
+    [..ReflectionHelper.GetAllReferencedAssemblies()]);
 
 #else
 builder.Services.AddNotBlogServices(builder.Configuration.GetConnectionString("IdentityPostgres") ?? throw new InvalidOperationException(),
-    ReflectionHelper.GetAllReferencedAssemblies().ToArray());
+    [..ReflectionHelper.GetAllReferencedAssemblies()]);
 #endif
 builder.Services.AddIdentityService(builder.Configuration.GetSection("JwtOptions"));
 
@@ -29,6 +31,24 @@ builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddProblemDetails();
+
+// ═══ EventBus 注册（通过 IConfiguration 配置驱动） ═══
+// IConnectionFactory 来源：Aspire AddRabbitMQClient("EventBus") 或手动注册
+ 
+// var hostName = eventBusCfg["HostName"] ?? "localhost";
+// var userName = eventBusCfg["UserName"] ?? "guest";
+// var password = eventBusCfg["Password"] ?? "guest";
+// var port = int.TryParse(eventBusCfg["Port"], out var p) ? p : 5672;
+
+// builder.Services.AddSingleton<IConnectionFactory>(_ => new ConnectionFactory
+// {
+//     HostName = hostName,
+//     UserName = userName,
+//     Password = password,
+//     Port = port
+// });
+var eventBusCfg = builder.Configuration.GetSection("EventBus");
+builder.Services.AddEventBus(eventBusCfg, Assembly.GetExecutingAssembly());
 
 builder.Services.AddCors(options =>
 {

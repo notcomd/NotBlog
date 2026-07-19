@@ -1,15 +1,27 @@
+using System.Diagnostics;
 using NotMediator;
 
 namespace FileDev.Web.API.Application.Command;
 
+[DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 public class CreateNotFileCommand(Guid userGuid,
                             string fileName,
                             Uri filePath,
                             string fileMd5,
-                            Uri fileUri,
-                            long fileSize) : IRequest<bool>
+                            FileIdentity fileIdentity,
+                             Uri fileUri,
+                            long fileSize,
+                            HashSet<string>? fileTags,
+                            string? fileDescription
+                           ) : IRequest<bool>
 {
     public Guid UserGuid { get; set; } = userGuid;
+
+    public FileIdentity FileIdentity { get; set; } = fileIdentity;
+
+    public HashSet<string> FileTags { get; set; } = fileTags ?? [];
+
+    public string FileDescription { get; set; } = fileDescription ?? string.Empty;
 
     public string FileName { get; set; } = fileName;
 
@@ -20,4 +32,24 @@ public class CreateNotFileCommand(Guid userGuid,
     public Uri FileUri { get; set; } = fileUri;
 
     public long FileSize { get; set; } = fileSize;
+
+    public override bool Equals(object? obj)
+    {
+        return base.Equals(obj);
+    }
+
+    public override int GetHashCode()
+    {
+        return base.GetHashCode();
+    }
+
+    public override string? ToString()
+    {
+        return base.ToString();
+    }
+
+    private string GetDebuggerDisplay()
+    {
+        return ToString();
+    }
 }

@@ -18,7 +18,7 @@ public class NotFileStorageOptions
     public string DefaultEncoding { get; set; } = "utf-8";
 
     /// <summary>允许的文件扩展名（全类型）</summary>
-    public string[] AllowedExtensions { get; set; } =
+    public HashSet<string> AllowedExtensions { get; set; } =
     [
         // 图片
         ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".svg", ".ico",

@@ -7,7 +7,7 @@ namespace Markdown.Web.API.Application.IntegrationEventHandlers;
 /// <summary>
 ///     MarkReview 创建集成事件处理器
 /// </summary>
-[EvenBusName("MarkReviewCreated")]
+[EventBusName("MarkReviewCreated")]
 public class MarkReviewCreatedEventHandler : JsonIntegrationEventHandler<MarkReviewCreatedIntegrationEvent>
 {
     public override Task Handler(MarkReviewCreatedIntegrationEvent eventData)
@@ -23,7 +23,7 @@ public class MarkReviewCreatedEventHandler : JsonIntegrationEventHandler<MarkRev
 /// <summary>
 ///     MarkReview 删除集成事件处理器
 /// </summary>
-[EvenBusName("MarkReviewDeleted")]
+[EventBusName("MarkReviewDeleted")]
 public class MarkReviewDeletedEventHandler : JsonIntegrationEventHandler<MarkReviewDeletedIntegrationEvent>
 {
     public override Task Handler(MarkReviewDeletedIntegrationEvent eventData)
@@ -38,7 +38,7 @@ public class MarkReviewDeletedEventHandler : JsonIntegrationEventHandler<MarkRev
 /// <summary>
 ///     MarkReview 点赞集成事件处理器
 /// </summary>
-[EvenBusName("MarkReviewLiked")]
+[EventBusName("MarkReviewLiked")]
 public class MarkReviewLikedEventHandler : JsonIntegrationEventHandler<MarkReviewLikedIntegrationEvent>
 {
     public override Task Handler(MarkReviewLikedIntegrationEvent eventData)
@@ -53,7 +53,7 @@ public class MarkReviewLikedEventHandler : JsonIntegrationEventHandler<MarkRevie
 /// <summary>
 ///     子评论添加集成事件处理器
 /// </summary>
-[EvenBusName("ChildReviewAdded")]
+[EventBusName("ChildReviewAdded")]
 public class ChildReviewAddedEventHandler : JsonIntegrationEventHandler<ChildReviewAddedIntegrationEvent>
 {
     public override Task Handler(ChildReviewAddedIntegrationEvent eventData)

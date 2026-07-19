@@ -19,8 +19,25 @@ public class StreamUploadCommandHandler(
 
         var options = configOptions.Value;
         var ext = Path.GetExtension(request.FileName).ToLowerInvariant();
-        if (options.AllowedExtensions is { Length: > 0 } && !options.AllowedExtensions.Contains(ext))
-            throw new ArgumentException($"不支持的文件类型: {ext}");
+        logger.LogDebug("[StreamUpload] 文件名校验: FileName={FileName}, Ext={Ext}, WhitelistCount={Count}",
+            request.FileName, ext, options.AllowedExtensions.Count);
+
+        if (options.AllowedExtensions is { Count: > 0 })
+        {
+            if (!options.AllowedExtensions.Contains(ext))
+            {
+                logger.LogWarning("[StreamUpload] 拒绝 — 扩展名不在白名单: FileName={FileName}, Ext={Ext}",
+                    request.FileName, ext);
+                throw new ArgumentException($"不支持的文件类型: {ext}");
+            }
+
+            logger.LogInformation("[StreamUpload] 白名单校验通过: FileName={FileName}, Ext={Ext}",
+                request.FileName, ext);
+        }
+        else
+        {
+            logger.LogDebug("[StreamUpload] 白名单为空，跳过扩展名校验: FileName={FileName}", request.FileName);
+        }
 
         if (request.FileSize > options.MaxFileSize)
             throw new ArgumentException($"文件大小超过限制 {options.MaxFileSize / 1024 / 1024}MB");

@@ -4,13 +4,13 @@ using Notcomd.Evenbus;
 
 namespace FileDev.Web.API.Application.IntegrationEvents;
 
-[EvenBusName("File.Created")]
+[EventBusName("FileCreatedIntegrationEvent")]
 public class FileCreatedIntegrationEventHandler(INotFileService notFileService, ILogger<FileCreatedIntegrationEventHandler> logger)
     : JsonIntegrationEventHandler<FileCreatedEventData>
 {
     public override async Task Handler(FileCreatedEventData eventData)
     {
-        logger.LogInformation("[Integration] 文件创建事件已接收: FileName={FileName}, UserId={UserId}",
+        logger.LogInformation("[FileCreatedIntegrationEventHandler] 文件创建事件已接收: FileName={FileName}, UserId={UserId}",
             eventData.FileName, eventData.UserId);
         await Task.CompletedTask;
     }

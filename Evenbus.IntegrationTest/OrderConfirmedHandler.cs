@@ -14,7 +14,7 @@ public class OrderConfirmedHandler(ILogger<OrderConfirmedHandler> logger)
             ╔══════════════════════════════════════╗
             ║  收到集成事件！                       ║
             ╠══════════════════════════════════════╣
-            ║  事件ID:   {@event.Id}
+            ║  事件ID:  {@event.Id}
             ║  订单ID:  {@event.OrderId}
             ║  客户:    {@event.CustomerName}
             ║  金额:    {@event.Amount:C}

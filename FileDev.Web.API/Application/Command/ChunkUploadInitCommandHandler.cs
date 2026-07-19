@@ -23,8 +23,25 @@ public class ChunkUploadInitCommandHandler(
             throw new ArgumentException($"文件大小超过限制 {_config.MaxFileSize / 1024 / 1024}MB");
 
         var ext = Path.GetExtension(request.FileName).ToLowerInvariant();
-        if (!_config.AllowedExtensions.Contains(ext) && _config.AllowedExtensions is { Length: > 0 })
-            throw new ArgumentException($"不支持的文件类型: {ext}");
+        logger.LogDebug("[ChunkInit] 文件名校验: FileName={FileName}, Ext={Ext}, WhitelistCount={Count}",
+            request.FileName, ext, _config.AllowedExtensions.Count);
+
+        if (_config.AllowedExtensions is { Count: > 0 })
+        {
+            if (!_config.AllowedExtensions.Contains(ext))
+            {
+                logger.LogWarning("[ChunkInit] 拒绝 — 扩展名不在白名单: FileName={FileName}, Ext={Ext}",
+                    request.FileName, ext);
+                throw new ArgumentException($"不支持的文件类型: {ext}");
+            }
+
+            logger.LogInformation("[ChunkInit] 白名单校验通过: FileName={FileName}, Ext={Ext}",
+                request.FileName, ext);
+        }
+        else
+        {
+            logger.LogDebug("[ChunkInit] 白名单为空，跳过扩展名校验: FileName={FileName}", request.FileName);
+        }
 
         var safeName = request.FileName.Replace(" ", "_")
             .Replace("\\", "_").Replace("/", "_");
@@ -40,7 +57,7 @@ public class ChunkUploadInitCommandHandler(
             request.FileMd5, request.FileType, request.FileIdentity,
             request.FileTags, request.FileDescription, cancellationToken);
 
-        logger.LogInformation("[ChunkInit] 分片上传任务已初始化: FileKey={FileKey}, TotalChunks={Total}",
+        logger.LogInformation("[ChunkUploadInit] 分片上传任务已初始化: FileKey={FileKey}, TotalChunks={Total}",
             fileKey, totalChunks);
 
         return record;

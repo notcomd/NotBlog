@@ -6,6 +6,6 @@ public class CreateNotFileGroupCommand : IRequest<bool>
     public string FileGroupName { get; set; } = null!;
     public HashSet<string>? FileGroupTags { get; set; }
     public string? FileGroupDescription { get; set; }
-
-    public FileIdentity FileIdentity { get; set; } = FileIdentity.FilePrivate;
+    public Guid? ParentGroupId { get; set; }=Guid.Empty;
+    public FileIdentity FileIdentity { get; set; } = FileIdentity.FilePublic;
 }

@@ -4,7 +4,7 @@ using Notcomd.Evenbus;
 
 namespace FileDev.Web.API.Application.IntegrationEvents;
 
-[EvenBusName("File.Deleted")]
+[EventBusName("File.Deleted")]
 public class FileDeletedIntegrationEventHandler(INotFileService notFileService,
  ILogger<FileDeletedIntegrationEventHandler> logger,
  IEventBus eventBus)
@@ -19,4 +19,4 @@ public class FileDeletedIntegrationEventHandler(INotFileService notFileService,
     }
 }
 
-public record FileDeletedEventData(Guid FileId, Guid UserId, string FileName) : IntegrationEvent;
+public record FileDeletedEventData(Guid FileId, Guid UserId, string FileName) : Notcomd.Evenbus.IntegrationEvent;

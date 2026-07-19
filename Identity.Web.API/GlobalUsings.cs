@@ -1,4 +1,4 @@
-﻿// global using 指令
+// global using 指令
 
 global using System.ComponentModel.DataAnnotations;
 global using System.Reflection;
@@ -10,6 +10,7 @@ global using Identity.Domain.Options;
 global using Identity.Domain.Entities.UserAggregate;
 global using Microsoft.EntityFrameworkCore;
 global using Notcomd.Evenbus;
+global using Notcomd.Evenbus.Extension;
 global using Notcomd.NotEmail.Core;
 global using Notcomd.Token.JWT.Security;
 global using NotMediator;
@@ -23,3 +24,4 @@ global using Microsoft.Extensions.Http.Resilience;
 global using NotBlog.ServiceDefaults;
 global using Notcomd.NotEmail.Extensions;
 global using Polly;
+global using RabbitMQ.Client;

@@ -1,5 +1,5 @@
 namespace FileDev.Web.API.Middleware;
-
+using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using FileDev.Domain.IServices;
 
@@ -21,18 +21,21 @@ using FileDev.Domain.IServices;
 ///   [FileAccess(Policy = FileAccessPolicy.AuthenticatedOnly)]  // 仅验证登录
 ///   [FileAccess("fileId", Source = FileIdSource.Query)]        // 从查询字符串提取
 /// </summary>
-public class FileAccessMiddleware
+public class FileAccessMiddleware : IMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<FileAccessMiddleware> _logger;
 
-    public FileAccessMiddleware(RequestDelegate next, ILogger<FileAccessMiddleware> logger)
+    private readonly INotFileService _notFileService;
+
+    public FileAccessMiddleware(RequestDelegate next, ILogger<FileAccessMiddleware> logger, INotFileService notFileService)
     {
         _next = next;
         _logger = logger;
+        _notFileService = notFileService;
     }
 
-    public async Task InvokeAsync(HttpContext context, INotFileService notFileService)
+    public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
         var endpoint = context.GetEndpoint();
         var attr = endpoint?.Metadata.GetMetadata<FileAccessAttribute>();
@@ -58,7 +61,7 @@ public class FileAccessMiddleware
                 return;
             }
 
-            if (!await CheckAccessAsync(notFileService, fileId.Value, userId.Value, attr, context))
+            if (!await CheckAccessAsync(_notFileService, fileId.Value, userId.Value, attr, context))
                 return;
         }
 

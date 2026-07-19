@@ -1,4 +1,4 @@
-﻿﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Sockets;
 using System.Text;
@@ -23,18 +23,20 @@ namespace Notcomd.Evenbus.EventBus;
 /// RabbitMQ EventBus 实现（Pub/Sub 模式）
 /// 
 /// 功能：
-/// - Polly ResiliencePipeline 重试策略（指数退避）
+/// - Polly ResiliencePipeline 重试策略（指数退避，基数可配）
 /// - OpenTelemetry 分布式追踪
 /// - IHostedService 自动启动消费
 /// - 死信队列（DLQ）支持
 /// - 多 Handler 支持（KeyedService）
 /// - Exchange 类型可配置（Direct/Fanout/Topic）
+/// - 消费并发控制（PrefetchCount + MaxConcurrency）
 /// - 结构化日志记录
 /// </summary>
 public sealed class RabbitMqEventBus : IEventBus, IHostedService, IAsyncDisposable
 {
-    private string ExchangeName => _rabbitOptions.ExchangeName;
+    private string ExchangeName => _options.ExchangeName;
 
+    private readonly EventBusOptions _options;
     private readonly ResiliencePipeline _publishPipeline;
     private readonly TextMapPropagator _propagator;
     private readonly ActivitySource _activitySource;
@@ -42,12 +44,12 @@ public sealed class RabbitMqEventBus : IEventBus, IHostedService, IAsyncDisposab
     private readonly EventBusSubscriptionInfo _subscriptionInfo;
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<RabbitMqEventBus> _logger;
-    private readonly IntegrationEventRabbitMqOptions _rabbitOptions;
     private readonly RabbitMqConnection _connection;
 
     private IChannel? _consumerChannel;
     private IChannel? _publishChannel;
     private readonly SemaphoreSlim _publishChannelLock = new(1, 1);
+    private SemaphoreSlim? _concurrencyLimiter;
     private int _exchangeDeclared;
     private int _disposed;
 
@@ -55,21 +57,25 @@ public sealed class RabbitMqEventBus : IEventBus, IHostedService, IAsyncDisposab
         RabbitMqConnection connection,
         IOptions<EventBusOptions> options,
         IOptions<EventBusSubscriptionInfo> subscriptionOptions,
-        IOptions<IntegrationEventRabbitMqOptions> rabbitOptions,
         RabbitMQTelemetry telemetry,
         IServiceProvider serviceProvider,
         ILogger<RabbitMqEventBus> logger)
     {
         _connection = connection ?? throw new ArgumentNullException(nameof(connection));
+        _options = options.Value;
         _subscriptionInfo = subscriptionOptions.Value;
-        _rabbitOptions = rabbitOptions.Value;
         _serviceProvider = serviceProvider;
         _logger = logger;
-        _queueName = options.Value.SubscriptionClientName;
+        _queueName = _options.SubscriptionClientName;
         _propagator = telemetry.Propagator;
         _activitySource = telemetry.ActivitySource;
 
-        _publishPipeline = CreateResiliencePipeline(options.Value.RetryCount);
+        if (_options.MaxConcurrency > 1)
+        {
+            _concurrencyLimiter = new SemaphoreSlim(_options.MaxConcurrency, _options.MaxConcurrency);
+        }
+
+        _publishPipeline = CreateResiliencePipeline(_options);
     }
 
     // ══════════════════════════════════════════════════
@@ -91,7 +97,6 @@ public sealed class RabbitMqEventBus : IEventBus, IHostedService, IAsyncDisposab
         var body = SerializeMessage(@event);
 
         // OpenTelemetry: 遵循消息规范创建 Activity
-        // https://github.com/open-telemetry/semantic-conventions/blob/main/docs/messaging/messaging-spans.md
         var activityName = $"{routingKey} publish";
 
         await _publishPipeline.ExecuteAsync(async _ =>
@@ -107,7 +112,6 @@ public sealed class RabbitMqEventBus : IEventBus, IHostedService, IAsyncDisposab
                 DeliveryMode = DeliveryModes.Persistent
             };
 
-            // 注入分布式追踪上下文到消息头
             static void InjectTraceContext(IBasicProperties props, string key, string value)
             {
                 props.Headers ??= new Dictionary<string, object>();
@@ -164,15 +168,8 @@ public sealed class RabbitMqEventBus : IEventBus, IHostedService, IAsyncDisposab
 
             if (Interlocked.CompareExchange(ref _exchangeDeclared, 1, 0) == 0)
             {
-                var exchangeTypeStr = _rabbitOptions.ExchangeType switch
-                {
-                    ExchangeType.Direct => "direct",
-                    ExchangeType.Fanout => "fanout",
-                    ExchangeType.Topic => "topic",
-                    _ => "direct"
-                };
-
-                await _publishChannel.ExchangeDeclareAsync(ExchangeName, exchangeTypeStr, durable: true)
+                await _publishChannel.ExchangeDeclareAsync(
+                    ExchangeName, GetExchangeTypeString(_options.ExchangeType), durable: true)
                     .ConfigureAwait(false);
             }
 
@@ -190,86 +187,88 @@ public sealed class RabbitMqEventBus : IEventBus, IHostedService, IAsyncDisposab
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        _ = Task.Factory.StartNew(async () =>
+        _ = StartConsumerAsync(cancellationToken);
+        return Task.CompletedTask;
+    }
+
+    private async Task StartConsumerAsync(CancellationToken cancellationToken)
+    {
+        try
         {
-            try
+            _logger.LogInformation("[Evenbus] 正在启动 RabbitMQ 消费者...");
+
+            if (!_connection.IsConnected)
+                await _connection.TryConnectAsync(cancellationToken).ConfigureAwait(false);
+
+            if (!_connection.IsConnected)
             {
-                _logger.LogInformation("[Evenbus] 正在启动 RabbitMQ 连接（后台线程）...");
+                _logger.LogError("[Evenbus] RabbitMQ 连接失败，消费者未启动");
+                return;
+            }
 
-                if (!_connection.IsConnected)
-                    await _connection.TryConnectAsync(cancellationToken).ConfigureAwait(false);
+            _logger.LogInformation("[Evenbus] 创建消费者通道");
 
-                if (!_connection.IsConnected)
-                {
-                    _logger.LogError("[Evenbus] RabbitMQ 连接失败，消费者未启动");
-                    return;
-                }
+            _consumerChannel = await _connection.CreateChannelAsync(cancellationToken)
+                .ConfigureAwait(false);
 
-                _logger.LogInformation("[Evenbus] 创建消费者通道");
+            _consumerChannel.CallbackExceptionAsync += (_, ea) =>
+            {
+                _logger.LogWarning(ea.Exception, "[Evenbus] 消费者通道回调异常");
+                return Task.CompletedTask;
+            };
 
-                _consumerChannel = await _connection.CreateChannelAsync(cancellationToken)
+            var exchangeTypeStr = GetExchangeTypeString(_options.ExchangeType);
+
+            await _consumerChannel.ExchangeDeclareAsync(ExchangeName, exchangeTypeStr, durable: true,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            // 声明死信队列
+            var dlqName = $"{_queueName}{_options.DeadLetterQueueSuffix}";
+            await _consumerChannel.QueueDeclareAsync(dlqName, durable: true, exclusive: false,
+                autoDelete: false, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            var queueArgs = new Dictionary<string, object>
+            {
+                ["x-dead-letter-exchange"] = "",
+                ["x-dead-letter-routing-key"] = dlqName
+            };
+
+            await _consumerChannel.QueueDeclareAsync(_queueName, durable: true, exclusive: false,
+                autoDelete: false, arguments: queueArgs, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+
+            // 设置 QoS（预取数量）
+            if (_options.PrefetchCount > 0)
+            {
+                await _consumerChannel.BasicQosAsync(0, _options.PrefetchCount, false)
                     .ConfigureAwait(false);
+            }
 
-                _consumerChannel.CallbackExceptionAsync += (_, ea) =>
-                {
-                    _logger.LogWarning(ea.Exception, "[Evenbus] 消费者通道回调异常");
-                    return Task.CompletedTask;
-                };
-
-                var exchangeTypeStr = _rabbitOptions.ExchangeType switch
-                {
-                    ExchangeType.Direct => "direct",
-                    ExchangeType.Fanout => "fanout",
-                    ExchangeType.Topic => "topic",
-                    _ => "direct"
-                };
-
-                await _consumerChannel.ExchangeDeclareAsync(ExchangeName, exchangeTypeStr, durable: true,
+            // 绑定所有已注册的事件
+            foreach (var (eventName, _) in _subscriptionInfo.EventTypes)
+            {
+                await _consumerChannel.QueueBindAsync(_queueName, ExchangeName, eventName,
                     cancellationToken: cancellationToken).ConfigureAwait(false);
 
-                // 声明死信队列
-                var dlqName = $"{_queueName}{_rabbitOptions.DeadLetterQueueSuffix}";
-                await _consumerChannel.QueueDeclareAsync(dlqName, durable: true, exclusive: false,
-                    autoDelete: false, cancellationToken: cancellationToken).ConfigureAwait(false);
-
-                var queueArgs = new Dictionary<string, object>
-                {
-                    ["x-dead-letter-exchange"] = "",
-                    ["x-dead-letter-routing-key"] = dlqName
-                };
-
-                await _consumerChannel.QueueDeclareAsync(_queueName, durable: true, exclusive: false,
-                    autoDelete: false, arguments: queueArgs, cancellationToken: cancellationToken)
-                    .ConfigureAwait(false);
-
-                // 绑定所有已注册的事件
-                foreach (var (eventName, _) in _subscriptionInfo.EventTypes)
-                {
-                    await _consumerChannel.QueueBindAsync(_queueName, ExchangeName, eventName,
-                        cancellationToken: cancellationToken).ConfigureAwait(false);
-
-                    _logger.LogDebug("[Evenbus] 队列绑定: Queue={Queue}, Event={Event}",
-                        _queueName, eventName);
-                }
-
-                // 启动消费
-                var consumer = new AsyncEventingBasicConsumer(_consumerChannel);
-                consumer.ReceivedAsync += OnMessageReceived;
-
-                await _consumerChannel.BasicConsumeAsync(_queueName, autoAck: false, consumer)
-                    .ConfigureAwait(false);
-
-                _logger.LogInformation("[Evenbus] 消费者已启动，队列: {Queue}, 已注册 {Count} 个事件",
-                    _queueName, _subscriptionInfo.EventTypes.Count);
+                _logger.LogDebug("[Evenbus] 队列绑定: Queue={Queue}, Event={Event}",
+                    _queueName, eventName);
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "[Evenbus] 启动 RabbitMQ 连接失败");
-            }
-        },
-        TaskCreationOptions.LongRunning);
 
-        return Task.CompletedTask;
+            // 启动消费
+            var consumer = new AsyncEventingBasicConsumer(_consumerChannel);
+            consumer.ReceivedAsync += OnMessageReceived;
+
+            await _consumerChannel.BasicConsumeAsync(_queueName, autoAck: false, consumer)
+                .ConfigureAwait(false);
+
+            _logger.LogInformation(
+                "[Evenbus] 消费者已启动，队列: {Queue}, 事件数: {EventCount}, 预取: {Prefetch}, 并发: {Concurrency}",
+                _queueName, _subscriptionInfo.EventTypes.Count, _options.PrefetchCount, _options.MaxConcurrency);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[Evenbus] 启动 RabbitMQ 消费者失败");
+        }
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
@@ -294,6 +293,7 @@ public sealed class RabbitMqEventBus : IEventBus, IHostedService, IAsyncDisposab
             await _consumerChannel.DisposeAsync().ConfigureAwait(false);
 
         _publishChannelLock.Dispose();
+        _concurrencyLimiter?.Dispose();
 
         await _connection.DisposeAsync().ConfigureAwait(false);
 
@@ -305,6 +305,22 @@ public sealed class RabbitMqEventBus : IEventBus, IHostedService, IAsyncDisposab
     // ══════════════════════════════════════════════════
 
     private async Task OnMessageReceived(object sender, BasicDeliverEventArgs eventArgs)
+    {
+        // 并发限制
+        if (_concurrencyLimiter != null)
+            await _concurrencyLimiter.WaitAsync().ConfigureAwait(false);
+
+        try
+        {
+            await ProcessReceivedMessageAsync(eventArgs).ConfigureAwait(false);
+        }
+        finally
+        {
+            _concurrencyLimiter?.Release();
+        }
+    }
+
+    private async Task ProcessReceivedMessageAsync(BasicDeliverEventArgs eventArgs)
     {
         // 从消息头提取分布式追踪上下文
         static IEnumerable<string> ExtractTraceContext(IReadOnlyBasicProperties props, string key)
@@ -355,7 +371,7 @@ public sealed class RabbitMqEventBus : IEventBus, IHostedService, IAsyncDisposab
         }
         catch (Exception ex)
         {
-            var dlqName = $"{_queueName}{_rabbitOptions.DeadLetterQueueSuffix}";
+            var dlqName = $"{_queueName}{_options.DeadLetterQueueSuffix}";
 
             _logger.LogError(ex,
                 "[Evenbus] 消息处理失败，已投递到死信队列(DLQ={DlqName})。" +
@@ -387,10 +403,8 @@ public sealed class RabbitMqEventBus : IEventBus, IHostedService, IAsyncDisposab
             return;
         }
 
-        // 反序列化
         var integrationEvent = DeserializeMessage(message, eventType);
 
-        // 通过 KeyedService 获取该事件类型的所有 Handler
         var handlers = scope.ServiceProvider
             .GetKeyedServices<IIntegrationEventHandler>(eventType);
 
@@ -441,16 +455,17 @@ public sealed class RabbitMqEventBus : IEventBus, IHostedService, IAsyncDisposab
     //  Helper
     // ══════════════════════════════════════════════════
 
-    private static ResiliencePipeline CreateResiliencePipeline(int retryCount)
+    private static ResiliencePipeline CreateResiliencePipeline(EventBusOptions options)
     {
         var retryOptions = new RetryStrategyOptions
         {
             ShouldHandle = new PredicateBuilder()
                 .Handle<BrokerUnreachableException>()
                 .Handle<SocketException>(),
-            MaxRetryAttempts = retryCount,
+            MaxRetryAttempts = options.RetryCount,
             DelayGenerator = context =>
-                ValueTask.FromResult((TimeSpan?)TimeSpan.FromSeconds(Math.Pow(2, context.AttemptNumber)))
+                ValueTask.FromResult((TimeSpan?)TimeSpan.FromSeconds(
+                    Math.Pow(options.RetryBackoffBase, context.AttemptNumber)))
         };
 
         return new ResiliencePipelineBuilder()
@@ -458,11 +473,18 @@ public sealed class RabbitMqEventBus : IEventBus, IHostedService, IAsyncDisposab
             .Build();
     }
 
+    private static string GetExchangeTypeString(ExchangeType type) => type switch
+    {
+        ExchangeType.Direct => "direct",
+        ExchangeType.Fanout => "fanout",
+        ExchangeType.Topic => "topic",
+        _ => "direct"
+    };
+
     private static void SetActivityTags(Activity? activity, string routingKey, string operation)
     {
         if (activity is null) return;
 
-        // 遵循 OpenTelemetry 消息规范语义约定
         activity.SetTag("messaging.system", "rabbitmq");
         activity.SetTag("messaging.destination_kind", "queue");
         activity.SetTag("messaging.operation", operation);

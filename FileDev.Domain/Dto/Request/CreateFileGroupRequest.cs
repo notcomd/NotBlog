@@ -5,9 +5,14 @@ public class CreateFileGroupRequest
 {
     public string Name { get; set; } = string.Empty;
 
-    public HashSet<string> GroupTags { get; set; } = new();
+    public HashSet<string> GroupTags { get; set; } = [];
 
-    public string? Description { get; set; }
+    public string? Description { get; set; } = null;
 
+    public Guid? ParentGroupId { get; set; } = Guid.Empty;
+    
+    public FileIdentity FileIdentity { get; set; } = FileIdentity.FilePublic;
 
 }
+
+
