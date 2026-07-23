@@ -1,6 +1,14 @@
 global using DomainInfrastructure;
 global using Message.Domain.Entities;
+global using Message.Domain.Entities.Group;
+global using Message.Domain.Entities.Tweet;
+global using Message.Domain.Enums;
 global using Message.Domain.IProvider;
 global using Message.Domain.IRepository;
+global using Message.Domain.IServices;
 global using Message.Domain.SeedWork;
 global using Microsoft.AspNetCore.SignalR;
+global using Microsoft.EntityFrameworkCore;
+global using Microsoft.EntityFrameworkCore.Metadata.Builders;
+global using Microsoft.Extensions.Logging;
+global using StackExchange.Redis;

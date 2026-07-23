@@ -1,5 +1,3 @@
-using Message.Domain.Enums;
-
 namespace Message.Web.API.Dto.Request;
 
 public class SendMessageRequest
@@ -85,6 +83,12 @@ public class UpdateGroupInfoRequest
 {
     public string GroupName { get; init; } = string.Empty;
     public string? Description { get; init; }
+}
+
+public class SetAdminRequest
+{
+    public Guid UserId { get; init; }
+    public bool IsAdmin { get; init; }
 }
 
 public class UploadFileRequest

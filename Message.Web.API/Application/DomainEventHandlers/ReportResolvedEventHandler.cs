@@ -1,9 +1,3 @@
-using Message.Domain.Entities.Tweet;
-using Message.Domain.Enums;
-using Message.Domain.Events;
-using Message.Domain.IRepository;
-using Message.Domain.IServices;
-using Microsoft.Extensions.Logging;
 using NotMediator;
 
 namespace Message.Web.API.Application.DomainEventHandlers;
@@ -57,7 +51,7 @@ public class ReportResolvedEventHandler : INotificationHandler<ReportResolvedEve
             await _notificationRepository.AddAsync(reporterNotification);
 
             _logger.LogInformation("举报者通知已保存: NotifyGuid={NotifyGuid}, ReporterGuid={ReporterGuid}",
-                reporterNotification.NotifyGuid, notification.ReporterGuid);
+                reporterNotification.Id, notification.ReporterGuid);
 
             // 如果内容被下架，同时通知被举报者
             if (notification.ResultStatus == ReportStatus.Resolved_Removed)
@@ -74,7 +68,7 @@ public class ReportResolvedEventHandler : INotificationHandler<ReportResolvedEve
                 await _notificationRepository.AddAsync(reportedNotification);
 
                 _logger.LogInformation("被举报者通知已保存: NotifyGuid={NotifyGuid}, ReportedUserGuid={ReportedUserGuid}",
-                    reportedNotification.NotifyGuid, notification.ReportedUserGuid);
+                    reportedNotification.Id, notification.ReportedUserGuid);
             }
 
             // 发送邮件（异步，火后即忘，带 try-catch 保护）

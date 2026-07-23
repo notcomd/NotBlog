@@ -1,13 +1,10 @@
-using Message.Domain.IProvider;
-using Message.Domain.IRepository;
-using Message.Domain.IServices;
 using Message.Infrastructure.EntityFramework;
 using Message.Infrastructure.Provider;
 using Message.Infrastructure.Repository;
 using Message.Infrastructure.Services;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Message.Infrastructure;
 
@@ -101,5 +98,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IImageModerationService, DefaultImageModerationService>();
         services.AddScoped<IEmailSender, DefaultEmailSender>();
         services.AddScoped<ILocalizationService, DefaultLocalizationService>();
+
+        services.TryAddSingleton<RedisCacheService>();
+        services.TryAddSingleton<SessionCacheService>();
+        services.TryAddSingleton<UnreadCountCacheService>();
+        services.TryAddSingleton<UserStatusCacheService>();
     }
 }

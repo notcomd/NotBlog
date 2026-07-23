@@ -1,11 +1,10 @@
 namespace FileDev.Web.API.Application.Command;
 
 using FileDev.Domain.Entities;
-using FileDev.Domain.IServices;
 
 public class StreamUploadCommandHandler(
     INotFileStorageService storageService,
-    INotFileService notFileService,
+    INotMediator mediator,
     IOptionsSnapshot<NotFileStorageOptions> configOptions,
     ILogger<StreamUploadCommandHandler> logger)
     : NotMediator.IRequestHandler<StreamUploadCommand, NotFile>
@@ -65,17 +64,42 @@ public class StreamUploadCommandHandler(
         var actualHash = storageResult.ActualHash ?? string.Empty;
         var fileUri = new Uri($"/files/{relativePath}", UriKind.Relative);
 
-        // 创建数据库记录
-        await notFileService.CreateFileAsync(
-            request.UserId, request.FileName, request.FileTags,
-            request.FileDescription ?? string.Empty, request.FileType,
-            content.Length, fileUri, actualHash, request.FileIdentity);
-
         logger.LogInformation("[StreamUpload] 流式上传完成: {FileName}, Size={Size}",
-            request.FileName, content.Length);
+     request.FileName, content.Length);
 
-        return new NotFile(request.UserId, request.FileName, request.FileTags,
-            request.FileDescription ?? string.Empty,
-            content.Length, fileUri, actualHash, request.FileIdentity);
+        var uploadcmd=new CreateNotFileCommand(
+            request.UserId,
+            request.FileName,
+            fileUri,
+            actualHash,
+            request.FileIdentity,
+            content.Length,
+            request.FileTags,
+            request.FileDescription
+        )
+        {
+            UserGuid = request.UserId,
+            FileName = request.FileName,
+            FilePath=fileUri,
+            FileMd5=actualHash,
+            FileIdentity = request.FileIdentity,
+            FileSize = content.Length,
+            FileTags = request?.FileTags ??[],
+            FileDescription = request?.FileDescription ?? string.Empty        
+        };
+        
+        await mediator.SendAsync(uploadcmd, cancellationToken);
+
+        // 构建实体用于返回
+        return new NotFile.NotFileBuilder()
+            .WithUserId(request!.UserId)
+            .WithFileName(request!.FileName)
+            .WithFileTags(request!.FileTags ??[])
+            .WithFileDescription(request!.FileDescription ?? string.Empty)
+            .WithFileSize(content.Length)
+            .WithFileUri(fileUri)
+            .WithFileMd5(actualHash)
+            .WithFileIdentity(request.FileIdentity)
+            .Build();
     }
 }

@@ -1,7 +1,3 @@
-using Message.Domain.Entities.Tweet;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
 namespace Message.Infrastructure.EntityConfig;
 
 public class TweetAuditLogConfiguration : IEntityTypeConfiguration<TweetAuditLog>

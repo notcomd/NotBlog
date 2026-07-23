@@ -8,40 +8,8 @@ namespace Markdown.Domain.Entities;
 /// </summary>
 public class OldMarkDown : Entity
 {
-    /// <summary>
-    ///     私有默认构造函数，供 EF Core 使用
-    /// </summary>
-    private OldMarkDown()
-    {
-        OldMarkDownGuid = Guid.CreateVersion7();
-        CreateAt = DateTime.UtcNow;
-        UpdateAt = DateTime.UtcNow;
-        IsDelete = false;
-    }
-
-    /// <summary>
-    ///     创建历史版本记录
-    /// </summary>
-    /// <param name="markDownGuid">关联的当前文档 GUID</param>
-    /// <param name="userGuid">创建/修改用户 GUID</param>
-    /// <param name="content">历史版本文档内容</param>
-    /// <param name="hash">历史版本文档哈希值</param>
-    /// <param name="authType">历史版本的权限类型</param>
-    public OldMarkDown(Guid markDownGuid, Guid userGuid, string content,
-        string hash, MarkDownAuth authType)
-    {
-        OldMarkDownGuid = Guid.CreateVersion7();
-        MarkDownGuid = markDownGuid;
-        UserGuid = userGuid;
-        Status = authType;
-        OldMarkDownContent = content ?? throw new ArgumentNullException(nameof(content));
-        OldMarkDownHash = hash ?? throw new ArgumentNullException(nameof(hash));
-        CreateAt = DateTime.UtcNow;
-        UpdateAt = DateTime.UtcNow;
-        IsDelete = false;
-    }
-
-    /// <summary>
+    
+     /// <summary>
     ///     历史版本唯一标识
     /// </summary>
     public Guid OldMarkDownGuid { get; private set; }
@@ -91,12 +59,43 @@ public class OldMarkDown : Entity
     /// </summary>
     public virtual MarkDown? MarkDown { get; private set; }
 
+
     /// <summary>
     ///     更新历史版本记录（仅在需要时调用）
     /// </summary>
     /// <param name="content">新的内容</param>
     /// <param name="hash">新的哈希值</param>
     /// <param name="authType">新的权限类型</param>
+    /// <summary>
+    ///     私有默认构造函数，供 EF Core 使用
+    /// </summary>
+    private OldMarkDown()
+    {
+        OldMarkDownGuid = Guid.CreateVersion7();
+        CreateAt = DateTime.UtcNow;
+        UpdateAt = DateTime.UtcNow;
+        IsDelete = false;
+    }
+
+    /// <summary>
+    ///     创建历史版本记录
+    /// </summary>
+    /// <param name="markDownGuid">关联的当前文档 GUID</param>
+    /// <param name="userGuid">创建/修改用户 GUID</param>
+    /// <param name="content">历史版本文档内容</param>
+    /// <param name="hash">历史版本文档哈希值</param>
+    /// <param name="authType">历史版本的权限类型</param>
+    public OldMarkDown(Guid markDownGuid, Guid userGuid, string content,
+        string hash, MarkDownAuth authType):this()
+    {
+        MarkDownGuid = markDownGuid;
+        UserGuid = userGuid;
+        Status = authType;
+        OldMarkDownContent = content ?? throw new ArgumentNullException(nameof(content));
+        OldMarkDownHash = hash ?? throw new ArgumentNullException(nameof(hash));
+    }
+
+   
     internal void UpdateHistory(string content, string hash, MarkDownAuth authType)
     {
         OldMarkDownContent = content ?? throw new ArgumentNullException(nameof(content));

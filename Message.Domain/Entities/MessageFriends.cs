@@ -1,4 +1,5 @@
 using Message.Domain.Enums;
+using Message.Domain.Events;
 using Message.Domain.SeedWork;
 
 namespace Message.Domain.Entities;
@@ -69,6 +70,7 @@ public class MessageFriends : Entity, IAggregateRoot
 
         Status = FriendshipStatus.Accepted;
         AcceptedTime = DateTime.UtcNow;
+        AddDomainEvent(new FriendshipAcceptedEvent(UserId, FriendId));
     }
 
     public void Reject()
@@ -77,6 +79,7 @@ public class MessageFriends : Entity, IAggregateRoot
             throw new InvalidOperationException("只有待处理的好友请求可以拒绝");
 
         Status = FriendshipStatus.Rejected;
+        AddDomainEvent(new FriendshipRejectedEvent(UserId, FriendId));
     }
 
     public void Block()

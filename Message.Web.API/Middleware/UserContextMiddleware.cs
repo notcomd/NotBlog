@@ -1,7 +1,5 @@
 namespace Message.Web.API.Middleware;
 
-using Message.Domain.IServices;
-
 public class UserContextMiddleware
 {
     private readonly RequestDelegate _next;

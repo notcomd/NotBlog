@@ -1,6 +1,4 @@
-﻿﻿using Message.Domain.Enums;
 using Message.Infrastructure.EntityFramework;
-using Microsoft.EntityFrameworkCore;
 
 namespace Message.Infrastructure.Repository;
 
@@ -8,6 +6,7 @@ public class MessageFriendsRepository(MessageDbContext context)
     : IMessageFriendsRepository
 {
    
+    public IUnitOfWork UnitOfWork => context;
     private readonly DbSet<MessageFriends> DbSet = context.MessageFriends;
 
     public async Task<MessageFriends?> GetByIdAsync(Guid friendshipId)
@@ -84,13 +83,13 @@ public class MessageFriendsRepository(MessageDbContext context)
             .ToListAsync();
     }
 
-    public new async Task<MessageFriends> AddAsync(MessageFriends friendship)
+    public async Task<MessageFriends> AddAsync(MessageFriends friendship)
     {
         var entry = await DbSet.AddAsync(friendship);
         return entry.Entity;
     }
 
-    public new async Task<MessageFriends> UpdateAsync(MessageFriends friendship)
+    public async Task<MessageFriends> UpdateAsync(MessageFriends friendship)
     {
         var entry = DbSet.Update(friendship);
         return entry.Entity;

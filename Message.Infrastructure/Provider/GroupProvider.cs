@@ -1,6 +1,3 @@
-using Message.Domain.Entities.Group;
-using Message.Domain.Enums;
-
 namespace Message.Infrastructure.Provider;
 
 public class GroupProvider : IGroupProvider
@@ -21,7 +18,10 @@ public class GroupProvider : IGroupProvider
     public async Task<Group> CreateGroupAsync(Guid ownerId, string groupName, int maxMembers = 500,
         bool isPublic = false)
     {
-        return null;
+        var group = new Group(ownerId, groupName, maxMembers, isPublic);
+        await _groupRepository.AddAsync(group);
+        await _unitOfWork.SaveEntitiesAsync();
+        return group;
     }
 
     public async Task<Group?> GetGroupAsync(Guid groupId)
@@ -91,13 +91,13 @@ public class GroupProvider : IGroupProvider
 
     public async Task<bool> CanSendMessageAsync(Guid groupId, Guid userId)
     {
-        var member = await _groupRepository.GetMemberAsync(groupId, userId);
-        return member?.CanSendMessage() ?? false;
+        var group = await _groupRepository.GetByIdWithMembersAsync(groupId);
+        return group?.GetMember(userId)?.CanSendMessage() ?? false;
     }
 
     public async Task<bool> HasPermissionAsync(Guid groupId, Guid userId, GroupPermission permission)
     {
-        var group = await _groupRepository.GetByIdAsync(groupId);
+        var group = await _groupRepository.GetByIdWithMembersAsync(groupId);
         if (group == null)
             return false;
 
@@ -106,115 +106,120 @@ public class GroupProvider : IGroupProvider
 
     public async Task<GroupMember?> GetMemberAsync(Guid groupId, Guid userId)
     {
-        return await _groupRepository.GetMemberAsync(groupId, userId);
+        var group = await _groupRepository.GetByIdWithMembersAsync(groupId);
+        return group?.GetMember(userId);
     }
 
     public async Task<IEnumerable<GroupMember>> GetMembersAsync(Guid groupId)
     {
-        return await _groupRepository.GetMembersAsync(groupId);
+        var group = await _groupRepository.GetByIdWithMembersAsync(groupId);
+        return group?.Members ?? Enumerable.Empty<GroupMember>();
     }
 
     public async Task<IEnumerable<GroupMember>> GetAdminsAsync(Guid groupId)
     {
-        return await _groupRepository.GetAdminsAsync(groupId);
+        var group = await _groupRepository.GetByIdWithMembersAsync(groupId);
+        return group?.Members.Where(m => m.Role == GroupMemberRole.Admin || m.Role == GroupMemberRole.Owner)
+               ?? Enumerable.Empty<GroupMember>();
     }
 
     public async Task AddMemberAsync(Guid groupId, Guid userId, GroupMemberRole role = GroupMemberRole.Member)
     {
+        var group = await _groupRepository.GetByIdWithMembersAsync(groupId);
+        if (group == null)
+            throw new KeyNotFoundException("群组不存在");
+
+        group.AddMember(userId, role);
+        await _groupRepository.UpdateAsync(group);
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task RemoveMemberAsync(Guid groupId, Guid userId)
     {
-        var group = await _groupRepository.GetByIdAsync(groupId);
+        var group = await _groupRepository.GetByIdWithMembersAsync(groupId);
         if (group == null)
             throw new KeyNotFoundException("群组不存在");
 
         group.RemoveMember(userId);
         await _groupRepository.UpdateAsync(group);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task PromoteToAdminAsync(Guid groupId, Guid userId)
     {
-        var member = await _groupRepository.GetMemberAsync(groupId, userId);
-        if (member == null)
-            throw new KeyNotFoundException("成员不存在");
+        var group = await _groupRepository.GetByIdWithMembersAsync(groupId);
+        if (group == null)
+            throw new KeyNotFoundException("群组不存在");
 
-        member.PromoteToAdmin();
-        await _groupRepository.UpdateAsync(await _groupRepository.GetByIdAsync(groupId) ??
-                                           throw new KeyNotFoundException("群组不存在"));
-        await _unitOfWork.SavaEntitiesAsync();
+        group.PromoteMember(userId);
+        await _groupRepository.UpdateAsync(group);
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task DemoteToMemberAsync(Guid groupId, Guid userId)
     {
-        var member = await _groupRepository.GetMemberAsync(groupId, userId);
-        if (member == null)
-            throw new KeyNotFoundException("成员不存在");
+        var group = await _groupRepository.GetByIdWithMembersAsync(groupId);
+        if (group == null)
+            throw new KeyNotFoundException("群组不存在");
 
-        member.DemoteToMember();
-        await _groupRepository.UpdateAsync(await _groupRepository.GetByIdAsync(groupId) ??
-                                           throw new KeyNotFoundException("群组不存在"));
-        await _unitOfWork.SavaEntitiesAsync();
+        group.DemoteMember(userId);
+        await _groupRepository.UpdateAsync(group);
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task TransferOwnershipAsync(Guid groupId, Guid newOwnerId)
     {
-        var group = await _groupRepository.GetByIdAsync(groupId);
+        var group = await _groupRepository.GetByIdWithMembersAsync(groupId);
         if (group == null)
             throw new KeyNotFoundException("群组不存在");
 
         group.TransferOwnership(newOwnerId);
         await _groupRepository.UpdateAsync(group);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task MuteMemberAsync(Guid groupId, Guid userId, TimeSpan duration)
     {
-        var member = await _groupRepository.GetMemberAsync(groupId, userId);
-        if (member == null)
-            throw new KeyNotFoundException("成员不存在");
+        var group = await _groupRepository.GetByIdWithMembersAsync(groupId);
+        if (group == null)
+            throw new KeyNotFoundException("群组不存在");
 
-        member.Mute(duration);
-        await _groupRepository.UpdateAsync(await _groupRepository.GetByIdAsync(groupId) ??
-                                           throw new KeyNotFoundException("群组不存在"));
-        await _unitOfWork.SavaEntitiesAsync();
+        group.MuteMember(userId, duration);
+        await _groupRepository.UpdateAsync(group);
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task UnmuteMemberAsync(Guid groupId, Guid userId)
     {
-        var member = await _groupRepository.GetMemberAsync(groupId, userId);
-        if (member == null)
-            throw new KeyNotFoundException("成员不存在");
+        var group = await _groupRepository.GetByIdWithMembersAsync(groupId);
+        if (group == null)
+            throw new KeyNotFoundException("群组不存在");
 
-        member.Unmute();
-        await _groupRepository.UpdateAsync(await _groupRepository.GetByIdAsync(groupId) ??
-                                           throw new KeyNotFoundException("群组不存在"));
-        await _unitOfWork.SavaEntitiesAsync();
+        group.UnmuteMember(userId);
+        await _groupRepository.UpdateAsync(group);
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task BanMemberAsync(Guid groupId, Guid userId)
     {
-        var member = await _groupRepository.GetMemberAsync(groupId, userId);
-        if (member == null)
-            throw new KeyNotFoundException("成员不存在");
+        var group = await _groupRepository.GetByIdWithMembersAsync(groupId);
+        if (group == null)
+            throw new KeyNotFoundException("群组不存在");
 
-        member.Ban();
-        await _groupRepository.UpdateAsync(await _groupRepository.GetByIdAsync(groupId) ??
-                                           throw new KeyNotFoundException("群组不存在"));
-        await _unitOfWork.SavaEntitiesAsync();
+        group.BanMember(userId);
+        await _groupRepository.UpdateAsync(group);
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task UnbanMemberAsync(Guid groupId, Guid userId)
     {
-        var member = await _groupRepository.GetMemberAsync(groupId, userId);
-        if (member == null)
-            throw new KeyNotFoundException("成员不存在");
+        var group = await _groupRepository.GetByIdWithMembersAsync(groupId);
+        if (group == null)
+            throw new KeyNotFoundException("群组不存在");
 
-        member.Unban();
-        await _groupRepository.UpdateAsync(await _groupRepository.GetByIdAsync(groupId) ??
-                                           throw new KeyNotFoundException("群组不存在"));
-        await _unitOfWork.SavaEntitiesAsync();
+        group.UnbanMember(userId);
+        await _groupRepository.UpdateAsync(group);
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task UpdateGroupInfoAsync(Guid groupId, string groupName, string? description)
@@ -225,7 +230,7 @@ public class GroupProvider : IGroupProvider
 
         group.UpdateGroupInfo(groupName, description, null);
         await _groupRepository.UpdateAsync(group);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task UpdateGroupAvatarAsync(Guid groupId, Uri avatarUri)
@@ -236,7 +241,7 @@ public class GroupProvider : IGroupProvider
 
         group.UpdateGroupInfo(group.GroupName, null, avatarUri);
         await _groupRepository.UpdateAsync(group);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task UpdateGroupPermissionsAsync(Guid groupId, bool allowMemberInvite, bool allowMemberEditInfo)
@@ -247,7 +252,7 @@ public class GroupProvider : IGroupProvider
 
         group.UpdatePermissions(allowMemberInvite, allowMemberEditInfo);
         await _groupRepository.UpdateAsync(group);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task DismissGroupAsync(Guid groupId)
@@ -258,6 +263,6 @@ public class GroupProvider : IGroupProvider
 
         group.Dismiss();
         await _groupRepository.UpdateAsync(group);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
     }
 }

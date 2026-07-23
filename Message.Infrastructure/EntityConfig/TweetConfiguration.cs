@@ -1,6 +1,4 @@
-using Message.Domain.Entities.Tweet;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System.Text.Json;
 
 namespace Message.Infrastructure.EntityConfig;
 
@@ -23,20 +21,27 @@ public class TweetConfiguration : IEntityTypeConfiguration<Tweet>
             .IsRequired()
             .HasMaxLength(2000);
 
-        builder.Property("_media")
+        builder.Property(t => t.Media)
             .HasColumnName("MediaUrls")
-            .HasColumnType("jsonb");
-
-        builder.Ignore("_media");
+            .HasColumnType("nvarchar(max)")
+            .HasConversion(
+                v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                v => JsonSerializer.Deserialize<List<TweetMedia>>(v, (JsonSerializerOptions?)null) ?? new List<TweetMedia>())
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
 
         builder.Property(t => t.LinkMetadata)
-            .HasColumnType("jsonb");
+            .HasColumnType("nvarchar(max)")
+            .HasConversion(
+                v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                v => JsonSerializer.Deserialize<LinkMetadata>(v, (JsonSerializerOptions?)null));
 
-        builder.Property("_hashtags")
+        builder.Property(t => t.Hashtags)
             .HasColumnName("Hashtags")
-            .HasColumnType("jsonb");
-
-        builder.Ignore("_hashtags");
+            .HasColumnType("nvarchar(max)")
+            .HasConversion(
+                v => string.Join(",", v),
+                v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToHashSet())
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
 
         builder.Property(t => t.TweetStatus)
             .IsRequired()

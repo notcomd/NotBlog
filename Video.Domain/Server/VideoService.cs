@@ -60,12 +60,28 @@ public class VideoService(IVideoRepository videoRepository, ILogger<IVideoReposi
 
     public async Task UpdateByAffiliatedUserAsync(Guid videoGuid, HashSet<Guid> userGuid, VideoControl videoControl)
     {
-        var data=await videoRepository.FindByVideoAsync(videoGuid);
-        if(data.Affiliated.Overlaps(userGuid))
+        var data = await videoRepository.FindByVideoAsync(videoGuid);
+        if (data.Affiliated.Overlaps(userGuid))
         {
-            if(data.VideoControl.Equals(videoControl)) return;
-           // data.
+            if (data.VideoControl.Equals(videoControl)) return;
+            data.VideoControl.ChangeByVideoController(videoControl);
+            await videoRepository.UpdateByControlAsync(videoControl);
         }
+    }
+
+    public async Task AddByVideoBarrageAsync(Guid videoGuid, VideoBarrage videoBarrage)
+    {
+        var video = await videoRepository.FindByVideoAsync(videoGuid);
+        video.AddByVideoBarrage(videoBarrage);
+        await videoRepository.UpdateByVideoAsync(video);
+    }
+
+    public async Task AddByVideoReviewAsync(Guid videoGuid, Guid userGuid, Guid? rootReview,
+        string? videoReviewBody, List<VideoImage>? videoImages)
+    {
+        var video = await videoRepository.FindByVideoAsync(videoGuid);
+        video.AddByVideoReview(userGuid, rootReview, videoReviewBody, videoImages);
+        await videoRepository.UpdateByVideoAsync(video);
     }
 
     public async Task UpdateByQuoteAsync(Guid videoGUid, VideoQuote videoQuote)

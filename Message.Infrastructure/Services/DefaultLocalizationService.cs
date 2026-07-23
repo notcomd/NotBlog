@@ -1,5 +1,3 @@
-using Message.Domain.IServices;
-
 namespace Message.Infrastructure.Services;
 
 /// <summary>

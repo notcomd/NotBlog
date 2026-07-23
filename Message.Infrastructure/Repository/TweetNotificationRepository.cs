@@ -1,7 +1,4 @@
-using Message.Domain.Entities.Tweet;
-using Message.Domain.IRepository;
 using Message.Infrastructure.EntityFramework;
-using Microsoft.EntityFrameworkCore;
 
 namespace Message.Infrastructure.Repository;
 
@@ -18,7 +15,7 @@ public class TweetNotificationRepository : ITweetNotificationRepository
 
     public async Task<TweetNotification?> GetByIdAsync(Guid notifyGuid)
     {
-        return await _dbSet.FirstOrDefaultAsync(n => n.NotifyGuid == notifyGuid);
+        return await _dbSet.FirstOrDefaultAsync(n => n.Id == notifyGuid);
     }
 
     public async Task<IEnumerable<TweetNotification>> GetByUserAsync(Guid userGuid, bool unreadOnly = false, int page = 1, int pageSize = 20)

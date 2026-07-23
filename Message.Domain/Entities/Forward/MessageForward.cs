@@ -1,11 +1,12 @@
 using Message.Domain.Enums;
+using Message.Domain.SeedWork;
 
 namespace Message.Domain.Entities.Forward;
 
 /// <summary>
 /// 消息转发实体
 /// </summary>
-public class MessageForward
+public class MessageForward : Entity
 {
     public MessageForward(Guid originalMessageId, Guid forwardedMessageId, Guid forwardedBy,
         Guid targetSessionId, ForwardType forwardType, Guid? parentForwardId = null, string? comment = null) : this()
@@ -19,18 +20,15 @@ public class MessageForward
         ForwardComment = comment;
         ParentForwardId = parentForwardId;
         ForwardDepth = 1;
-        ForwardChain.Add(ForwardId);
-        //ForwardChain = new List<Guid> { ForwardId };
+        ForwardChain.Add(Id);
     }
 
     private MessageForward()
     {
-        ForwardId = Guid.CreateVersion7();
+        Id = Guid.CreateVersion7();
         ForwardTime = DateTime.UtcNow;
         ForwardChain = new List<Guid>();
     }
-
-    public Guid ForwardId { get; init; }
 
     public Guid OriginalMessageId { get; init; }
 
@@ -44,7 +42,7 @@ public class MessageForward
 
     public DateTime ForwardTime { get; init; }
 
-    public string? ForwardComment { get; set; }
+    public string? ForwardComment { get; private set; }
 
     public Guid? ParentForwardId { get; init; }
 
@@ -68,11 +66,11 @@ public class MessageForward
             ForwardType = forwardType,
             ForwardTime = DateTime.UtcNow,
             ForwardComment = comment,
-            ParentForwardId = parentForward.ForwardId,
+            ParentForwardId = parentForward.Id,
             ForwardDepth = parentForward.ForwardDepth + 1,
             ForwardChain = new List<Guid>(parentForward.ForwardChain)
         };
-        forward.ForwardChain.Add(forward.ForwardId);
+        forward.ForwardChain.Add(forward.Id);
         return forward;
     }
 

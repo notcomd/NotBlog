@@ -10,15 +10,16 @@ namespace Notcomd.Token.JWT.Security;
 /// </summary>
 public static class JwtRandom
 {
+    private const string DefaultCharset =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
     /// <summary>
-    /// 生成 6 位随机整数
+    /// 生成 6 位随机整数（范围 [100000, 999999]）
+    /// 使用 RandomNumberGenerator.GetInt32 内置拒绝采样，无取模偏差
     /// </summary>
     public static ValueTask<long> CreateRandomValueTask()
     {
-        var bytes = new byte[8];
-        RandomNumberGenerator.Fill(bytes);
-        // 映射到 [100000, 999999]
-        var value = (long)(Math.Abs(BitConverter.ToInt64(bytes)) % 900_000 + 100_000);
+        var value = (long)RandomNumberGenerator.GetInt32(100_000, 1_000_000);
         return new ValueTask<long>(value);
     }
 
@@ -27,37 +28,23 @@ public static class JwtRandom
     /// </summary>
     public static ValueTask<string> CreateRandomStringValueTask()
     {
-        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-        var bytes = new byte[9];
-        RandomNumberGenerator.Fill(bytes);
-
-        Span<char> result = stackalloc char[9];
-        for (var i = 0; i < 9; i++)
-            result[i] = chars[bytes[i] % chars.Length];
-
-        return new ValueTask<string>(result.ToString());
+        var str = RandomNumberGenerator.GetString(DefaultCharset, 9);
+        return new ValueTask<string>(str);
     }
 
     /// <summary>
     /// 生成随机字符串（指定长度和字符集）
+    /// 使用 RandomNumberGenerator.GetString 内置拒绝采样，无取模偏差
     /// </summary>
     public static string GenerateRandomString(int length,
-        string charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789")
+        string charset = DefaultCharset)
     {
-        var bytes = new byte[length];
-        RandomNumberGenerator.Fill(bytes);
-
-        Span<char> result = stackalloc char[length];
-        for (var i = 0; i < length; i++)
-            result[i] = charset[bytes[i] % charset.Length];
-
-        return result.ToString();
+        return RandomNumberGenerator.GetString(charset, length);
     }
 
     /// <summary>
     /// 生成安全标记（用于密码重置、邮箱验证等）
-    /// 128 位随机，Base64 编码
+    /// 128 位随机，Base64 编码（含 +/=，如需 URL 安全请额外做 Base64Url 编码）
     /// </summary>
     public static ValueTask<string> GenerateSecurityStamp()
     {

@@ -41,6 +41,8 @@ public static class FileStrongApi
             FileGroupName = request.Name,
             FileGroupDescription = request.Description,
             FileGroupTags = request.GroupTags,
+            FileIdentity = request.FileIdentity,
+            ParentGroupId = request.ParentGroupId,
         };
         
         var identityCreateCommand=new IdentifiedCommand<CreateNotFileGroupCommand,bool>(Guid.CreateVersion7(),command);

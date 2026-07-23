@@ -1,4 +1,5 @@
-﻿using Notcomd.Token.JWT.Security;
+﻿using Notcomd.Token.JWT.Core;
+using Notcomd.Token.JWT.Security;
 
 namespace FileDev.Infrastructure.Service;
 
@@ -85,7 +86,7 @@ public class NotFileStorageService : INotFileStorageService
             // 可选：验证文件哈希（如果请求中传入了预期哈希）
             if (!string.IsNullOrEmpty(request.ExpectedHash))
             {
-                bool hashMatch = HashHelper.VerifyFileHash(fullPath, request.ExpectedHash, _config.HashAlgorithm);
+                bool hashMatch = HashHelper.VerifyFileHash(fullPath, request.ExpectedHash, AlgorithmType.MD5);
                 if (!hashMatch)
                 {
                     File.Delete(fullPath); // 校验失败删除文件
@@ -93,7 +94,7 @@ public class NotFileStorageService : INotFileStorageService
                     {
                         Success = false,
                         ErrorMessage =
-                            $"文件哈希校验失败，预期：{request.ExpectedHash}，实际：{HashHelper.ComputeFileHash(fullPath, _config.HashAlgorithm)}",
+                            $"文件哈希校验失败，预期：{request.ExpectedHash}，实际：{HashHelper.ComputeFileHash(fullPath, AlgorithmType.MD5)}",
                         FullPath = fullPath
                     };
                 }
@@ -104,7 +105,7 @@ public class NotFileStorageService : INotFileStorageService
                 Success = true,
                 FullPath = fullPath,
                 FileSize = new FileInfo(fullPath).Length,
-                ActualHash = HashHelper.ComputeFileHash(fullPath, _config.HashAlgorithm)
+                ActualHash = HashHelper.ComputeFileHash(fullPath, AlgorithmType.SHA256)
             };
         }
         catch (Exception ex)
@@ -171,7 +172,7 @@ public class NotFileStorageService : INotFileStorageService
                 Success = true,
                 FullPath = fullPath,
                 FileSize = content.Length,
-                ActualHash = HashHelper.ComputeHash(content, _config.HashAlgorithm)
+                ActualHash = HashHelper.ComputeHash(content, AlgorithmType.MD5)
             });
         }
         catch (Exception ex)
@@ -209,7 +210,7 @@ public class NotFileStorageService : INotFileStorageService
             // 1. 校验分片哈希（如果传入）
             if (!string.IsNullOrEmpty(chunkHash))
             {
-                bool isChunkValid = HashHelper.VerifyHash(chunkContent, chunkHash, _config.HashAlgorithm);
+                bool isChunkValid = HashHelper.VerifyHash(chunkContent, chunkHash, AlgorithmType.MD5);
                 if (!isChunkValid)
                 {
                     return new NotFileStorageResponse
@@ -230,7 +231,7 @@ public class NotFileStorageService : INotFileStorageService
                 Success = true,
                 FullPath = chunkTempPath,
                 FileSize = chunkContent.Length,
-                ActualHash = HashHelper.ComputeHash(chunkContent, _config.HashAlgorithm)
+                ActualHash = HashHelper.ComputeHash(chunkContent, AlgorithmType.MD5)
             };
         }
         catch (Exception ex)
@@ -301,10 +302,10 @@ public class NotFileStorageService : INotFileStorageService
             }
 
             // 4. 校验最终文件哈希（如果传入）
-            string actualFileHash = HashHelper.ComputeFileHash(finalFilePath, _config.HashAlgorithm);
+            string actualFileHash = HashHelper.ComputeFileHash(finalFilePath, AlgorithmType.MD5);
             if (!string.IsNullOrEmpty(expectedFileHash))
             {
-                var isFileValid = HashHelper.VerifyFileHash(finalFilePath, expectedFileHash, _config.HashAlgorithm);
+                var isFileValid = HashHelper.VerifyFileHash(finalFilePath, expectedFileHash, AlgorithmType.MD5);
                 if (!isFileValid)
                 {
                     File.Delete(finalFilePath); // 校验失败删除文件

@@ -1,7 +1,3 @@
-using Message.Domain.Entities.Group;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
 namespace Message.Infrastructure.EntityConfig;
 
 public class GroupMemberConfiguration : IEntityTypeConfiguration<GroupMember>

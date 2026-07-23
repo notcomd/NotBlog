@@ -1,13 +1,11 @@
-using Message.Domain.Entities.Tweet;
-using Message.Domain.IRepository;
 using Message.Infrastructure.EntityFramework;
-using Microsoft.EntityFrameworkCore;
 
 namespace Message.Infrastructure.Repository;
 
 public class CommentRepository(MessageDbContext context) : ICommentRepository
 {
-    
+    public IUnitOfWork UnitOfWork => context;
+
     private readonly DbSet<Comment> DbSet = context.Comments;
 
     public async Task<Comment?> GetByIdAsync(Guid commentGuid)
@@ -33,13 +31,13 @@ public class CommentRepository(MessageDbContext context) : ICommentRepository
         return await query.ToListAsync();
     }
 
-    public new async Task<Comment> AddAsync(Comment comment)
+    public async Task<Comment> AddAsync(Comment comment)
     {
         var entry = await DbSet.AddAsync(comment);
         return entry.Entity;
     }
 
-    public new async Task<Comment> UpdateAsync(Comment comment)
+    public async Task<Comment> UpdateAsync(Comment comment)
     {
         var entry = DbSet.Update(comment);
         return entry.Entity;

@@ -1,6 +1,3 @@
-using Message.Domain.IServices;
-using Microsoft.Extensions.Logging;
-
 namespace Message.Infrastructure.Services;
 
 /// <summary>

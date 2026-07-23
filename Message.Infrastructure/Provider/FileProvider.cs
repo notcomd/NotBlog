@@ -1,8 +1,3 @@
-using Message.Domain.Entities;
-using Message.Domain.IProvider;
-using Message.Domain.IRepository;
-using Message.Domain.SeedWork;
-
 namespace Message.Infrastructure.Provider;
 
 public class FileProvider : IFileProvider
@@ -29,7 +24,7 @@ public class FileProvider : IFileProvider
 
         var attachment = new FileAttachment(messageId, fileName, fileType, fileSize, fileUri);
         await _fileRepository.AddAsync(attachment);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
 
         return attachment;
     }
@@ -57,7 +52,7 @@ public class FileProvider : IFileProvider
 
         file.SetThumbnail(thumbnailUri);
         await _fileRepository.UpdateAsync(file);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task UpdateDescriptionAsync(Guid attachmentId, string description)
@@ -68,7 +63,7 @@ public class FileProvider : IFileProvider
 
         file.UpdateDescription(description);
         await _fileRepository.UpdateAsync(file);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task RecordDownloadAsync(Guid attachmentId)
@@ -79,7 +74,7 @@ public class FileProvider : IFileProvider
 
         file.RecordDownload();
         await _fileRepository.UpdateAsync(file);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task DeleteFileAsync(Guid attachmentId)
@@ -90,7 +85,7 @@ public class FileProvider : IFileProvider
 
         file.Delete();
         await _fileRepository.UpdateAsync(file);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task<bool> FileExistsAsync(Guid attachmentId)

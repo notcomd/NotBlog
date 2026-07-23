@@ -1,16 +1,17 @@
 using Message.Domain.Enums;
+using Message.Domain.SeedWork;
 
 namespace Message.Domain.Entities.Recall;
 
 /// <summary>
 ///  消息撤回
 /// </summary>
-public class MessageRecall
+public class MessageRecall : Entity
 {
     public MessageRecall(Guid messageId, Guid recalledBy, RecallReason reason, string? originalContent,
         int timeLimitMinutes = 2)
     {
-        RecallId = Guid.CreateVersion7();
+        Id = Guid.CreateVersion7();
         MessageId = messageId;
         RecalledBy = recalledBy;
         RecallTime = DateTime.UtcNow;
@@ -21,11 +22,9 @@ public class MessageRecall
 
     private MessageRecall()
     {
-        RecallId = Guid.CreateVersion7();
+        Id = Guid.CreateVersion7();
         RecallTime = DateTime.UtcNow;
     }
-
-    public Guid RecallId { get; init; }
 
     public Guid MessageId { get; init; }
 

@@ -1,7 +1,4 @@
 using System.Text.Json;
-using Message.Domain.IServices;
-using Microsoft.Extensions.Logging;
-using StackExchange.Redis;
 
 namespace Message.Infrastructure.Services;
 

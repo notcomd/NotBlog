@@ -1,10 +1,5 @@
 using System.Security.Claims;
-using Message.Domain.Enums;
-using Message.Domain.IProvider;
-using Message.Domain.IServices;
-using Message.Web.API.Dto.Response;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.SignalR;
 
 namespace Message.Web.API.Hubs;
 
@@ -30,39 +25,61 @@ public class MessageHub : Hub<IMessageClient>
 
     public override async Task OnConnectedAsync()
     {
-        var userId = GetUserId();
-        var connectionId = Context.ConnectionId;
-
-        await _connectionManager.AddConnectionAsync(userId, connectionId);
-        await _connectionManager.SetUserOnlineAsync(userId);
-
-        _logger.LogInformation("用户 {UserId} 已连接，连接ID: {ConnectionId}", userId, connectionId);
-
-        var offlineMessages = await _messageProvider.GetUnreadMessagesAsync(userId);
-        foreach (var message in offlineMessages)
+        try
         {
-            await Clients.Caller.ReceiveMessage(MapToDto(message));
-        }
+            var userId = GetUserId();
 
-        await base.OnConnectedAsync();
+            if (Context.User?.Identity?.IsAuthenticated != true)
+            {
+                throw new HubException("用户未认证");
+            }
+
+            var connectionId = Context.ConnectionId;
+
+            await _connectionManager.AddConnectionAsync(userId, connectionId);
+            await _connectionManager.SetUserOnlineAsync(userId);
+
+            _logger.LogInformation("用户连接: {UserId}, ConnectionId: {ConnectionId}", userId, Context.ConnectionId);
+
+            var offlineMessages = await _messageProvider.GetUnreadMessagesAsync(userId);
+            foreach (var message in offlineMessages)
+            {
+                await Clients.Caller.ReceiveMessage(message.MapToDto());
+            }
+
+            await base.OnConnectedAsync();
+        }
+        catch (Exception ex) when (ex is not HubException)
+        {
+            _logger.LogError(ex, "用户连接时发生错误");
+            throw;
+        }
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        var userId = GetUserId();
-        var connectionId = Context.ConnectionId;
-
-        await _connectionManager.RemoveConnectionAsync(userId, connectionId);
-
-        var hasOtherConnections = await _connectionManager.HasOtherConnectionsAsync(userId);
-        if (!hasOtherConnections)
+        try
         {
-            await _connectionManager.SetUserOfflineAsync(userId);
+            var userId = GetUserId();
+            var connectionId = Context.ConnectionId;
+
+            await _connectionManager.RemoveConnectionAsync(userId, connectionId);
+
+            var hasOtherConnections = await _connectionManager.HasOtherConnectionsAsync(userId);
+            if (!hasOtherConnections)
+            {
+                await _connectionManager.SetUserOfflineAsync(userId);
+            }
+
+            _logger.LogInformation("用户 {UserId} 已断开连接，连接ID: {ConnectionId}", userId, connectionId);
+
+            await base.OnDisconnectedAsync(exception);
         }
-
-        _logger.LogInformation("用户 {UserId} 已断开连接，连接ID: {ConnectionId}", userId, connectionId);
-
-        await base.OnDisconnectedAsync(exception);
+        catch (Exception ex) when (ex is not HubException)
+        {
+            _logger.LogError(ex, "用户断开连接时发生错误");
+            throw;
+        }
     }
 
     public async Task SendMessage(Guid sessionId, SendMessageRequest request)
@@ -98,7 +115,7 @@ public class MessageHub : Hub<IMessageClient>
                 var connectionIds = await _connectionManager.GetConnectionsAsync(participantId);
                 foreach (var connectionId in connectionIds)
                 {
-                    await Clients.Client(connectionId).ReceiveMessage(MapToDto(message));
+                    await Clients.Client(connectionId).ReceiveMessage(message.MapToDto());
                 }
             }
         }
@@ -156,38 +173,6 @@ public class MessageHub : Hub<IMessageClient>
             ? userId
             : throw new HubException("无效的用户标识");
     }
-
-    private static MessageDto MapToDto(Domain.Entities.Message message) => new()
-    {
-        MessageId = message.MessageId,
-        SessionId = message.SessionId,
-        SenderId = message.SenderId,
-        ReceiverId = message.ReceiverId,
-        MessageType = message.MessageType,
-        Status = message.Status,
-        Content = message.Content,
-        MediaUrl = message.MediaUri?.ToString(),
-        ThumbnailUrl = message.ThumbnailUri,
-        FileName = message.FileName,
-        FileSize = (long?)message.FileSize,
-        MimeType = message.MimeType,
-        Duration = message.Duration,
-        Caption = message.Caption,
-        Latitude = message.Latitude,
-        Longitude = message.Longitude,
-        LocationName = message.LocationName,
-        LinkUrl = message.LinkUrl,
-        LinkTitle = message.LinkTitle,
-        LinkDescription = message.LinkDescription,
-        ExpressionCode = message.ExpressionCode,
-        SentTime = message.SentTime,
-        DeliveredTime = message.DeliveredTime,
-        ReadTime = message.ReadTime,
-        IsRecalled = message.IsRecalled,
-        IsForwarded = message.IsForwarded,
-        OriginalMessageId = message.OriginalMessageId,
-        ReplyToMessageId = message.ReplyToMessageId
-    };
 }
 
 public interface IMessageClient
@@ -199,24 +184,4 @@ public interface IMessageClient
     Task UserOffline(Guid userId);
     Task TypingIndicator(Guid sessionId, Guid userId);
     Task UnreadCountUpdated(Guid sessionId, int count);
-}
-
-public class SendMessageRequest
-{
-    public MessageType MessageType { get; init; }
-    public string? Content { get; init; }
-    public string? MediaUrl { get; init; }
-    public string? ThumbnailUrl { get; init; }
-    public string? FileName { get; init; }
-    public long? FileSize { get; init; }
-    public string? MimeType { get; init; }
-    public double? Duration { get; init; }
-    public string? Caption { get; init; }
-    public double? Latitude { get; init; }
-    public double? Longitude { get; init; }
-    public string? LocationName { get; init; }
-    public string? LinkUrl { get; init; }
-    public string? LinkTitle { get; init; }
-    public string? LinkDescription { get; init; }
-    public string? ExpressionCode { get; init; }
 }

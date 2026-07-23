@@ -1,8 +1,4 @@
-using Message.Domain.Entities;
-using Message.Domain.Enums;
-using Message.Domain.IRepository;
 using Message.Infrastructure.EntityFramework;
-using Microsoft.EntityFrameworkCore;
 
 namespace Message.Infrastructure.Repository;
 
@@ -28,14 +24,14 @@ public class ChatSessionRepository(MessageDbContext context) : IChatSessionRepos
     public async Task<IEnumerable<ChatSession>> GetByUserIdAsync(Guid userId)
     {
         return await context.ChatSessions
-            .Where(s => !s.IsDismissed)
+            .Where(s => !s.IsDismissed && s.Participants.Contains(userId))
             .ToListAsync();
     }
 
     public async Task<IEnumerable<ChatSession>> GetPinnedSessionsAsync(Guid userId)
     {
         return await context.ChatSessions
-            .Where(s => s.IsPinned && !s.IsDismissed)
+            .Where(s => s.IsPinned && !s.IsDismissed && s.Participants.Contains(userId))
             .OrderByDescending(s => s.LastMessageTime)
             .ToListAsync();
     }
@@ -50,7 +46,7 @@ public class ChatSessionRepository(MessageDbContext context) : IChatSessionRepos
     public async Task<IEnumerable<ChatSession>> GetActiveSessionsAsync(Guid userId)
     {
         return await context.ChatSessions
-            .Where(s => !s.IsDismissed)
+            .Where(s => !s.IsDismissed && s.Participants.Contains(userId))
             .OrderByDescending(s => s.LastMessageTime)
             .ToListAsync();
     }
@@ -61,13 +57,13 @@ public class ChatSessionRepository(MessageDbContext context) : IChatSessionRepos
             .FirstOrDefaultAsync(s => s.GroupId == groupId && !s.IsDismissed);
     }
 
-    public new async Task<ChatSession> AddAsync(ChatSession session)
+    public async Task<ChatSession> AddAsync(ChatSession session)
     {
         var entry = await context.ChatSessions.AddAsync(session);
         return entry.Entity;
     }
 
-    public new async Task<ChatSession> UpdateAsync(ChatSession session)
+    public async Task<ChatSession> UpdateAsync(ChatSession session)
     {
         var entry = context.ChatSessions.Update(session);
         return entry.Entity;

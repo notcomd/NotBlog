@@ -1,8 +1,4 @@
-using Message.Domain.Entities.Tweet;
-using Message.Domain.Enums;
-using Message.Domain.IRepository;
 using Message.Infrastructure.EntityFramework;
-using Microsoft.EntityFrameworkCore;
 
 namespace Message.Infrastructure.Repository;
 
@@ -24,7 +20,7 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
             .Where(t => t.AuthorGuid == authorGuid)
             .OrderByDescending(t => t.CreateTime);
 
-        return await query.ToListAsync();
+        return await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
     }
 
     public async Task<IEnumerable<Tweet>> GetTimelineAsync(IEnumerable<Guid> authorGuids, int page = 1, int pageSize = 20)
@@ -33,7 +29,7 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
             .Where(t => t.TweetStatus == TweetStatus.Approved && authorGuids.Contains(t.AuthorGuid))
             .OrderByDescending(t => t.CreateTime);
 
-        return await query.ToListAsync();
+        return await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
     }
 
     public async Task<IEnumerable<Tweet>> GetTrendingAsync(int page = 1, int pageSize = 20)
@@ -43,7 +39,7 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
             .OrderByDescending(t => t.HotScore)
             .ThenByDescending(t => t.CreateTime);
 
-        return await query.ToListAsync();
+        return await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
     }
 
     public async Task<IEnumerable<Tweet>> GetPendingAuditAsync(int page = 1, int pageSize = 20)
@@ -52,7 +48,7 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
             .Where(t => t.TweetStatus == TweetStatus.Pending)
             .OrderBy(t => t.CreateTime);
 
-        return await query.ToListAsync();
+        return await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
     }
 
     public async Task<IEnumerable<Tweet>> GetByStatusAsync(TweetStatus status, int page = 1, int pageSize = 20)
@@ -61,17 +57,7 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
             .Where(t => t.TweetStatus == status)
             .OrderByDescending(t => t.CreateTime);
 
-        return await query.ToListAsync();
-    }
-
-    public async Task<IEnumerable<Tweet>> GetTrendingAsync( Guid authorGuid ,int page = 1, int pageSize = 20)
-    {
-        var query = DbSet
-            .Where(t => t.AuthorGuid == authorGuid && t.TweetStatus == TweetStatus.Approved)
-            .OrderByDescending(t => t.HotScore)
-            .ThenByDescending(t => t.CreateTime);
-
-        return await query.ToListAsync();
+        return await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
     }
 
     public async Task<IEnumerable<Tweet>> GetPinnedByAuthorAsync(Guid authorGuid)
@@ -82,13 +68,13 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
             .ToListAsync();
     }
 
-    public new async Task<Tweet> AddAsync(Tweet tweet)
+    public async Task<Tweet> AddAsync(Tweet tweet)
     {
         var entry = await DbSet.AddAsync(tweet);
         return entry.Entity;
     }
 
-    public new async Task<Tweet> UpdateAsync(Tweet tweet)
+    public async Task<Tweet> UpdateAsync(Tweet tweet)
     {
         var entry = DbSet.Update(tweet);
         return entry.Entity;

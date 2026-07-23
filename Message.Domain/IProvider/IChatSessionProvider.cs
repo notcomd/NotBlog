@@ -1,4 +1,5 @@
 using Message.Domain.Entities;
+using Message.Domain.Enums;
 
 namespace Message.Domain.IProvider;
 
@@ -8,6 +9,12 @@ public interface IChatSessionProvider
 
     Task<ChatSession> CreateGroupSessionAsync(Guid groupId, Guid creatorId, string groupName,
         HashSet<Guid> initialMembers);
+
+    /// <summary>
+    /// 统一创建会话（根据 SessionType 分发到私聊或群聊创建）
+    /// </summary>
+    Task<ChatSession> CreateSessionAsync(Guid userId, SessionType sessionType, Guid? friendId,
+        Guid? groupId, string? sessionName, HashSet<Guid>? initialMembers);
 
     Task<ChatSession?> GetSessionAsync(Guid sessionId);
 

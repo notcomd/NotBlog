@@ -1,5 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using MessageEntity = Message.Domain.Entities.Message;
 
 namespace Message.Infrastructure.EntityConfig;

@@ -1,5 +1,3 @@
-using Message.Domain.Enums;
-
 namespace Message.Web.API.Dto.Response;
 
 public class MessageDto

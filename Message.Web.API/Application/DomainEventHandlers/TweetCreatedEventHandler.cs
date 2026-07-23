@@ -1,6 +1,3 @@
-using Message.Domain.Events;
-using Message.Domain.IServices;
-using Microsoft.Extensions.Logging;
 using NotMediator;
 
 namespace Message.Web.API.Application.DomainEventHandlers;

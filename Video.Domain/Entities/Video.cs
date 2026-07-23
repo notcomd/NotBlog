@@ -4,29 +4,7 @@ using Video.Domain.ValueObjects;
 namespace Video.Domain.Entities;
 
 public class Videos : Entity, IAggregateRoot
-{
-    private Videos()
-    {
-        Affiliated = [];
-        VideoQuote = VideoQuote.VideoQuoteBuilder();
-        VideoControl = VideoControl.VideoControlBuilder();
-        VideoTags = [];
-        VideoBarrageList = [];
-        VideoReviews = [];
-        TimeSpace = new TimeSpace(DateTime.UtcNow, DateTime.UtcNow);
-    }
-
-    public Videos(HashSet<Guid> affiliatedAuthorizes, string videoName, Uri videoCover
-        , Uri videoFileUri, string briefIntroduction, HashSet<string> videoTags) : this()
-    {
-        AddByUser(affiliatedAuthorizes);
-        VideoName = videoName;
-        VideoCover = videoCover;
-        VideoFileUri = videoFileUri;
-        BriefIntroduction = briefIntroduction;
-        AddVideoTags(videoTags);
-    }
-    
+{  
     public Guid VideoGuid { get; init; }
 
     public HashSet<Guid> Affiliated { get; private set; }
@@ -53,6 +31,29 @@ public class Videos : Entity, IAggregateRoot
     
     public VideoControl VideoControl { get; private set; }
 
+    private Videos()
+    {
+        Affiliated = [];
+        VideoQuote = VideoQuote.VideoQuoteBuilder();
+        VideoControl = VideoControl.VideoControlBuilder();
+        VideoTags = [];
+        VideoBarrageList = [];
+        VideoReviews = [];
+        TimeSpace = new TimeSpace(DateTime.UtcNow, DateTime.UtcNow);
+    }
+
+    public Videos(HashSet<Guid> affiliatedAuthorizes, string videoName, Uri videoCover
+        , Uri videoFileUri, string briefIntroduction, HashSet<string> videoTags) : this()
+    {
+        AddByUser(affiliatedAuthorizes);
+        VideoName = videoName;
+        VideoCover = videoCover;
+        VideoFileUri = videoFileUri;
+        BriefIntroduction = briefIntroduction;
+        AddVideoTags(videoTags);
+    }
+    
+  
     private void AddByUser(HashSet<Guid> affiliated)
     {
         Affiliated = affiliated ?? throw new ArgumentNullException($"{affiliated}不为空");
@@ -72,7 +73,7 @@ public class Videos : Entity, IAggregateRoot
     public void AddByVideoBarrage(VideoBarrage videoBarrage)
     {
         if (videoBarrage is null) return;
-        VideoBarrageList?.AddRange(videoBarrage);
+        VideoBarrageList?.Add(videoBarrage);
     }
 
     
@@ -85,10 +86,6 @@ public class Videos : Entity, IAggregateRoot
     /// <param name="videoImage">图片</param>
     public void AddByVideoReview(Guid userGuid, Guid? rootReview, string? videoReviewBody, List<VideoImage>? videoImage)
     {
-        if(rootReview!=Guid.Empty||rootReview!=null)
-            //这里会触发一个事件，通知被回复用户
-        
-        
         VideoReviews!.Add(new VideoReview(VideoGuid, userGuid, rootReview, videoReviewBody,
             videoImage is { Count: < 9 and > 0 } ? videoImage : null));
     }

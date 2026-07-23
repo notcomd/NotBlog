@@ -1,7 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
 using Markdown.Domain.Entities;
-using Markdown.Domain.IRepository;
 using Markdown.Infrastructure.EntityFramework;
 using Markdown.Web.API.Application.Commands;
 using Markdown.Web.API.Application.IntegrationEventHandlers;
@@ -13,7 +12,6 @@ namespace Markdown.Web.API.Application.CommandHandlers;
 ///  创建 Markdown 文档命令处理器
 /// </summary>
 public class CreateMarkdownCommandHandler(
-    IMarkdownRepository markdownRepository,
     MarkDownDbContext dbContext,
     IEventBus eventBus) : NotMediator.IRequestHandler<CreateMarkdownCommand, bool>
 {
@@ -23,7 +21,7 @@ public class CreateMarkdownCommandHandler(
         var md5Hash = request.MarkDownHash ?? ComputeMd5(request.MarkDownContent);
 
         // 使用 Builder 模式创建实体
-        var markdown = new MarkDown.MarkDownBuilder(
+        var builder = new MarkDown.MarkDownBuilder(
             request.MarkUserGuid,
             request.MarkDownName,
             request.MarkDownContent,
@@ -33,12 +31,15 @@ public class CreateMarkdownCommandHandler(
         // 添加标签
         if (request.Tags != null)
         {
-            markdown.WithTags(request.Tags);
+            builder.WithTags(request.Tags);
         }
 
-        var markdownEntity = markdown.Build();
+        // 设置文档权限
+        builder.WithMarkDownAuth(request.MarkDownAuth);
 
-        // 添加到数据库
+        var markdownEntity = builder.Build();
+
+        // 通过 UnitOfWork 写入
         await dbContext.Markdowns.AddAsync(markdownEntity, cancellationToken);
         await dbContext.SavaChangesAsync(cancellationToken);
 

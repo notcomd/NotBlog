@@ -1,10 +1,10 @@
 using Message.Domain.Enums;
+using Message.Domain.SeedWork;
 
 namespace Message.Domain.Entities.Tweet;
 
-public class TweetInteraction
+public class TweetInteraction : Entity
 {
-    public Guid InteractGuid { get; init; }
     public Guid TweetGuid { get; private set; }
     public Guid UserGuid { get; private set; }
     public InteractionType Type { get; private set; }
@@ -12,7 +12,7 @@ public class TweetInteraction
 
     private TweetInteraction()
     {
-        InteractGuid = Guid.CreateVersion7();
+        Id = Guid.CreateVersion7();
     }
 
     public static TweetInteraction Create(Guid tweetGuid, Guid userGuid, InteractionType type)

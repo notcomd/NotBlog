@@ -1,7 +1,3 @@
-using Message.Domain.Entities.Tweet;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
 namespace Message.Infrastructure.EntityConfig;
 
 public class TweetReportConfiguration : IEntityTypeConfiguration<TweetReport>
@@ -36,7 +32,7 @@ public class TweetReportConfiguration : IEntityTypeConfiguration<TweetReport>
 
         builder.Property("_evidenceUrls")
             .HasColumnName("EvidenceUrls")
-            .HasColumnType("jsonb");
+            .HasColumnType("nvarchar(max)");
 
         builder.Property(tr => tr.Status)
             .IsRequired()

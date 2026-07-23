@@ -12,8 +12,6 @@ public class NotFile : Entity, IAggregateRoot
 
     public string FileDescription { get; set; } = string.Empty;
 
-    //public FileType FileType { get; private set; }
-
     public long FileSize { get; private set; }
 
     public Uri FileUri { get; private set; } = null!;
@@ -48,7 +46,8 @@ public class NotFile : Entity, IAggregateRoot
         FileUri = fileUri;
         FileIdentity = fileIdentity;
         /// 添加领域事件
-        AddDomainEvent(new UploadNotFileEvent(this, userId, fileName, fileUri, fileSize, fileMd5, fileIdentity));
+        AddDomainEvent(new UploadNotFileEvent(this.FileId, this.UserId, this.FileName, this.FileTags,
+            this.FileDescription, this.FileSize, this.FileUri, this.FileMd5, this.FileIdentity));
     }
 
     private NotFile()

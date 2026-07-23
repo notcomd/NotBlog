@@ -77,3 +77,11 @@ f:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\DomainInfrastructure.dll
 f:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\DomainCommons.dll
 f:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\DomainInfrastructure.pdb
 f:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\DomainCommons.pdb
+f:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+f:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\Microsoft.IdentityModel.Abstractions.dll
+f:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\Microsoft.IdentityModel.JsonWebTokens.dll
+f:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\Microsoft.IdentityModel.Logging.dll
+f:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\Microsoft.IdentityModel.Protocols.dll
+f:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+f:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\Microsoft.IdentityModel.Tokens.dll
+f:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\System.IdentityModel.Tokens.Jwt.dll

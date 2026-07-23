@@ -1,8 +1,4 @@
-using Message.Domain.Entities.Group;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
-namespace Message.Infrastructure.EntityFramework.EntityConfig;
+namespace Message.Infrastructure.EntityConfig;
 
 public class GroupConfiguration : IEntityTypeConfiguration<Group>
 {
@@ -44,7 +40,12 @@ public class GroupConfiguration : IEntityTypeConfiguration<Group>
         builder.Property(g => g.IsDismissed)
             .IsRequired();
 
-        builder.Ignore(g => g.Members);
+        builder.HasMany(g => g.Members)
+            .WithOne()
+            .HasForeignKey(gm => gm.GroupId)
+            .OnDelete(DeleteBehavior.Cascade);
+        builder.Metadata.FindNavigation(nameof(Group.Members))!
+            .SetPropertyAccessMode(PropertyAccessMode.Field);
         builder.Ignore(g => g.MemberCount);
 
         builder.HasIndex(g => g.OwnerId);

@@ -6,12 +6,12 @@ global using System.Text;
 global using System.Threading.Tasks;
 global using System.Xml.Serialization;
 global using Identity.Domain.Entities.RoleAggregate;
+
 global using Identity.Domain.Entities.UserAggregate;
 global using Identity.Domain.SeedWork;
 global using Microsoft.AspNetCore.Http;
 global using Microsoft.AspNetCore.Mvc;
-global using Identity.Domain.IService;
-global using System.ComponentModel.DataAnnotations;
+
 global using Notcomd.Token.JWT.Core;
 global using Notcomd.Token.JWT;
 global using NotMediator;

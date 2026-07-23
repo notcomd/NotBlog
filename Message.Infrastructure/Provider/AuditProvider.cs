@@ -1,12 +1,4 @@
-using System.Runtime.CompilerServices;
 using Message.Domain.Dto;
-using Message.Domain.Entities.Tweet;
-using Message.Domain.Enums;
-using Message.Domain.IProvider;
-using Message.Domain.IRepository;
-using Message.Domain.IServices;
-using Message.Domain.SeedWork;
-using Microsoft.Extensions.Logging;
 
 namespace Message.Infrastructure.Provider;
 
@@ -71,7 +63,7 @@ public class AuditProvider(
             var auditLog = TweetAuditLog.Create(tweetGuid, auditorGuid, AuditAction.Approve, "审核通过");
             await _auditRepository.AddAsync(auditLog);
 
-            await _unitOfWork.SavaEntitiesAsync();
+            await _unitOfWork.SaveEntitiesAsync();
 
             _logger.LogInformation("推文审核通过成功，ID: {TweetGuid}", tweetGuid);
         }
@@ -108,7 +100,7 @@ public class AuditProvider(
             var auditLog = TweetAuditLog.Create(tweetGuid, auditorGuid, AuditAction.Reject, reason);
             await _auditRepository.AddAsync(auditLog);
 
-            await _unitOfWork.SavaEntitiesAsync();
+            await _unitOfWork.SaveEntitiesAsync();
 
             _logger.LogInformation("推文驳回成功，ID: {TweetGuid}", tweetGuid);
         }
@@ -177,7 +169,7 @@ public class AuditProvider(
             }
 
             await _reportRepository.UpdateAsync(report);
-            await _unitOfWork.SavaEntitiesAsync();
+            await _unitOfWork.SaveEntitiesAsync();
 
             _logger.LogInformation("举报处理成功，ID: {ReportGuid}", reportGuid);
         }

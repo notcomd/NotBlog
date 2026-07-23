@@ -1,18 +1,23 @@
-﻿﻿using Message.Domain.Entities.Group;
-using Message.Domain.Enums;
 using Message.Infrastructure.EntityFramework;
-using Microsoft.EntityFrameworkCore;
 
 namespace Message.Infrastructure.Repository;
 
 public class GroupRepository(MessageDbContext context) : IGroupRepository
 {
+    public IUnitOfWork UnitOfWork => context;
     public MessageDbContext Context => context;
     private readonly DbSet<Group> DbSet = context.Groups;
 
     public async Task<Group?> GetByIdAsync(Guid groupId)
     {
         return await DbSet
+            .FirstOrDefaultAsync(g => g.GroupId == groupId && !g.IsDismissed);
+    }
+
+    public async Task<Group?> GetByIdWithMembersAsync(Guid groupId)
+    {
+        return await DbSet
+            .Include(g => g.Members)
             .FirstOrDefaultAsync(g => g.GroupId == groupId && !g.IsDismissed);
     }
 
@@ -72,13 +77,13 @@ public class GroupRepository(MessageDbContext context) : IGroupRepository
     }
 
 
-    public new async Task<Group> AddAsync(Group group)
+    public async Task<Group> AddAsync(Group group)
     {
         var entry = await DbSet.AddAsync(group);
         return entry.Entity;
     }
 
-    public new Task<Group> UpdateAsync(Group group)
+    public Task<Group> UpdateAsync(Group group)
     {
         try
         {
@@ -149,22 +154,12 @@ public class GroupRepository(MessageDbContext context) : IGroupRepository
             .CountAsync(g => !g.IsDismissed);
     }
 
-    public async Task AddMemberAsync(Guid groupId, Guid userId, GroupMemberRole role = GroupMemberRole.Member)
+    public async Task TransferOwnershipAsync(Guid groupId, Guid newOwnerId)
     {
-        var group = await GetByIdAsync(groupId);
+        var group = await GetByIdWithMembersAsync(groupId);
         if (group is not null)
         {
-            group.AddMember(userId, role);
-            DbSet.Update(group);
-        }
-    }
-
-    public async Task RemoveMemberAsync(Guid groupId, Guid userId)
-    {
-        var group = await GetByIdAsync(groupId);
-        if (group is not null)
-        {
-            group.RemoveMember(userId);
+            group.TransferOwnership(newOwnerId);
             DbSet.Update(group);
         }
     }
@@ -189,76 +184,6 @@ public class GroupRepository(MessageDbContext context) : IGroupRepository
             .Where(gm => gm.GroupId == groupId &&
                          (gm.Role == GroupMemberRole.Admin || gm.Role == GroupMemberRole.Owner))
             .ToListAsync();
-    }
-
-    public async Task PromoteToAdminAsync(Guid groupId, Guid userId)
-    {
-        var member = await GetMemberAsync(groupId, userId);
-        if (member is not null)
-        {
-            member.PromoteToAdmin();
-            Context.GroupMembers.Update(member);
-        }
-    }
-
-    public async Task DemoteToMemberAsync(Guid groupId, Guid userId)
-    {
-        var member = await GetMemberAsync(groupId, userId);
-        if (member is not null)
-        {
-            member.DemoteToMember();
-            Context.GroupMembers.Update(member);
-        }
-    }
-
-    public async Task TransferOwnershipAsync(Guid groupId, Guid newOwnerId)
-    {
-        var group = await GetByIdAsync(groupId);
-        if (group is not null)
-        {
-            group.TransferOwnership(newOwnerId);
-            DbSet.Update(group);
-        }
-    }
-
-    public async Task MuteMemberAsync(Guid groupId, Guid userId, TimeSpan duration)
-    {
-        var member = await GetMemberAsync(groupId, userId);
-        if (member is not null)
-        {
-            member.Mute(duration);
-            Context.GroupMembers.Update(member);
-        }
-    }
-
-    public async Task UnmuteMemberAsync(Guid groupId, Guid userId)
-    {
-        var member = await GetMemberAsync(groupId, userId);
-        if (member is not null)
-        {
-            member.Unmute();
-            Context.GroupMembers.Update(member);
-        }
-    }
-
-    public async Task BanMemberAsync(Guid groupId, Guid userId)
-    {
-        var member = await GetMemberAsync(groupId, userId);
-        if (member is not null)
-        {
-            member.Ban();
-            Context.GroupMembers.Update(member);
-        }
-    }
-
-    public async Task UnbanMemberAsync(Guid groupId, Guid userId)
-    {
-        var member = await GetMemberAsync(groupId, userId);
-        if (member is not null)
-        {
-            member.Unban();
-            Context.GroupMembers.Update(member);
-        }
     }
 
     public async Task<IEnumerable<Group>> GetGroupsWhereUserCanSendMessageAsync(Guid userId)

@@ -4,11 +4,11 @@ namespace Message.Domain.Entities.Recall;
 
 public class RecallConfig
 {
-    public int PrivateChatRecallMinutes { get; set; } = 2;
-    public int GroupChatRecallMinutes { get; set; } = 2;
-    public bool AllowRecallForAllMessageTypes { get; set; } = true;
+    public int PrivateChatRecallMinutes { get; private set; }
+    public int GroupChatRecallMinutes { get; private set; }
+    public bool AllowRecallForAllMessageTypes { get; private set; }
 
-    public HashSet<MessageType> RecallableMessageTypes { get; set; } = new()
+    public HashSet<MessageType> RecallableMessageTypes { get; private set; } = new()
     {
         MessageType.MessageText,
         MessageType.MessageImage,
@@ -18,6 +18,27 @@ public class RecallConfig
         MessageType.MessageLink,
         MessageType.MessageExpression
     };
+
+    private RecallConfig()
+    {
+        PrivateChatRecallMinutes = 2;
+        GroupChatRecallMinutes = 2;
+        AllowRecallForAllMessageTypes = true;
+    }
+
+    public static RecallConfig Create(int privateChatRecallMinutes = 2, int groupChatRecallMinutes = 2,
+        bool allowRecallForAllMessageTypes = true, HashSet<MessageType>? recallableMessageTypes = null)
+    {
+        var config = new RecallConfig
+        {
+            PrivateChatRecallMinutes = privateChatRecallMinutes,
+            GroupChatRecallMinutes = groupChatRecallMinutes,
+            AllowRecallForAllMessageTypes = allowRecallForAllMessageTypes
+        };
+        if (recallableMessageTypes is not null)
+            config.RecallableMessageTypes = recallableMessageTypes;
+        return config;
+    }
 
     public bool CanRecallMessageType(MessageType messageType)
     {

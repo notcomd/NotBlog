@@ -1,6 +1,6 @@
 using Message.Domain.Entities.Tweet;
 using Message.Domain.Enums;
-using Message.Domain.SeedWork;
+
 
 namespace Message.Domain.IRepository;
 /// <summary>

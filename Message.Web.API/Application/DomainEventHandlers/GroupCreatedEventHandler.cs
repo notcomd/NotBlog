@@ -1,4 +1,3 @@
-using Message.Domain.Events;
 using NotMediator;
 
 namespace Message.Web.API.Application.DomainEventHandlers;

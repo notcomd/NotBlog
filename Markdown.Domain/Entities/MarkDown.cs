@@ -10,9 +10,9 @@ public class MarkDown : Entity, IAggregateRoot
     private MarkDown()
     {
         MarkDownGuid = Guid.CreateVersion7();
-        MarkDownTagboard = new HashSet<string>();
-        MarkReviews = new List<MarkReview>();
-        OldMarkDowns = new List<OldMarkDown>();
+        MarkDownTagboard = [];
+        MarkReviews = [];
+        OldMarkDowns = [];
         CreateAt = DateTime.UtcNow;
         UpdateAt = DateTime.UtcNow;
     }
@@ -35,7 +35,7 @@ public class MarkDown : Entity, IAggregateRoot
 
     // 公有简化构造函数，使用默认值调用私有构造函数
     public MarkDown(Guid markUserGuid, string markDownName, string markDownContent, string markDownHash)
-        : this(markUserGuid, markDownName, markDownContent, markDownHash, Guid.Empty, new HashSet<string>(),
+        : this(markUserGuid, markDownName, markDownContent, markDownHash, Guid.Empty, [],
             MarkDownAuth.PublicMark, MarkOption.Default)
     {
     }
@@ -75,9 +75,7 @@ public class MarkDown : Entity, IAggregateRoot
     /// <returns>当前文档实例（支持链式调用）</returns>
     public Task<MarkDown> AddByMarkReviewAsync(MarkReview markReview)
     {
-        if (markReview is null)
-            throw new ArgumentNullException(nameof(markReview));
-
+        ArgumentNullException.ThrowIfNull(markReview);
         MarkReviews.Add(markReview);
         return Task.FromResult(this);
     }
@@ -153,10 +151,7 @@ public class MarkDown : Entity, IAggregateRoot
     {
         foreach (var tag in tags.Where(t => !string.IsNullOrWhiteSpace(t)))
         {
-            if (!MarkDownTagboard.Contains(tag))
-            {
-                MarkDownTagboard.Add(tag);
-            }
+            MarkDownTagboard.Add(tag);
         }
 
         UpdateAt = DateTime.UtcNow;
@@ -228,7 +223,7 @@ public class MarkDown : Entity, IAggregateRoot
     }
 
     /// <summary>
-    ///     验证用户是否有权限操作此文档
+    /// 验证用户是否有权限操作此文档
     /// </summary>
     /// <param name="userGuid">用户 GUID</param>
     /// <returns>如果有权限返回 true</returns>
@@ -251,7 +246,8 @@ public class MarkDown : Entity, IAggregateRoot
     }
 
     /// <summary>
-    ///     创建历史版本快照（用于更新前保存旧版本）
+    ///     创建历史版本快照并纳入聚合管理（用于更新前保存旧版本）
+    ///     快照自动加入 OldMarkDowns 集合，由 EF Core 级联持久化
     /// </summary>
     /// <returns>新创建的 OldMarkDown 实例</returns>
     public OldMarkDown CreateHistorySnapshot()
@@ -264,18 +260,18 @@ public class MarkDown : Entity, IAggregateRoot
             MarkDownAuth.PublicMark
         );
 
+        OldMarkDowns.Add(oldVersion);
         return oldVersion;
     }
 
     /// <summary>
-    ///     从历史版本还原
+    /// 从历史版本还原
     /// </summary>
     /// <param name="oldMarkDown">要还原的历史版本</param>
     /// <returns>当前文档实例（支持链式调用）</returns>
     public Task<MarkDown> RestoreFromHistory(OldMarkDown oldMarkDown)
     {
-        if (oldMarkDown is null)
-            throw new ArgumentNullException(nameof(oldMarkDown));
+        ArgumentNullException.ThrowIfNull(oldMarkDown);
 
         // 使用历史版本的内容更新当前文档
         return UpDataByMarkDownAsync(
@@ -286,7 +282,7 @@ public class MarkDown : Entity, IAggregateRoot
     }
 
     /// <summary>
-    ///     MarkDown 构建器（创建者类）
+    /// MarkDown 构建器（创建者类）
     /// </summary>
     public class MarkDownBuilder
     {
@@ -294,7 +290,7 @@ public class MarkDown : Entity, IAggregateRoot
         private readonly string _markDownHash;
         private readonly string _markDownName;
         private readonly Guid _markUserGuid;
-        private readonly HashSet<string> _tags = new();
+        private readonly HashSet<string> _tags = [];
         private MarkDownAuth _markDownAuth = MarkDownAuth.PublicMark;
         private MarkOption _markOption = MarkOption.Default;
         private Guid _markReviewGuid;
@@ -330,6 +326,12 @@ public class MarkDown : Entity, IAggregateRoot
         public MarkDownBuilder WithMarkOption(MarkOption option)
         {
             _markOption = option;
+            return this;
+        }
+
+        public MarkDownBuilder WithMarkDownAuth(MarkDownAuth auth)
+        {
+            _markDownAuth = auth;
             return this;
         }
 

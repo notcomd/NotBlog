@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using NotBlog_Yarp.Middlewares;
 using Yarp.ReverseProxy.Transforms;
 using Yarp.ReverseProxy.Transforms.Builder;
 
@@ -20,12 +21,18 @@ public class UserContextTransformProvider : ITransformProvider
 
     /// <summary>
     /// 从 JWT Claims 中提取 UserId 和 Roles，
-    /// 注入到下游请求的 Header: X-User-Id, X-User-Roles
+    /// 从 HttpContext.Items 读取 DataScope（由 PermissionFilterMiddleware 注入），
+    /// 注入到下游请求的 Header: X-User-Id, X-User-Roles, X-Data-Scope
     /// </summary>
     private static ValueTask ApplyAsync(RequestTransformContext context)
     {
         var user = context.HttpContext.User;
         var path = context.HttpContext.Request.Path;
+
+        // 先清除所有可能被伪造的 Header
+        context.ProxyRequest.Headers.Remove("X-User-Id");
+        context.ProxyRequest.Headers.Remove("X-User-Roles");
+        context.ProxyRequest.Headers.Remove("X-Data-Scope");
 
         if (user.Identity?.IsAuthenticated == true)
         {
@@ -39,28 +46,30 @@ public class UserContextTransformProvider : ITransformProvider
 
             if (!string.IsNullOrEmpty(userId))
             {
-                // 移除客户端可能伪造的 Header
-                context.ProxyRequest.Headers.Remove("X-User-Id");
-                context.ProxyRequest.Headers.Remove("X-User-Roles");
-
                 // 注入可信 Header
                 context.ProxyRequest.Headers.Add("X-User-Id", userId);
                 context.ProxyRequest.Headers.Add("X-User-Roles", string.Join(",", roles));
 
-                Console.WriteLine($"[Transform] OK   | Path={path} | X-User-Id={userId} | X-User-Roles={string.Join(",", roles)}");
+                // 注入 DataScope（由 PermissionFilterMiddleware 存入 Items）
+                if (context.HttpContext.Items.TryGetValue(
+                        PermissionFilterMiddleware.DataScopeItemKey, out var scopeObj) &&
+                    scopeObj is string scopeValue && !string.IsNullOrEmpty(scopeValue))
+                {
+                    context.ProxyRequest.Headers.Add("X-Data-Scope", scopeValue);
+                }
+
+                Console.WriteLine(
+                    $"[Transform] OK   | Path={path} | X-User-Id={userId} | X-User-Roles={string.Join(",", roles)}");
             }
             else
             {
                 var allClaims = string.Join(", ", user.Claims.Select(c => $"{c.Type}={c.Value}"));
-                Console.WriteLine($"[Transform] NULL | Path={path} | Auth=OK 但 UserId 为空 | Claims=[{allClaims}]");
+                Console.WriteLine(
+                    $"[Transform] NULL | Path={path} | Auth=OK 但 UserId 为空 | Claims=[{allClaims}]");
             }
         }
         else
         {
-            // 未认证请求：清除可能存在的伪造 Header
-            context.ProxyRequest.Headers.Remove("X-User-Id");
-            context.ProxyRequest.Headers.Remove("X-User-Roles");
-
             Console.WriteLine($"[Transform] SKIP | Path={path} | Auth=未认证");
         }
 

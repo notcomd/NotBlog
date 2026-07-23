@@ -1,4 +1,5 @@
 using Message.Domain.Enums;
+using Message.Domain.Events;
 using Message.Domain.SeedWork;
 
 namespace Message.Domain.Entities;
@@ -124,7 +125,9 @@ public class ChatSession : Entity, IAggregateRoot
     public static ChatSession CreatePrivateSession(Guid userId1, Guid userId2)
     {
         var participants = new HashSet<Guid> { userId1, userId2 };
-        return new ChatSession(SessionType.Private, userId1, participants);
+        var session = new ChatSession(SessionType.Private, userId1, participants);
+        session.AddDomainEvent(new SessionCreatedEvent(session.SessionId, participants, SessionType.Private));
+        return session;
     }
 
     /// <summary>
@@ -139,10 +142,12 @@ public class ChatSession : Entity, IAggregateRoot
         HashSet<Guid> initialMembers)
     {
         var participants = new HashSet<Guid>(initialMembers) { creatorId };
-        return new ChatSession(SessionType.Group, creatorId, participants, groupName)
+        var session = new ChatSession(SessionType.Group, creatorId, participants, groupName)
         {
             GroupId = groupId
         };
+        session.AddDomainEvent(new SessionCreatedEvent(session.SessionId, participants, SessionType.Group));
+        return session;
     }
 
     /// <summary>

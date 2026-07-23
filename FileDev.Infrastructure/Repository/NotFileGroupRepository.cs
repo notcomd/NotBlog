@@ -28,9 +28,7 @@ public class NotFileGroupRepository(NotFileDbContext notFileDbContext) : INotFil
             throw new NotFileException("notFileGroupId is null");
         var data = await _notFileDbContext
             .NotFileGroups
-            .FirstOrDefaultAsync(x =>
-                x.NotFileGroupId.Equals(notFileGroupId) || x.IsDeleted ||
-                (x.FileIdentity.Equals(FileIdentity.FilePrivate)));
+            .FirstOrDefaultAsync(x => x.NotFileGroupId.Equals(notFileGroupId));
 
         return data ?? throw new NotFileException("NotFileGroup is null");
     }

@@ -4,19 +4,16 @@ using Video.Domain.ValueObjects;
 
 namespace Video.Domain.Entities;
 
+/// <summary>
+/// 视频收藏
+/// </summary>
 public class VideoCollection : Entity, IAggregateRoot
 {
-    private VideoCollection()
-    {
-        VideoGuid = new();
-        AffiliatedUser = new();
-        TimeSpace = new(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
-        VideoControl = VideoControl.VideoControlBuilder();
-    }
 
     public Guid VideoCollectionGuid { get; init; } = Guid.CreateVersion7();
 
     public string VideoNvid { get; init; } = NvidGenerator.GenerateNvStyleIdWithUuid();
+    
     public List<Guid> AffiliatedUser { get; }
 
     public string VideoCollectionName { get; private set; }
@@ -30,6 +27,15 @@ public class VideoCollection : Entity, IAggregateRoot
     public VideoControl VideoControl { get; private set; }
 
     public VideoQuote VideoQuote { get; private set; }
+    private VideoCollection()
+    {
+        VideoGuid = new();
+        AffiliatedUser = new();
+        TimeSpace = new(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
+        VideoControl = VideoControl.VideoControlBuilder();
+    }
+
+
 
 
     public void AddByBelongs(List<Guid> videoBelongs)

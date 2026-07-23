@@ -1,8 +1,3 @@
-using Message.Domain.Entities.Tweet;
-using Message.Domain.Enums;
-using Message.Domain.Events;
-using Message.Domain.IRepository;
-using Microsoft.Extensions.Logging;
 using NotMediator;
 
 namespace Message.Web.API.Application.DomainEventHandlers;

@@ -1,9 +1,10 @@
 namespace FileDev.Web.API.Application.Command;
 
+using FileDev.Domain.IRepository;
+
 public class CreateNotFileCommandHandler(INotFileStorageService storageProvider,
                                          IOptionsSnapshot<NotFileStorageOptions> configOptions,
-                                         INotFileService notFileService,
-                                         INotFileGroupService notFileGroupService,
+                                         INotFileRepository notFileRepository,
                                          ILogger<CreateNotFileCommandHandler> logger)
     : NotMediator.IRequestHandler<CreateNotFileCommand, bool>
 {
@@ -11,8 +12,8 @@ public class CreateNotFileCommandHandler(INotFileStorageService storageProvider,
         configOptions.Value ?? throw new ArgumentNullException(nameof(configOptions));
 
     private readonly ILogger<CreateNotFileCommandHandler> _logger = logger;
-    private readonly INotFileService _notFileService =
-        notFileService ?? throw new ArgumentNullException(nameof(notFileService));
+    private readonly INotFileRepository _notFileRepository =
+        notFileRepository ?? throw new ArgumentNullException(nameof(notFileRepository));
 
     private readonly INotFileStorageService _storageProvider =
         storageProvider ?? throw new ArgumentNullException(nameof(storageProvider));
@@ -23,8 +24,7 @@ public class CreateNotFileCommandHandler(INotFileStorageService storageProvider,
         if (request.UserGuid == Guid.Empty)
             throw new ArgumentException("用户ID不能为空", nameof(request));
         if (string.IsNullOrWhiteSpace(request.FileName))
-            throw new ArgumentException("文件名不能为空",
-                                        nameof(request));
+            throw new ArgumentException("文件名不能为空", nameof(request));
 
         var ext = Path.GetExtension(request.FileName).ToLowerInvariant();
         if (!_config.AllowedExtensions.Contains(ext))
@@ -34,39 +34,30 @@ public class CreateNotFileCommandHandler(INotFileStorageService storageProvider,
             throw new ArgumentException(
                 $"文件大小 {request.FileSize} 超过限制 {_config.MaxFileSize / 1024 / 1024}MB");
 
-        // 2. 推断 FileType
-        var fileType = ResolveFileType(ext);
+        // 2. 构建实体并插入跟踪器（实体构造时会添加 UploadNotFileEvent 领域事件）
+        var notfile = new NotFile.NotFileBuilder()
+            .WithUserId(request.UserGuid)
+            .WithFileName(request.FileName)
+            .WithFileTags(request.FileTags ?? [])
+            .WithFileDescription(request.FileDescription ?? string.Empty)
+            .WithFileSize(request.FileSize)
+            .WithFileUri(request.FilePath)
+            .WithFileMd5(request.FileMd5)
+            .WithFileIdentity(request.FileIdentity)
+            .Build();
 
-        // 3. 委托给领域服务
-        await _notFileService.CreateFileAsync(
-            request.UserGuid,
-            request.FileName,
-            request.FileTags,
-            request.FileDescription,           
-            fileType,
-            request.FileSize,
-            request.FileUri,
-            request.FileMd5,
-            FileIdentity.FilePrivate);
+        await _notFileRepository.InsertFileAsync(notfile);
 
+        // TransactionBehavior 会在 SavaEntitiesAsync 时触发领域事件分发，
+        // UploadNotFileEventHandler 自动将文件关联到根组
         return true;
     }
-
-    private static FileType ResolveFileType(string ext) => ext switch
-    {
-        ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".webp" or ".svg" or ".ico" => FileType.FileImage,
-        ".mp4" or ".avi" or ".mkv" or ".mov" or ".wmv" or ".flv" or ".webm" => FileType.FileVideo,
-        ".mp3" or ".wav" or ".ogg" or ".flac" or ".aac" or ".wma" or ".m4a" => FileType.FileAudio,
-        ".zip" or ".rar" or ".7z" or ".tar" or ".gz" or ".bz2" => FileType.CompressFiles,
-        _ => FileType.FileFile
-    };
 
     public override bool Equals(object? obj)
     {
         return obj is CreateNotFileCommandHandler handler &&
                EqualityComparer<ILogger<CreateNotFileCommandHandler>?>.Default.Equals(_logger, handler._logger);
     }
-
 
     public class CreateNotFileIdentifiedCommandHandler(
         INotMediator mediator,

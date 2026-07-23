@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using Message.Domain.IServices;
 using Microsoft.AspNetCore.Http;
 
 namespace Message.Infrastructure.Services;

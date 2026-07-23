@@ -5,7 +5,7 @@ using NotMediator;
 
 namespace Message.Domain.Entities.Tweet;
 
-public class TweetReport:Entity
+public class TweetReport : Entity, IAggregateRoot
 {
 
 

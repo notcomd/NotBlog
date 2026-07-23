@@ -92,6 +92,8 @@ if (app.Environment.IsDevelopment())
 
 //登入注册端点
 app.MapGroup("api/ready").NotMapIdentityApi();
+// 权限映射端点（供网关启动时拉取）
+app.MapGroup("api/ready").MapPermissionApi();
 // 注册 Github 认证 API
 app.MapGroup("api/git").GithubAuthApis();
 // 注册 OAuth 端点

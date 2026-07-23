@@ -1,9 +1,3 @@
-using Message.Domain.Entities.Tweet;
-using Message.Domain.Enums;
-using Message.Domain.Events;
-using Message.Domain.IRepository;
-using Message.Domain.IServices;
-using Microsoft.Extensions.Logging;
 using NotMediator;
 
 namespace Message.Web.API.Application.DomainEventHandlers;
@@ -35,7 +29,7 @@ public class TweetRejectedEventHandler(
             await _notificationRepository.AddAsync(tweetNotification);
 
             _logger.LogInformation("审核驳回通知已保存: NotifyGuid={NotifyGuid}, AuthorGuid={AuthorGuid}",
-                tweetNotification.NotifyGuid, notification.AuthorGuid);
+                tweetNotification.Id, notification.AuthorGuid);
 
             _logger.LogInformation("邮件通知（占位）: 推文 {TweetGuid} 审核驳回，原因: {Reason}",
                 notification.TweetGuid, notification.Reason);

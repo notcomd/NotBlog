@@ -12,13 +12,13 @@ public interface ITweetProvider
     /// <param name="authorGuid">作者ID</param>
     /// <param name="content">推文内容</param>
     /// <param name="mediaUrls">媒体URL列表</param>
-    /// <param name="linkMetadata">链接元数据</param>
+    /// <param name="linkUrl">链接URL</param>
     /// <param name="hashtags">标签列表</param>
-    /// <param name="visibility">可见性</param>
+    /// <param name="visibility">可见性（字符串）</param>
     /// <returns>创建后的推文详情</returns>
     Task<Tweet> CreateTweetAsync(Guid authorGuid, string content, IEnumerable<string>? mediaUrls = null,
-        LinkMetadata? linkMetadata = null, IEnumerable<string>? hashtags = null,
-        Visibility visibility = Visibility.Public);
+        string? linkUrl = null, IEnumerable<string>? hashtags = null,
+        string? visibility = null);
 
     /// <summary>
     /// 保存草稿
@@ -26,13 +26,13 @@ public interface ITweetProvider
     /// <param name="authorGuid">作者ID</param>
     /// <param name="content">推文内容</param>
     /// <param name="mediaUrls">媒体URL列表</param>
-    /// <param name="linkMetadata">链接元数据</param>
+    /// <param name="linkUrl">链接URL</param>
     /// <param name="hashtags">标签列表</param>
-    /// <param name="visibility">可见性</param>
+    /// <param name="visibility">可见性（字符串）</param>
     /// <returns>保存后的草稿详情</returns>
     Task<Tweet> SaveDraftAsync(Guid authorGuid, string content, IEnumerable<string>? mediaUrls = null,
-        LinkMetadata? linkMetadata = null, IEnumerable<string>? hashtags = null,
-        Visibility visibility = Visibility.Public);
+        string? linkUrl = null, IEnumerable<string>? hashtags = null,
+        string? visibility = null);
 
     /// <summary>
     /// 发布草稿
@@ -82,13 +82,13 @@ public interface ITweetProvider
     /// <param name="authorGuid">作者ID</param>
     /// <param name="content">推文内容</param>
     /// <param name="mediaUrls">媒体URL列表</param>
-    /// <param name="linkMetadata">链接元数据</param>
+    /// <param name="linkUrl">链接URL</param>
     /// <param name="hashtags">标签列表</param>
-    /// <param name="visibility">可见性</param>
+    /// <param name="visibility">可见性（字符串）</param>
     /// <returns>更新后的草稿详情</returns>
     Task<Tweet> UpdateDraftAsync(Guid tweetGuid, Guid authorGuid, string content,
-        IEnumerable<string>? mediaUrls = null, LinkMetadata? linkMetadata = null,
-        IEnumerable<string>? hashtags = null, Visibility? visibility = null);
+        IEnumerable<string>? mediaUrls = null, string? linkUrl = null,
+        IEnumerable<string>? hashtags = null, string? visibility = null);
 
     /// <summary>
     /// 删除推文
@@ -169,4 +169,13 @@ public interface ITweetProvider
     /// <param name="userGuid">用户ID</param>
     /// <param name="viewerIp">查看IP</param>
     Task RecordViewAsync(Guid tweetGuid, Guid? userGuid, string? viewerIp);
+
+    /// <summary>
+    /// 获取用户与推文的交互状态
+    /// </summary>
+    /// <param name="tweetGuid">推文ID</param>
+    /// <param name="userId">用户ID</param>
+    /// <param name="type">交互类型</param>
+    /// <returns>是否存在该交互</returns>
+    Task<bool> GetInteractionStatusAsync(Guid tweetGuid, Guid userId, InteractionType type);
 }

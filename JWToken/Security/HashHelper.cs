@@ -1,5 +1,6 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
+using Notcomd.Token.JWT.Core;
 
 namespace Notcomd.Token.JWT.Security;
 
@@ -16,19 +17,19 @@ public static class HashHelper
     /// <param name="content">字节数组</param>
     /// <param name="algorithmName">算法名称（SHA256/SHA384/SHA512/MD5）</param>
     /// <returns>小写哈希字符串</returns>
-    public static string ComputeHash(byte[] content, string algorithmName = "SHA256")
+    public static string ComputeHash(byte[] content, AlgorithmType algorithmType = AlgorithmType.SHA256)
     {
         if (content == null || content.Length == 0)
             return string.Empty;
 
-        var hashBytes = HashData(content, algorithmName);
+        var hashBytes = HashData(content, algorithmType);
         return ToHexString(hashBytes);
     }
 
     /// <summary>
     /// 计算文件的哈希值（流式处理，避免加载大文件到内存）
     /// </summary>
-    public static string ComputeFileHash(string filePath, string algorithmName = "SHA256")
+    public static string ComputeFileHash(string filePath, AlgorithmType algorithmType = AlgorithmType.SHA256)
     {
         if (!File.Exists(filePath))
             return string.Empty;
@@ -36,7 +37,7 @@ public static class HashHelper
         byte[] hashBytes;
         using (var stream = File.OpenRead(filePath))
         {
-            using var algorithm = CreateAlgorithm(algorithmName);
+            using var algorithm = CreateAlgorithm(algorithmType);
             hashBytes = algorithm.ComputeHash(stream);
         }
 
@@ -46,49 +47,49 @@ public static class HashHelper
     /// <summary>
     /// 验证字节数组的哈希值是否匹配
     /// </summary>
-    public static bool VerifyHash(byte[] content, string expectedHash, string algorithmName = "SHA256")
+    public static bool VerifyHash(byte[] content, string expectedHash, AlgorithmType algorithmType = AlgorithmType.SHA256)
     {
-        var actualHash = ComputeHash(content, algorithmName);
+        var actualHash = ComputeHash(content, algorithmType);
         return string.Equals(actualHash, expectedHash, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
     /// 验证文件的哈希值是否匹配
     /// </summary>
-    public static bool VerifyFileHash(string filePath, string expectedHash, string algorithmName = "SHA256")
+    public static bool VerifyFileHash(string filePath, string expectedHash, AlgorithmType algorithmType = AlgorithmType.SHA256)
     {
-        var actualHash = ComputeFileHash(filePath, algorithmName);
+        var actualHash = ComputeFileHash(filePath, algorithmType);
         return string.Equals(actualHash, expectedHash, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
     /// 使用指定算法计算哈希（返回原始字节）
     /// </summary>
-    public static byte[] ComputeHashBytes(byte[] content, string algorithmName = "SHA256")
+    public static byte[] ComputeHashBytes(byte[] content, AlgorithmType algorithmType = AlgorithmType.SHA256)
     {
-        return HashData(content, algorithmName);
+        return HashData(content, algorithmType);
     }
 
-    private static byte[] HashData(byte[] data, string algorithm)
+    private static byte[] HashData(byte[] data, AlgorithmType algorithmType)
     {
-        return algorithm.ToUpperInvariant() switch
+        return algorithmType switch
         {
-            "SHA256" => SHA256.HashData(data),
-            "SHA384" => SHA384.HashData(data),
-            "SHA512" => SHA512.HashData(data),
-            "MD5" => MD5.HashData(data),
+            AlgorithmType.SHA256 => SHA256.HashData(data),
+            AlgorithmType.SHA384 => SHA384.HashData(data),
+            AlgorithmType.SHA512 => SHA512.HashData(data),
+            AlgorithmType.MD5 => MD5.HashData(data),
             _ => SHA256.HashData(data)
         };
     }
 
-    private static HashAlgorithm CreateAlgorithm(string algorithm)
+    private static HashAlgorithm CreateAlgorithm(AlgorithmType algorithmType)
     {
-        return algorithm.ToUpperInvariant() switch
+        return algorithmType switch
         {
-            "SHA256" => SHA256.Create(),
-            "SHA384" => SHA384.Create(),
-            "SHA512" => SHA512.Create(),
-            "MD5" => MD5.Create(),
+            AlgorithmType.SHA256 => SHA256.Create(),
+            AlgorithmType.SHA384 => SHA384.Create(),
+            AlgorithmType.SHA512 => SHA512.Create(),
+            AlgorithmType.MD5 => MD5.Create(),
             _ => SHA256.Create()
         };
     }

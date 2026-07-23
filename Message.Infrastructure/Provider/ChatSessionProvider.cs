@@ -24,7 +24,7 @@ public class ChatSessionProvider : IChatSessionProvider
 
         var session = ChatSession.CreatePrivateSession(userId1, userId2);
         await _sessionRepository.AddAsync(session);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
 
         return session;
     }
@@ -34,9 +34,24 @@ public class ChatSessionProvider : IChatSessionProvider
     {
         var session = ChatSession.CreateGroupSession(groupId, creatorId, groupName, initialMembers);
         await _sessionRepository.AddAsync(session);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
 
         return session;
+    }
+
+    public async Task<ChatSession> CreateSessionAsync(Guid userId, SessionType sessionType, Guid? friendId,
+        Guid? groupId, string? sessionName, HashSet<Guid>? initialMembers)
+    {
+        if (sessionType == SessionType.Private)
+        {
+            return await CreatePrivateSessionAsync(userId, friendId!.Value);
+        }
+
+        return await CreateGroupSessionAsync(
+            groupId!.Value,
+            userId,
+            sessionName!,
+            initialMembers ?? new HashSet<Guid>());
     }
 
     public async Task<ChatSession?> GetSessionAsync(Guid sessionId)
@@ -93,7 +108,7 @@ public class ChatSessionProvider : IChatSessionProvider
 
         session.AddParticipant(userId);
         await _sessionRepository.UpdateAsync(session);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task RemoveParticipantAsync(Guid sessionId, Guid userId)
@@ -104,7 +119,7 @@ public class ChatSessionProvider : IChatSessionProvider
 
         session.RemoveParticipant(userId);
         await _sessionRepository.UpdateAsync(session);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task<bool> IsParticipantAsync(Guid sessionId, Guid userId)
@@ -116,7 +131,7 @@ public class ChatSessionProvider : IChatSessionProvider
     public async Task UpdateLastMessageAsync(Guid sessionId, Guid messageId, string? content)
     {
         await _sessionRepository.UpdateLastMessageAsync(sessionId, messageId, content);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task MarkSessionAsReadAsync(Guid sessionId, Guid userId)
@@ -127,7 +142,7 @@ public class ChatSessionProvider : IChatSessionProvider
 
         session.MarkAsRead(userId);
         await _sessionRepository.UpdateAsync(session);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task PinSessionAsync(Guid sessionId)
@@ -138,7 +153,7 @@ public class ChatSessionProvider : IChatSessionProvider
 
         session.Pin();
         await _sessionRepository.UpdateAsync(session);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task UnpinSessionAsync(Guid sessionId)
@@ -149,7 +164,7 @@ public class ChatSessionProvider : IChatSessionProvider
 
         session.Unpin();
         await _sessionRepository.UpdateAsync(session);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task MuteSessionAsync(Guid sessionId)
@@ -160,7 +175,7 @@ public class ChatSessionProvider : IChatSessionProvider
 
         session.Mute();
         await _sessionRepository.UpdateAsync(session);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task UnmuteSessionAsync(Guid sessionId)
@@ -171,7 +186,7 @@ public class ChatSessionProvider : IChatSessionProvider
 
         session.Unmute();
         await _sessionRepository.UpdateAsync(session);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task DismissSessionAsync(Guid sessionId)
@@ -182,7 +197,7 @@ public class ChatSessionProvider : IChatSessionProvider
 
         session.Dismiss();
         await _sessionRepository.UpdateAsync(session);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task<bool> SessionExistsAsync(Guid sessionId)

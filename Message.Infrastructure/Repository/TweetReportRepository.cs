@@ -1,8 +1,4 @@
-using Message.Domain.Entities.Tweet;
-using Message.Domain.Enums;
-using Message.Domain.IRepository;
 using Message.Infrastructure.EntityFramework;
-using Microsoft.EntityFrameworkCore;
 
 namespace Message.Infrastructure.Repository;
 
@@ -10,6 +6,8 @@ public class TweetReportRepository : ITweetReportRepository
 {
     private readonly MessageDbContext _context;
     private readonly DbSet<TweetReport> _dbSet;
+
+    public IUnitOfWork UnitOfWork => _context;
 
     public TweetReportRepository(MessageDbContext context)
     {

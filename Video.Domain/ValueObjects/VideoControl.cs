@@ -34,8 +34,14 @@ public record VideoControl
 
     
     public void ChangeByVideoController(VideoControl videoControl)
-    { 
-        
+    {
+        VideoDelete = videoControl.VideoDelete;
+        VideoDisplay = videoControl.VideoDisplay;
+        AuthorVideo = videoControl.AuthorVideo;
+        BarrageControl = videoControl.BarrageControl;
+        if (videoControl.VideoProtectedTime is not null)
+            VideoProtectedTime = videoControl.VideoProtectedTime;
+        TimeSpace.ResetUpdateAt(DateTimeOffset.UtcNow);
     }
     
     

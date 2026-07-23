@@ -34,8 +34,12 @@ public class VideoReview : Entity
         VideoImages = [];
         VideoReviews = [];
     }
-
-    public VideoReview(Guid videoGuid, Guid userGuid, Guid? rootGuid, string? videoReviewBody,
+    
+    /// <summary>
+    /// 视频评论
+    /// </summary>
+    public VideoReview(Guid videoGuid, Guid userGuid, Guid? rootGuid, 
+    string? videoReviewBody,
         List<VideoImage>? videoImages) : this()
     {
         VideoGuid = videoGuid;

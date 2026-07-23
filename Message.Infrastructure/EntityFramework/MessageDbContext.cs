@@ -1,8 +1,3 @@
-using Message.Domain.Entities;
-using Message.Domain.Entities.Group;
-using Message.Domain.Entities.Tweet;
-using Message.Domain.SeedWork;
-using Microsoft.EntityFrameworkCore;
 using NotMediator;
 using MessageEntity = Message.Domain.Entities.Message;
 
@@ -34,16 +29,11 @@ public class MessageDbContext : DbContext, IUnitOfWork
     public DbSet<TweetInteraction> TweetInteractions { get; set; } = null!;
     public DbSet<TweetAuditLog> TweetAuditLogs { get; set; } = null!;
     public DbSet<TweetReport> TweetReports { get; set; } = null!;
-    public DbSet<TweetNotification> TweetNotifications { get; set; } = null!;
+
 
     public IUnitOfWork UnitOfWork => this;
 
-    public async Task<int> SavaChangesAsync(CancellationToken cancellationToken = default)
-    {
-        return await base.SaveChangesAsync(cancellationToken);
-    }
-
-    public async Task<bool> SavaEntitiesAsync(CancellationToken cancellationToken = default)
+    public async Task<bool> SaveEntitiesAsync(CancellationToken cancellationToken = default)
     {
         await _notMediator.DispatchDomainEventsAsync(this, cancellationToken);
         await base.SaveChangesAsync(cancellationToken);

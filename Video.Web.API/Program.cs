@@ -1,8 +1,9 @@
-using System.Reflection;
 using NotBlog.ServiceDefaults;
 using NotMediator;
 using Scalar.AspNetCore;
+using Video.Infrastructure;
 using Video.Infrastructure.EntityFramework;
+using Video.Web.API.Apis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,13 +11,21 @@ builder.AddServiceDefaults();
 
 builder.Services.AddNpgsql<VideoDbContext>("VideoPostgres");
 
-builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
+// Add Video domain and infrastructure services
+var fileDevBaseUrl = builder.Configuration.GetValue<string>("FileDev:BaseUrl") ?? "http://localhost:5000";
+builder.Services.AddVideoInfrastructure(fileDevBaseUrl);
 
-builder.Services.AddControllers();
+// Add HTTP client for streaming proxy to FileDev
+builder.Services.AddHttpClient("FileDevProxy", client =>
+{
+    client.BaseAddress = new Uri(fileDevBaseUrl);
+    client.Timeout = TimeSpan.FromMinutes(30);
+});
+
+builder.Services.AddAuthorization();
+builder.Services.AddNotMediator();
 
 builder.Services.AddOpenApi();
-builder.Services.AddEndpointsApiExplorer();
-
 builder.Services.AddProblemDetails();
 
 var app = builder.Build();
@@ -32,5 +41,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapControllers();
+// --- MiniAPI Endpoint Registration ---
+app.MapAddVideoEndpoints();
+app.MapVideoEndpoints();
+app.MapVideoCollectionEndpoints();
+app.MapVideoReviewEndpoints();
+app.MapVideoBarrageEndpoints();
+app.MapVideoStreamEndpoints();
+
 app.Run();

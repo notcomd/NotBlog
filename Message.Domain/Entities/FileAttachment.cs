@@ -5,7 +5,7 @@ namespace Message.Domain.Entities;
 /// <summary>
 ///  文件附件
 /// </summary>
-public class FileAttachment : Entity
+public class FileAttachment : Entity, IAggregateRoot
 {
     /// <summary>
     /// 创建文件附件
@@ -89,7 +89,7 @@ public class FileAttachment : Entity
     /// <summary>
     /// 文件描述
     /// </summary>
-    public string? Description { get; set; }
+    public string? Description { get; private set; }
 
     /// <summary>
     /// 上传时间

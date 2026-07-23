@@ -4,13 +4,64 @@ namespace FileDev.Domain.IRepository;
 
 public interface INotFileGroupRepository: IRepository<NotFileGroup>
 {
+    
+    /// <summary>
+    /// 插入文件组。
+    /// </summary>
+    /// <param name="notFileGroup">要插入的文件组</param>
     Task InsertNotFileGroupAsync(NotFileGroup notFileGroup);
+
+    /// <summary>
+    /// 根据 ID 获取文件组。
+    /// </summary>
+    /// <param name="notFileGroupId">文件组 ID</param>
+    /// <returns>文件组实例</returns>
     Task<NotFileGroup> GetNotFileGroupByIdAsync(Guid notFileGroupId);
+
+    /// <summary>
+    /// 获取所有文件组。
+    /// </summary>
+    /// <returns>所有文件组实例</returns>
     Task<IEnumerable<NotFileGroup>> GetAllNotFileGroupsAsync();
+
+    /// <summary>
+    /// 获取用户的所有文件组。
+    /// </summary>
+    /// <param name="userId">用户 ID</param>
+    /// <returns>用户的所有文件组实例</returns>
     Task<IEnumerable<NotFileGroup>> GetNotFileGroupsByUserIdAsync(Guid userId);
+
+    /// <summary>
+    /// 获取所有公共文件组。
+    /// </summary>
+    /// <returns>所有公共文件组实例</returns>
     Task<IEnumerable<NotFileGroup>> GetPublicNotFileGroupsAsync();
+
+    /// <summary>
+    /// 根据名称获取文件组。
+    /// </summary>
+    /// <param name="fileGroupName">文件组名称</param>
+    /// <returns>文件组实例（如果存在）</returns>
     Task<NotFileGroup?> GetNotFileGroupByNameAsync(string fileGroupName);
+
+    /// <summary>
+    /// 更新文件组。
+    /// </summary>
+    /// <param name="notFileGroup">要更新的文件组</param>
+    /// <returns>更新后的文件组实例（如果存在）</returns>
+    /// <exception cref="ArgumentException">如果文件组不存在</exception>
+    /// <exception cref="ArgumentNullException">如果文件组名称为空</exception>
+    /// <exception cref="ArgumentException">如果文件组名称已存在</exception>
+    /// <exception cref="ArgumentException">如果文件组身份与用户身份不匹配</exception>
+    /// <exception cref="ArgumentException">如果文件组标签包含空字符串</exception>
+    /// <exception cref="ArgumentException">如果文件组描述包含空字符串</exception>
     Task<NotFileGroup?> UpdateNotFileGroupAsync(NotFileGroup notFileGroup);
+
+    /// <summary>
+    /// 删除文件组。
+    /// </summary>
+    /// <param name="notFileGroupId">要删除的文件组 ID</param>
+    /// <exception cref="ArgumentException">如果文件组不存在</exception>
     Task DeleteNotFileGroupAsync(Guid notFileGroupId);
 
     /// <summary>

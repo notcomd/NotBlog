@@ -1,4 +1,4 @@
-﻿using NotMediator;
+using NotMediator;
 
 namespace Message.Domain.SeedWork;
 
@@ -14,7 +14,7 @@ public abstract class Entity
         protected set => _id = value;
     }
 
-    public IReadOnlyCollection<INotifications> DomainEventbus =>
+    public IReadOnlyCollection<INotifications> DomainEvents =>
         _domainEvents?.AsReadOnly() ?? new List<INotifications>().AsReadOnly();
 
     public void AddDomainEvent(INotifications notification)

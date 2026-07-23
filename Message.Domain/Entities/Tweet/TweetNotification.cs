@@ -1,13 +1,13 @@
 using Message.Domain.Enums;
+using Message.Domain.SeedWork;
 
 namespace Message.Domain.Entities.Tweet;
 
 /// <summary>
 /// 推文通知
 /// </summary>
-public class TweetNotification
+public class TweetNotification : Entity
 {
-    public Guid NotifyGuid { get; init; }
     public Guid UserGuid { get; private set; }
     public NotificationType Type { get; private set; }
     public string Title { get; private set; }
@@ -17,7 +17,7 @@ public class TweetNotification
     public bool IsRead { get; private set; }
     public DateTimeOffset CreateTime { get; private set; }
 
-    private TweetNotification() => NotifyGuid = Guid.CreateVersion7();
+    private TweetNotification() => Id = Guid.CreateVersion7();
 
     public static TweetNotification Create(
         Guid userGuid, NotificationType type, string title, string content,

@@ -1,11 +1,3 @@
-using Message.Domain.Entities.Tweet;
-using Message.Domain.Enums;
-using Message.Domain.IProvider;
-using Message.Domain.IRepository;
-using Message.Domain.IServices;
-using Message.Domain.SeedWork;
-using Microsoft.Extensions.Logging;
-
 namespace Message.Infrastructure.Provider;
 
 public class TweetProvider : ITweetProvider
@@ -40,14 +32,16 @@ public class TweetProvider : ITweetProvider
     }
 
     public async Task<Tweet> CreateTweetAsync(Guid authorGuid, string content,
-        IEnumerable<string>? mediaUrls = null, LinkMetadata? linkMetadata = null,
-        IEnumerable<string>? hashtags = null, Visibility visibility = Visibility.Public)
+        IEnumerable<string>? mediaUrls = null, string? linkUrl = null,
+        IEnumerable<string>? hashtags = null, string? visibility = null)
     {
         try
         {
             _logger.LogInformation("开始创建推文，作者: {AuthorGuid}", authorGuid);
 
-            var tweet = Tweet.Create(authorGuid, content, null, linkMetadata, hashtags, visibility);
+            var linkMetadata = CreateLinkMetadata(linkUrl);
+            var parsedVisibility = ParseVisibility(visibility);
+            var tweet = Tweet.Create(authorGuid, content, null, linkMetadata, hashtags, parsedVisibility);
 
             // 敏感词过滤（仅记录日志）
             try
@@ -82,7 +76,7 @@ public class TweetProvider : ITweetProvider
             }
 
             await _tweetRepository.AddAsync(tweet);
-            await _unitOfWork.SavaEntitiesAsync();
+            await _unitOfWork.SaveEntitiesAsync();
 
             _logger.LogInformation("推文创建成功，ID: {TweetGuid}", tweet.TweetGuid);
             return tweet;
@@ -95,17 +89,19 @@ public class TweetProvider : ITweetProvider
     }
 
     public async Task<Tweet> SaveDraftAsync(Guid authorGuid, string content,
-        IEnumerable<string>? mediaUrls = null, LinkMetadata? linkMetadata = null,
-        IEnumerable<string>? hashtags = null, Visibility visibility = Visibility.Public)
+        IEnumerable<string>? mediaUrls = null, string? linkUrl = null,
+        IEnumerable<string>? hashtags = null, string? visibility = null)
     {
         try
         {
             _logger.LogInformation("开始保存草稿，作者: {AuthorGuid}", authorGuid);
 
-            var tweet = Tweet.Create(authorGuid, content, null, linkMetadata, hashtags, visibility);
+            var linkMetadata = CreateLinkMetadata(linkUrl);
+            var parsedVisibility = ParseVisibility(visibility);
+            var tweet = Tweet.Create(authorGuid, content, null, linkMetadata, hashtags, parsedVisibility);
 
             await _tweetRepository.AddAsync(tweet);
-            await _unitOfWork.SavaEntitiesAsync();
+            await _unitOfWork.SaveEntitiesAsync();
 
             _logger.LogInformation("草稿保存成功，ID: {TweetGuid}", tweet.TweetGuid);
             return tweet;
@@ -132,7 +128,7 @@ public class TweetProvider : ITweetProvider
 
             tweet.Publish();
             await _tweetRepository.UpdateAsync(tweet);
-            await _unitOfWork.SavaEntitiesAsync();
+            await _unitOfWork.SaveEntitiesAsync();
 
             _logger.LogInformation("草稿发布成功，ID: {TweetGuid}", tweetGuid);
             return tweet;
@@ -155,7 +151,7 @@ public class TweetProvider : ITweetProvider
                 tweet.IncrementViewCount();
                 tweet.RecalculateHotScore();
                 await _tweetRepository.UpdateAsync(tweet);
-                await _unitOfWork.SavaEntitiesAsync();
+                await _unitOfWork.SaveEntitiesAsync();
             }
 
             return tweet;
@@ -213,11 +209,11 @@ public class TweetProvider : ITweetProvider
     /// <param name="page">页码</param>
     /// <param name="pageSize">每页数量</param>
     /// <returns>热门推文列表</returns>
-    public  Task<IEnumerable<Tweet>> GetTrendingAsync( int page = 1, int pageSize = 20)
+    public async Task<IEnumerable<Tweet>> GetTrendingAsync( int page = 1, int pageSize = 20)
     {
         try
         {
-            return null;
+            return await _tweetRepository.GetTrendingAsync(page, pageSize);
         }
         catch (Exception ex)
         {
@@ -230,12 +226,15 @@ public class TweetProvider : ITweetProvider
   
 
     public async Task<Tweet> UpdateDraftAsync(Guid tweetGuid, Guid authorGuid, string content,
-        IEnumerable<string>? mediaUrls = null, LinkMetadata? linkMetadata = null,
-        IEnumerable<string>? hashtags = null, Visibility? visibility = null)
+        IEnumerable<string>? mediaUrls = null, string? linkUrl = null,
+        IEnumerable<string>? hashtags = null, string? visibility = null)
     {
         try
         {
             _logger.LogInformation("开始更新草稿，推文: {TweetGuid}", tweetGuid);
+
+            var linkMetadata = CreateLinkMetadata(linkUrl);
+            var parsedVisibility = ParseVisibility(visibility);
 
             var tweet = await _tweetRepository.GetByIdAsync(tweetGuid);
             if (tweet == null)
@@ -246,7 +245,7 @@ public class TweetProvider : ITweetProvider
 
             tweet.UpdateContent(content);
             await _tweetRepository.UpdateAsync(tweet);
-            await _unitOfWork.SavaEntitiesAsync();
+            await _unitOfWork.SaveEntitiesAsync();
 
             _logger.LogInformation("草稿更新成功，ID: {TweetGuid}", tweetGuid);
             return tweet;
@@ -272,7 +271,7 @@ public class TweetProvider : ITweetProvider
                 throw new UnauthorizedAccessException("无权删除此推文");
 
             await _tweetRepository.DeleteAsync(tweetGuid);
-            await _unitOfWork.SavaEntitiesAsync();
+            await _unitOfWork.SaveEntitiesAsync();
 
             _logger.LogInformation("推文删除成功，ID: {TweetGuid}", tweetGuid);
         }
@@ -298,7 +297,7 @@ public class TweetProvider : ITweetProvider
 
             tweet.Pin();
             await _tweetRepository.UpdateAsync(tweet);
-            await _unitOfWork.SavaEntitiesAsync();
+            await _unitOfWork.SaveEntitiesAsync();
 
             _logger.LogInformation("推文置顶成功，ID: {TweetGuid}", tweetGuid);
         }
@@ -324,7 +323,7 @@ public class TweetProvider : ITweetProvider
 
             tweet.Unpin();
             await _tweetRepository.UpdateAsync(tweet);
-            await _unitOfWork.SavaEntitiesAsync();
+            await _unitOfWork.SaveEntitiesAsync();
 
             _logger.LogInformation("取消置顶推文成功，ID: {TweetGuid}", tweetGuid);
         }
@@ -354,7 +353,7 @@ public class TweetProvider : ITweetProvider
             tweet.AddLike();
             tweet.RecalculateHotScore();
             await _tweetRepository.UpdateAsync(tweet);
-            await _unitOfWork.SavaEntitiesAsync();
+            await _unitOfWork.SaveEntitiesAsync();
 
             _logger.LogInformation("点赞成功，推文: {TweetGuid}", tweetGuid);
             return tweet;
@@ -384,7 +383,7 @@ public class TweetProvider : ITweetProvider
             tweet.RemoveLike();
             tweet.RecalculateHotScore();
             await _tweetRepository.UpdateAsync(tweet);
-            await _unitOfWork.SavaEntitiesAsync();
+            await _unitOfWork.SaveEntitiesAsync();
 
             _logger.LogInformation("取消点赞成功，推文: {TweetGuid}", tweetGuid);
             return tweet;
@@ -415,7 +414,7 @@ public class TweetProvider : ITweetProvider
             tweet.AddFavorite();
             tweet.RecalculateHotScore();
             await _tweetRepository.UpdateAsync(tweet);
-            await _unitOfWork.SavaEntitiesAsync();
+            await _unitOfWork.SaveEntitiesAsync();
 
             _logger.LogInformation("收藏成功，推文: {TweetGuid}", tweetGuid);
             return tweet;
@@ -445,7 +444,7 @@ public class TweetProvider : ITweetProvider
             tweet.RemoveFavorite();
             tweet.RecalculateHotScore();
             await _tweetRepository.UpdateAsync(tweet);
-            await _unitOfWork.SavaEntitiesAsync();
+            await _unitOfWork.SaveEntitiesAsync();
 
             _logger.LogInformation("取消收藏成功，推文: {TweetGuid}", tweetGuid);
             return tweet;
@@ -472,7 +471,7 @@ public class TweetProvider : ITweetProvider
             tweet.AddShare();
             tweet.RecalculateHotScore();
             await _tweetRepository.UpdateAsync(tweet);
-            await _unitOfWork.SavaEntitiesAsync();
+            await _unitOfWork.SaveEntitiesAsync();
 
             _logger.LogInformation("转发成功，推文: {TweetGuid}", tweetGuid);
             return tweet;
@@ -499,7 +498,7 @@ public class TweetProvider : ITweetProvider
             tweet.AddCoin();
             tweet.RecalculateHotScore();
             await _tweetRepository.UpdateAsync(tweet);
-            await _unitOfWork.SavaEntitiesAsync();
+            await _unitOfWork.SaveEntitiesAsync();
 
             _logger.LogInformation("投币成功，推文: {TweetGuid}", tweetGuid);
             return tweet;
@@ -530,7 +529,7 @@ public class TweetProvider : ITweetProvider
             }
 
             await _tweetRepository.UpdateAsync(tweet);
-            await _unitOfWork.SavaEntitiesAsync();
+            await _unitOfWork.SaveEntitiesAsync();
         }
         catch (Exception ex)
         {
@@ -538,4 +537,28 @@ public class TweetProvider : ITweetProvider
             throw;
         }
     }
+
+    public async Task<bool> GetInteractionStatusAsync(Guid tweetGuid, Guid userId, InteractionType type)
+    {
+        try
+        {
+            return await _interactionRepository.ExistsAsync(tweetGuid, userId, type);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "获取交互状态失败，推文: {TweetGuid}, 用户: {UserId}", tweetGuid, userId);
+            throw;
+        }
+    }
+
+    private static LinkMetadata? CreateLinkMetadata(string? linkUrl) =>
+        string.IsNullOrWhiteSpace(linkUrl) ? null : LinkMetadata.Create(linkUrl);
+
+    private static Visibility ParseVisibility(string? visibility) =>
+        visibility?.ToLower() switch
+        {
+            "followers" => Visibility.Followers,
+            "private" => Visibility.Private,
+            _ => Visibility.Public
+        };
 }

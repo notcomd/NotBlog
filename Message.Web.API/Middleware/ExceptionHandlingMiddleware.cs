@@ -1,6 +1,5 @@
 using System.Net;
 using System.Text.Json;
-using Message.Web.API.Dto;
 
 namespace Message.Web.API.Middleware;
 

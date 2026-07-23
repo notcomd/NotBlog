@@ -1,11 +1,3 @@
-using Message.Domain.Entities.Tweet;
-using Message.Domain.Enums;
-using Message.Domain.IProvider;
-using Message.Domain.IRepository;
-using Message.Domain.IServices;
-using Message.Domain.SeedWork;
-using Microsoft.Extensions.Logging;
-
 namespace Message.Infrastructure.Provider;
 
 public class ReportProvider : IReportProvider
@@ -33,24 +25,27 @@ public class ReportProvider : IReportProvider
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<TweetReport> SubmitReportAsync(Guid reporterGuid, ReportTargetType targetType, Guid targetGuid,
-        string reason, ReportCategory category, IEnumerable<string>? evidenceUrls = null)
+    public async Task<TweetReport> SubmitReportAsync(Guid reporterGuid, string targetType, Guid targetGuid,
+        string reason, string category, IEnumerable<string>? evidenceUrls = null)
     {
         try
         {
+            var parsedTargetType = Enum.Parse<ReportTargetType>(targetType);
+            var parsedCategory = Enum.Parse<ReportCategory>(category);
+
             _logger.LogInformation("开始提交举报，举报人: {ReporterGuid}, 类型: {TargetType}, 目标: {TargetGuid}",
-                reporterGuid, targetType, targetGuid);
+                reporterGuid, parsedTargetType, targetGuid);
 
             // 验证目标存在并获取被举报用户ID
             Guid reportedUserGuid;
-            if (targetType == ReportTargetType.Tweet)
+            if (parsedTargetType == ReportTargetType.Tweet)
             {
                 var tweet = await _tweetRepository.GetByIdAsync(targetGuid);
                 if (tweet == null)
                     throw new KeyNotFoundException("被举报的推文不存在");
                 reportedUserGuid = tweet.AuthorGuid;
             }
-            else if (targetType == ReportTargetType.Comment)
+            else if (parsedTargetType == ReportTargetType.Comment)
             {
                 var comment = await _commentRepository.GetByIdAsync(targetGuid);
                 if (comment == null)
@@ -62,11 +57,11 @@ public class ReportProvider : IReportProvider
                 throw new ArgumentException("不支持的举报目标类型");
             }
 
-            var report = TweetReport.Create(reporterGuid, targetType, targetGuid, reportedUserGuid,
-                reason, category, evidenceUrls);
+            var report = TweetReport.Create(reporterGuid, parsedTargetType, targetGuid, reportedUserGuid,
+                reason, parsedCategory, evidenceUrls);
 
             await _reportRepository.AddAsync(report);
-            await _unitOfWork.SavaEntitiesAsync();
+            await _unitOfWork.SaveEntitiesAsync();
 
             _logger.LogInformation("举报提交成功，ID: {ReportGuid}", report.ReportGuid);
             return report;

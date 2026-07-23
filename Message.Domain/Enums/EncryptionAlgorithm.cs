@@ -1,5 +1,6 @@
 namespace Message.Domain.Enums;
 
+
 public enum EncryptionAlgorithm
 {
     Aes256Gcm,

@@ -32,11 +32,11 @@ public class GroupMember : Entity
 
     public GroupMemberRole Role { get; private set; }
 
-    public string? Nickname { get; set; }
+    public string? Nickname { get; private set; }
 
     public DateTime JoinTime { get; init; }
 
-    public DateTime? MuteEndTime { get; set; }
+    public DateTime? MuteEndTime { get; private set; }
 
     public bool IsMuted { get; private set; }
 
@@ -54,8 +54,6 @@ public class GroupMember : Entity
 
     public void DemoteToMember()
     {
-        if (Role == GroupMemberRole.Owner)
-            throw new InvalidOperationException("群主不能更改角色");
         Role = GroupMemberRole.Member;
     }
 
@@ -63,6 +61,16 @@ public class GroupMember : Entity
     {
         IsMuted = true;
         MuteEndTime = DateTime.UtcNow.Add(duration);
+    }
+
+    /// <summary>
+    ///  禁言成员到指定时间
+    /// </summary>
+    /// <param name="endTime">禁言结束时间，null表示永久禁言</param>
+    public void Mute(DateTime? endTime)
+    {
+        IsMuted = true;
+        MuteEndTime = endTime;
     }
 
     public void Unmute()
@@ -89,5 +97,14 @@ public class GroupMember : Entity
         if (IsMuted && MuteEndTime.HasValue && DateTime.UtcNow < MuteEndTime.Value)
             return false;
         return true;
+    }
+
+    /// <summary>
+    ///  设置群昵称
+    /// </summary>
+    /// <param name="nickname">群昵称</param>
+    public void SetNickname(string nickname)
+    {
+        Nickname = nickname;
     }
 }

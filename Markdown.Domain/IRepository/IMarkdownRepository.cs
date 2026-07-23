@@ -5,7 +5,10 @@ namespace Markdown.Domain.IRepository;
 
 public interface IMarkdownRepository : IRepository<MarkDown>
 {
-    Task InsertMarkDownAsync(MarkDown markDown);
+    /// <summary>
+    /// 获取追踪状态的 MarkDown 实体（用于更新操作）
+    /// </summary>
+    Task<MarkDown?> GetMarkDownTrackedAsync(Guid markDownGuid);
 
     Task<MarkDown?> FindMarkDownAsync(Guid markDownGuid);
 
@@ -16,8 +19,4 @@ public interface IMarkdownRepository : IRepository<MarkDown>
     Task<IEnumerable<MarkDown>?> FindMarkDownsAsync(string markDownName);
 
     Task<IEnumerable<MarkDown>?> FindMarkDownsAsync(MarkDownAuth markDownAuth);
-
-    Task<bool> UpdateMarkDownAsync(MarkDown markDown);
-
-    Task<bool> DeleteMarkDownAsync(MarkDown markDown);
 }

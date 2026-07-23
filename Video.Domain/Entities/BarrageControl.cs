@@ -1,5 +1,8 @@
 namespace Video.Domain.Entities;
 
+/// <summary>
+/// 弹幕控制
+/// </summary>
 public enum BarrageControl
 {
     /// <summary>

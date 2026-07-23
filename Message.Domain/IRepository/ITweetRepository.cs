@@ -32,13 +32,12 @@ public interface ITweetRepository : IRepository<Tweet>
     Task<IEnumerable<Tweet>> GetTimelineAsync(IEnumerable<Guid> authorGuids, int page = 1, int pageSize = 20);
     
     /// <summary>
-    /// 获取指定作者的趋势推文列表
+    /// 获取热门推文列表（按热度排序）
     /// </summary>
-    /// <param name="authorGuid">作者ID</param>
     /// <param name="page">页码</param>
     /// <param name="pageSize">每页数量</param>
-    /// <returns>指定作者的趋势推文列表</returns>
-    Task<IEnumerable<Tweet>> GetTrendingAsync( Guid authorGuid ,int page = 1, int pageSize = 20);
+    /// <returns>热门推文列表</returns>
+    Task<IEnumerable<Tweet>> GetTrendingAsync(int page = 1, int pageSize = 20);
 
     /// <summary>
     /// 获取待审核推文列表

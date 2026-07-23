@@ -1,5 +1,4 @@
-﻿﻿﻿﻿﻿﻿using System.Reflection;
-using Message.Domain.SeedWork;
+using System.Reflection;
 using Message.Infrastructure;
 using Message.Infrastructure.EntityFramework;
 using Message.Web.API.Middleware;
@@ -20,7 +19,6 @@ builder.Services.AddMessageInfrastructure(builder.Configuration);
 builder.Services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<MessageDbContext>());
 builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 builder.Services.AddEndpointsApiExplorer();
@@ -48,6 +46,17 @@ app.UseExceptionHandling();
 app.UseUserContext();
 
 app.UseAuthorization();
-app.MapControllers();
+
+app.MapAuditApi();
+app.MapCommentsApi();
+app.MapFilesApi();
+app.MapFriendsApi();
+app.MapGroupsApi();
+app.MapMessagesApi();
+app.MapReportsApi();
+app.MapSessionsApi();
+app.MapTweetsApi();
+
+app.MapHub<Message.Web.API.Hubs.MessageHub>("/MessageHub");
 
 app.Run();

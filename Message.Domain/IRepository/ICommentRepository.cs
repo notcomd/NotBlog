@@ -1,8 +1,9 @@
 using Message.Domain.Entities.Tweet;
+using Message.Domain.SeedWork;
 
 namespace Message.Domain.IRepository;
 
-public interface ICommentRepository
+public interface ICommentRepository : IRepository<Comment>
 {
     Task<Comment?> GetByIdAsync(Guid commentGuid);
     Task<IEnumerable<Comment>> GetByTweetAsync(Guid tweetGuid, int page = 1, int pageSize = 20);

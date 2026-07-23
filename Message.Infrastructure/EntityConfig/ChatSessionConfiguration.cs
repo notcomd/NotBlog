@@ -1,7 +1,3 @@
-using Message.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
 namespace Message.Infrastructure.EntityConfig;
 
 public class ChatSessionConfiguration : IEntityTypeConfiguration<ChatSession>
@@ -41,7 +37,15 @@ public class ChatSessionConfiguration : IEntityTypeConfiguration<ChatSession>
         builder.Property(s => s.LastMessageContent)
             .HasMaxLength(500);
 
-        builder.Ignore(s => s.Participants);
+        builder.Property(s => s.Participants)
+            .HasColumnName("Participants")
+            .HasColumnType("nvarchar(max)")
+            .HasConversion(
+                v => string.Join(",", v.Select(g => g.ToString())),
+                v => v.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(Guid.Parse)
+                    .ToHashSet()
+            );
         builder.Ignore(s => s.UnreadCount);
         builder.Ignore(s => s.LastReadTime);
 

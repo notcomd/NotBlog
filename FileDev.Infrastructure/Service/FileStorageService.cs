@@ -1,5 +1,6 @@
-﻿using Notcomd.Token.JWT.Security;
-
+﻿
+using Notcomd.Token.JWT.Security;
+using Notcomd.Token.JWT.Core;
 namespace FileDev.Infrastructure.Service;
 
 public class FileStorageService(
@@ -47,6 +48,11 @@ public class FileStorageService(
         return await storageProvider.SaveAsync(request);
     }
 
+    /// <summary>
+    /// 删除文件
+    /// </summary>
+    /// <param name="fileRelativePath">文件相对路径</param>
+    /// <returns></returns>
     public async Task<NotFileStorageResponse> DeleteFileAsync(string fileRelativePath) =>
         await storageProvider.DeleteAsync(fileRelativePath); // Changed from return to await return
 
@@ -85,7 +91,7 @@ public class FileStorageService(
         bool autoVerify = true)
     {
         // 自动计算分片哈希并校验
-        string chunkHash = (autoVerify ? HashHelper.ComputeHash(chunkContent, _config.HashAlgorithm) : null) ??
+        string chunkHash = (autoVerify ? HashHelper.ComputeHash(chunkContent,AlgorithmType.MD5) : null) ??
                            throw new InvalidOperationException();
         return await storageProvider.UploadChunkAsync(fileKey, chunkIndex, chunkContent, chunkHash);
     }
@@ -99,7 +105,7 @@ public class FileStorageService(
     {
         // 如果传入原文件内容，自动计算整体哈希并校验
         var expectedFileHash = originalFileContent != null
-            ? HashHelper.ComputeHash(originalFileContent, _config.HashAlgorithm)
+            ? HashHelper.ComputeHash(originalFileContent,AlgorithmType.MD5)
             : null;
         return await storageProvider.MergeChunksAsync(fileKey, totalChunks, expectedFileHash ?? string.Empty,
             overwrite);
@@ -121,7 +127,7 @@ public class FileStorageService(
         {
             // 小于分片大小，直接保存
             return await SaveBinaryFileAsync(fileKey, fileContent,
-                HashHelper.ComputeHash(fileContent, _config.HashAlgorithm),
+                HashHelper.ComputeHash(fileContent,AlgorithmType.MD5),
                 overwrite);
         }
 

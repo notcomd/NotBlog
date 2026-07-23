@@ -1,7 +1,3 @@
-using Message.Domain.Entities.Tweet;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
 namespace Message.Infrastructure.EntityConfig;
 
 public class TweetNotificationConfiguration : IEntityTypeConfiguration<TweetNotification>
@@ -10,9 +6,9 @@ public class TweetNotificationConfiguration : IEntityTypeConfiguration<TweetNoti
     {
         builder.ToTable("TweetNotifications");
 
-        builder.HasKey(tn => tn.NotifyGuid);
+        builder.HasKey(tn => tn.Id);
 
-        builder.Property(tn => tn.NotifyGuid)
+        builder.Property(tn => tn.Id)
             .IsRequired()
             .ValueGeneratedOnAdd();
 

@@ -5,7 +5,8 @@ public class CancelChunksCommandHandler(
     ILogger<CancelChunksCommandHandler> logger)
     : NotMediator.IRequestHandler<CancelChunksCommand, bool>
 {
-    public async Task<bool> Handler(CancelChunksCommand request, CancellationToken cancellationToken)
+    public async Task<bool> Handler(CancelChunksCommand request, 
+    CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(request.FileKey))
             throw new ArgumentException("FileKey不能为空");

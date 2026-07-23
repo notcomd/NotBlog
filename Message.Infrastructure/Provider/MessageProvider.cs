@@ -1,7 +1,3 @@
-using Message.Domain.Enums;
-using Message.Domain.IProvider;
-using Message.Domain.IRepository;
-using Message.Domain.SeedWork;
 using MessageEntity = Message.Domain.Entities.Message;
 
 namespace Message.Infrastructure.Provider;
@@ -32,7 +28,7 @@ public class MessageProvider : IMessageProvider
         await _messageRepository.AddAsync(message);
 
         await UpdateSessionLastMessageAsync(sessionId, message.MessageId, content);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
 
         return message;
     }
@@ -46,7 +42,7 @@ public class MessageProvider : IMessageProvider
         await _messageRepository.AddAsync(message);
 
         await UpdateSessionLastMessageAsync(sessionId, message.MessageId, "[图片]");
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
 
         return message;
     }
@@ -61,7 +57,7 @@ public class MessageProvider : IMessageProvider
         await _messageRepository.AddAsync(message);
 
         await UpdateSessionLastMessageAsync(sessionId, message.MessageId, "[视频]");
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
 
         return message;
     }
@@ -75,7 +71,7 @@ public class MessageProvider : IMessageProvider
         await _messageRepository.AddAsync(message);
 
         await UpdateSessionLastMessageAsync(sessionId, message.MessageId, "[语音]");
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
 
         return message;
     }
@@ -89,7 +85,7 @@ public class MessageProvider : IMessageProvider
         await _messageRepository.AddAsync(message);
 
         await UpdateSessionLastMessageAsync(sessionId, message.MessageId, $"[文件] {fileName}");
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
 
         return message;
     }
@@ -103,7 +99,7 @@ public class MessageProvider : IMessageProvider
         await _messageRepository.AddAsync(message);
 
         await UpdateSessionLastMessageAsync(sessionId, message.MessageId, $"[位置] {locationName}");
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
 
         return message;
     }
@@ -117,7 +113,7 @@ public class MessageProvider : IMessageProvider
         await _messageRepository.AddAsync(message);
 
         await UpdateSessionLastMessageAsync(sessionId, message.MessageId, title ?? linkUrl);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
 
         return message;
     }
@@ -130,7 +126,7 @@ public class MessageProvider : IMessageProvider
         await _messageRepository.AddAsync(message);
 
         await UpdateSessionLastMessageAsync(sessionId, message.MessageId, "[表情]");
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
 
         return message;
     }
@@ -196,7 +192,7 @@ public class MessageProvider : IMessageProvider
 
         message.MarkAsSent();
         await _messageRepository.UpdateAsync(message);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task MarkAsDeliveredAsync(Guid messageId)
@@ -207,19 +203,19 @@ public class MessageProvider : IMessageProvider
 
         message.MarkAsDelivered();
         await _messageRepository.UpdateAsync(message);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task MarkAsReadAsync(Guid messageId, Guid readerId)
     {
         await _messageRepository.MarkAsReadAsync(messageId, readerId);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task MarkAllAsReadAsync(Guid sessionId, Guid userId)
     {
         await _messageRepository.MarkAllAsReadAsync(sessionId, userId);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task RecallMessageAsync(Guid messageId, Guid recalledBy, RecallReason reason,
@@ -231,7 +227,7 @@ public class MessageProvider : IMessageProvider
 
         message.Recall(recalledBy, reason, originalContent);
         await _messageRepository.UpdateAsync(message);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task<MessageEntity> ForwardMessageAsync(Guid originalMessageId, Guid targetSessionId, Guid forwardedBy,
@@ -247,7 +243,7 @@ public class MessageProvider : IMessageProvider
         forwardedMessage.MarkAsForwarded(originalMessageId);
 
         await _messageRepository.AddAsync(forwardedMessage);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
 
         return forwardedMessage;
     }
@@ -264,7 +260,7 @@ public class MessageProvider : IMessageProvider
 
         await _messageRepository.AddAsync(replyMessage);
         await UpdateSessionLastMessageAsync(sessionId, replyMessage.MessageId, content);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
 
         return replyMessage;
     }
@@ -278,7 +274,7 @@ public class MessageProvider : IMessageProvider
     public async Task DeleteMessageAsync(Guid messageId)
     {
         await _messageRepository.DeleteAsync(messageId);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     private async Task ValidateSessionAndSenderAsync(Guid sessionId, Guid senderId)

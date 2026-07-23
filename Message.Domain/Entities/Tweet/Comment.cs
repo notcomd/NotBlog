@@ -3,7 +3,7 @@ using Message.Domain.SeedWork;
 
 namespace Message.Domain.Entities.Tweet;
 
-public class Comment : Entity
+public class Comment : Entity, IAggregateRoot
 {
     public Guid CommentGuid { get; init; }
     public Guid TweetGuid { get; private set; }

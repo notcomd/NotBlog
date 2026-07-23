@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("IdentityGrpc")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5417fcb9e8cfd5ba7557e58ae5d14f62f83cca12")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5422fabdacb31b4d5f3a554814c53bc0df32f33c")]
 [assembly: System.Reflection.AssemblyProductAttribute("IdentityGrpc")]
 [assembly: System.Reflection.AssemblyTitleAttribute("IdentityGrpc")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

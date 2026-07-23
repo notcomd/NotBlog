@@ -5,14 +5,15 @@ using NotMediator;
 namespace FileDev.Domain.Events;
 
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-public record UploadNotFileEvent(NotFile NotFile,
+public record UploadNotFileEvent(Guid NotFileId,
                                  Guid UserGuid,
                                  string FileName,
-                                 Uri FilePath,
+                                 HashSet<string>? FileTags,
+                                 string FileDescription,                              
                                  long FileSize,
+                                 Uri FileUri,
                                  string FileMd5,
-                                 FileIdentity FileIdentity
-                                 )
+                                 FileIdentity FileIdentity)
     : INotifications
 {
     private string GetDebuggerDisplay()

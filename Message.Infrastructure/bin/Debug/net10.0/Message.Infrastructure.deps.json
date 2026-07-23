@@ -984,9 +984,6 @@
       },
       "Message.Domain/1.0.0": {
         "dependencies": {
-          "Microsoft.AspNetCore.Mvc.Core": "2.3.11",
-          "Microsoft.Extensions.Configuration.Abstractions": "10.0.9",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.9",
           "NotMediator": "1.0.5"
         },
         "runtime": {

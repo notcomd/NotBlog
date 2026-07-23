@@ -1,8 +1,3 @@
-using Message.Domain.Entities.Tweet;
-using Message.Domain.Enums;
-using Message.Domain.Events;
-using Message.Domain.IRepository;
-using Microsoft.Extensions.Logging;
 using NotMediator;
 
 namespace Message.Web.API.Application.DomainEventHandlers;
@@ -34,7 +29,7 @@ public class TweetInteractionEventHandler(
 
             tweet.RecalculateHotScore();
             await _tweetRepository.UpdateAsync(tweet);
-            await _tweetRepository.UnitOfWork.SavaChangesAsync(cancellationToken);
+            await _tweetRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
 
             _logger.LogInformation("推文热度已重新计算: TweetGuid={TweetGuid}, HotScore={HotScore}",
                 notification.TweetGuid, tweet.HotScore);

@@ -24,6 +24,8 @@ public class IdentityDbContext : DbContext, IUnitOfWork
 
     public DbSet<UserExternalLogin> UserExternalLogins { get; set; }
 
+    public DbSet<Permission> Permissions { get; set; }
+
     public bool HasActiveTransaction => _currentTransaction != null;
 
     public async Task<int> SavaChangesAsync(CancellationToken cancellationToken = default)
@@ -65,6 +67,7 @@ public class IdentityDbContext : DbContext, IUnitOfWork
         modelBuilder.ApplyConfiguration(new NotClientEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new UserExternalLoginEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new ClientRequestTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new PermissionEntityTypeConfigurtion());
     }
 
     public async Task<IDbContextTransaction> BeginTransactionAsync()

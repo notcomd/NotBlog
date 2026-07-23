@@ -1,4 +1,4 @@
-﻿using Message.Domain.Enums;
+using Message.Domain.Enums;
 using Message.Domain.Events;
 using Message.Domain.SeedWork;
 
@@ -57,7 +57,7 @@ public class Group : Entity, IAggregateRoot
     /// <summary>
     ///   群描述
     /// </summary>
-    public string? Description { get; set; }
+    public string? Description { get; private set; }
 
     /// <summary>
     ///   群主ID
@@ -67,7 +67,7 @@ public class Group : Entity, IAggregateRoot
     /// <summary>
     ///   群头像
     /// </summary>
-    public Uri? Avatar { get; set; }
+    public Uri? Avatar { get; private set; }
 
     /// <summary>
     ///   最大成员数
@@ -129,6 +129,28 @@ public class Group : Entity, IAggregateRoot
     }
 
     /// <summary>
+    /// 更新群描述
+    /// </summary>
+    /// <param name="description">群描述</param>
+    public void UpdateDescription(string description)
+    {
+        if (IsDismissed)
+            throw new InvalidOperationException("群已解散");
+        Description = description;
+    }
+
+    /// <summary>
+    /// 更新群头像
+    /// </summary>
+    /// <param name="avatar">群头像URI</param>
+    public void UpdateAvatar(Uri avatar)
+    {
+        if (IsDismissed)
+            throw new InvalidOperationException("群已解散");
+        Avatar = avatar;
+    }
+
+    /// <summary>
     /// 更新群权限
     /// </summary>
     /// <param name="allowMemberInvite"></param>
@@ -178,8 +200,99 @@ public class Group : Entity, IAggregateRoot
 
         if (member.Role == GroupMemberRole.Owner)
             throw new InvalidOperationException("不能移除群主");
-        // AddDomainEvent(new GroupMemberRemovedEvent(this.GroupId, member.UserId));
+        AddDomainEvent(new GroupMemberRemovedEvent(this.GroupId, member.UserId));
         _members.Remove(member);
+    }
+
+    /// <summary>
+    ///   提升成员为管理员
+    /// </summary>
+    /// <param name="userId">用户ID</param>
+    /// <exception cref="KeyNotFoundException">成员不存在时抛出</exception>
+    public void PromoteMember(Guid userId)
+    {
+        if (IsDismissed)
+            throw new InvalidOperationException("群已解散");
+
+        var member = _members.FirstOrDefault(m => m.UserId == userId)
+                     ?? throw new KeyNotFoundException("成员不存在");
+        member.PromoteToAdmin();
+    }
+
+    /// <summary>
+    ///   降级管理员为普通成员
+    /// </summary>
+    /// <param name="userId">用户ID</param>
+    /// <exception cref="KeyNotFoundException">成员不存在时抛出</exception>
+    public void DemoteMember(Guid userId)
+    {
+        if (IsDismissed)
+            throw new InvalidOperationException("群已解散");
+
+        var member = _members.FirstOrDefault(m => m.UserId == userId)
+                     ?? throw new KeyNotFoundException("成员不存在");
+        member.DemoteToMember();
+    }
+
+    /// <summary>
+    ///   禁言成员
+    /// </summary>
+    /// <param name="userId">用户ID</param>
+    /// <param name="duration">禁言时长</param>
+    /// <exception cref="KeyNotFoundException">成员不存在时抛出</exception>
+    public void MuteMember(Guid userId, TimeSpan duration)
+    {
+        if (IsDismissed)
+            throw new InvalidOperationException("群已解散");
+
+        var member = _members.FirstOrDefault(m => m.UserId == userId)
+                     ?? throw new KeyNotFoundException("成员不存在");
+        member.Mute(duration);
+    }
+
+    /// <summary>
+    ///   解除成员禁言
+    /// </summary>
+    /// <param name="userId">用户ID</param>
+    /// <exception cref="KeyNotFoundException">成员不存在时抛出</exception>
+    public void UnmuteMember(Guid userId)
+    {
+        if (IsDismissed)
+            throw new InvalidOperationException("群已解散");
+
+        var member = _members.FirstOrDefault(m => m.UserId == userId)
+                     ?? throw new KeyNotFoundException("成员不存在");
+        member.Unmute();
+    }
+
+    /// <summary>
+    ///   封禁成员
+    /// </summary>
+    /// <param name="userId">用户ID</param>
+    /// <exception cref="KeyNotFoundException">成员不存在时抛出</exception>
+    public void BanMember(Guid userId)
+    {
+        if (IsDismissed)
+            throw new InvalidOperationException("群已解散");
+
+        var member = _members.FirstOrDefault(m => m.UserId == userId)
+                     ?? throw new KeyNotFoundException("成员不存在");
+        member.Ban();
+    }
+
+    /// <summary>
+    ///   解封成员
+    /// </summary>
+    /// <param name="userId">用户ID</param>
+    /// <exception cref="KeyNotFoundException">成员不存在时抛出</exception>
+    public void UnbanMember(Guid userId)
+    {
+        if (IsDismissed)
+            throw new InvalidOperationException("群已解散");
+
+        var member = _members.FirstOrDefault(m => m.UserId == userId)
+                     ?? throw new KeyNotFoundException("成员不存在");
+        member.Unban();
     }
 
     /// <summary>
@@ -201,6 +314,7 @@ public class Group : Entity, IAggregateRoot
         oldOwner.DemoteToMember();
         newOwner.PromoteToAdmin();
         OwnerId = newOwnerId;
+        AddDomainEvent(new GroupOwnershipTransferredEvent(GroupId, oldOwner.UserId, newOwnerId));
     }
 
     /// <summary>
@@ -214,6 +328,7 @@ public class Group : Entity, IAggregateRoot
 
         IsDismissed = true;
         DismissedTime = DateTime.UtcNow;
+        AddDomainEvent(new GroupDissolvedEvent(GroupId, OwnerId, DateTime.UtcNow));
     }
 
     /// <summary>

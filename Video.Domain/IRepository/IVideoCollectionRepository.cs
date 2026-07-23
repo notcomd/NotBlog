@@ -4,7 +4,7 @@ using Video.Domain.ValueObjects;
 
 namespace Video.Domain.IRepository;
 
-public interface IVideoCollectionRepository:IRepository<Videos>
+public interface IVideoCollectionRepository : IRepository<VideoCollection>
 {
     /// <summary>
     /// </summary>

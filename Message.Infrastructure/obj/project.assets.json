@@ -1367,9 +1367,6 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
-          "Microsoft.AspNetCore.Mvc.Core": "2.3.11",
-          "Microsoft.Extensions.Configuration.Abstractions": "10.0.9",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.9",
           "NotMediator": "1.0.5"
         },
         "compile": {
@@ -3028,11 +3025,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "f:\\NotBlog\\Message.Infrastructure\\Message.Infrastructure.csproj",
+      "projectUniqueName": "F:\\NotBlog\\Message.Infrastructure\\Message.Infrastructure.csproj",
       "projectName": "Message.Infrastructure",
-      "projectPath": "f:\\NotBlog\\Message.Infrastructure\\Message.Infrastructure.csproj",
+      "projectPath": "F:\\NotBlog\\Message.Infrastructure\\Message.Infrastructure.csproj",
       "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-      "outputPath": "f:\\NotBlog\\Message.Infrastructure\\obj\\",
+      "outputPath": "F:\\NotBlog\\Message.Infrastructure\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -3054,11 +3051,11 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "projectReferences": {
-            "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj": {
-              "projectPath": "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj"
+            "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj": {
+              "projectPath": "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj"
             },
-            "f:\\NotBlog\\Message.Domain\\Message.Domain.csproj": {
-              "projectPath": "f:\\NotBlog\\Message.Domain\\Message.Domain.csproj"
+            "F:\\NotBlog\\Message.Domain\\Message.Domain.csproj": {
+              "projectPath": "F:\\NotBlog\\Message.Domain\\Message.Domain.csproj"
             }
           }
         }

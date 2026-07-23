@@ -1,7 +1,3 @@
-using Message.Domain.Entities.Tweet;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
 namespace Message.Infrastructure.EntityConfig;
 
 public class TweetInteractionConfiguration : IEntityTypeConfiguration<TweetInteraction>
@@ -10,9 +6,9 @@ public class TweetInteractionConfiguration : IEntityTypeConfiguration<TweetInter
     {
         builder.ToTable("TweetInteractions");
 
-        builder.HasKey(ti => ti.InteractGuid);
+        builder.HasKey(ti => ti.Id);
 
-        builder.Property(ti => ti.InteractGuid)
+        builder.Property(ti => ti.Id)
             .IsRequired()
             .ValueGeneratedOnAdd();
 

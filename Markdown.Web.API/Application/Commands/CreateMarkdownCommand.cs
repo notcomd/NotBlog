@@ -1,3 +1,4 @@
+using Markdown.Domain.Entities;
 using NotMediator;
 
 namespace Markdown.Web.API.Application.Commands;
@@ -10,5 +11,6 @@ public record CreateMarkdownCommand(
     string MarkDownName,
     string MarkDownContent,
     string? MarkDownHash = null,
-    IEnumerable<string>? Tags = null
+    IEnumerable<string>? Tags = null,
+    MarkDownAuth MarkDownAuth = MarkDownAuth.PublicMark
 ) : IRequest<bool>;

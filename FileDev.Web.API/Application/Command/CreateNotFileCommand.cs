@@ -9,7 +9,6 @@ public class CreateNotFileCommand(Guid userGuid,
                             Uri filePath,
                             string fileMd5,
                             FileIdentity fileIdentity,
-                             Uri fileUri,
                             long fileSize,
                             HashSet<string>? fileTags,
                             string? fileDescription
@@ -28,8 +27,6 @@ public class CreateNotFileCommand(Guid userGuid,
     public Uri FilePath { get; set; } = filePath;
 
     public string FileMd5 { get; set; } = fileMd5;
-
-    public Uri FileUri { get; set; } = fileUri;
 
     public long FileSize { get; set; } = fileSize;
 

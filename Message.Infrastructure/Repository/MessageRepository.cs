@@ -1,7 +1,4 @@
-using Message.Domain.Enums;
-using Message.Domain.IRepository;
 using Message.Infrastructure.EntityFramework;
-using Microsoft.EntityFrameworkCore;
 using MessageEntity = Message.Domain.Entities.Message;
 
 namespace Message.Infrastructure.Repository;
@@ -85,13 +82,13 @@ public class MessageRepository(MessageDbContext context) :  IMessageRepository
             .FirstOrDefaultAsync();
     }
 
-    public new async Task<MessageEntity> AddAsync(MessageEntity message)
+    public async Task<MessageEntity> AddAsync(MessageEntity message)
     {
         var entry = await DbSet.AddAsync(message);
         return entry.Entity;
     }
 
-    public new async Task<MessageEntity> UpdateAsync(MessageEntity message)
+    public async Task<MessageEntity> UpdateAsync(MessageEntity message)
     {
         var entry = DbSet.Update(message);
         return entry.Entity;

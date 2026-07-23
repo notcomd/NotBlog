@@ -1,7 +1,7 @@
 using DomainCommons;
 using Identity.Infrastructure.Idempotent;
 using Identity.Infrastructure.Services;
-
+using Identity.Domain.IService;
 namespace Identity.Infrastructure;
 
 public class ModuleInitializer : IModuleInitializer
@@ -23,5 +23,6 @@ public class ModuleInitializer : IModuleInitializer
         service.AddScoped<IUserExternalLoginRepository, UserExternalLoginRepository>();
         service.AddScoped<IOAuthService, OAuthService>();
         service.AddScoped<IGitHubAuthService, GithubAuthService>();
+        service.AddScoped<IPermissionService, PermissionService>();
     }
 }

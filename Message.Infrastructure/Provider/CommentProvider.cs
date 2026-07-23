@@ -1,11 +1,3 @@
-using Message.Domain.Entities.Tweet;
-using Message.Domain.Enums;
-using Message.Domain.IProvider;
-using Message.Domain.IRepository;
-using Message.Domain.IServices;
-using Message.Domain.SeedWork;
-using Microsoft.Extensions.Logging;
-
 namespace Message.Infrastructure.Provider;
 
 public class CommentProvider : ICommentProvider
@@ -71,7 +63,7 @@ public class CommentProvider : ICommentProvider
                 }
             }
 
-            await _unitOfWork.SavaEntitiesAsync();
+            await _unitOfWork.SaveEntitiesAsync();
 
             _logger.LogInformation("评论添加成功，ID: {CommentGuid}", comment.CommentGuid);
             return comment;
@@ -123,7 +115,7 @@ public class CommentProvider : ICommentProvider
                 throw new UnauthorizedAccessException("无权删除此评论");
 
             await _commentRepository.DeleteAsync(commentGuid);
-            await _unitOfWork.SavaEntitiesAsync();
+            await _unitOfWork.SaveEntitiesAsync();
 
             _logger.LogInformation("评论删除成功，ID: {CommentGuid}", commentGuid);
         }

@@ -17,7 +17,10 @@ public class FriendProvider : IFriendProvider
 
     public async Task<MessageFriends> SendFriendRequestAsync(Guid userId, Guid friendId)
     {
-        return null;
+        var friendship = new MessageFriends(userId, friendId);
+        await _friendRepository.AddAsync(friendship);
+        await _unitOfWork.SaveEntitiesAsync();
+        return friendship;
     }
 
     public async Task AcceptFriendRequestAsync(Guid userId, Guid friendId)
@@ -28,7 +31,7 @@ public class FriendProvider : IFriendProvider
 
         friendship.Accept();
         await _friendRepository.UpdateAsync(friendship);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task RejectFriendRequestAsync(Guid userId, Guid friendId)
@@ -39,7 +42,7 @@ public class FriendProvider : IFriendProvider
 
         friendship.Reject();
         await _friendRepository.UpdateAsync(friendship);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task<MessageFriends?> GetFriendshipAsync(Guid friendshipId)
@@ -116,7 +119,7 @@ public class FriendProvider : IFriendProvider
 
         friendship.Block();
         await _friendRepository.UpdateAsync(friendship);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task UnblockUserAsync(Guid userId, Guid friendId)
@@ -127,7 +130,7 @@ public class FriendProvider : IFriendProvider
 
         friendship.Unblock();
         await _friendRepository.UpdateAsync(friendship);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task StarFriendAsync(Guid userId, Guid friendId)
@@ -138,7 +141,7 @@ public class FriendProvider : IFriendProvider
 
         friendship.Star();
         await _friendRepository.UpdateAsync(friendship);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task UnstarFriendAsync(Guid userId, Guid friendId)
@@ -149,7 +152,7 @@ public class FriendProvider : IFriendProvider
 
         friendship.Unstar();
         await _friendRepository.UpdateAsync(friendship);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task MuteFriendAsync(Guid userId, Guid friendId)
@@ -160,7 +163,7 @@ public class FriendProvider : IFriendProvider
 
         friendship.Mute();
         await _friendRepository.UpdateAsync(friendship);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task UnmuteFriendAsync(Guid userId, Guid friendId)
@@ -171,7 +174,7 @@ public class FriendProvider : IFriendProvider
 
         friendship.Unmute();
         await _friendRepository.UpdateAsync(friendship);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task UpdateFriendRemarkAsync(Guid userId, Guid friendId, string remark)
@@ -182,7 +185,7 @@ public class FriendProvider : IFriendProvider
 
         friendship.UpdateRemark(remark);
         await _friendRepository.UpdateAsync(friendship);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task UpdateFriendGroupAsync(Guid userId, Guid friendId, string groupName)
@@ -193,7 +196,7 @@ public class FriendProvider : IFriendProvider
 
         friendship.UpdateFriendGroup(groupName);
         await _friendRepository.UpdateAsync(friendship);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task RecordInteractionAsync(Guid userId, Guid friendId)
@@ -204,7 +207,7 @@ public class FriendProvider : IFriendProvider
 
         friendship.RecordInteraction();
         await _friendRepository.UpdateAsync(friendship);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
     }
 
     public async Task<IEnumerable<MessageFriends>> SearchFriendsAsync(Guid userId, string searchTerm)
@@ -215,6 +218,6 @@ public class FriendProvider : IFriendProvider
     public async Task DeleteFriendshipAsync(Guid friendshipId)
     {
         await _friendRepository.DeleteAsync(friendshipId);
-        await _unitOfWork.SavaEntitiesAsync();
+        await _unitOfWork.SaveEntitiesAsync();
     }
 }
