@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using Notcomd.Evenbus;
+using Notcomd.EventBus.Core;
 
 namespace Identity.Web.API.Application.IntegrationEvents;
 

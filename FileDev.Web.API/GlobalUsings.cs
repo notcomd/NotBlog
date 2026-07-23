@@ -1,6 +1,6 @@
 global using CacheMemory.Extensions;
-global using Notcomd.Evenbus;
-global using Notcomd.Evenbus.Extension;
+global using Notcomd.EventBus;
+global using Notcomd.EventBus.Extension;
 global using NotMediator;
 global using FileDev.Domain.Dto.Request;
 global using FileDev.Domain.Dto.Response;

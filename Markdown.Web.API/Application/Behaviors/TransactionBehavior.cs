@@ -1,6 +1,6 @@
 using Markdown.Infrastructure.EntityFramework;
 using Microsoft.EntityFrameworkCore;
-using Notcomd.Evenbus;
+using Notcomd.EventBus.Core;
 using NotMediator;
 
 namespace Markdown.Web.API.Application.Behaviors;

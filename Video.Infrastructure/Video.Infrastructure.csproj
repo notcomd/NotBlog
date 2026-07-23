@@ -21,6 +21,7 @@
     <ItemGroup>
         <ProjectReference Include="..\Video.Domain\Video.Domain.csproj"/>
         <ProjectReference Include="..\DomainInfrastructure\DomainInfrastructure.csproj"/>
+        <ProjectReference Include="..\CacheMemory\CacheMemory.csproj"/>
     </ItemGroup>
 
 </Project>

@@ -23,6 +23,6 @@ public class ModuleInitializer : IModuleInitializer
         service.AddScoped<IUserExternalLoginRepository, UserExternalLoginRepository>();
         service.AddScoped<IOAuthService, OAuthService>();
         service.AddScoped<IGitHubAuthService, GithubAuthService>();
-        service.AddScoped<IPermissionService, PermissionService>();
+        service.AddScoped<IPermissionChecker, PermissionChecker>();
     }
 }

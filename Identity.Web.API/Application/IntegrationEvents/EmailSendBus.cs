@@ -1,5 +1,4 @@
-using Evenbus.Core;
-using Notcomd.Evenbus;
+using Notcomd.EventBus.Core;
 
 namespace Identity.Web.API.Application.IntegrationEvents;
 

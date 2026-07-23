@@ -1,6 +1,5 @@
-using Evenbus.Core;
+using Notcomd.EventBus.Core;
 using Microsoft.Extensions.Logging;
-using Notcomd.Evenbus;
 
 namespace FileDev.Web.API.Application.IntegrationEvents.EventHanding;
 

@@ -66,6 +66,15 @@
           }
         }
       },
+      "Dynamic.Json/1.4.2": {
+        "type": "package",
+        "compile": {
+          "lib/net9.0/Dynamic.Json.dll": {}
+        },
+        "runtime": {
+          "lib/net9.0/Dynamic.Json.dll": {}
+        }
+      },
       "Humanizer.Core/2.14.1": {
         "type": "package",
         "compile": {
@@ -585,7 +594,7 @@
           "buildTransitive/net8.0/_._": {}
         }
       },
-      "Microsoft.Extensions.Caching.StackExchangeRedis/10.0.8": {
+      "Microsoft.Extensions.Caching.StackExchangeRedis/10.0.9": {
         "type": "package",
         "dependencies": {
           "StackExchange.Redis": "2.7.27"
@@ -1110,20 +1119,7 @@
           }
         }
       },
-      "Pipelines.Sockets.Unofficial/2.2.16": {
-        "type": "package",
-        "compile": {
-          "lib/net9.0/Pipelines.Sockets.Unofficial.dll": {
-            "related": ".xml"
-          }
-        },
-        "runtime": {
-          "lib/net9.0/Pipelines.Sockets.Unofficial.dll": {
-            "related": ".xml"
-          }
-        }
-      },
-      "Polly.Core/8.4.2": {
+      "Polly.Core/8.5.2": {
         "type": "package",
         "compile": {
           "lib/net8.0/Polly.Core.dll": {
@@ -1168,6 +1164,28 @@
           }
         }
       },
+      "RabbitMQ.Client/7.2.1": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/RabbitMQ.Client.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/RabbitMQ.Client.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "RESPite/3.0.11": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/RESPite.dll": {}
+        },
+        "runtime": {
+          "lib/net10.0/RESPite.dll": {}
+        }
+      },
       "Scalar.AspNetCore/2.16.4": {
         "type": "package",
         "compile": {
@@ -1184,11 +1202,11 @@
           "Microsoft.AspNetCore.App"
         ]
       },
-      "StackExchange.Redis/2.13.1": {
+      "StackExchange.Redis/3.0.11": {
         "type": "package",
         "dependencies": {
-          "Pipelines.Sockets.Unofficial": "2.2.16",
-          "System.IO.Hashing": "10.0.2"
+          "RESPite": "3.0.11",
+          "System.IO.Hashing": "10.0.5"
         },
         "compile": {
           "lib/net10.0/StackExchange.Redis.dll": {
@@ -1360,6 +1378,21 @@
           "buildTransitive/net8.0/_._": {}
         }
       },
+      "CacheMemory/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Aspire.StackExchange.Redis": "13.4.6",
+          "Microsoft.Extensions.Caching.StackExchangeRedis": "10.0.9",
+          "StackExchange.Redis": "3.0.11"
+        },
+        "compile": {
+          "bin/placeholder/CacheMemory.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/CacheMemory.dll": {}
+        }
+      },
       "DomainCommons/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v10.0",
@@ -1383,6 +1416,24 @@
         },
         "runtime": {
           "bin/placeholder/DomainInfrastructure.dll": {}
+        }
+      },
+      "Evenbus/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Dynamic.Json": "1.4.2",
+          "Microsoft.EntityFrameworkCore": "10.0.9",
+          "Microsoft.EntityFrameworkCore.Relational": "10.0.9",
+          "OpenTelemetry.Extensions.Hosting": "1.13.0",
+          "Polly.Core": "8.5.2",
+          "RabbitMQ.Client": "7.2.1"
+        },
+        "compile": {
+          "bin/placeholder/Evenbus.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Evenbus.dll": {}
         }
       },
       "NotBlog.ServiceDefaults/1.0.0": {
@@ -1440,6 +1491,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v10.0",
         "dependencies": {
+          "CacheMemory": "1.0.0",
           "DomainInfrastructure": "1.0.0",
           "Microsoft.EntityFrameworkCore": "10.0.9",
           "NotMediator": "1.0.5",
@@ -1518,6 +1570,23 @@
         "lib/net8.0/HealthChecks.Redis.xml",
         "lib/netstandard2.0/HealthChecks.Redis.dll",
         "lib/netstandard2.0/HealthChecks.Redis.xml"
+      ]
+    },
+    "Dynamic.Json/1.4.2": {
+      "sha512": "9lYwSYr2/Vf7X7kseX95OT5wqaW6L8nSEHYIwZ7TKJynsk3WemwobswD0LfSmU6sGFfr+C4V/w6DQ3tB3+X4Zw==",
+      "type": "package",
+      "path": "dynamic.json/1.4.2",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "dynamic.json.1.4.2.nupkg.sha512",
+        "dynamic.json.nuspec",
+        "lib/net6.0/Dynamic.Json.dll",
+        "lib/net7.0/Dynamic.Json.dll",
+        "lib/net8.0/Dynamic.Json.dll",
+        "lib/net9.0/Dynamic.Json.dll",
+        "lib/netcoreapp3.1/Dynamic.Json.dll",
+        "lib/netstandard2.0/Dynamic.Json.dll"
       ]
     },
     "Humanizer.Core/2.14.1": {
@@ -2826,10 +2895,10 @@
         "microsoft.extensions.ambientmetadata.application.nuspec"
       ]
     },
-    "Microsoft.Extensions.Caching.StackExchangeRedis/10.0.8": {
-      "sha512": "fle9ns3q2kk63vt/wHFtLw1U9kiEbM42vTk2Sar8VBjiGJFkXAgm0QEKFx15YMHkJIPRVdknWaovpvgGEgn10g==",
+    "Microsoft.Extensions.Caching.StackExchangeRedis/10.0.9": {
+      "sha512": "PkscI6VZkG+dVvKSPoR8eq/l3zl1ONPio4286+rvB/hVh2a50Du7w9jqbTWknggKobb+WnODdd4RZzSVY4Ir5g==",
       "type": "package",
-      "path": "microsoft.extensions.caching.stackexchangeredis/10.0.8",
+      "path": "microsoft.extensions.caching.stackexchangeredis/10.0.9",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -2842,7 +2911,7 @@
         "lib/net462/Microsoft.Extensions.Caching.StackExchangeRedis.xml",
         "lib/netstandard2.0/Microsoft.Extensions.Caching.StackExchangeRedis.dll",
         "lib/netstandard2.0/Microsoft.Extensions.Caching.StackExchangeRedis.xml",
-        "microsoft.extensions.caching.stackexchangeredis.10.0.8.nupkg.sha512",
+        "microsoft.extensions.caching.stackexchangeredis.10.0.9.nupkg.sha512",
         "microsoft.extensions.caching.stackexchangeredis.nuspec"
       ]
     },
@@ -3631,34 +3700,10 @@
         "opentelemetry.instrumentation.runtime.nuspec"
       ]
     },
-    "Pipelines.Sockets.Unofficial/2.2.16": {
-      "sha512": "nonu9l0YrZH6krVYbskBjE7uG0VMAnvOQ9PU+RmzUsy+++vHkqzzCkHRoP877OiA3iRTxJyNDLfpcU8hrJ3/YQ==",
+    "Polly.Core/8.5.2": {
+      "sha512": "1MJKdxv4zwDmiWvYvVN24DsrWUfgQ4F83voH8bhbtLMdPuGy8CfTUzsgQhvyrl1a7hrM6f/ydwLVdVUI0xooUw==",
       "type": "package",
-      "path": "pipelines.sockets.unofficial/2.2.16",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "README.md",
-        "lib/net462/Pipelines.Sockets.Unofficial.dll",
-        "lib/net462/Pipelines.Sockets.Unofficial.xml",
-        "lib/net472/Pipelines.Sockets.Unofficial.dll",
-        "lib/net472/Pipelines.Sockets.Unofficial.xml",
-        "lib/net8.0/Pipelines.Sockets.Unofficial.dll",
-        "lib/net8.0/Pipelines.Sockets.Unofficial.xml",
-        "lib/net9.0/Pipelines.Sockets.Unofficial.dll",
-        "lib/net9.0/Pipelines.Sockets.Unofficial.xml",
-        "lib/netstandard2.0/Pipelines.Sockets.Unofficial.dll",
-        "lib/netstandard2.0/Pipelines.Sockets.Unofficial.xml",
-        "lib/netstandard2.1/Pipelines.Sockets.Unofficial.dll",
-        "lib/netstandard2.1/Pipelines.Sockets.Unofficial.xml",
-        "pipelines.sockets.unofficial.2.2.16.nupkg.sha512",
-        "pipelines.sockets.unofficial.nuspec"
-      ]
-    },
-    "Polly.Core/8.4.2": {
-      "sha512": "BpE2I6HBYYA5tF0Vn4eoQOGYTYIK1BlF5EXVgkWGn3mqUUjbXAr13J6fZVbp7Q3epRR8yshacBMlsHMhpOiV3g==",
-      "type": "package",
-      "path": "polly.core/8.4.2",
+      "path": "polly.core/8.5.2",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -3679,7 +3724,7 @@
         "lib/netstandard2.0/Polly.Core.xml",
         "package-icon.png",
         "package-readme.md",
-        "polly.core.8.4.2.nupkg.sha512",
+        "polly.core.8.5.2.nupkg.sha512",
         "polly.core.nuspec"
       ]
     },
@@ -3739,6 +3784,42 @@
         "polly.ratelimiting.nuspec"
       ]
     },
+    "RabbitMQ.Client/7.2.1": {
+      "sha512": "YKXEfg9fVQiTKgZlvIhAfPSFaamEgi8DsQmisCH0IAsU4FYLrtoguDrDj6JtJVGUt40QPnBLRH6fTQcAC4qsOg==",
+      "type": "package",
+      "path": "rabbitmq.client/7.2.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "icon.png",
+        "lib/net8.0/RabbitMQ.Client.dll",
+        "lib/net8.0/RabbitMQ.Client.xml",
+        "lib/netstandard2.0/RabbitMQ.Client.dll",
+        "lib/netstandard2.0/RabbitMQ.Client.xml",
+        "rabbitmq.client.7.2.1.nupkg.sha512",
+        "rabbitmq.client.nuspec"
+      ]
+    },
+    "RESPite/3.0.11": {
+      "sha512": "txORk48Kw4utEaKHD5AWyfsxj7ZTb8EuJM9RaQjPg0pt0YxjBHgFEohE4bia0o3Ik1F5MhoayaUy3hYvcsb5Ng==",
+      "type": "package",
+      "path": "respite/3.0.11",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net10.0/RESPite.dll",
+        "lib/net461/RESPite.dll",
+        "lib/net472/RESPite.dll",
+        "lib/net6.0/RESPite.dll",
+        "lib/net8.0/RESPite.dll",
+        "lib/netstandard2.0/RESPite.dll",
+        "readme.md",
+        "respite.3.0.11.nupkg.sha512",
+        "respite.nuspec",
+        "seredis.png"
+      ]
+    },
     "Scalar.AspNetCore/2.16.4": {
       "sha512": "ZDD3CHXn1OR4yHQ55NcXsU+aRzSIc1kwkpgPVM9LaK0XKuEzRqZWZ/4WS9tLI3dur6OMlcpXjGIDk/Pe3fniXQ==",
       "type": "package",
@@ -3758,10 +3839,10 @@
         "scalar.aspnetcore.nuspec"
       ]
     },
-    "StackExchange.Redis/2.13.1": {
-      "sha512": "jC5wkRe8K6HPoDENUws+fl2d7+GKz+ky8SWEDzYzPx6hHt2EwxWm01gmYPWLzlT49jfYYap0guB5bExtyX9aIQ==",
+    "StackExchange.Redis/3.0.11": {
+      "sha512": "aLUOeQ3hpTg1H7AT6nVS3Roy8lKPsTG7VIEhspT5sNXWqcKbYJo1ytx8JqTNEWmnl/Ou/LwrDJntbl2P32IGcQ==",
       "type": "package",
-      "path": "stackexchange.redis/2.13.1",
+      "path": "stackexchange.redis/3.0.11",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -3778,7 +3859,8 @@
         "lib/net8.0/StackExchange.Redis.xml",
         "lib/netstandard2.0/StackExchange.Redis.dll",
         "lib/netstandard2.0/StackExchange.Redis.xml",
-        "stackexchange.redis.2.13.1.nupkg.sha512",
+        "seredis.png",
+        "stackexchange.redis.3.0.11.nupkg.sha512",
         "stackexchange.redis.nuspec"
       ]
     },
@@ -4023,6 +4105,11 @@
         "useSharedDesignerContext.txt"
       ]
     },
+    "CacheMemory/1.0.0": {
+      "type": "project",
+      "path": "../CacheMemory/CacheMemory.csproj",
+      "msbuildProject": "../CacheMemory/CacheMemory.csproj"
+    },
     "DomainCommons/1.0.0": {
       "type": "project",
       "path": "../DomainCommons/DomainCommons.csproj",
@@ -4032,6 +4119,11 @@
       "type": "project",
       "path": "../DomainInfrastructure/DomainInfrastructure.csproj",
       "msbuildProject": "../DomainInfrastructure/DomainInfrastructure.csproj"
+    },
+    "Evenbus/1.0.0": {
+      "type": "project",
+      "path": "../Eventbus/Evenbus.csproj",
+      "msbuildProject": "../Eventbus/Evenbus.csproj"
     },
     "NotBlog.ServiceDefaults/1.0.0": {
       "type": "project",
@@ -4057,6 +4149,8 @@
   "projectFileDependencyGroups": {
     "net10.0": [
       "Aspire.StackExchange.Redis.DistributedCaching >= 13.4.6",
+      "CacheMemory >= 1.0.0",
+      "Evenbus >= 1.0.0",
       "Microsoft.AspNetCore.Mvc.Core >= 2.3.11",
       "Microsoft.AspNetCore.OpenApi >= 10.0.9",
       "Microsoft.EntityFrameworkCore >= 10.0.9",
@@ -4102,6 +4196,12 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "projectReferences": {
+            "f:\\NotBlog\\CacheMemory\\CacheMemory.csproj": {
+              "projectPath": "f:\\NotBlog\\CacheMemory\\CacheMemory.csproj"
+            },
+            "f:\\NotBlog\\Eventbus\\Evenbus.csproj": {
+              "projectPath": "f:\\NotBlog\\Eventbus\\Evenbus.csproj"
+            },
             "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj": {
               "projectPath": "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj"
             },

@@ -5,6 +5,9 @@ using Video.Web.API.Dto.Request;
 
 namespace Video.Web.API.Apis;
 
+/// <summary>
+/// 视频接口
+/// </summary>
 public static class VideoEndpoints
 {
     public static RouteGroupBuilder MapVideoEndpoints(this IEndpointRouteBuilder routes)

@@ -26,7 +26,7 @@
         <ProjectReference Include="..\Markdown.Domain\Markdown.Domain.csproj"/>
         <ProjectReference Include="..\Markdown.Infrastructure\Markdown.Infrastructure.csproj" />
         <ProjectReference Include="..\NotBlog.ServiceDefaults\NotBlog.ServiceDefaults.csproj" />
-        <ProjectReference Include="..\Evenbus\Evenbus.csproj"/>
+        <ProjectReference Include="..\EventBus\EventBus.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -41,7 +41,6 @@
 
     <ItemGroup>
         <Folder Include="ActionFilter\"/>
-      <Folder Include="EventBus\" />
     </ItemGroup>
 
 </Project>

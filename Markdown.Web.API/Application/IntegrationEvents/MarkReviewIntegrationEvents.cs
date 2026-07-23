@@ -1,4 +1,4 @@
-using Notcomd.Evenbus;
+using Notcomd.EventBus.Core;
 
 namespace Markdown.Web.API.Application.IntegrationEvents;
 

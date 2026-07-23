@@ -1,10 +1,14 @@
 using Video.Domain.SeedWork;
 using Video.Domain.ValueObjects;
+using Video.Domain.Events;
 
 namespace Video.Domain.Entities;
 
+/// <summary>
+/// 视频实体
+/// </summary>
 public class Videos : Entity, IAggregateRoot
-{  
+{
     public Guid VideoGuid { get; init; }
 
     public HashSet<Guid> Affiliated { get; private set; }
@@ -16,21 +20,22 @@ public class Videos : Entity, IAggregateRoot
     public string BriefIntroduction { get; private set; }
 
     public HashSet<string> VideoTags { get; private set; }
-    
+
     public Uri VideoFileUri { get; private set; } = null!;
-    
+
     public string VideoNvid { get; init; }
-    
-    public VideoQuote VideoQuote { get; private set; }
-    
-    public List<VideoBarrage>? VideoBarrageList { get; private set; }
-    
-    public List<VideoReview>? VideoReviews { get; }
-    
+
+
+   
+
     public TimeSpace TimeSpace { get; private set; }
-    
+
     public VideoControl VideoControl { get; private set; }
 
+    public VideoQuote VideoQuote { get; private set; }
+ public List<VideoBarrage>? VideoBarrageList { get; private set; }
+
+    public ICollection<VideoReview>? VideoReviews { get; private set; }
     private Videos()
     {
         Affiliated = [];
@@ -51,15 +56,16 @@ public class Videos : Entity, IAggregateRoot
         VideoFileUri = videoFileUri;
         BriefIntroduction = briefIntroduction;
         AddVideoTags(videoTags);
+        AddDomainEvent(new UploadVideoDomainEvent(VideoGuid, videoName, videoFileUri.ToString()));
     }
-    
-  
+
+
     private void AddByUser(HashSet<Guid> affiliated)
     {
         Affiliated = affiliated ?? throw new ArgumentNullException($"{affiliated}不为空");
         TimeSpace.ResetUpdateAt(DateTimeOffset.UtcNow);
     }
-    
+
     public void SetProtectedTime(DateTimeOffset startTime, DateTimeOffset endTime)
     {
         if (VideoControl.AuthorVideo != AuthorVideo.VideoProtected)
@@ -76,7 +82,7 @@ public class Videos : Entity, IAggregateRoot
         VideoBarrageList?.Add(videoBarrage);
     }
 
-    
+
     /// <summary>
     /// 添加视频评论
     /// </summary>
@@ -104,7 +110,7 @@ public class Videos : Entity, IAggregateRoot
     }
 
     public void UpDataVideo(string videoName, string briefIntroduction, Uri videoCover, Uri videoFileUri,
-        HashSet<string> videoTags,VideoControl videoControl)
+        HashSet<string> videoTags, VideoControl videoControl)
     {
         VideoName = videoName;
         BriefIntroduction = briefIntroduction;
@@ -113,10 +119,10 @@ public class Videos : Entity, IAggregateRoot
         AddVideoTags(videoTags);
         VideoControl.ChangeByVideoController(videoControl);
     }
-    
+
     public void ChangeByQuote(VideoQuote videoQuote)
     {
         VideoQuote = videoQuote;
     }
-    
+
 }

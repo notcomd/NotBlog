@@ -1171,11 +1171,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj",
+      "projectUniqueName": "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj",
       "projectName": "DomainCommons",
-      "projectPath": "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj",
+      "projectPath": "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj",
       "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-      "outputPath": "F:\\NotBlog\\DomainCommons\\obj\\",
+      "outputPath": "f:\\NotBlog\\DomainCommons\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"

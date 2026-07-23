@@ -24,6 +24,8 @@
         <ProjectReference Include="..\NotBlog.ServiceDefaults\NotBlog.ServiceDefaults.csproj" />
         <ProjectReference Include="..\Video.Domain\Video.Domain.csproj"/>
         <ProjectReference Include="..\Video.Infrastructure\Video.Infrastructure.csproj"/>
+        <ProjectReference Include="..\CacheMemory\CacheMemory.csproj"/>
+        <ProjectReference Include="..\Eventbus\Evenbus.csproj"/>
     </ItemGroup>
 
     <ItemGroup>

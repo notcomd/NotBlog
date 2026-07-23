@@ -1,6 +1,6 @@
-using Evenbus.Core;
 using Markdown.Web.API.Application.IntegrationEvents;
-using Notcomd.Evenbus;
+using Notcomd.EventBus.Core;
+using Notcomd.EventBus.Extension; 
 
 namespace Markdown.Web.API.Application.IntegrationEventHandlers;
 

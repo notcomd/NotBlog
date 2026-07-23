@@ -1,3 +1,4 @@
+using CacheMemory.Extensions;
 using NotBlog.ServiceDefaults;
 using NotMediator;
 using Scalar.AspNetCore;
@@ -10,6 +11,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 
 builder.Services.AddNpgsql<VideoDbContext>("VideoPostgres");
+
+// CacheMemory (Redis) — Aspire-style registration
+builder.AddCacheMemory("CacheMemory");
 
 // Add Video domain and infrastructure services
 var fileDevBaseUrl = builder.Configuration.GetValue<string>("FileDev:BaseUrl") ?? "http://localhost:5000";

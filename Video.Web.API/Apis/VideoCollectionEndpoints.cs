@@ -3,6 +3,9 @@ using Video.Domain.Server;
 
 namespace Video.Web.API.Apis;
 
+/// <summary>
+/// 视频收藏接口
+/// </summary>
 public static class VideoCollectionEndpoints
 {
     public static RouteGroupBuilder MapVideoCollectionEndpoints(this IEndpointRouteBuilder routes)

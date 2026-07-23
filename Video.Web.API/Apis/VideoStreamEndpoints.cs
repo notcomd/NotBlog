@@ -3,6 +3,11 @@ using Video.Domain.Server;
 
 namespace Video.Web.API.Apis;
 
+
+
+/// <summary>
+/// 视频流接口
+/// </summary>
 public static class VideoStreamEndpoints
 {
     public static RouteGroupBuilder MapVideoStreamEndpoints(this IEndpointRouteBuilder routes)

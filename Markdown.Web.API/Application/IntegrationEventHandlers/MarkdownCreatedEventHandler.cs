@@ -1,5 +1,5 @@
-using Evenbus.Core;
-using Notcomd.Evenbus;
+using Notcomd.EventBus.Core;
+using Notcomd.EventBus.Extension;
 
 namespace Markdown.Web.API.Application.IntegrationEventHandlers;
 

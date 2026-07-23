@@ -1,4 +1,4 @@
-using Notcomd.Evenbus;
+using Notcomd.EventBus.Core;
 using NotMediator;
 
 namespace FileDev.Web.API.ActionFilter.Behaviors;
