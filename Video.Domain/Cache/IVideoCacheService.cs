@@ -9,9 +9,9 @@ namespace Video.Domain.Cache;
 /// </summary>
 public interface IVideoCacheService
 {
-    // ── Video Metadata ──
+    
 
-    /// <summary>Try to get cached video metadata.</summary>
+    ///用于获取视频元数据，返回null if cached.
     Task<Videos?> GetVideoMetaAsync(Guid videoGuid, CancellationToken ct = default);
 
     /// <summary>Cache video metadata.</summary>

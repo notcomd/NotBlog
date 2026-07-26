@@ -1,12 +1,14 @@
+using Microsoft.AspNetCore.Mvc;
 using Video.Domain.Entities;
-using Video.Domain.Server;
+using Video.Domain.ValueObjects;
+using Video.Web.API.Application.Commands;
 using Video.Web.API.Dto.Request;
 using Video.Web.API.Dto.Response;
 
 namespace Video.Web.API.Apis;
 
 /// <summary>
-/// 视频弹幕接口
+/// 视频弹幕接口 — 支持文本、图片及混合弹幕。
 /// </summary>
 public static class VideoBarrageEndpoints
 {
@@ -17,7 +19,7 @@ public static class VideoBarrageEndpoints
 
         group.MapPost("/", AddBarrageAsync)
             .WithName("AddBarrage")
-            .WithDescription("Publish a danmaku (barrage) on a video");
+            .WithDescription("Publish a danmaku (barrage) on a video — supports text, image, and mixed");
 
         group.MapGet("/{videoGuid:guid}", GetBarragesAsync)
             .WithName("GetBarrages")
@@ -27,28 +29,49 @@ public static class VideoBarrageEndpoints
     }
 
     private static async Task<IResult> AddBarrageAsync(
-        RequestAddBarrage request,
-        VideoService videoService,
-        ILoggerFactory loggerFactory)
+       [FromForm] RequestAddBarrage request,
+        [FromServices] VideoServiceDI videoServiceDI
+       )
     {
-        var logger = loggerFactory.CreateLogger("VideoBarrageEndpoint");
+        var logger = videoServiceDI.Logger;
 
         try
         {
-            var videoBarrage = new VideoBarrage(request.UserGuid, request.VideoBarrageBody);
-            await videoService.AddByVideoBarrageAsync(request.VideoGuid, videoBarrage);
+            var hasText = !string.IsNullOrWhiteSpace(request.VideoBarrageBody);
+            var hasImages = request.VideoImages is { Count: > 0 };
+
+            if (!hasText && !hasImages)
+                return Results.Json(
+                    new IVideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
+                        "弹幕必须包含文本或图片内容", null),
+                    statusCode: 400);
+
+            var video = await videoServiceDI.VideoService.GetByVideoAsync(request.VideoGuid);
+            if (video is null)
+                return Results.Json(
+                    new IVideoResult<string>(VideoResultType.VideoResultNotFound, 404, "Video not found.", null),
+                    statusCode: 404);
+
+            var domainImages = request.VideoImages?
+                .Select(img => new VideoImage(img.ImageUrl, img.SortOrder, img.Description,
+                    img.Width, img.Height, img.Format, img.FileSize, img.ThumbnailUrl))
+                .ToList();
+
+            var videoBarrage = new AddVideoBarrageCommand(
+                request.VideoGuid, request.UserGuid, request.VideoBarrageBody, domainImages);
+            await videoServiceDI.NotMediator.SendAsync(videoBarrage);
 
             logger.LogInformation("Barrage added to video {VideoGuid} by user {UserGuid}",
                 request.VideoGuid, request.UserGuid);
 
             return Results.Ok(new IVideoResult<string>(VideoResultType.VideoResultOk, 200,
-                "Barrage published successfully.", videoBarrage.VideoBarrageGuid.ToString()));
+                "Barrage published successfully.", videoBarrage.VideoGuid.ToString()));
         }
-        catch (AggregateException)
+        catch (ArgumentException ex)
         {
             return Results.Json(
-                new IVideoResult<string>(VideoResultType.VideoResultNotFound, 404, "Video not found.", null),
-                statusCode: 404);
+                new IVideoResult<string>(VideoResultType.VideoResultBadRequest, 400, ex.Message, null),
+                statusCode: 400);
         }
         catch (Exception ex)
         {
@@ -61,14 +84,14 @@ public static class VideoBarrageEndpoints
 
     private static async Task<IResult> GetBarragesAsync(
         Guid videoGuid,
-        VideoService videoService,
-        ILoggerFactory loggerFactory)
+        [FromServices] VideoServiceDI videoServiceDI
+       )
     {
-        var logger = loggerFactory.CreateLogger("VideoBarrageEndpoint");
+        var logger = videoServiceDI.Logger;
 
         try
         {
-            var video = await videoService.GetByVideoAsync(videoGuid);
+            var video = await videoServiceDI.VideoService.GetByVideoAsync(videoGuid);
             if (video is null)
                 return Results.Json(
                     new IVideoResult<List<BarrageResponse>>(VideoResultType.VideoResultNotFound, 404,
@@ -77,9 +100,17 @@ public static class VideoBarrageEndpoints
 
             var barrages = video.VideoBarrageList?
                 .Where(b => !b.IsDelete)
-                .Select(b => new BarrageResponse(
-                    b.VideoBarrageGuid, b.VideoGuid, b.UserGuid,
-                    b.VideoBarrageBody, b.TimeSpace.CreateAt, b.IsDelete))
+                .Select(b =>
+                {
+                    var images = b.VideoImages?.Select(img => new BarrageImageResponse(
+                        img.ImageUrl, img.ThumbnailUrl, img.Width, img.Height,
+                        img.Format, img.Description, img.SortOrder)).ToList();
+
+                    return new BarrageResponse(
+                        b.VideoBarrageGuid, b.VideoGuid, b.UserGuid,
+                        b.VideoBarrageBody, b.BarrageType.ToString(),
+                        b.TimeSpace.CreateAt, b.IsDelete, images);
+                })
                 .ToList() ?? [];
 
             return Results.Ok(new IVideoResult<List<BarrageResponse>>(VideoResultType.VideoResultOk, 200,

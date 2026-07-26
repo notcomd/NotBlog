@@ -14,6 +14,8 @@ public class VideoReviewDbContextConfiguration : IEntityTypeConfiguration<VideoR
         builder.HasIndex(en => en.UserGuid);
         builder.HasIndex(en => en.RootReview);
         builder.Ignore(en => en.DomainEventbus);
+        builder.Ignore(en => en.VideoImages);       // delegated via Content.MediaItems
+        builder.Ignore(en => en.VideoReviewBody);   // delegated via Content.Body
         builder.Property(en => en.Id).UseHiLo("Reviewq");
         builder.Property(en => en.VideoGuid).IsRequired();
         builder.OwnsOne(en => en.VideoControl, x =>
@@ -55,12 +57,26 @@ public class VideoReviewDbContextConfiguration : IEntityTypeConfiguration<VideoR
             .HasForeignKey(e => e.VideoGuid)
             .OnDelete(DeleteBehavior.NoAction);
 
-        builder.OwnsMany(e => e.VideoImages, x =>
+        // ── ReviewContent (new multi-type content model) ──
+        builder.OwnsOne(e => e.Content, x =>
         {
-            x.ToJson();
-            x.Property(s => s.Description);
-            x.Property(s => s.ImageUrl);
-            x.Property(s => s.SortOrder);
+            x.Property(s => s.ContentType)
+                .HasColumnName("ContentType")
+                .HasMaxLength(20)
+                .IsRequired();
+
+            x.Property(s => s.Body)
+                .HasColumnName("ReviewBody")
+                .HasMaxLength(10000);
+
+            // OwnsMany for MediaItems (replaces direct VideoImages mapping)
+            x.OwnsMany(s => s.MediaItems, mi =>
+            {
+                mi.ToJson();
+                mi.Property(v => v.Description);
+                mi.Property(v => v.ImageUrl);
+                mi.Property(v => v.SortOrder);
+            });
         });
     }
 }

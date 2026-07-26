@@ -4,7 +4,7 @@ using Markdown.Domain.Entities;
 using Markdown.Infrastructure.EntityFramework;
 using Markdown.Web.API.Application.Commands;
 using Markdown.Web.API.Application.IntegrationEventHandlers;
-using Notcomd.Evenbus;
+using Notcomd.EventBus.Core;
 
 namespace Markdown.Web.API.Application.Commands;
 

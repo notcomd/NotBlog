@@ -1,9 +1,8 @@
 using Video.Domain.Entities;
+using Video.Domain.IRepository;
 using Video.Domain.Server;
 
 namespace Video.Web.API.Apis;
-
-
 
 /// <summary>
 /// 视频流接口
@@ -26,7 +25,8 @@ public static class VideoStreamEndpoints
         Guid videoGuid,
         HttpRequest httpRequest,
         HttpResponse httpResponse,
-        VideoService videoService,
+        IVideoService videoService,
+        IVideoRepository videoRepository,
         IHttpClientFactory httpClientFactory,
         ILoggerFactory loggerFactory)
     {
@@ -72,7 +72,7 @@ public static class VideoStreamEndpoints
             try
             {
                 video.VideoQuote.UpWatch();
-                await videoService.UpdateByQuoteAsync(videoGuid, video.VideoQuote);
+                await videoRepository.UpdateByQuoteAsync(video.VideoQuote);
             }
             catch (Exception ex)
             {

@@ -1,7 +1,7 @@
 namespace Video.Domain.Entities;
 
 /// <summary>
-///     管理时间
+/// 管理时间
 /// </summary>
 /// <param name="StartTime">有效开始时间</param>
 /// <param name="EndTime">有效结束时间</param>

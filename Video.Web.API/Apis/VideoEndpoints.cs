@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Video.Domain.Entities;
+using Video.Domain.IRepository;
 using Video.Domain.Server;
 using Video.Web.API.Dto.Request;
 
@@ -41,48 +43,68 @@ public static class VideoEndpoints
         return group;
     }
 
-    private static async Task<Results<Ok<IVideoResult<List<Videos>>>, JsonHttpResult<IVideoResult<List<Videos>>>>>
-        GetByVideoListAsync(VideoService videoService)
+    /// <summary>
+    /// 获取所有视频
+    /// </summary>
+    private static async Task<Results<Ok<IVideoResult<List<Videos>>>,
+     JsonHttpResult<IVideoResult<List<Videos>>>>>
+        GetByVideoListAsync([FromServices] VideoServiceDI videoServiceDI)
+        
     {
-        var videoModel = await videoService.GetByVideosAllAsync();
+        var videoModel = await videoServiceDI.VideoRepository.FindByVideoListAsync();
         return TypedResults.Ok(new IVideoResult<List<Videos>>(VideoResultType.VideoResultOk, 200, "OK", videoModel));
     }
 
-    private static async Task<Results<Ok<IVideoResult<List<Videos>>>, JsonHttpResult<IVideoResult<List<Videos>>>>>
-        GetByVideoPage(int index, int pageSize, VideoService videoService)
+    /// <summary>
+    /// 根据分页获取视频
+    /// </summary>
+    private static async Task<Results<Ok<IVideoResult<List<Videos>>>, 
+    JsonHttpResult<IVideoResult<List<Videos>>>>>
+        GetByVideoPage(int index, int pageSize, [FromServices] VideoServiceDI videoServiceDI)
     {
-        var videoModel = await videoService.PagesByVideosAsync(index, pageSize);
+        var videoModel = await videoServiceDI.VideoRepository.PageByVideoAsync(index, pageSize);
         return TypedResults.Ok(new IVideoResult<List<Videos>>(VideoResultType.VideoResultOk, 200, "OK", videoModel));
     }
 
-    private static async Task<Results<Ok<IVideoResult<Videos>>, JsonHttpResult<IVideoResult<Videos>>>>
-        GetByVideoNameAsync(string videoName, VideoService videoService)
+    /// <summary>
+    /// 根据视频名称获取视频
+    /// </summary>
+    private static async Task<Results<Ok<IVideoResult<Videos>>, 
+    JsonHttpResult<IVideoResult<Videos>>>>
+        GetByVideoNameAsync(string videoName, [FromServices] VideoServiceDI videoServiceDI)
     {
-        var videoModel = await videoService.GetByVideoAsync(videoName);
+        var videoModel = await videoServiceDI.VideoRepository.FindByVideoName(videoName);
         return TypedResults.Ok(new IVideoResult<Videos>(VideoResultType.VideoResultOk, 200, "OK", videoModel));
     }
 
-    private static async Task<Results<Ok<IVideoResult<List<Videos>>>, JsonHttpResult<IVideoResult<List<Videos>>>>>
-        BlurredByVideoAsync(string videoName, VideoService videoService)
+    /// <summary>
+    /// 模糊搜索视频
+    /// </summary>
+    private static async Task<Results<Ok<IVideoResult<List<Videos>>>, 
+    JsonHttpResult<IVideoResult<List<Videos>>>>>
+        BlurredByVideoAsync(string videoName, [FromServices] VideoServiceDI videoServiceDI)
     {
-        var videoModel = await videoService.BlurredByVideoAsync(videoName);
+        var videoModel = await videoServiceDI.VideoRepository.BlurredByVideoName(videoName);
         return TypedResults.Ok(new IVideoResult<List<Videos>>(VideoResultType.VideoResultOk, 200, "OK", videoModel));
     }
 
+    /// <summary>
+    /// 更新视频信息
+    /// </summary>
     private static async Task<IResult> UpdateByVideoAsync(
-        RequestUpdateByVideo updateVideo,
-        VideoService videoService,
-        ILogger<VideoService> logger)
+        [FromBody] RequestUpdateByVideo updateVideo,
+        [FromServices] VideoServiceDI videoServiceDI
+       )
     {
         if (updateVideo is null)
         {
-            logger.LogError("updateVideo is null");
+            videoServiceDI.Logger.LogError("updateVideo is null");
             return Results.Json(
                 new IVideoResult<string>(VideoResultType.VideoResultBadRequest, 400, "Request body is null.", null),
                 statusCode: 400);
         }
 
-        var videoModel = await videoService.GetByVideoAsync(updateVideo.VideoGuid);
+        var videoModel = await videoServiceDI.VideoRepository.FindByVideoAsync(updateVideo.VideoGuid);
 
         if (videoModel.VideoGuid != updateVideo.AffiliatedUserGuid)
             return Results.Json(
@@ -93,7 +115,7 @@ public static class VideoEndpoints
         var model = new Videos(videoModel.Affiliated, updateVideo.VideoName, updateVideo.VideoCover,
             updateVideo.VideoCover,
             updateVideo.BriefIntroduction, updateVideo.Tags);
-        await videoService.UpdateByVideoAsync(model);
+        await videoServiceDI.VideoRepository.UpdateByVideoAsync(model);
 
         return Results.Ok(new IVideoResult<string>(VideoResultType.VideoResultOk, 200, "Update successful.", "UP!"));
     }

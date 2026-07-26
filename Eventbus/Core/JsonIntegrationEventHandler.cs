@@ -1,5 +1,3 @@
-using Notcomd.Evenbus;
-
 namespace Notcomd.EventBus.Core;
 
 /// <summary>

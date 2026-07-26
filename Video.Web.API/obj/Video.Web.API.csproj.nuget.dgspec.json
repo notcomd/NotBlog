@@ -1098,12 +1098,12 @@
         }
       }
     },
-    "f:\\NotBlog\\Eventbus\\Evenbus.csproj": {
+    "f:\\NotBlog\\Eventbus\\EventBus.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "f:\\NotBlog\\Eventbus\\Evenbus.csproj",
-        "projectName": "Evenbus",
-        "projectPath": "f:\\NotBlog\\Eventbus\\Evenbus.csproj",
+        "projectUniqueName": "f:\\NotBlog\\Eventbus\\EventBus.csproj",
+        "projectName": "EventBus",
+        "projectPath": "f:\\NotBlog\\Eventbus\\EventBus.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
         "outputPath": "f:\\NotBlog\\Eventbus\\obj\\",
         "projectStyle": "PackageReference",
@@ -3135,8 +3135,8 @@
               "f:\\NotBlog\\CacheMemory\\CacheMemory.csproj": {
                 "projectPath": "f:\\NotBlog\\CacheMemory\\CacheMemory.csproj"
               },
-              "f:\\NotBlog\\Eventbus\\Evenbus.csproj": {
-                "projectPath": "f:\\NotBlog\\Eventbus\\Evenbus.csproj"
+              "f:\\NotBlog\\Eventbus\\EventBus.csproj": {
+                "projectPath": "f:\\NotBlog\\Eventbus\\EventBus.csproj"
               },
               "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj": {
                 "projectPath": "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj"

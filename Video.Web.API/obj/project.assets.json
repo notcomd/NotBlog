@@ -1418,7 +1418,7 @@
           "bin/placeholder/DomainInfrastructure.dll": {}
         }
       },
-      "Evenbus/1.0.0": {
+      "EventBus/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v10.0",
         "dependencies": {
@@ -1430,10 +1430,10 @@
           "RabbitMQ.Client": "7.2.1"
         },
         "compile": {
-          "bin/placeholder/Evenbus.dll": {}
+          "bin/placeholder/EventBus.dll": {}
         },
         "runtime": {
-          "bin/placeholder/Evenbus.dll": {}
+          "bin/placeholder/EventBus.dll": {}
         }
       },
       "NotBlog.ServiceDefaults/1.0.0": {
@@ -4120,10 +4120,10 @@
       "path": "../DomainInfrastructure/DomainInfrastructure.csproj",
       "msbuildProject": "../DomainInfrastructure/DomainInfrastructure.csproj"
     },
-    "Evenbus/1.0.0": {
+    "EventBus/1.0.0": {
       "type": "project",
-      "path": "../Eventbus/Evenbus.csproj",
-      "msbuildProject": "../Eventbus/Evenbus.csproj"
+      "path": "../Eventbus/EventBus.csproj",
+      "msbuildProject": "../Eventbus/EventBus.csproj"
     },
     "NotBlog.ServiceDefaults/1.0.0": {
       "type": "project",
@@ -4150,7 +4150,7 @@
     "net10.0": [
       "Aspire.StackExchange.Redis.DistributedCaching >= 13.4.6",
       "CacheMemory >= 1.0.0",
-      "Evenbus >= 1.0.0",
+      "EventBus >= 1.0.0",
       "Microsoft.AspNetCore.Mvc.Core >= 2.3.11",
       "Microsoft.AspNetCore.OpenApi >= 10.0.9",
       "Microsoft.EntityFrameworkCore >= 10.0.9",
@@ -4199,8 +4199,8 @@
             "f:\\NotBlog\\CacheMemory\\CacheMemory.csproj": {
               "projectPath": "f:\\NotBlog\\CacheMemory\\CacheMemory.csproj"
             },
-            "f:\\NotBlog\\Eventbus\\Evenbus.csproj": {
-              "projectPath": "f:\\NotBlog\\Eventbus\\Evenbus.csproj"
+            "f:\\NotBlog\\Eventbus\\EventBus.csproj": {
+              "projectPath": "f:\\NotBlog\\Eventbus\\EventBus.csproj"
             },
             "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj": {
               "projectPath": "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj"

@@ -14,7 +14,13 @@ public class VideoBarrageDbContextConfiguration : IEntityTypeConfiguration<Video
         builder.HasIndex(x => x.VideoGuid);
         builder.HasIndex(x => x.UserGuid);
 
-        builder.Property(x => x.VideoBarrageBody).IsRequired();
+        builder.Property(x => x.VideoBarrageBody).IsRequired(false);
+
+        builder.Property(x => x.BarrageType)
+            .HasConversion<string>()
+            .HasMaxLength(16)
+            .IsRequired()
+            .HasDefaultValue(BarrageType.Text);
 
         builder.OwnsOne(x => x.TimeSpace, b =>
         {
@@ -31,10 +37,15 @@ public class VideoBarrageDbContextConfiguration : IEntityTypeConfiguration<Video
             b.Property(p => p.VideoDisplay).HasColumnName("VideoDisplay");
         });
 
-        builder.OwnsOne(x => x.VideoImage, b =>
+        builder.OwnsMany(x => x.VideoImages, b =>
         {
             b.ToJson();
             b.Property(p => p.ImageUrl);
+            b.Property(p => p.ThumbnailUrl);
+            b.Property(p => p.Width);
+            b.Property(p => p.Height);
+            b.Property(p => p.Format).HasMaxLength(16);
+            b.Property(p => p.FileSize);
             b.Property(p => p.Description);
             b.Property(p => p.SortOrder);
         });

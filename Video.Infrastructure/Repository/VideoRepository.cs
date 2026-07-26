@@ -156,4 +156,13 @@ public class VideoRepository(ILogger<IVideoRepository> videoLogger, VideoDbConte
                 .Where(en => en.VideoGuid == item.VideoGuid)
                 .ExecuteDeleteAsync();
     }
+
+    // ── Standard Delete Operations ──
+
+    public async Task InDeleteByIdAsync(Guid videoGuid)
+    {
+        await videoDbContext.Videos
+            .Where(en => en.VideoGuid == videoGuid)
+            .ExecuteDeleteAsync();
+    }
 }

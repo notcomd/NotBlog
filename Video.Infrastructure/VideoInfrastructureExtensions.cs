@@ -1,8 +1,10 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Video.Domain.Cache;
 using Video.Domain.IRepository;
 using Video.Domain.Server;
+using Video.Domain.ValueObjects;
 using Video.Infrastructure.Cache;
 using Video.Infrastructure.Repository;
 using Video.Infrastructure.Service;
@@ -17,8 +19,10 @@ public static class VideoInfrastructureExtensions
         services.AddScoped<IVideoRepository, VideoRepository>();
         services.AddScoped<IVideoCollectionRepository, VideoCollectionRepository>();
 
-        // Domain Services (with optional cache integration)
-        services.AddScoped<VideoService>(sp =>
+        // Domain Services — I-prefix interfaces with Infrastructure implementations
+        services.AddScoped<IVideoCollectionService, VideoCollectionService>();
+
+        services.AddScoped<IVideoService>(sp =>
         {
             var repo = sp.GetRequiredService<IVideoRepository>();
             var cache = sp.GetService<IVideoCacheService>();
@@ -27,8 +31,6 @@ public static class VideoInfrastructureExtensions
                 ? new VideoService(repo, cache, logger)
                 : new VideoService(repo, logger);
         });
-
-        services.AddScoped<VideoCollectionService>();
 
         // Cache Service
         services.AddScoped<IVideoCacheService, VideoCacheService>();
@@ -55,5 +57,16 @@ public static class VideoInfrastructureExtensions
         });
 
         return services;
+    }
+
+    /// <summary>
+    /// 从 IConfiguration 绑定并应用 ReviewContentOptions。
+    /// 应在 builder.Build() 之后、app.Run() 之前调用。
+    /// </summary>
+    public static void ConfigureReviewContentOptions(this IConfiguration configuration)
+    {
+        var options = configuration.GetSection("ReviewContent").Get<ReviewContentOptions>()
+                      ?? ReviewContentOptions.Default;
+        ReviewContent.Options = options;
     }
 }

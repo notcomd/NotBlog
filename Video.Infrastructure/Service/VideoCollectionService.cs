@@ -1,9 +1,15 @@
 using Video.Domain.Entities;
 using Video.Domain.IRepository;
+using Video.Domain.Server;
 
-namespace Video.Domain.Server;
+namespace Video.Infrastructure.Service;
 
-public class VideoCollectionService
+/// <summary>
+/// Video collection service implementation.
+/// Pure delegation to the repository — no caching layer needed
+/// for collection metadata at this stage.
+/// </summary>
+public class VideoCollectionService : IVideoCollectionService
 {
     private readonly IVideoCollectionRepository _videoCollectionRepository;
 
@@ -35,15 +41,5 @@ public class VideoCollectionService
     public async Task<List<VideoCollection>> GetByVideoCollectionListAsync()
     {
         return await _videoCollectionRepository.FindByVideoCollectionListAsync();
-    }
-
-    public async Task AddByVideoCollectionAsync(VideoCollection addVideoCollection)
-    {
-        await _videoCollectionRepository.AddByVideoCollectionAsync(addVideoCollection);
-    }
-
-    public async Task UpdateByVideoCollectionAsync(VideoCollection updateVideoCollection)
-    {
-        await _videoCollectionRepository.UpdateByVideoCollectionAsync(updateVideoCollection);
     }
 }

@@ -25,15 +25,15 @@ public class Videos : Entity, IAggregateRoot
 
     public string VideoNvid { get; init; }
 
-
-   
+    public bool IsDeleted { get; private set; }
 
     public TimeSpace TimeSpace { get; private set; }
 
     public VideoControl VideoControl { get; private set; }
 
     public VideoQuote VideoQuote { get; private set; }
- public List<VideoBarrage>? VideoBarrageList { get; private set; }
+
+    public ICollection<VideoBarrage>? VideoBarrageList { get; private set; }
 
     public ICollection<VideoReview>? VideoReviews { get; private set; }
     private Videos()
@@ -44,6 +44,7 @@ public class Videos : Entity, IAggregateRoot
         VideoTags = [];
         VideoBarrageList = [];
         VideoReviews = [];
+        IsDeleted = false;
         TimeSpace = new TimeSpace(DateTime.UtcNow, DateTime.UtcNow);
     }
 
@@ -96,12 +97,21 @@ public class Videos : Entity, IAggregateRoot
             videoImage is { Count: < 9 and > 0 } ? videoImage : null));
     }
 
+    /// <summary>
+    /// 添加视频标签
+    /// </summary>
+    /// <param name="videoTags">视频标签</param>
     private void AddVideoTags(HashSet<string> videoTags)
     {
         VideoTags = videoTags ?? throw new ArgumentNullException($"{videoTags}不为空");
         TimeSpace.ResetUpdateAt(DateTimeOffset.UtcNow);
     }
 
+    /// <summary>
+    /// 设置视频保护结束时间
+    /// </summary>
+    /// <param name="timeOffset">结束时间</param>
+    /// <exception cref="ArgumentException">结束时间不能小于开始时间</exception>
     public void SetProtectedEnd(DateTimeOffset timeOffset)
     {
         if (VideoControl.VideoProtectedTime!.StartTime >= timeOffset)
@@ -109,6 +119,15 @@ public class Videos : Entity, IAggregateRoot
         VideoControl.VideoProtectedTime!.SetEndTime(timeOffset);
     }
 
+    /// <summary>
+    /// 更新视频信息
+    /// </summary>
+    /// <param name="videoName">视频名称</param>
+    /// <param name="briefIntroduction">视频简介</param>
+    /// <param name="videoCover">视频封面</param>
+    /// <param name="videoFileUri">视频文件Uri</param>
+    /// <param name="videoTags">视频标签</param>
+    /// <param name="videoControl">视频控制权限</param>
     public void UpDataVideo(string videoName, string briefIntroduction, Uri videoCover, Uri videoFileUri,
         HashSet<string> videoTags, VideoControl videoControl)
     {
@@ -118,11 +137,31 @@ public class Videos : Entity, IAggregateRoot
         VideoFileUri = videoFileUri;
         AddVideoTags(videoTags);
         VideoControl.ChangeByVideoController(videoControl);
+        TimeSpace.ResetUpdateAt(DateTimeOffset.UtcNow);
     }
 
+    /// <summary>
+    /// 更新视频引用
+    /// </summary>
+    /// <param name="videoQuote">视频引用</param>
     public void ChangeByQuote(VideoQuote videoQuote)
     {
         VideoQuote = videoQuote;
+    }
+
+    /// <summary>
+    /// 删除视频
+    /// </summary>
+    public void DeleteVideo()
+    {
+        IsDeleted = true;
+        TimeSpace.ResetUpdateAt(DateTimeOffset.UtcNow);
+    }
+
+    public void VideoControlChangeByVideoController(VideoControl videoControl)
+    {
+        VideoControl.ChangeByVideoController(videoControl);
+        TimeSpace.ResetUpdateAt(DateTimeOffset.UtcNow);
     }
 
 }

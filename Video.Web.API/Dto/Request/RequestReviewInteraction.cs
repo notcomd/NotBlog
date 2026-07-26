@@ -6,13 +6,13 @@ namespace Video.Web.API.Dto.Request;
 /// </summary>
 public class RequestReviewInteraction
 {
-    /// <summary>Video GUID that owns the review.</summary>
+    /// <summary>视频ID</summary>
     public Guid VideoGuid { get; init; }
 
-    /// <summary>The interaction field to modify.</summary>
-    public string Field { get; init; } = string.Empty;
+    /// <summary>用于修改的互动字段</summary>
+    public string Field { get; init;}
 
-    /// <summary>True to increment (+1), false to decrement (-1). Watch only supports increment.</summary>
+    /// <summary>是否增加</summarysummary>
     public bool IsIncrement { get; init; } = true;
 
     public bool IsValid(out string? error)

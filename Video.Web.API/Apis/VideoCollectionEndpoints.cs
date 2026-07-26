@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Video.Domain.Entities;
 using Video.Domain.Server;
 
@@ -21,8 +22,9 @@ public static class VideoCollectionEndpoints
     }
 
     private static async Task<List<VideoCollection>> GetByVideoCollectionAsync(
-        VideoCollectionService videoCollectionService)
+        [FromServices] VideoServiceDI videoServiceDI
+        )
     {
-        return await videoCollectionService.GetByVideoCollectionListAsync();
+        return await videoServiceDI.VideoCollectionRepository.FindByVideoCollectionListAsync();
     }
 }

@@ -19,6 +19,9 @@ builder.AddCacheMemory("CacheMemory");
 var fileDevBaseUrl = builder.Configuration.GetValue<string>("FileDev:BaseUrl") ?? "http://localhost:5000";
 builder.Services.AddVideoInfrastructure(fileDevBaseUrl);
 
+// Apply ReviewContent configuration from appsettings.json
+builder.Configuration.ConfigureReviewContentOptions();
+
 // Add HTTP client for streaming proxy to FileDev
 builder.Services.AddHttpClient("FileDevProxy", client =>
 {

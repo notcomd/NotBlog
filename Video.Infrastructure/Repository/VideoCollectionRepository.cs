@@ -112,5 +112,19 @@ public class VideoCollectionRepository(VideoDbContext videoDbContext, ILogger<IV
         return videoCollection;
     }
 
-   
+    // ── Standard Delete Operations ──
+
+    public async Task DeleteByIdAsync(Guid id)
+    {
+        await videoDbContext.VideoCollections
+            .Where(en => en.VideoCollectionGuid == id)
+            .ExecuteUpdateAsync(up => up.SetProperty(en => en.VideoControl.VideoDelete, true));
+    }
+
+    public async Task InDeleteByIdAsync(Guid id)
+    {
+        await videoDbContext.VideoCollections
+            .Where(en => en.VideoCollectionGuid == id)
+            .ExecuteDeleteAsync();
+    }
 }

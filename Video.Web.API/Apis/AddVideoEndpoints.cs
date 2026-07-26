@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Video.Domain.Entities;
-using Video.Domain.Server;
-using Video.Infrastructure.Service;
 using Video.Web.API.Dto.Request;
 
 namespace Video.Web.API.Apis;
@@ -32,11 +30,9 @@ public static class AddVideoEndpoints
         [FromForm] RequestAddVideo request,
         IFormFile videoFile,
         [FromForm] IFormFile? coverImage,
-        VideoService videoService,
-        FileDevClient fileDevClient,
-        ILoggerFactory loggerFactory)
+        [FromServices] VideoServiceDI videoServiceDI)
     {
-        var logger = loggerFactory.CreateLogger("AddVideoEndpoint");
+        var logger = videoServiceDI.Logger;
 
         try
         {
@@ -48,14 +44,14 @@ public static class AddVideoEndpoints
 
             // 1. Upload video file to FileDev service
             await using var videoStream = videoFile.OpenReadStream();
-            var uploadResult = await fileDevClient.UploadVideoAsync(
+            var uploadResult = await videoServiceDI.FileDevClient.UploadVideoAsync(
                 videoStream, videoFile.FileName, request.AffiliatedAuthorizes.FirstOrDefault());
 
             var coverUri = new Uri(uploadResult.FileUri, UriKind.RelativeOrAbsolute);
             if (coverImage is { Length: > 0 })
             {
                 await using var coverStream = coverImage.OpenReadStream();
-                var coverResult = await fileDevClient.UploadVideoAsync(
+                var coverResult = await videoServiceDI.FileDevClient.UploadVideoAsync(
                     coverStream, coverImage.FileName, request.AffiliatedAuthorizes.FirstOrDefault());
                 coverUri = new Uri(coverResult.FileUri, UriKind.RelativeOrAbsolute);
             }
@@ -70,7 +66,7 @@ public static class AddVideoEndpoints
                 request.BriefIntroduction,
                 request.Tags);
 
-            await videoService.AddByVideoAsync(video);
+            await videoServiceDI.VideoRepository.AddByVideoAsync(video);
 
             logger.LogInformation("Video created: {VideoName} ({VideoGuid})", request.VideoName, video.VideoGuid);
 

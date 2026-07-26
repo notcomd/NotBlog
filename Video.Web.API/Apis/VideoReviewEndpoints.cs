@@ -1,9 +1,12 @@
 using Microsoft.AspNetCore.Http.HttpResults;
+using NotMediator;
 using Video.Domain.Cache;
 using Video.Domain.Entities;
+using Video.Domain.IRepository;
 using Video.Domain.Server;
 using Video.Web.API.Dto.Request;
 using Video.Web.API.Dto.Response;
+using Video.Web.API.Application.Commands;
 
 namespace Video.Web.API.Apis;
 
@@ -42,7 +45,9 @@ public static class VideoReviewEndpoints
 
     private static async Task<IResult> AddVideoReviewAsync(
         RequestAddReview request,
-        VideoService videoService,
+        IVideoService videoService,
+        INotMediator notMediator,
+        IVideoRepository videoRepository,
         ILoggerFactory loggerFactory)
     {
         var logger = loggerFactory.CreateLogger("VideoReviewEndpoint");
@@ -61,9 +66,14 @@ public static class VideoReviewEndpoints
                         "Maximum 9 images per comment.", null),
                     statusCode: 400);
 
-            await videoService.AddByVideoReviewAsync(
-                request.VideoGuid, request.UserGuid, request.RootReview,
-                request.Body, request.VideoImages);
+            var video = await videoService.GetByVideoAsync(request.VideoGuid);
+            if (video is null)
+                return Results.Json(
+                    new IVideoResult<string>(VideoResultType.VideoResultNotFound, 404, "Video not found.", null),
+                    statusCode: 404);
+
+            var command=new AddVideoReviewCommand(request.VideoGuid, request.UserGuid, request.RootReview, request.Body, request.VideoImages);
+            await notMediator.SendAsync(command);
 
             logger.LogInformation("Review added to video {VideoGuid} by user {UserGuid}",
                 request.VideoGuid, request.UserGuid);
@@ -87,16 +97,16 @@ public static class VideoReviewEndpoints
     }
 
     /// <summary>
-    /// 获取视频评论接口
+    /// 获取视频评论
     /// </summary>
-    /// <param name="videoGuid">视频GUID</param>
+    /// <param name="videoGuid">视频ID</param>
     /// <param name="videoService">视频服务</param>
     /// <param name="cacheService">缓存服务</param>
     /// <param name="loggerFactory">日志工厂</param>
     /// <returns>视频评论列表</returns>
     private static async Task<IResult> GetVideoReviewsAsync(
         Guid videoGuid,
-        VideoService videoService,
+        IVideoService videoService,
         IVideoCacheService? cacheService,
         ILoggerFactory loggerFactory)
     {
@@ -104,14 +114,12 @@ public static class VideoReviewEndpoints
 
         try
         {
-            // Cache-aside: try cache first
             List<VideoReview>? reviews = null;
             if (cacheService is not null)
             {
                 reviews = await cacheService.GetVideoReviewsAsync(videoGuid);
             }
 
-            // Cache miss: load from DB
             if (reviews is null)
             {
                 var video = await videoService.GetByVideoAsync(videoGuid);
@@ -124,7 +132,6 @@ public static class VideoReviewEndpoints
                 var allReviews = video.VideoReviews?.ToList() ?? [];
                 reviews = allReviews.Where(r => r.RootReview == null).ToList();
 
-                // Backfill cache
                 if (cacheService is not null)
                     _ = cacheService.SetVideoReviewsAsync(videoGuid, reviews);
             }
@@ -151,18 +158,18 @@ public static class VideoReviewEndpoints
     }
 
     /// <summary>
-    /// 获取视频评论回复接口
+    /// 获取评论回复
     /// </summary>
-    /// <param name="reviewGuid">评论GUID</param>
-    /// <param name="videoGuid">视频GUID</param>
+    /// <param name="reviewGuid">评论ID</param>
+    /// <param name="videoGuid">视频ID</param>
     /// <param name="videoService">视频服务</param>
     /// <param name="cacheService">缓存服务</param>
     /// <param name="loggerFactory">日志工厂</param>
-    /// <returns>视频评论回复列表</returns>
+    /// <returns>评论回复列表</returns>
     private static async Task<IResult> GetReviewRepliesAsync(
         Guid reviewGuid,
         Guid videoGuid,
-        VideoService videoService,
+        IVideoService videoService,
         IVideoCacheService? cacheService,
         ILoggerFactory loggerFactory)
     {
@@ -170,14 +177,12 @@ public static class VideoReviewEndpoints
 
         try
         {
-            // Cache-aside: try cache first
             List<VideoReview>? replies = null;
             if (cacheService is not null)
             {
                 replies = await cacheService.GetVideoReviewRepliesAsync(reviewGuid);
             }
 
-            // Cache miss: load from DB
             if (replies is null)
             {
                 var video = await videoService.GetByVideoAsync(videoGuid);
@@ -191,7 +196,6 @@ public static class VideoReviewEndpoints
                     .Where(r => r.RootReview == reviewGuid)
                     .ToList() ?? [];
 
-                // Backfill cache
                 if (cacheService is not null)
                     _ = cacheService.SetVideoReviewRepliesAsync(reviewGuid, replies);
             }
@@ -217,10 +221,21 @@ public static class VideoReviewEndpoints
         }
     }
 
+    /// <summary>
+    /// 更新评论互动
+    /// </summary>
+    /// <param name="reviewGuid">评论ID</param>
+    /// <param name="request">互动互动请求</param>
+    /// <param name="videoService">视频服务</param>
+    /// <param name="videoRepository">视频仓库</param>
+    /// <param name="loggerFactory">日志工厂</param>
+    /// <returns>更新结果</returns>
     private static async Task<IResult> UpdateReviewInteractionAsync(
         Guid reviewGuid,
         RequestReviewInteraction request,
-        VideoService videoService,
+        INotMediator mediator,
+        IVideoService videoService,
+        IVideoRepository videoRepository,
         ILoggerFactory loggerFactory)
     {
         var logger = loggerFactory.CreateLogger("VideoReviewEndpoint");
@@ -232,8 +247,56 @@ public static class VideoReviewEndpoints
                     new IVideoResult<string>(VideoResultType.VideoResultBadRequest, 400, error!, null),
                     statusCode: 400);
 
-            await videoService.UpdateVideoReviewQuoteAsync(
-                request.VideoGuid, reviewGuid, request.Field, request.IsIncrement);
+            var video = await videoService.GetByVideoAsync(request.VideoGuid);
+            if (video is null)
+                return Results.Json(
+                    new IVideoResult<string>(VideoResultType.VideoResultNotFound, 404, "Video not found.", null),
+                    statusCode: 404);
+
+            var review = video.VideoReviews?.FirstOrDefault(r => r.VideoReviewGuid == reviewGuid);
+            if (review is null)
+                return Results.Json(
+                    new IVideoResult<string>(VideoResultType.VideoResultNotFound, 404, "Review not found.", null),
+                    statusCode: 404);
+
+            var quote = review.VideoQuote;
+            var normalized = request.Field.ToLowerInvariant();
+
+            if (request.IsIncrement)
+            {
+                switch (normalized)
+                {
+                    case "upvote": quote.UpUpvote(); break;
+                    case "stars": quote.UpStars(); break;
+                    case "watch": quote.UpWatch(); break;
+                    case "down": quote.UpDown(); break;
+                    case "ballot": quote.UpBallot(); break;
+                    case "share": quote.UpShare(); break;
+                    default:
+                        return Results.Json(
+                            new IVideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
+                                $"Invalid quote field: {request.Field}", null),
+                            statusCode: 400);
+                }
+            }
+            else
+            {
+                switch (normalized)
+                {
+                    case "upvote": quote.DownUpvote(); break;
+                    case "stars": quote.DownStars(); break;
+                    case "down": quote.DownDown(); break;
+                    case "ballot": quote.DownBallot(); break;
+                    case "share": quote.DownShare(); break;
+                    default:
+                        return Results.Json(
+                            new IVideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
+                                $"Invalid quote field: {request.Field}", null),
+                            statusCode: 400);
+                }
+            }
+
+            await videoRepository.UpdateByVideoAsync(video);
 
             var direction = request.IsIncrement ? "incremented" : "decremented";
             logger.LogInformation("Review {ReviewGuid}: {Field} {Direction}",
@@ -263,10 +326,19 @@ public static class VideoReviewEndpoints
         }
     }
 
+
+    /// <summary>
+    /// 获取评论互动
+    /// </summary>
+    /// <param name="reviewGuid">评论ID</param>
+    /// <param name="videoGuid">视频ID</param>
+    /// <param name="videoService">视频服务</param>
+    /// <param name="loggerFactory">日志工厂</param>
+    /// <returns>评论互动</returns>
     private static async Task<IResult> GetReviewInteractionAsync(
         Guid reviewGuid,
         Guid videoGuid,
-        VideoService videoService,
+        IVideoService videoService,
         ILoggerFactory loggerFactory)
     {
         var logger = loggerFactory.CreateLogger("VideoReviewEndpoint");

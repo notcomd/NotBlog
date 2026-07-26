@@ -55,4 +55,12 @@ public interface IVideoCollectionRepository : IRepository<VideoCollection>
     public Task UpdateRangeByVideoCollectionAsync(List<VideoCollection> updateVideoCollections);
 
     public Task UpdateByQuoteAsync(VideoQuote videoQuote);
+
+    // ── Standard Delete Operations ──
+
+    /// <summary>Soft-delete a collection by its GUID.</summary>
+    public Task DeleteByIdAsync(Guid id);
+
+    /// <summary>Hard-delete (physical removal) a collection by its GUID.</summary>
+    public Task InDeleteByIdAsync(Guid id);
 }

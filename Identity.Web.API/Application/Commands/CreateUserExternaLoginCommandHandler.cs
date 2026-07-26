@@ -5,7 +5,7 @@ namespace Identity.Web.API.Application.Commands;
 
 public sealed class CreateUserExternalLoginCommandHandler(
     IUserExternalLoginRepository userExternalLoginRepository,
-    IUserRepository userRepository) : NotMediator.IRequestHandler<CreateUserExternalLoginCommand, bool>
+    IUserRepository userRepository) : IRequestHandler<CreateUserExternalLoginCommand, bool>
 {
     public async Task<bool> Handler(CreateUserExternalLoginCommand request, CancellationToken cancellationToken)
     {
