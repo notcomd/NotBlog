@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "tw9YUtKgVB8=",
+  "dgSpecHash": "13YYvgqJe0o=",
   "success": true,
-  "projectFilePath": "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj",
+  "projectFilePath": "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.aspnetcore.mvc.core\\2.3.11\\microsoft.aspnetcore.mvc.core.2.3.11.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.dotnet.platformabstractions\\2.1.0\\microsoft.dotnet.platformabstractions.2.1.0.nupkg.sha512",
@@ -37,9 +37,9 @@
       "code": "NU1510",
       "level": "Warning",
       "message": "PackageReference Microsoft.AspNetCore.Mvc.Core 将不会删除。请考虑从依赖项中移除此包，因为可能不需要它。",
-      "projectPath": "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj",
+      "projectPath": "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj",
       "warningLevel": 1,
-      "filePath": "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj",
+      "filePath": "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj",
       "libraryId": "Microsoft.AspNetCore.Mvc.Core",
       "targetGraphs": [
         "net10.0"
@@ -49,9 +49,9 @@
       "code": "NU1903",
       "level": "Warning",
       "message": "包 \"Newtonsoft.Json\" 9.0.1 具有已知的 高 严重性漏洞，https://github.com/advisories/GHSA-5crp-9r3c-p9vr",
-      "projectPath": "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj",
+      "projectPath": "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj",
       "warningLevel": 1,
-      "filePath": "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj",
+      "filePath": "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj",
       "libraryId": "Newtonsoft.Json",
       "targetGraphs": [
         "net10.0"

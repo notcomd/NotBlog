@@ -2,6 +2,8 @@ namespace FileDev.Web.API.Grpc;
 
 using FileDev.Domain.Dto.Request;
 using Microsoft.AspNetCore.Mvc;
+using DomainFileIdentity = FileDev.Domain.Entities.FileIdentity;
+using DomainFileType = FileDev.Domain.Entities.FileType;
 
 /// <summary>
 /// 文件服务外部调用接口，供其他微服务通过 HTTP/gRPC 调用。
@@ -50,7 +52,7 @@ public class FileStorageGrpcService : ControllerBase
                 return BadRequest(new { error = $"不支持的文件类型: {ext}" });
 
             var fileType = ResolveFileType(ext);
-            var identity = Enum.Parse<FileIdentity>(fileIdentity);
+            var identity = Enum.Parse<DomainFileIdentity>(fileIdentity);
             var fileGuid = Guid.CreateVersion7();
             var relativePath = $"{userId:N}/{fileGuid}{ext}";
 
@@ -101,12 +103,12 @@ public class FileStorageGrpcService : ControllerBase
         return Ok(new { exists = file != null, fileId });
     }
 
-    private static FileType ResolveFileType(string ext) => ext switch
+    private static DomainFileType ResolveFileType(string ext) => ext switch
     {
-        ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".webp" or ".svg" or ".ico" => FileType.FileImage,
-        ".mp4" or ".avi" or ".mkv" or ".mov" or ".wmv" or ".flv" or ".webm" => FileType.FileVideo,
-        ".mp3" or ".wav" or ".ogg" or ".flac" or ".aac" or ".wma" or ".m4a" => FileType.FileAudio,
-        ".zip" or ".rar" or ".7z" or ".tar" or ".gz" or ".bz2" => FileType.CompressFiles,
-        _ => FileType.FileFile
+        ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".webp" or ".svg" or ".ico" => DomainFileType.FileImage,
+        ".mp4" or ".avi" or ".mkv" or ".mov" or ".wmv" or ".flv" or ".webm" => DomainFileType.FileVideo,
+        ".mp3" or ".wav" or ".ogg" or ".flac" or ".aac" or ".wma" or ".m4a" => DomainFileType.FileAudio,
+        ".zip" or ".rar" or ".7z" or ".tar" or ".gz" or ".bz2" => DomainFileType.CompressFiles,
+        _ => DomainFileType.FileFile
     };
 }

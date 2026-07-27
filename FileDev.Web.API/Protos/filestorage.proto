@@ -1,0 +1,308 @@
+syntax = "proto3";
+
+option csharp_namespace = "FileDev.Web.API.Grpc";
+
+package filestorage;
+
+// ═══════════════════════════════════════════════════════
+// FileStorage gRPC Service - 文件和图片的存储与读取服务
+// ═══════════════════════════════════════════════════════
+service FileStorage {
+
+  rpc GetFileInfo (GetFileInfoRequest) returns (GetFileInfoResponse);
+  rpc ListUserFiles (ListUserFilesRequest) returns (ListUserFilesResponse);
+  rpc DeleteFile (DeleteFileRequest) returns (DeleteFileResponse);
+  rpc UpdateFileInfo (UpdateFileInfoRequest) returns (UpdateFileInfoResponse);
+
+  
+  rpc UploadFile (UploadFileRequest) returns (UploadFileResponse);
+  rpc DownloadFile (DownloadFileRequest) returns (stream DownloadFileResponse);
+
+ 
+  rpc InitChunkUpload (InitChunkUploadRequest) returns (InitChunkUploadResponse);
+  rpc UploadChunk (UploadChunkRequest) returns (UploadChunkResponse);
+  rpc GetChunkStatus (GetChunkStatusRequest) returns (GetChunkStatusResponse);
+  rpc MergeChunks (MergeChunksRequest) returns (MergeChunksResponse);
+  rpc CancelChunkUpload (CancelChunkUploadRequest) returns (CancelChunkUploadResponse);
+
+
+  rpc UploadImage (UploadImageRequest) returns (UploadImageResponse);
+  rpc DownloadImage (DownloadImageRequest) returns (stream DownloadImageResponse);
+  rpc GetImageInfo (GetImageInfoRequest) returns (GetImageInfoResponse);
+}
+
+// ═══════════════════════════════════════════════════════
+// 枚举定义
+// ═══════════════════════════════════════════════════════
+
+enum FileIdentity {
+  FILE_IDENTITY_UNSPECIFIED = 0;
+  FILE_PUBLIC = 1;
+  FILE_PRIVATE = 2;
+  FILE_PRIVATE_PUBLIC = 3;
+  FILE_PASSWORD_PROTECTED = 4;
+}
+
+enum FileType {
+  FILE_TYPE_UNSPECIFIED = 0;
+  FILE_IMAGE = 1;
+  FILE_VIDEO = 2;
+  FILE_AUDIO = 3;
+  FILE_DOCUMENT = 4;
+  FILE_COMPRESS = 5;
+  FILE_OTHER = 6;
+}
+
+enum ChunkUploadStatus {
+  CHUNK_STATUS_UNSPECIFIED = 0;
+  CHUNK_PENDING = 1;
+  CHUNK_UPLOADING = 2;
+  CHUNK_MERGED = 3;
+  CHUNK_FAILED = 4;
+  CHUNK_CANCELLED = 5;
+}
+
+// ═══════════════════════════════════════════════════════
+// 通用消息
+// ═══════════════════════════════════════════════════════
+
+message FileInfo {
+  string file_id = 1;
+  string user_id = 2;
+  string file_name = 3;
+  string file_description = 4;
+  int64 file_size = 5;
+  string file_uri = 6;
+  string file_md5 = 7;
+  FileIdentity file_identity = 8;
+  FileType file_type = 9;
+  repeated string file_tags = 10;
+  string upload_time = 11;
+  string update_time = 12;
+  bool is_deleted = 13;
+}
+
+message ImageInfo {
+  FileInfo file_info = 1;
+  int32 width = 2;
+  int32 height = 3;
+  string format = 4;
+}
+
+// ═══════════════════════════════════════════════════════
+// 文件元数据操作
+// ═══════════════════════════════════════════════════════
+
+message GetFileInfoRequest {
+  string file_id = 1;
+}
+
+message GetFileInfoResponse {
+  bool success = 1;
+  FileInfo file_info = 2;
+  string error_message = 3;
+}
+
+message ListUserFilesRequest {
+  string user_id = 1;
+  int32 page = 2;
+  int32 page_size = 3;
+}
+
+message ListUserFilesResponse {
+  bool success = 1;
+  repeated FileInfo files = 2;
+  int32 total_count = 3;
+  string error_message = 4;
+}
+
+message DeleteFileRequest {
+  string file_id = 1;
+  string user_id = 2;
+}
+
+message DeleteFileResponse {
+  bool success = 1;
+  string error_message = 2;
+}
+
+message UpdateFileInfoRequest {
+  string file_id = 1;
+  string file_name = 2;
+  repeated string file_tags = 3;
+  string file_description = 4;
+  FileIdentity file_identity = 5;
+  string file_md5 = 6;
+}
+
+message UpdateFileInfoResponse {
+  bool success = 1;
+  FileInfo file_info = 2;
+  string error_message = 3;
+}
+
+// ═══════════════════════════════════════════════════════
+// 小文件上传/下载
+// ═══════════════════════════════════════════════════════
+
+message UploadFileRequest {
+  string user_id = 1;
+  string file_name = 2;
+  bytes file_content = 3;
+  repeated string file_tags = 4;
+  string file_description = 5;
+  FileIdentity file_identity = 6;
+  string expected_md5 = 7;
+}
+
+message UploadFileResponse {
+  bool success = 1;
+  string file_id = 2;
+  string file_uri = 3;
+  string file_md5 = 4;
+  int64 file_size = 5;
+  string error_message = 6;
+}
+
+message DownloadFileRequest {
+  string file_id = 1;
+  string user_id = 2;
+}
+
+message DownloadFileResponse {
+  bytes chunk_data = 1;
+  string file_name = 2;
+  int64 file_size = 3;
+  string content_type = 4;
+}
+
+// ═══════════════════════════════════════════════════════
+// 大文件分片上传
+// ═══════════════════════════════════════════════════════
+
+message InitChunkUploadRequest {
+  string user_id = 1;
+  string file_name = 2;
+  int64 total_size = 3;
+  int32 total_chunks = 4;
+  string file_md5 = 5;
+  FileType file_type = 6;
+  FileIdentity file_identity = 7;
+  repeated string file_tags = 8;
+  string file_description = 9;
+}
+
+message InitChunkUploadResponse {
+  bool success = 1;
+  string file_key = 2;
+  int32 total_chunks = 3;
+  int32 chunk_size = 4;
+  string error_message = 5;
+}
+
+message UploadChunkRequest {
+  string file_key = 1;
+  int32 chunk_index = 2;
+  bytes chunk_data = 3;
+  string chunk_md5 = 4;
+}
+
+message UploadChunkResponse {
+  bool success = 1;
+  int32 chunk_index = 2;
+  string chunk_md5 = 3;
+  string error_message = 4;
+}
+
+message GetChunkStatusRequest {
+  string file_key = 1;
+}
+
+message GetChunkStatusResponse {
+  bool success = 1;
+  string file_key = 2;
+  int32 total_chunks = 3;
+  repeated int32 uploaded_chunks = 4;
+  ChunkUploadStatus status = 5;
+  string error_message = 6;
+}
+
+message MergeChunksRequest {
+  string file_key = 1;
+  string user_id = 2;
+  string file_name = 3;
+  repeated string file_tags = 4;
+  string file_description = 5;
+}
+
+message MergeChunksResponse {
+  bool success = 1;
+  string file_id = 2;
+  string file_uri = 3;
+  string file_md5 = 4;
+  int64 file_size = 5;
+  string error_message = 6;
+}
+
+message CancelChunkUploadRequest {
+  string file_key = 1;
+}
+
+message CancelChunkUploadResponse {
+  bool success = 1;
+  string error_message = 2;
+}
+
+// ═══════════════════════════════════════════════════════
+// 图片专用操作
+// ═══════════════════════════════════════════════════════
+
+message UploadImageRequest {
+  string user_id = 1;
+  string file_name = 2;
+  bytes image_content = 3;
+  repeated string file_tags = 4;
+  string file_description = 5;
+  FileIdentity file_identity = 6;
+  bool validate_format = 7;
+  int32 max_width = 8;
+  int32 max_height = 9;
+}
+
+message UploadImageResponse {
+  bool success = 1;
+  string file_id = 2;
+  string file_uri = 3;
+  string file_md5 = 4;
+  int64 file_size = 5;
+  int32 width = 6;
+  int32 height = 7;
+  string format = 8;
+  string error_message = 9;
+}
+
+message DownloadImageRequest {
+  string file_id = 1;
+  string user_id = 2;
+  int32 resize_width = 3;
+  int32 resize_height = 4;
+}
+
+message DownloadImageResponse {
+  bytes chunk_data = 1;
+  string file_name = 2;
+  int64 file_size = 3;
+  string content_type = 4;
+  int32 width = 5;
+  int32 height = 6;
+}
+
+message GetImageInfoRequest {
+  string file_id = 1;
+}
+
+message GetImageInfoResponse {
+  bool success = 1;
+  ImageInfo image_info = 2;
+  string error_message = 3;
+}

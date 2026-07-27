@@ -13,10 +13,11 @@ public class NotFileGroupEntityConfiguration : IEntityTypeConfiguration<NotFileG
         builder.Property(x => x.Id).UseHiLo("NotFileGroupseq");
         builder.HasKey(x => x.Id);
 
-        // 自引用树形关系
+        // 自引用树形关系 — 使用 NotFileGroupId (Guid) 作为主键端
         builder.HasOne(x => x.Parent)
             .WithMany(x => x.Children)
             .HasForeignKey(x => x.ParentGroupId)
+            .HasPrincipalKey(x => x.NotFileGroupId)
             .IsRequired(false)
             .OnDelete(DeleteBehavior.Restrict);
 

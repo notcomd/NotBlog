@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj": {}
+    "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj": {}
   },
   "projects": {
-    "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj": {
+    "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj",
+        "projectUniqueName": "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj",
         "projectName": "NotBlog.ServiceDefaults",
-        "projectPath": "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj",
+        "projectPath": "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "f:\\NotBlog\\NotBlog.ServiceDefaults\\obj\\",
+        "outputPath": "F:\\NotBlog\\NotBlog.ServiceDefaults\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"

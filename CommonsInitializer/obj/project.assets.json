@@ -1684,11 +1684,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "f:\\NotBlog\\CommonsInitializer\\CommonsInitializer.csproj",
+      "projectUniqueName": "F:\\NotBlog\\CommonsInitializer\\CommonsInitializer.csproj",
       "projectName": "CommonsInitializer",
-      "projectPath": "f:\\NotBlog\\CommonsInitializer\\CommonsInitializer.csproj",
+      "projectPath": "F:\\NotBlog\\CommonsInitializer\\CommonsInitializer.csproj",
       "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-      "outputPath": "f:\\NotBlog\\CommonsInitializer\\obj\\",
+      "outputPath": "F:\\NotBlog\\CommonsInitializer\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -1710,11 +1710,11 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "projectReferences": {
-            "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj": {
-              "projectPath": "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj"
+            "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj": {
+              "projectPath": "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj"
             },
-            "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj": {
-              "projectPath": "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj"
+            "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj": {
+              "projectPath": "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj"
             }
           }
         }

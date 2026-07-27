@@ -61,7 +61,6 @@ F:\NotBlog\FileDev.Web.API\bin\Debug\net10.0\System.IO.Hashing.dll
 F:\NotBlog\FileDev.Web.API\bin\Debug\net10.0\CommonsInitializer.dll
 F:\NotBlog\FileDev.Web.API\bin\Debug\net10.0\DomainCommons.dll
 F:\NotBlog\FileDev.Web.API\bin\Debug\net10.0\DomainInfrastructure.dll
-F:\NotBlog\FileDev.Web.API\bin\Debug\net10.0\Evenbus.dll
 F:\NotBlog\FileDev.Web.API\bin\Debug\net10.0\FileDev.Domain.dll
 F:\NotBlog\FileDev.Web.API\bin\Debug\net10.0\FileDev.Infrastructure.dll
 F:\NotBlog\FileDev.Web.API\bin\Debug\net10.0\NotBlog.ServiceDefaults.dll
@@ -72,7 +71,6 @@ F:\NotBlog\FileDev.Web.API\bin\Debug\net10.0\NotBlog.ServiceDefaults.pdb
 F:\NotBlog\FileDev.Web.API\bin\Debug\net10.0\CommonsInitializer.pdb
 F:\NotBlog\FileDev.Web.API\bin\Debug\net10.0\DomainCommons.pdb
 F:\NotBlog\FileDev.Web.API\bin\Debug\net10.0\DomainInfrastructure.pdb
-F:\NotBlog\FileDev.Web.API\bin\Debug\net10.0\Evenbus.pdb
 F:\NotBlog\FileDev.Web.API\bin\Debug\net10.0\Token.JWT.pdb
 F:\NotBlog\FileDev.Web.API\obj\Debug\net10.0\FileDev.Web.API.csproj.AssemblyReference.cache
 F:\NotBlog\FileDev.Web.API\obj\Debug\net10.0\rpswa.dswa.cache.json
@@ -186,3 +184,12 @@ f:\NotBlog\FileDev.Web.API\bin\Debug\net10.0\ru\Microsoft.CodeAnalysis.Workspace
 f:\NotBlog\FileDev.Web.API\bin\Debug\net10.0\tr\Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll
 f:\NotBlog\FileDev.Web.API\bin\Debug\net10.0\zh-Hans\Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll
 f:\NotBlog\FileDev.Web.API\bin\Debug\net10.0\zh-Hant\Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll
+f:\NotBlog\FileDev.Web.API\bin\Debug\net10.0\Google.Protobuf.dll
+f:\NotBlog\FileDev.Web.API\bin\Debug\net10.0\Grpc.AspNetCore.Server.dll
+f:\NotBlog\FileDev.Web.API\bin\Debug\net10.0\Grpc.AspNetCore.Server.ClientFactory.dll
+f:\NotBlog\FileDev.Web.API\bin\Debug\net10.0\Grpc.Core.Api.dll
+f:\NotBlog\FileDev.Web.API\bin\Debug\net10.0\Grpc.Net.Client.dll
+f:\NotBlog\FileDev.Web.API\bin\Debug\net10.0\Grpc.Net.ClientFactory.dll
+f:\NotBlog\FileDev.Web.API\bin\Debug\net10.0\Grpc.Net.Common.dll
+f:\NotBlog\FileDev.Web.API\bin\Debug\net10.0\EventBus.dll
+f:\NotBlog\FileDev.Web.API\bin\Debug\net10.0\EventBus.pdb

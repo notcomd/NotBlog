@@ -1,4 +1,5 @@
 using DomainInfrastructure;
+using FileDev.Web.API.Grpc;
 using Notcomd.Token.JWT.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,7 +15,14 @@ builder.Services.AddJwtAuthentication(builder.Configuration.GetSection("JwtOptio
 builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<INotFileService, NotFileService>();
+builder.Services.AddScoped<FileStorageServiceGRPC>();
 builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
+builder.Services.AddGrpc(options =>
+{
+    options.MaxReceiveMessageSize = 1024 * 1024 * 1024; // 1GB
+    options.MaxSendMessageSize = 1024 * 1024 * 1024;
+    options.EnableDetailedErrors = builder.Environment.IsDevelopment();
+});
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddProblemDetails();
@@ -67,5 +75,7 @@ if (app.Environment.IsDevelopment())
 app.MapGroup("/api/filestorage").MapFileChunkApis();
 app.MapGroup("/api/filestorage").MapStreamUploadApis();
 app.MapGroup("/api/filestorage").MapDedupApis();
+
+app.MapGrpcService<FileStorageServiceGRPC>();
 
 app.Run();
