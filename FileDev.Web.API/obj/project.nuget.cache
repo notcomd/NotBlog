@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "vpuVATRQKnI=",
+  "dgSpecHash": "7JzMaGp4/1A=",
   "success": true,
   "projectFilePath": "F:\\NotBlog\\FileDev.Web.API\\FileDev.Web.API.csproj",
   "expectedPackageFiles": [
@@ -95,7 +95,7 @@
     {
       "code": "NU1510",
       "level": "Warning",
-      "message": "PackageReference Microsoft.AspNetCore.Mvc.Core 将不会删除。请考虑从依赖项中移除此包，因为可能不需要它。",
+      "message": "PackageReference Microsoft.AspNetCore.Mvc.Core 将不会被裁剪。此包自动可用，无需显式引用。移除 PackageReference 项。",
       "projectPath": "F:\\NotBlog\\FileDev.Web.API\\FileDev.Web.API.csproj",
       "warningLevel": 1,
       "filePath": "F:\\NotBlog\\FileDev.Web.API\\FileDev.Web.API.csproj",

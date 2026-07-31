@@ -1,5 +1,3 @@
-using Markdown.Domain.SeedWork;
-
 namespace Markdown.Domain.Entities;
 
 /// <summary>
@@ -69,7 +67,7 @@ public class MarkDown : Entity, IAggregateRoot
     public ICollection<OldMarkDown> OldMarkDowns { get; private set; }
 
     /// <summary>
-    ///     添加评论到文档
+    ///     添加评论到文档（聚合根统一入口）
     /// </summary>
     /// <param name="markReview">要添加的评论</param>
     /// <returns>当前文档实例（支持链式调用）</returns>
@@ -78,6 +76,62 @@ public class MarkDown : Entity, IAggregateRoot
         ArgumentNullException.ThrowIfNull(markReview);
         MarkReviews.Add(markReview);
         return Task.FromResult(this);
+    }
+
+    /// <summary>
+    ///     从聚合中移除评论及其所有子评论（聚合根统一入口）
+    /// </summary>
+    /// <param name="reviewGuid">要移除的评论 GUID</param>
+    public void RemoveReview(Guid reviewGuid)
+    {
+        var review = FindReview(reviewGuid);
+        if (review is null)
+            throw new InvalidOperationException($"评论 {reviewGuid} 不存在于当前文档聚合中");
+
+        // 递归移除子评论
+        var childReviews = MarkReviews
+            .Where(r => r.MarkAggregateRootGuid == reviewGuid)
+            .ToList();
+
+        foreach (var child in childReviews)
+        {
+            MarkReviews.Remove(child);
+        }
+
+        MarkReviews.Remove(review);
+        UpdateAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    ///     添加子评论到父评论（聚合根统一入口，维护聚合内一致性）
+    /// </summary>
+    /// <param name="parentReviewGuid">父评论 GUID</param>
+    /// <param name="childReview">子评论</param>
+    /// <returns>子评论实例</returns>
+    public MarkReview AddChildReview(Guid parentReviewGuid, MarkReview childReview)
+    {
+        ArgumentNullException.ThrowIfNull(childReview);
+
+        var parentReview = FindReview(parentReviewGuid)
+            ?? throw new InvalidOperationException($"父评论 {parentReviewGuid} 不存在于当前文档聚合中");
+
+        childReview.SetParentReviewGuid(parentReviewGuid);
+        parentReview.MarkReviews.Add(childReview);
+        parentReview.MarkQuote.AddReview();
+        MarkReviews.Add(childReview);
+
+        UpdateAt = DateTime.UtcNow;
+        return childReview;
+    }
+
+    /// <summary>
+    ///     在聚合内查找指定评论
+    /// </summary>
+    /// <param name="reviewGuid">评论 GUID</param>
+    /// <returns>找到的评论，如果不存在返回 null</returns>
+    public MarkReview? FindReview(Guid reviewGuid)
+    {
+        return MarkReviews.FirstOrDefault(r => r.MarkReviewGuid == reviewGuid);
     }
 
     /// <summary>

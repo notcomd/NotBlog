@@ -156,14 +156,12 @@ F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\zh-Hant\Microsoft.CodeAnalysis.Wor
 F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\CommonsInitializer.dll
 F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\DomainCommons.dll
 F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\DomainInfrastructure.dll
-F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\Evenbus.dll
 F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\Identity.Domain.dll
 F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\Identity.Infrastructure.dll
 F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\NotBlog.ServiceDefaults.dll
 F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\NotEmail.dll
 F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\Token.JWT.dll
 F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\CommonsInitializer.pdb
-F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\Evenbus.pdb
 F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\NotBlog.ServiceDefaults.pdb
 F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\NotEmail.pdb
 F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\Identity.Infrastructure.pdb
@@ -189,3 +187,5 @@ F:\NotBlog\Identity.Web.API\obj\Debug\net10.0\ref\Identity.Web.API.dll
 F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\RESPite.dll
 F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\CacheMemory.dll
 F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\CacheMemory.pdb
+F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\EventBus.dll
+F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\EventBus.pdb

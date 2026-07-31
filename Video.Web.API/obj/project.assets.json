@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "targets": {
     "net10.0": {
       "Aspire.StackExchange.Redis/13.4.6": {
@@ -4122,8 +4122,8 @@
     },
     "EventBus/1.0.0": {
       "type": "project",
-      "path": "../Eventbus/EventBus.csproj",
-      "msbuildProject": "../Eventbus/EventBus.csproj"
+      "path": "../EventBus/EventBus.csproj",
+      "msbuildProject": "../EventBus/EventBus.csproj"
     },
     "NotBlog.ServiceDefaults/1.0.0": {
       "type": "project",
@@ -4170,11 +4170,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "f:\\NotBlog\\Video.Web.API\\Video.Web.API.csproj",
+      "projectUniqueName": "F:\\NotBlog\\Video.Web.API\\Video.Web.API.csproj",
       "projectName": "Video.Web.API",
-      "projectPath": "f:\\NotBlog\\Video.Web.API\\Video.Web.API.csproj",
+      "projectPath": "F:\\NotBlog\\Video.Web.API\\Video.Web.API.csproj",
       "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-      "outputPath": "f:\\NotBlog\\Video.Web.API\\obj\\",
+      "outputPath": "F:\\NotBlog\\Video.Web.API\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -4194,22 +4194,23 @@
       },
       "frameworks": {
         "net10.0": {
+          "framework": "net10.0",
           "targetAlias": "net10.0",
           "projectReferences": {
-            "f:\\NotBlog\\CacheMemory\\CacheMemory.csproj": {
-              "projectPath": "f:\\NotBlog\\CacheMemory\\CacheMemory.csproj"
+            "F:\\NotBlog\\CacheMemory\\CacheMemory.csproj": {
+              "projectPath": "F:\\NotBlog\\CacheMemory\\CacheMemory.csproj"
             },
-            "f:\\NotBlog\\Eventbus\\EventBus.csproj": {
-              "projectPath": "f:\\NotBlog\\Eventbus\\EventBus.csproj"
+            "F:\\NotBlog\\Eventbus\\EventBus.csproj": {
+              "projectPath": "F:\\NotBlog\\Eventbus\\EventBus.csproj"
             },
-            "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj": {
-              "projectPath": "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj"
+            "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj": {
+              "projectPath": "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj"
             },
-            "f:\\NotBlog\\Video.Domain\\Video.Domain.csproj": {
-              "projectPath": "f:\\NotBlog\\Video.Domain\\Video.Domain.csproj"
+            "F:\\NotBlog\\Video.Domain\\Video.Domain.csproj": {
+              "projectPath": "F:\\NotBlog\\Video.Domain\\Video.Domain.csproj"
             },
-            "f:\\NotBlog\\Video.Infrastructure\\Video.Infrastructure.csproj": {
-              "projectPath": "f:\\NotBlog\\Video.Infrastructure\\Video.Infrastructure.csproj"
+            "F:\\NotBlog\\Video.Infrastructure\\Video.Infrastructure.csproj": {
+              "projectPath": "F:\\NotBlog\\Video.Infrastructure\\Video.Infrastructure.csproj"
             }
           }
         }
@@ -4224,10 +4225,11 @@
         "auditLevel": "low",
         "auditMode": "all"
       },
-      "SdkAnalysisLevel": "10.0.100"
+      "SdkAnalysisLevel": "10.0.300"
     },
     "frameworks": {
       "net10.0": {
+        "framework": "net10.0",
         "targetAlias": "net10.0",
         "dependencies": {
           "Aspire.StackExchange.Redis.DistributedCaching": {
@@ -4284,7 +4286,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.102/PortableRuntimeIdentifierGraph.json",
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.302/PortableRuntimeIdentifierGraph.json",
         "packagesToPrune": {
           "Microsoft.AspNetCore": "(,10.0.32767]",
           "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",
@@ -4707,7 +4709,7 @@
       "code": "NU1510",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "PackageReference Microsoft.AspNetCore.Mvc.Core 将不会删除。请考虑从依赖项中移除此包，因为可能不需要它。",
+      "message": "PackageReference Microsoft.AspNetCore.Mvc.Core 将不会被裁剪。此包自动可用，无需显式引用。移除 PackageReference 项。",
       "libraryId": "Microsoft.AspNetCore.Mvc.Core",
       "targetGraphs": [
         "net10.0"

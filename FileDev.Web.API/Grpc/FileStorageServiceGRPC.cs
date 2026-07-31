@@ -1,12 +1,7 @@
-using FileDev.Domain.Dto.Request;
-using FileDev.Domain.Entities;
-using FileDev.Domain.IServices;
-using FileDev.Domain.Options;
-using FileDev.Infrastructure.Service;
-using FileDev.Web.API.Grpc;
+
 using Google.Protobuf;
 using Grpc.Core;
-using Microsoft.Extensions.Options;
+
 using Notcomd.Token.JWT.Core;
 using Notcomd.Token.JWT.Security;
 using FileInfoProto = FileDev.Web.API.Grpc.FileInfo;
@@ -29,12 +24,11 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
     private readonly IOptionsSnapshot<NotFileStorageOptions> _options;
     private readonly ILogger<FileStorageServiceGRPC> _logger;
 
-    public FileStorageServiceGRPC(
-        INotFileService notFileService,
-        INotFileStorageService storageService,
-        IFileChunkManager chunkManager,
-        IOptionsSnapshot<NotFileStorageOptions> options,
-        ILogger<FileStorageServiceGRPC> logger)
+    public FileStorageServiceGRPC(INotFileService notFileService,
+                                  INotFileStorageService storageService,
+                                  IFileChunkManager chunkManager,
+                                  IOptionsSnapshot<NotFileStorageOptions> options,
+                                  ILogger<FileStorageServiceGRPC> logger)
     {
         _notFileService = notFileService;
         _storageService = storageService;
@@ -47,6 +41,15 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
     // 文件元数据操作
     // ═══════════════════════════════════════════════════
 
+    /// <summary>
+    /// 获取文件信息
+    /// </summary>
+    /// <param name="request">包含文件ID的请求</param>
+    /// <param name="context">gRPC 上下文</param>
+    /// <returns>包含文件信息的响应</returns>
+    /// <exception cref="ArgumentException">如果文件ID无效</exception>
+    /// <exception cref="InvalidOperationException">如果文件已被删除</exception>
+    /// <exception cref="Exception">如果发生其他异常</exception>
     public override async Task<GetFileInfoResponse> GetFileInfo(
         GetFileInfoRequest request, ServerCallContext context)
     {
@@ -72,6 +75,14 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
         }
     }
 
+    /// <summary>
+    /// 列出用户文件
+    /// </summary>
+    /// <param name="request">包含用户ID的请求</param>
+    /// <param name="context">gRPC 上下文</param>
+    /// <returns>包含用户文件列表的响应</returns>
+    /// <exception cref="ArgumentException">如果用户ID无效</exception>
+    /// <exception cref="Exception">如果发生其他异常</exception>
     public override async Task<ListUserFilesResponse> ListUserFiles(
         ListUserFilesRequest request, ServerCallContext context)
     {
@@ -104,6 +115,15 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
         }
     }
 
+    /// <summary>
+    /// 删除文件
+    /// </summary>
+    /// <param name="request">包含文件ID和用户ID的请求</param>
+    /// <param name="context">gRPC 上下文</param>
+    /// <returns>包含删除结果的响应</returns>
+    /// <exception cref="ArgumentException">如果文件ID无效</exception>
+    /// <exception cref="InvalidOperationException">如果文件已被删除</exception>
+    /// <exception cref="Exception">如果发生其他异常</exception>
     public override async Task<DeleteFileResponse> DeleteFile(
         DeleteFileRequest request, ServerCallContext context)
     {
@@ -124,6 +144,15 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
         }
     }
 
+    /// <summary>
+    /// 更新文件信息
+    /// </summary>
+    /// <param name="request">包含文件ID和文件信息的请求</param>
+    /// <param name="context">gRPC 上下文</param>
+    /// <returns>包含更新结果的响应</returns>
+    /// <exception cref="ArgumentException">如果文件ID无效</exception>
+    /// <exception cref="InvalidOperationException">如果文件已被删除</exception>
+    /// <exception cref="Exception">如果发生其他异常</exception>
     public override async Task<UpdateFileInfoResponse> UpdateFileInfo(
         UpdateFileInfoRequest request, ServerCallContext context)
     {
@@ -160,7 +189,14 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
     // ═══════════════════════════════════════════════════
     // 小文件上传/下载
     // ═══════════════════════════════════════════════════
-
+    /// <summary>
+    /// 上传文件
+    /// </summary>
+    /// <param name="request">包含用户ID、文件名、文件内容和预期MD5的请求</param>
+    /// <param name="context">gRPC 上下文</param>
+    /// <returns>包含上传结果的响应</returns>
+    /// <exception cref="ArgumentException">如果用户ID无效</exception>
+    /// <exception cref="Exception">如果发生其他异常</exception>
     public override async Task<UploadFileResponse> UploadFile(
         UploadFileRequest request, ServerCallContext context)
     {
@@ -238,6 +274,15 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
         }
     }
 
+    /// <summary>
+    /// 下载文件
+    /// </summary>
+    /// <param name="request">包含文件ID和用户ID的请求</param>
+    /// <param name="responseStream">gRPC 响应流</param>
+    /// <param name="context">gRPC 上下文</param>
+    /// <exception cref="ArgumentException">如果文件ID无效</exception>
+    /// <exception cref="InvalidOperationException">如果文件已被删除</exception>
+    /// <exception cref="Exception">如果发生其他异常</exception>
     public override async Task DownloadFile(
         DownloadFileRequest request,
         IServerStreamWriter<DownloadFileResponse> responseStream,
@@ -302,7 +347,14 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
     // ═══════════════════════════════════════════════════
     // 大文件分片上传
     // ═══════════════════════════════════════════════════
-
+    /// <summary>
+    /// 初始化分片上传
+    /// </summary>
+    /// <param name="request">包含用户ID、文件名、总大小、总分片数、文件MD5和文件类型的请求</param>
+    /// <param name="context">gRPC 上下文</param>
+    /// <returns>包含初始化结果的响应</returns>
+    /// <exception cref="ArgumentException">如果用户ID无效</exception>
+    /// <exception cref="Exception">如果发生其他异常</exception>
     public override async Task<InitChunkUploadResponse> InitChunkUpload(
         InitChunkUploadRequest request, ServerCallContext context)
     {
@@ -352,7 +404,14 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
             return new InitChunkUploadResponse { Success = false, ErrorMessage = ex.Message };
         }
     }
-
+    /// <summary>
+    /// 上传分片
+    /// </summary>
+    /// <param name="request">包含文件Key、分片索引、分片数据和分片MD5的请求</param>
+    /// <param name="context">gRPC 上下文</param>
+    /// <returns>包含上传结果的响应</returns>
+    /// <exception cref="ArgumentException">如果文件Key无效</exception>
+    /// <exception cref="Exception">如果发生其他异常</exception>
     public override async Task<UploadChunkResponse> UploadChunk(
         UploadChunkRequest request, ServerCallContext context)
     {
@@ -402,7 +461,14 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
             };
         }
     }
-
+    /// <summary>
+    /// 查询分片状态
+    /// </summary>
+    /// <param name="request">包含文件Key的请求</param>
+    /// <param name="context">gRPC 上下文</param>
+    /// <returns>包含分片状态的响应</returns>
+    /// <exception cref="ArgumentException">如果文件Key无效</exception>
+    /// <exception cref="Exception">如果发生其他异常</exception>
     public override async Task<GetChunkStatusResponse> GetChunkStatus(
         GetChunkStatusRequest request, ServerCallContext context)
     {
@@ -436,7 +502,14 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
             return new GetChunkStatusResponse { Success = false, ErrorMessage = ex.Message };
         }
     }
-
+    /// <summary>
+    /// 合并分片
+    /// </summary>
+    /// <param name="request">包含文件Key和用户ID的请求</param>
+    /// <param name="context">gRPC 上下文</param>
+    /// <returns>包含合并结果的响应</returns>
+    /// <exception cref="ArgumentException">如果文件Key无效</exception>
+    /// <exception cref="Exception">如果发生其他异常</exception>
     public override async Task<MergeChunksResponse> MergeChunks(
         MergeChunksRequest request, ServerCallContext context)
     {
@@ -498,6 +571,14 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
         }
     }
 
+    /// <summary>
+    /// 取消分片上传
+    /// </summary>
+    /// <param name="request">包含文件Key的请求</param>
+    /// <param name="context">gRPC 上下文</param>
+    /// <returns>包含取消结果的响应</returns>
+    /// <exception cref="ArgumentException">如果文件Key无效</exception>
+    /// <exception cref="Exception">如果发生其他异常</exception>
     public override async Task<CancelChunkUploadResponse> CancelChunkUpload(
         CancelChunkUploadRequest request, ServerCallContext context)
     {
@@ -519,7 +600,14 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
     // ═══════════════════════════════════════════════════
     // 图片专用操作
     // ═══════════════════════════════════════════════════
-
+    /// <summary>
+    /// 上传图片
+    /// </summary>
+    /// <param name="request">包含用户ID、图片内容、文件名、文件描述和文件类型（可选）的请求</param>
+    /// <param name="context">gRPC 上下文</param>
+    /// <returns>包含上传结果的响应</returns>
+    /// <exception cref="ArgumentException">如果用户ID无效</exception>
+    /// <exception cref="Exception">如果发生其他异常</exception>
     public override async Task<UploadImageResponse> UploadImage(
         UploadImageRequest request, ServerCallContext context)
     {
@@ -613,6 +701,14 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
         }
     }
 
+    /// <summary>
+    /// 下载图片
+    /// </summary>
+    /// <param name="request">包含文件ID和用户ID的请求</param>
+    /// <param name="responseStream">gRPC 响应流</param>
+    /// <param name="context">gRPC 上下文</param>
+    /// <exception cref="ArgumentException">如果文件ID无效</exception>
+    /// <exception cref="Exception">如果发生其他异常</exception>
     public override async Task DownloadImage(
         DownloadImageRequest request,
         IServerStreamWriter<DownloadImageResponse> responseStream,
@@ -676,6 +772,14 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
         }
     }
 
+    /// <summary>
+    /// 获取图片信息
+    /// </summary>
+    /// <param name="request">包含文件ID的请求</param>
+    /// <param name="context">gRPC 上下文</param>
+    /// <returns>包含图片信息的响应</returns>
+    /// <exception cref="ArgumentException">如果文件ID无效</exception>
+    /// <exception cref="Exception">如果发生其他异常</exception>
     public override async Task<GetImageInfoResponse> GetImageInfo(
         GetImageInfoRequest request, ServerCallContext context)
     {
@@ -723,8 +827,12 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
     // ═══════════════════════════════════════════════════
     // 私有辅助方法
     // ═══════════════════════════════════════════════════
-
-    private static FileInfoProto MapToFileInfo(NotFile file)
+    /// <summary>
+    /// 将域文件实体映射为gRPC文件信息协议缓冲区
+    /// </summary>
+    /// <param name="file">域文件实体</param>
+    /// <returns>gRPC文件信息协议缓冲区</returns>
+       private static FileInfoProto MapToFileInfo(NotFile file)
     {
         return new FileInfoProto
         {
@@ -744,6 +852,11 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
         };
     }
 
+    /// <summary>
+    /// 将域文件身份枚举映射为gRPC文件身份协议缓冲区
+    /// </summary>
+    /// <param name="identity">域文件身份枚举</param>
+    /// <returns>gRPC文件身份协议缓冲区</returns>
     private static FileIdentityProto MapToProtoIdentity(DomainFileIdentity identity) => identity switch
     {
         DomainFileIdentity.FilePublic => FileIdentityProto.FilePublic,
@@ -753,6 +866,11 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
         _ => FileIdentityProto.FilePrivate
     };
 
+    /// <summary>
+    /// 将gRPC文件身份协议缓冲区映射为域文件身份枚举
+    /// </summary>
+    /// <param name="identity">gRPC文件身份协议缓冲区</param>
+    /// <returns>域文件身份枚举</returns>
     private static DomainFileIdentity MapToDomainIdentity(FileIdentityProto identity) => identity switch
     {
         FileIdentityProto.FilePublic => DomainFileIdentity.FilePublic,
@@ -762,6 +880,11 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
         _ => DomainFileIdentity.FilePrivate
     };
 
+    /// <summary>
+    /// 将域文件类型枚举映射为gRPC文件类型协议缓冲区
+    /// </summary>
+    /// <param name="fileType">域文件类型枚举</param>
+    /// <returns>gRPC文件类型协议缓冲区</returns>
     private static FileTypeProto MapToProtoFileType(DomainFileType fileType) => fileType switch
     {
         DomainFileType.FileImage => FileTypeProto.FileImage,
@@ -772,6 +895,11 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
         _ => FileTypeProto.FileOther,
     };
 
+    /// <summary>
+    /// 将gRPC文件类型协议缓冲区映射为域文件类型枚举
+    /// </summary>
+    /// <param name="fileType">gRPC文件类型协议缓冲区</param>
+    /// <returns>域文件类型枚举</returns>
     private static DomainFileType MapToDomainFileType(FileTypeProto fileType) => fileType switch
     {
         FileTypeProto.FileImage => DomainFileType.FileImage,
@@ -782,6 +910,11 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
         _ => DomainFileType.FileFile,
     };
 
+    /// <summary>
+    /// 将域文件块上传状态枚举映射为gRPC文件块上传状态协议缓冲区
+    /// </summary>
+    /// <param name="status">域文件块上传状态枚举</param>
+    /// <returns>gRPC文件块上传状态协议缓冲区</returns>
     private static ChunkUploadStatus MapToProtoChunkStatus(
         Domain.Entities.ChunkUploadStatus status) => status switch
     {
@@ -793,6 +926,11 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
         _ => ChunkUploadStatus.ChunkPending
     };
 
+    /// <summary>
+    /// 将gRPC文件块上传状态协议缓冲区映射为域文件块上传状态枚举
+    /// </summary>
+    /// <param name="status">gRPC文件块上传状态协议缓冲区</param>
+    /// <returns>域文件块上传状态枚举</returns>
     private static DomainFileType ResolveFileType(string ext) => ext switch
     {
         ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".webp" or ".svg" or ".ico"
@@ -806,6 +944,11 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
         _ => DomainFileType.FileFile
     };
 
+    /// <summary>
+    /// 获取文件内容类型
+    /// </summary>
+    /// <param name="fileName">文件名</param>
+    /// <returns>文件内容类型</returns>
     private static string GetContentType(string fileName)
     {
         var ext = Path.GetExtension(fileName).ToLowerInvariant();
@@ -838,6 +981,11 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
         };
     }
 
+    /// <summary>
+    /// 获取图片文件内容类型
+    /// </summary>
+    /// <param name="fileName">图片文件名</param>
+    /// <returns>图片文件内容类型</returns>
     private static string GetImageContentType(string fileName)
     {
         var ext = Path.GetExtension(fileName).ToLowerInvariant();

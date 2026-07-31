@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "9V4i1tBdZZc=",
+  "dgSpecHash": "+5HcxURuFZk=",
   "success": true,
-  "projectFilePath": "f:\\NotBlog\\Video.Web.API\\Video.Web.API.csproj",
+  "projectFilePath": "F:\\NotBlog\\Video.Web.API\\Video.Web.API.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\notco\\.nuget\\packages\\aspire.stackexchange.redis\\13.4.6\\aspire.stackexchange.redis.13.4.6.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\aspire.stackexchange.redis.distributedcaching\\13.4.6\\aspire.stackexchange.redis.distributedcaching.13.4.6.nupkg.sha512",
@@ -81,10 +81,10 @@
     {
       "code": "NU1510",
       "level": "Warning",
-      "message": "PackageReference Microsoft.AspNetCore.Mvc.Core 将不会删除。请考虑从依赖项中移除此包，因为可能不需要它。",
-      "projectPath": "f:\\NotBlog\\Video.Web.API\\Video.Web.API.csproj",
+      "message": "PackageReference Microsoft.AspNetCore.Mvc.Core 将不会被裁剪。此包自动可用，无需显式引用。移除 PackageReference 项。",
+      "projectPath": "F:\\NotBlog\\Video.Web.API\\Video.Web.API.csproj",
       "warningLevel": 1,
-      "filePath": "f:\\NotBlog\\Video.Web.API\\Video.Web.API.csproj",
+      "filePath": "F:\\NotBlog\\Video.Web.API\\Video.Web.API.csproj",
       "libraryId": "Microsoft.AspNetCore.Mvc.Core",
       "targetGraphs": [
         "net10.0"

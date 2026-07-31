@@ -1,8 +1,6 @@
-﻿﻿using DomainInfrastructure;
-using Markdown.Domain.Entities;
+﻿using DomainInfrastructure;
 using Markdown.Domain.SeedWork;
 using Markdown.Infrastructure.Configuration;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using NotMediator;
 

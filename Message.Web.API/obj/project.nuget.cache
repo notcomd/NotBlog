@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "XyxSSEcy/1k=",
+  "dgSpecHash": "9str+HrKyzE=",
   "success": true,
-  "projectFilePath": "f:\\NotBlog\\Message.Web.API\\Message.Web.API.csproj",
+  "projectFilePath": "F:\\NotBlog\\Message.Web.API\\Message.Web.API.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\notco\\.nuget\\packages\\aspire.rabbitmq.client\\13.4.6\\aspire.rabbitmq.client.13.4.6.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\aspire.stackexchange.redis\\13.4.6\\aspire.stackexchange.redis.13.4.6.nupkg.sha512",
@@ -11,13 +11,11 @@
     "C:\\Users\\notco\\.nuget\\packages\\aspnetcore.healthchecks.redis\\9.0.0\\aspnetcore.healthchecks.redis.9.0.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\azure.core\\1.47.1\\azure.core.1.47.1.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\azure.identity\\1.14.2\\azure.identity.1.14.2.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.aspnetcore.mvc.core\\2.3.11\\microsoft.aspnetcore.mvc.core.2.3.11.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.aspnetcore.openapi\\10.0.9\\microsoft.aspnetcore.openapi.10.0.9.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\8.0.0\\microsoft.bcl.asyncinterfaces.8.0.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.bcl.cryptography\\9.0.4\\microsoft.bcl.cryptography.9.0.4.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.data.sqlclient\\6.1.1\\microsoft.data.sqlclient.6.1.1.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.data.sqlclient.sni.runtime\\6.0.2\\microsoft.data.sqlclient.sni.runtime.6.0.2.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.dotnet.platformabstractions\\2.1.0\\microsoft.dotnet.platformabstractions.2.1.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.entityframeworkcore\\10.0.9\\microsoft.entityframeworkcore.10.0.9.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.entityframeworkcore.abstractions\\10.0.9\\microsoft.entityframeworkcore.abstractions.10.0.9.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.entityframeworkcore.analyzers\\10.0.9\\microsoft.entityframeworkcore.analyzers.10.0.9.nupkg.sha512",
@@ -28,7 +26,6 @@
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.caching.stackexchangeredis\\10.0.8\\microsoft.extensions.caching.stackexchangeredis.10.0.8.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.compliance.abstractions\\10.7.0\\microsoft.extensions.compliance.abstractions.10.7.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.dependencyinjection.autoactivation\\10.7.0\\microsoft.extensions.dependencyinjection.autoactivation.10.7.0.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.dependencymodel\\2.1.0\\microsoft.extensions.dependencymodel.2.1.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.diagnostics.exceptionsummarization\\10.7.0\\microsoft.extensions.diagnostics.exceptionsummarization.10.7.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.http.diagnostics\\10.7.0\\microsoft.extensions.http.diagnostics.10.7.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.http.resilience\\10.7.0\\microsoft.extensions.http.resilience.10.7.0.nupkg.sha512",
@@ -47,7 +44,6 @@
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.tokens\\7.7.1\\microsoft.identitymodel.tokens.7.7.1.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.openapi\\2.0.0\\microsoft.openapi.2.0.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.sqlserver.server\\1.0.0\\microsoft.sqlserver.server.1.0.0.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\newtonsoft.json\\9.0.1\\newtonsoft.json.9.0.1.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\notmediator\\1.0.5\\notmediator.1.0.5.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\npgsql\\10.0.3\\npgsql.10.0.3.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\npgsql.entityframeworkcore.postgresql\\10.0.2\\npgsql.entityframeworkcore.postgresql.10.0.2.nupkg.sha512",
@@ -74,30 +70,5 @@
     "C:\\Users\\notco\\.nuget\\packages\\system.security.cryptography.pkcs\\9.0.4\\system.security.cryptography.pkcs.9.0.4.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\system.security.cryptography.protecteddata\\9.0.4\\system.security.cryptography.protecteddata.9.0.4.nupkg.sha512"
   ],
-  "logs": [
-    {
-      "code": "NU1510",
-      "level": "Warning",
-      "message": "PackageReference Microsoft.AspNetCore.Mvc.Core 将不会删除。请考虑从依赖项中移除此包，因为可能不需要它。",
-      "projectPath": "f:\\NotBlog\\Message.Web.API\\Message.Web.API.csproj",
-      "warningLevel": 1,
-      "filePath": "f:\\NotBlog\\Message.Web.API\\Message.Web.API.csproj",
-      "libraryId": "Microsoft.AspNetCore.Mvc.Core",
-      "targetGraphs": [
-        "net10.0"
-      ]
-    },
-    {
-      "code": "NU1903",
-      "level": "Warning",
-      "message": "包 \"Newtonsoft.Json\" 9.0.1 具有已知的 高 严重性漏洞，https://github.com/advisories/GHSA-5crp-9r3c-p9vr",
-      "projectPath": "f:\\NotBlog\\Message.Web.API\\Message.Web.API.csproj",
-      "warningLevel": 1,
-      "filePath": "f:\\NotBlog\\Message.Web.API\\Message.Web.API.csproj",
-      "libraryId": "Newtonsoft.Json",
-      "targetGraphs": [
-        "net10.0"
-      ]
-    }
-  ]
+  "logs": []
 }

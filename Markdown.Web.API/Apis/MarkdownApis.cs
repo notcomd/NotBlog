@@ -1,10 +1,6 @@
-using Markdown.Domain.Entities;
-using Markdown.Domain.IRepository;
-using Markdown.Domain.IServices;
 using Markdown.Web.API.Application.Commands;
 using Markdown.Web.API.Application.Dto;
 using Microsoft.AspNetCore.Mvc;
-using NotMediator;
 
 namespace Markdown.Web.API.Apis;
 

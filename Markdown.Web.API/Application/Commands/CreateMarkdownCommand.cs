@@ -1,6 +1,3 @@
-using Markdown.Domain.Entities;
-using NotMediator;
-
 namespace Markdown.Web.API.Application.Commands;
 
 /// <summary>

@@ -5,6 +5,7 @@ global using Identity.Domain.Entities.ClientAggregate;
 global using Identity.Domain.Entities.RoleAggregate;
 global using Identity.Domain.Entities.UserAggregate;
 global using Identity.Domain.IRepository;
+global using Identity.Domain.ValueObjects;
 global using Identity.Domain.SeedWork;
 global using Identity.Infrastructure.EntityConfig;
 global using Identity.Infrastructure.EntityFramework;

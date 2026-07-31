@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
 namespace Identity.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class BlogIdentity : Migration
+    public partial class IdentityDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -30,16 +29,44 @@ namespace Identity.Infrastructure.Migrations
                 incrementBy: 10);
 
             migrationBuilder.CreateTable(
+                name: "ClientRequest",
+                columns: table => new
+                {
+                    ClientRequestId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ClientRequestName = table.Column<string>(type: "text", nullable: false),
+                    CreatedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ClientRequest", x => x.ClientRequestId);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "NotClient",
                 columns: table => new
                 {
                     client_guid = table.Column<Guid>(type: "uuid", nullable: false),
-                    NotClientName = table.Column<string>(type: "text", nullable: false),
-                    NotClientDescription = table.Column<string>(type: "text", nullable: false),
-                    NotClientPrivateKey = table.Column<string>(type: "text", nullable: false),
-                    NotClientSecret = table.Column<string>(type: "text", nullable: false),
-                    NotClientUri = table.Column<string>(type: "text", nullable: false),
-                    NotClientType = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    client_id = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    application_name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    application_description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    application_icon = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    homepage_uri = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    privacy_policy_uri = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    terms_of_service_uri = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    contact_email = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    client_secret = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    redirect_uris = table.Column<HashSet<string>>(type: "text[]", nullable: false),
+                    post_logout_redirect_uris = table.Column<HashSet<string>>(type: "text[]", nullable: false),
+                    allowed_scopes = table.Column<HashSet<string>>(type: "text[]", nullable: false),
+                    allowed_grant_types = table.Column<HashSet<string>>(type: "text[]", nullable: false),
+                    application_type = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    token_endpoint_auth_method = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    require_pkce = table.Column<bool>(type: "boolean", nullable: false),
+                    require_consent = table.Column<bool>(type: "boolean", nullable: false),
+                    allowed_cors_origins = table.Column<HashSet<string>>(type: "text[]", nullable: true),
+                    status = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     Id = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -48,11 +75,9 @@ namespace Identity.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Permission",
+                name: "Permissions",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     PermissionId = table.Column<Guid>(type: "uuid", nullable: false),
                     PermissionCode = table.Column<string>(type: "text", nullable: false),
                     PermissionName = table.Column<string>(type: "text", nullable: false),
@@ -61,11 +86,12 @@ namespace Identity.Infrastructure.Migrations
                     ApiMethod = table.Column<string>(type: "text", nullable: true),
                     ApiUrl = table.Column<string>(type: "text", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Permission", x => x.Id);
+                    table.PrimaryKey("PK_Permissions", x => x.PermissionId);
                 });
 
             migrationBuilder.CreateTable(
@@ -75,6 +101,7 @@ namespace Identity.Infrastructure.Migrations
                     RoleGroupGuid = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
                     RoleGroupName = table.Column<string>(type: "text", nullable: false),
                     RoleGroupCode = table.Column<string>(type: "text", nullable: false),
+                    role_guids = table.Column<HashSet<Guid>>(type: "uuid[]", nullable: false),
                     CreatedRoleGroup = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -96,6 +123,7 @@ namespace Identity.Infrastructure.Migrations
                     RoleStatus = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     CreateRole = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    role_group_guids = table.Column<HashSet<Guid>>(type: "uuid[]", nullable: false),
                     Id = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -114,6 +142,8 @@ namespace Identity.Infrastructure.Migrations
                     image_cover = table.Column<string>(type: "text", nullable: true),
                     UserEmail = table.Column<string>(type: "text", nullable: false),
                     password_hash = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    PhoneNumber_AddressRegion = table.Column<long>(type: "bigint", nullable: true),
+                    PhoneNumber_PhoneCode = table.Column<string>(type: "text", nullable: true),
                     UserAddress_Country = table.Column<string>(type: "text", nullable: true),
                     UserAddress_Province = table.Column<string>(type: "text", nullable: true),
                     UserAddress_City = table.Column<string>(type: "text", nullable: true),
@@ -150,50 +180,26 @@ namespace Identity.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "GroupPermissions",
+                name: "RoleGroupPermissions",
                 columns: table => new
                 {
-                    PermissionGuid = table.Column<int>(type: "integer", nullable: false),
+                    PermissionGuid = table.Column<Guid>(type: "uuid", nullable: false),
                     RoleGroupGuid = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_GroupPermissions", x => new { x.PermissionGuid, x.RoleGroupGuid });
+                    table.PrimaryKey("PK_RoleGroupPermissions", x => new { x.PermissionGuid, x.RoleGroupGuid });
                     table.ForeignKey(
-                        name: "FK_GroupPermissions_Permission_PermissionGuid",
+                        name: "FK_RoleGroupPermissions_Permissions_PermissionGuid",
                         column: x => x.PermissionGuid,
-                        principalTable: "Permission",
-                        principalColumn: "Id",
+                        principalTable: "Permissions",
+                        principalColumn: "PermissionId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_GroupPermissions_RoleGroups_RoleGroupGuid",
+                        name: "FK_RoleGroupPermissions_RoleGroups_RoleGroupGuid",
                         column: x => x.RoleGroupGuid,
                         principalTable: "RoleGroups",
                         principalColumn: "RoleGroupGuid",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "RoleGroupRoles",
-                columns: table => new
-                {
-                    RoleGroupGuid = table.Column<Guid>(type: "uuid", nullable: false),
-                    RoleGuid = table.Column<Guid>(type: "uuid", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_RoleGroupRoles", x => new { x.RoleGroupGuid, x.RoleGuid });
-                    table.ForeignKey(
-                        name: "FK_RoleGroupRoles_RoleGroups_RoleGroupGuid",
-                        column: x => x.RoleGroupGuid,
-                        principalTable: "RoleGroups",
-                        principalColumn: "RoleGroupGuid",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_RoleGroupRoles_Roles_RoleGuid",
-                        column: x => x.RoleGuid,
-                        principalTable: "Roles",
-                        principalColumn: "RoleGuid",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -201,44 +207,23 @@ namespace Identity.Infrastructure.Migrations
                 name: "RolePermissions",
                 columns: table => new
                 {
-                    PermissionGuid = table.Column<int>(type: "integer", nullable: false),
+                    PermissionGuid = table.Column<Guid>(type: "uuid", nullable: false),
                     RoleGuid = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_RolePermissions", x => new { x.PermissionGuid, x.RoleGuid });
                     table.ForeignKey(
-                        name: "FK_RolePermissions_Permission_PermissionGuid",
+                        name: "FK_RolePermissions_Permissions_PermissionGuid",
                         column: x => x.PermissionGuid,
-                        principalTable: "Permission",
-                        principalColumn: "Id",
+                        principalTable: "Permissions",
+                        principalColumn: "PermissionId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_RolePermissions_Roles_RoleGuid",
                         column: x => x.RoleGuid,
                         principalTable: "Roles",
                         principalColumn: "RoleGuid",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "PhoneNumber",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    AddressRegion = table.Column<long>(type: "bigint", nullable: false),
-                    PhoneCode = table.Column<string>(type: "text", nullable: false),
-                    UserGuid = table.Column<Guid>(type: "uuid", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PhoneNumber", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_PhoneNumber_User_UserGuid",
-                        column: x => x.UserGuid,
-                        principalTable: "User",
-                        principalColumn: "user_guid",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -288,20 +273,15 @@ namespace Identity.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_GroupPermissions_RoleGroupGuid",
-                table: "GroupPermissions",
-                column: "RoleGroupGuid");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PhoneNumber_UserGuid",
-                table: "PhoneNumber",
-                column: "UserGuid",
+                name: "IX_NotClient_client_id",
+                table: "NotClient",
+                column: "client_id",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_RoleGroupRoles_RoleGuid",
-                table: "RoleGroupRoles",
-                column: "RoleGuid");
+                name: "IX_RoleGroupPermissions_RoleGroupGuid",
+                table: "RoleGroupPermissions",
+                column: "RoleGroupGuid");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RolePermissions_RoleGuid",
@@ -336,16 +316,13 @@ namespace Identity.Infrastructure.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "GroupPermissions");
+                name: "ClientRequest");
 
             migrationBuilder.DropTable(
                 name: "NotClient");
 
             migrationBuilder.DropTable(
-                name: "PhoneNumber");
-
-            migrationBuilder.DropTable(
-                name: "RoleGroupRoles");
+                name: "RoleGroupPermissions");
 
             migrationBuilder.DropTable(
                 name: "RolePermissions");
@@ -363,7 +340,7 @@ namespace Identity.Infrastructure.Migrations
                 name: "RoleGroups");
 
             migrationBuilder.DropTable(
-                name: "Permission");
+                name: "Permissions");
 
             migrationBuilder.DropTable(
                 name: "Roles");

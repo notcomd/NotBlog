@@ -17,7 +17,7 @@ public class GithubAuthService(
     {
         var builder = new UriBuilder("https://github.com/login/oauth/authorize")
         {
-            Query = $"client_id={Uri.EscapeDataString(clientId)}" + $"state={Guid.CreateVersion7()}"
+            Query = $"client_id={Uri.EscapeDataString(clientId)}" + $"?state={Guid.CreateVersion7()}"
         };
         return builder.Uri.ToString();
     }

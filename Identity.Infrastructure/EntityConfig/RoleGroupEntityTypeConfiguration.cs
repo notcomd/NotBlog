@@ -12,12 +12,10 @@ public class RoleGroupEntityTypeConfiguration : IEntityTypeConfiguration<RoleGro
 
         builder.Ignore(g => g.DomainEventbus);
 
-        // 多对多: RoleGroup ↔ Roles（组包含角色）
-        builder.HasMany(g => g.Roles)
-            .WithMany(r => r.RoleGroups)
-            .UsingEntity<Dictionary<string, object>>("RoleGroupRoles",
-                j => j.HasOne<Roles>().WithMany().HasForeignKey("RoleGuid"),
-                j => j.HasOne<RoleGroup>().WithMany().HasForeignKey("RoleGroupGuid"));
+        // Guid 列表引用 Roles（通过 ID 引用，不再持有对象引用，避免双向循环依赖）
+        builder.Property(g => g.RoleGuids)
+            .HasColumnName("role_guids")
+            .HasColumnType("uuid[]");
 
         // 多对多: RoleGroup ↔ Permission（组拥有权限）
         builder.HasMany(g => g.Permissions)

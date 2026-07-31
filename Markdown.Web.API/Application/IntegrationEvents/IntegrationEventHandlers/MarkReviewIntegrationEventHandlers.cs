@@ -1,11 +1,9 @@
-using Markdown.Web.API.Application.IntegrationEvents;
-using Notcomd.EventBus.Core;
-using Notcomd.EventBus.Extension; 
 
-namespace Markdown.Web.API.Application.IntegrationEventHandlers;
+
+namespace Markdown.Web.API.Application.IntegrationEvents.IntegrationEventHandlers;
 
 /// <summary>
-///     MarkReview 创建集成事件处理器
+///MarkReview 创建集成事件处理器
 /// </summary>
 [EventBusName("MarkReviewCreated")]
 public class MarkReviewCreatedEventHandler : JsonIntegrationEventHandler<MarkReviewCreatedIntegrationEvent>
@@ -21,7 +19,7 @@ public class MarkReviewCreatedEventHandler : JsonIntegrationEventHandler<MarkRev
 }
 
 /// <summary>
-///     MarkReview 删除集成事件处理器
+///MarkReview 删除集成事件处理器
 /// </summary>
 [EventBusName("MarkReviewDeleted")]
 public class MarkReviewDeletedEventHandler : JsonIntegrationEventHandler<MarkReviewDeletedIntegrationEvent>
@@ -36,7 +34,7 @@ public class MarkReviewDeletedEventHandler : JsonIntegrationEventHandler<MarkRev
 }
 
 /// <summary>
-///     MarkReview 点赞集成事件处理器
+///MarkReview 点赞集成事件处理器
 /// </summary>
 [EventBusName("MarkReviewLiked")]
 public class MarkReviewLikedEventHandler : JsonIntegrationEventHandler<MarkReviewLikedIntegrationEvent>
@@ -51,7 +49,7 @@ public class MarkReviewLikedEventHandler : JsonIntegrationEventHandler<MarkRevie
 }
 
 /// <summary>
-///     子评论添加集成事件处理器
+///MarkReview 添加子评论集成事件处理器
 /// </summary>
 [EventBusName("ChildReviewAdded")]
 public class ChildReviewAddedEventHandler : JsonIntegrationEventHandler<ChildReviewAddedIntegrationEvent>

@@ -6,7 +6,8 @@ builder.AddCacheMemory("Redis");
 
 builder.AddRabbitMQClient("EventBus");
 
-builder.Services.AddNotEmail(opt => { builder.Configuration.GetSection("NotEmail").Bind(opt); });
+builder.Services.AddNotEmail(opt => 
+{ builder.Configuration.GetSection("NotEmail").Bind(opt); });
 
 
 #if DEBUG
@@ -91,15 +92,15 @@ if (app.Environment.IsDevelopment())
 }
 
 //登入注册端点
-app.MapGroup("api/ready").NotMapIdentityApi();
+app.MapGroup("api/identity/ready").NotMapIdentityApi();
 // 权限映射端点（供网关启动时拉取）
-app.MapGroup("api/ready").MapPermissionApi();
+app.MapGroup("api/identity/permission").MapPermissionApi();
 // 注册 Github 认证 API
-app.MapGroup("api/git").GithubAuthApis();
+app.MapGroup("api/identity/git").GithubAuthApis();
 // 注册 OAuth 端点
-app.MapGroup("api/auth").MapOAuthEndpoints();
+app.MapGroup("api/identity/auth").MapOAuthEndpoints();
 //管理端点
-app.MapGroup("api/manger").MapUserManagerApi();
+app.MapGroup("api/identity/manger").MapUserManagerApi();
 
 app.MapControllers();
 

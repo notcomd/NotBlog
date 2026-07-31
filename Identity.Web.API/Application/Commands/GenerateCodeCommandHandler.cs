@@ -7,7 +7,7 @@ public class GenerateCodeCommandHandler(
     ILogger<GenerateCodeCommandHandler> logger,
     IEmailCodeSend emailCodeSend,
     IRedisCacheService redisCacheService)
-    : NotMediator.IRequestHandler<GenerateCodeCommand, string>
+    : IRequestHandler<GenerateCodeCommand, string>
 {
     public async Task<string> Handler(GenerateCodeCommand request, CancellationToken cancellationToken)
     {
@@ -25,7 +25,7 @@ public class GenerateCodeCommandHandler(
 
             logger.LogInformation("[{Time}] 创建验证码: {Code}", DateTime.UtcNow, code);
 
-            await emailCodeSend.SendEmailCodeAsync(request.Email, code);
+            await emailCodeSend.SendEmailCodeAsync(request.Email,  "登录验证码", code);
 
             logger.LogInformation("[{Time}] 验证码已发送至: {Email}", DateTime.UtcNow, request.Email);
 

@@ -7,9 +7,10 @@ public static class UserManagerApi
 {
     public static RouteGroupBuilder MapUserManagerApi(this RouteGroupBuilder routeBuilder)
     {
-        var route = routeBuilder.MapGroup("/UserManager").WithHttpLogging(HttpLoggingFields.All);
+        var route = routeBuilder.MapGroup("/user-manager").WithHttpLogging(HttpLoggingFields.All);
 
-
+        route.MapGet("/GetUserInfo", GetUserInfo).WithHttpLogging(HttpLoggingFields.All);
+        route.MapGet("/GetUserAllAsync", GetUserAllAsync).WithHttpLogging(HttpLoggingFields.All);
         return route;
     }
 

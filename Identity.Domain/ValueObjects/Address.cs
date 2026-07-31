@@ -1,4 +1,4 @@
-﻿namespace Identity.Domain.Entities.UserAggregate;
+namespace Identity.Domain.ValueObjects;
 
 public sealed class Address : ValueObject
 {

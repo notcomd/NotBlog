@@ -71,8 +71,6 @@ F:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\Aspire.RabbitMQ.Client.dll
 F:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\HealthChecks.Rabbitmq.dll
 F:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\RabbitMQ.Client.dll
 F:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\Dynamic.Json.dll
-F:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\Evenbus.dll
-F:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\Evenbus.pdb
 f:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\DomainInfrastructure.dll
 f:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\DomainCommons.dll
 f:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\DomainInfrastructure.pdb
@@ -85,3 +83,5 @@ f:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\Microsoft.IdentityModel.Protocols.
 f:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
 f:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\Microsoft.IdentityModel.Tokens.dll
 f:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\System.IdentityModel.Tokens.Jwt.dll
+F:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\EventBus.dll
+F:\NotBlog\Markdown.Web.API\bin\Debug\net10.0\EventBus.pdb

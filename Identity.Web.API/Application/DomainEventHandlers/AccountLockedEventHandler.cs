@@ -1,26 +1,25 @@
-using Identity.Domain.Entities.UserAggregate;
 using Identity.Domain.Events;
-using Identity.Domain.IRepository;
-using Notcomd.NotEmail.Core;
 
 namespace Identity.Web.API.Application.DomainEventHandlers;
 
 /// <summary>
 /// 账户锁定事件处理器
-/// 
 /// 职责：
 ///   1. 发送账户锁定通知邮件
 ///   2. 记录锁定日志
 /// </summary>
+/// <remarks name="logger">日志记录器</remarks>
+/// <remarks name="emailSender">邮箱发送器</remarks>
+/// <remarks name="userRepository">用户仓储</remarks>
 public class AccountLockedEventHandler : INotificationHandler<AccountLockedEvent>
 {
     private readonly ILogger<AccountLockedEventHandler> _logger;
-    private readonly IEmailSender _emailSender;
+    private readonly IEmailCodeSend _emailSender;
     private readonly IUserRepository _userRepository;
 
     public AccountLockedEventHandler(
         ILogger<AccountLockedEventHandler> logger,
-        IEmailSender emailSender,
+        IEmailCodeSend emailSender,
         IUserRepository userRepository)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -30,8 +29,10 @@ public class AccountLockedEventHandler : INotificationHandler<AccountLockedEvent
 
     public async Task Handler(AccountLockedEvent notification, CancellationToken cancellationToken)
     {
+        var utcNow = DateTime.UtcNow;
+
         _logger.LogWarning("[{Time}] 处理账户锁定事件: UserGuid={UserGuid}",
-            DateTime.UtcNow, notification.UserGuid);
+            utcNow, notification.UserGuid);
 
         try
         {
@@ -40,14 +41,14 @@ public class AccountLockedEventHandler : INotificationHandler<AccountLockedEvent
             if (user is null)
             {
                 _logger.LogWarning("[{Time}] 账户锁定事件：用户未找到: UserGuid={UserGuid}",
-                    DateTime.UtcNow, notification.UserGuid);
+                    utcNow, notification.UserGuid);
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(user.UserEmail))
             {
                 _logger.LogWarning("[{Time}] 账户锁定事件：用户邮箱为空，无法发送通知: UserGuid={UserGuid}",
-                    DateTime.UtcNow, notification.UserGuid);
+                    utcNow, notification.UserGuid);
                 return;
             }
 
@@ -59,7 +60,7 @@ public class AccountLockedEventHandler : INotificationHandler<AccountLockedEvent
                     </p>
                     <div style="background: #fff3e0; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ff9800;">
                         <p style="margin: 5px 0; color: #333;"><strong>账户：</strong>{user.UserEmail}</p>
-                        <p style="margin: 5px 0; color: #333;"><strong>锁定时间：</strong>{DateTimeOffset.UtcNow:yyyy-MM-dd HH:mm:ss} UTC</p>
+                        <p style="margin: 5px 0; color: #333;"><strong>锁定时间：</strong>{utcNow:yyyy-MM-dd HH:mm:ss} UTC</p>
                         <p style="margin: 5px 0; color: #333;"><strong>预计解锁：</strong>15 分钟后</p>
                     </div>
                     <p style="color: #999; font-size: 14px;">
@@ -68,24 +69,24 @@ public class AccountLockedEventHandler : INotificationHandler<AccountLockedEvent
                 </div>
                 """;
 
-            var emailMessage = new EmailMessage(user.UserEmail, "NotBlog - 账户锁定通知", body, isHtml: true);
-            var result = await _emailSender.SendAsync(emailMessage, cancellationToken);
+            //var emailMessage = new EmailMessage(user.UserEmail, "NotBlog - 账户锁定通知", body, isHtml: true);
+            var result = await _emailSender.SendEmailCodeAsync(user.UserEmail, "NotBlog - 账户锁定通知", body);
 
-            if (result.Success)
+            if (result)
             {
                 _logger.LogInformation("[{Time}] 账户锁定通知邮件已发送: Email={Email}",
-                    DateTime.UtcNow, user.UserEmail);
+                    utcNow, user.UserEmail);
             }
             else
             {
                 _logger.LogWarning("[{Time}] 账户锁定通知邮件发送失败: Email={Email}, Error={Error}",
-                    DateTime.UtcNow, user.UserEmail, result.ErrorMessage);
+                    utcNow, user.UserEmail, result);
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "[{Time}] 账户锁定事件处理失败: UserGuid={UserGuid}",
-                DateTime.UtcNow, notification.UserGuid);
+                utcNow, notification.UserGuid);
         }
     }
 }

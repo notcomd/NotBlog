@@ -1,5 +1,3 @@
-using Notcomd.EventBus.Core;
-
 namespace Markdown.Web.API.Application.IntegrationEvents;
 
 /// <summary>

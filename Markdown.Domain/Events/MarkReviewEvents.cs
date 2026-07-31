@@ -1,6 +1,3 @@
-using Markdown.Domain.Entities;
-using NotMediator;
-
 namespace Markdown.Domain.Events;
 
 /// <summary>

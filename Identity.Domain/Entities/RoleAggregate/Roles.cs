@@ -1,7 +1,10 @@
 namespace Identity.Domain.Entities.RoleAggregate;
 
 /// <summary>
-/// 角色实体
+/// 角色实体（聚合根）
+/// 
+/// 与 RoleGroup 的关系：通过 RoleGroupGuids（Guid 列表）引用所属角色组 ID，
+/// 不再直接持有 RoleGroup 对象引用，避免聚合根间双向循环依赖。
 /// </summary>
 public class Roles : Entity, IAggregateRoot
 {
@@ -10,7 +13,7 @@ public class Roles : Entity, IAggregateRoot
         RoleGuid = Guid.CreateVersion7();
         UserGuid = new HashSet<Guid>();
         Permissions = new List<Permission>();
-        RoleGroups = new List<RoleGroup>();
+        RoleGroupGuids = new List<Guid>();
         CreateRole = DateTimeOffset.UtcNow;
         IsDeleted = false;
         RoleStatus = RoleStatus.Normal;
@@ -60,9 +63,9 @@ public class Roles : Entity, IAggregateRoot
     public ICollection<Permission> Permissions { get; private set; }
 
     /// <summary>
-    /// 角色所属组
+    /// 角色所属组的 Guid 列表（通过 ID 引用 RoleGroup 聚合根，避免双向循环依赖）
     /// </summary>
-    public ICollection<RoleGroup> RoleGroups { get; private set; }
+    public List<Guid> RoleGroupGuids { get; private set; }
 
     public void AddUserGuid(Guid userGuid)
     {
@@ -86,6 +89,25 @@ public class Roles : Entity, IAggregateRoot
     {
         if (!Permissions.Remove(permission))
             throw new InvalidOperationException("Permission does not exist");
+    }
+
+    /// <summary>
+    /// 将角色加入指定的角色组
+    /// </summary>
+    public void AddToRoleGroup(Guid roleGroupGuid)
+    {
+        if (RoleGroupGuids.Contains(roleGroupGuid))
+            throw new InvalidOperationException("Role group already assigned");
+        RoleGroupGuids.Add(roleGroupGuid);
+    }
+
+    /// <summary>
+    /// 将角色从角色组中移除
+    /// </summary>
+    public void RemoveFromRoleGroup(Guid roleGroupGuid)
+    {
+        if (!RoleGroupGuids.Remove(roleGroupGuid))
+            throw new InvalidOperationException("Role group not found");
     }
 
     public void ResetByRoleAuthority(RoleAuthority roleAuthority)

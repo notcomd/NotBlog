@@ -42,14 +42,14 @@ public sealed class RedisConnectionProvider : IRedisConnectionProvider
     public async Task<IDatabase> GetDatabaseAsync(int db = -1)
     {
         var conn = GetConnection();
-        return conn.GetDatabase(db);
+        return db >= 0 ? conn.GetDatabase(db) : conn.GetDatabase();
     }
 
     
     public async Task<IDatabase> GetDatabaseAsync(string instanceName, int db = -1)
     {
         var conn = GetConnection(instanceName);
-        return conn.GetDatabase(db);
+        return db >= 0 ? conn.GetDatabase(db) : conn.GetDatabase();
     }
 
     

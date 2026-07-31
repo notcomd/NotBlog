@@ -1,16 +1,17 @@
-using Markdown.Domain.Entities;
-using Markdown.Domain.IRepository;
-using Markdown.Domain.SeedWork;
-using Markdown.Infrastructure.EntityFramework;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+
 
 namespace Markdown.Infrastructure.Repository;
 
-public class MarkDownRepository(MarkDownDbContext markDownDbContext, ILogger<IMarkdownRepository> logger)
-    : IMarkdownRepository
+/// <summary>
+///     MarkDown 聚合根仓储实现（唯一的数据访问入口，所有聚合内实体的操作均通过聚合根进行）
+/// </summary>
+public class MarkDownRepository(
+    MarkDownDbContext markDownDbContext,
+    ILogger<MarkDownRepository> logger) : IMarkdownRepository
 {
     public IUnitOfWork UnitOfWork => markDownDbContext;
+
+    // ==================== MarkDown 聚合根查询 ====================
 
     /// <summary>
     /// 根据 GUID 查找 Markdown 文档（追踪态，用于更新操作）
@@ -23,9 +24,7 @@ public class MarkDownRepository(MarkDownDbContext markDownDbContext, ILogger<IMa
                 .FirstOrDefaultAsync(x => x.MarkDownGuid == markDownGuid);
 
             if (markdown is null)
-            {
                 logger.LogWarning("Markdown 文档不存在：{MarkDownGuid}", markDownGuid);
-            }
 
             return markdown;
         }
@@ -37,7 +36,7 @@ public class MarkDownRepository(MarkDownDbContext markDownDbContext, ILogger<IMa
     }
 
     /// <summary>
-    /// 根据 GUID 查找 Markdown 文档
+    ///     根据 GUID 查找 Markdown 文档
     /// </summary>
     public async Task<MarkDown?> FindMarkDownAsync(Guid markDownGuid)
     {
@@ -48,9 +47,7 @@ public class MarkDownRepository(MarkDownDbContext markDownDbContext, ILogger<IMa
                 .FirstOrDefaultAsync(x => x.MarkDownGuid == markDownGuid);
 
             if (markdown is null)
-            {
                 logger.LogWarning("Markdown 文档不存在：{MarkDownGuid}", markDownGuid);
-            }
 
             return markdown;
         }
@@ -62,7 +59,7 @@ public class MarkDownRepository(MarkDownDbContext markDownDbContext, ILogger<IMa
     }
 
     /// <summary>
-    /// 根据用户 GUID 查找所有 Markdown 文档
+    ///     根据用户 GUID 查找所有 Markdown 文档
     /// </summary>
     public async Task<IEnumerable<MarkDown>?> FindMarkDownsAsync(Guid userGuid)
     {
@@ -73,6 +70,7 @@ public class MarkDownRepository(MarkDownDbContext markDownDbContext, ILogger<IMa
                 .Where(x => x.MarkUserGuid == userGuid && !x.IsDelete)
                 .OrderByDescending(x => x.CreateAt)
                 .ToListAsync();
+
             logger.LogInformation("用户 {UserGuid} 共有 {Count} 篇 Markdown 文档", userGuid, markdowns.Count);
             return markdowns;
         }
@@ -95,9 +93,7 @@ public class MarkDownRepository(MarkDownDbContext markDownDbContext, ILogger<IMa
                 .FirstOrDefaultAsync(x => x.MarkDownName == markDownName && !x.IsDelete);
 
             if (markdown is null)
-            {
                 logger.LogWarning("未找到名为 {MarkDownName} 的 Markdown 文档", markDownName);
-            }
 
             return markdown;
         }
@@ -109,7 +105,7 @@ public class MarkDownRepository(MarkDownDbContext markDownDbContext, ILogger<IMa
     }
 
     /// <summary>
-    /// 根据文档名称模糊查找所有 Markdown 文档
+    ///     根据文档名称模糊查找所有 Markdown 文档
     /// </summary>
     public async Task<IEnumerable<MarkDown>?> FindMarkDownsAsync(string markDownName)
     {
@@ -132,7 +128,7 @@ public class MarkDownRepository(MarkDownDbContext markDownDbContext, ILogger<IMa
     }
 
     /// <summary>
-    /// 根据权限类型查找所有 Markdown 文档
+    ///     根据权限类型查找所有 Markdown 文档
     /// </summary>
     public async Task<IEnumerable<MarkDown>?> FindMarkDownsAsync(MarkDownAuth markDownAuth)
     {
@@ -150,6 +146,162 @@ public class MarkDownRepository(MarkDownDbContext markDownDbContext, ILogger<IMa
         catch (Exception ex)
         {
             logger.LogError(ex, "按权限查找 Markdown 文档失败：{MarkDownAuth}", markDownAuth);
+            throw;
+        }
+    }
+
+    // ==================== 评论查询（通过聚合根导航属性访问，不暴露 MarkReview 独立仓储） ====================
+
+    /// <summary>
+    ///     根据 Markdown ID 获取所有顶级评论（通过聚合根导航属性访问）
+    /// </summary>
+    public async Task<IEnumerable<MarkReview>> GetReviewsByMarkdownIdAsync(Guid markdownGuid)
+    {
+        try
+        {
+            var reviews = await markDownDbContext.Markdowns
+                .Where(x => x.MarkDownGuid == markdownGuid)
+                .SelectMany(m => m.MarkReviews)
+                .Where(r => r.MarkAggregateRootGuid == null)
+                .OrderByDescending(r => r.MarkReviewTime)
+                .ToListAsync();
+
+            logger.LogInformation("获取到 Markdown {MarkdownGuid} 的 {Count} 条评论", markdownGuid, reviews.Count);
+            return reviews;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "获取评论失败：{MarkdownGuid}", markdownGuid);
+            throw;
+        }
+    }
+
+    /// <summary>
+    ///     根据评论 ID 获取评论（通过聚合根查找）
+    /// </summary>
+    public async Task<MarkReview?> GetReviewByIdAsync(Guid reviewGuid)
+    {
+        try
+        {
+            var review = await markDownDbContext.Markdowns
+                .SelectMany(m => m.MarkReviews)
+                .FirstOrDefaultAsync(r => r.MarkReviewGuid == reviewGuid);
+
+            if (review is null)
+                logger.LogWarning("评论不存在：{ReviewGuid}", reviewGuid);
+
+            return review;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "获取评论失败：{ReviewGuid}", reviewGuid);
+            throw;
+        }
+    }
+
+    /// <summary>
+    ///     获取某条评论的所有子评论（通过聚合根查找）
+    /// </summary>
+    public async Task<IEnumerable<MarkReview>> GetChildReviewsAsync(Guid parentReviewGuid)
+    {
+        try
+        {
+            var childReviews = await markDownDbContext.Markdowns
+                .SelectMany(m => m.MarkReviews)
+                .Where(r => r.MarkAggregateRootGuid == parentReviewGuid)
+                .OrderBy(r => r.MarkReviewTime)
+                .ToListAsync();
+
+            logger.LogInformation("获取到父评论 {ParentGuid} 的 {Count} 条子评论", parentReviewGuid, childReviews.Count);
+            return childReviews;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "获取子评论失败：{ParentGuid}", parentReviewGuid);
+            throw;
+        }
+    }
+
+    // ==================== 聚合根持久化操作（增删改） ====================
+
+    /// <summary>
+    ///     添加新的 MarkDown 聚合根
+    /// </summary>
+    public async Task<MarkDown> AddAsync(MarkDown markDown)
+    {
+        ArgumentNullException.ThrowIfNull(markDown);
+
+        try
+        {
+            await markDownDbContext.Markdowns.AddAsync(markDown);
+            logger.LogInformation("MarkDown 聚合根已添加：{MarkDownGuid}", markDown.MarkDownGuid);
+            return markDown;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "添加 MarkDown 聚合根失败：{MarkDownGuid}", markDown.MarkDownGuid);
+            throw;
+        }
+    }
+
+    /// <summary>
+    ///     更新 MarkDown 聚合根（EF Core 追踪变更，由 UnitOfWork 统一持久化）
+    /// </summary>
+    public Task<MarkDown> UpdateAsync(MarkDown markDown)
+    {
+        ArgumentNullException.ThrowIfNull(markDown);
+
+        try
+        {
+            // EF Core 变更追踪器自动检测实体状态，无需显式调用 Update
+            markDownDbContext.Markdowns.Update(markDown);
+            logger.LogInformation("MarkDown 聚合根已标记更新：{MarkDownGuid}", markDown.MarkDownGuid);
+            return Task.FromResult(markDown);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "更新 MarkDown 聚合根失败：{MarkDownGuid}", markDown.MarkDownGuid);
+            throw;
+        }
+    }
+
+    /// <summary>
+    ///     删除 MarkDown 聚合根（软删除，通过聚合根方法执行）
+    /// </summary>
+    public async Task DeleteAsync(MarkDown markDown)
+    {
+        ArgumentNullException.ThrowIfNull(markDown);
+
+        try
+        {
+            // 通过聚合根方法执行软删除，维护领域一致性
+            markDown.SoftDelete();
+            logger.LogInformation("MarkDown 聚合根已软删除：{MarkDownGuid}", markDown.MarkDownGuid);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "删除 MarkDown 聚合根失败：{MarkDownGuid}", markDown.MarkDownGuid);
+            throw;
+        }
+    }
+
+    /// <summary>
+    ///     根据 GUID 删除 MarkDown 聚合根（软删除）
+    /// </summary>
+    public async Task DeleteAsync(Guid markDownGuid)
+    {
+        try
+        {
+            var markDown = await GetMarkDownTrackedAsync(markDownGuid)
+                ?? throw new KeyNotFoundException($"MarkDown 文档不存在：{markDownGuid}");
+
+            // 通过聚合根方法执行软删除，维护领域一致性
+            markDown.SoftDelete();
+            logger.LogInformation("MarkDown 聚合根已软删除：{MarkDownGuid}", markDownGuid);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "删除 MarkDown 聚合根失败：{MarkDownGuid}", markDownGuid);
             throw;
         }
     }

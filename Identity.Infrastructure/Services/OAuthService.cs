@@ -1,4 +1,4 @@
-﻿using System.Net.Http.Headers;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Web;
 using Identity.Domain.Dto.OAuth;
@@ -435,7 +435,7 @@ public class OAuthService(
         if (user is null)
             return Array.Empty<RoleAuthority>();
 
-        var roles = await userRoleRepository.FindByUserRoleAsync(user.UserRoleGuid);
+        var roles = await userRoleRepository.FindByUserRoleAsync(user.UserRoleGuid.ToHashSet());
         if (roles is null || roles.Count == 0)
             return Array.Empty<RoleAuthority>();
 

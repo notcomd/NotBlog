@@ -1,6 +1,3 @@
-using Notcomd.EventBus.Core;
-using NotMediator;
-
 namespace Markdown.Web.API.Application.Behaviors;
 
 public class LoggerBehavior<TRequest, TResponse>(ILogger<LoggerBehavior<TRequest, TResponse>> logger)

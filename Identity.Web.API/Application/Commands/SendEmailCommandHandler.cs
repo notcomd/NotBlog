@@ -2,16 +2,25 @@ using Identity.Infrastructure.Idempotent;
 
 namespace Identity.Web.API.Application.Commands;
 
-public class SendEmailCommandHandler(IEmailSender emailSender)
-    : NotMediator.IRequestHandler<SendEmailCommand, bool>
+public class SendEmailCommandHandler(IEmailCodeSend emailSender,ILogger<SendEmailCommandHandler> logger)
+    :IRequestHandler<SendEmailCommand, bool>
 {
     public async Task<bool> Handler(SendEmailCommand request, CancellationToken cancellationToken)
     {
-        var emailMessage = new EmailMessage(request.ToEmail, request.Subject, request.Body);
+        logger.LogInformation($"发送邮件请求，收件人：{request.ToEmail}，主题：{request.Subject}，内容：{request.Body}");
 
-        var result = await emailSender.SendAsync(emailMessage, cancellationToken);
+       // var emailMessage = new EmailMessage(request.ToEmail, request.Subject, request.Body, isHtml: false);
 
-        return result.Success;
+        var result = await emailSender.SendEmailCodeAsync(request.ToEmail, 
+        request.Subject, request.Body);
+
+        if (!result)
+        {
+            logger.LogError($"发送邮件失败，收件人：{request.ToEmail}，主题：{request.Subject}，内容：{request.Body}");
+            throw new Exception("发送邮件失败");
+        }
+        logger.LogInformation($"发送邮件成功，收件人：{request.ToEmail}，主题：{request.Subject}，内容：{request.Body}");
+        return result;
     }
 }
 

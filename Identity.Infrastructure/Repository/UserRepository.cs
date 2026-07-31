@@ -7,7 +7,11 @@ public class UserRepository(IdentityDbContext userDbContext, IDistributedCache d
 
     public async ValueTask<User?> FindOneByUserAsync(Guid guid)
     {
-        return await userDbContext.Users.Where(en => en.UserGuid == guid)
+        return await userDbContext.Users
+            .Include(u => u.UserSafety)
+            .Include(u => u.UserAccessFail)
+            .AsSplitQuery()
+            .Where(en => en.UserGuid == guid)
             .SingleOrDefaultAsync();
     }
 
@@ -16,6 +20,9 @@ public class UserRepository(IdentityDbContext userDbContext, IDistributedCache d
         if (phoneNumber is null)
             throw new ArgumentNullException(nameof(phoneNumber));
         return await userDbContext.Users
+            .Include(u => u.UserSafety)
+            .Include(u => u.UserAccessFail)
+            .AsSplitQuery()
             .Where(en => en.PhoneNumber!.AddressRegion == phoneNumber.AddressRegion &&
                          en.PhoneNumber.PhoneCode == phoneNumber.PhoneCode)
             .SingleOrDefaultAsync();
@@ -30,9 +37,15 @@ public class UserRepository(IdentityDbContext userDbContext, IDistributedCache d
 
     public async ValueTask<User?> FindOneByUserAsync(string email)
     {
+        if (string.IsNullOrWhiteSpace(email))
+            return null;
+
         return await userDbContext.Users
-            .Where(en => en.UserEmail.Equals(email))
-            .SingleOrDefaultAsync();
+            .Include(u => u.UserSafety)
+            .Include(u => u.UserAccessFail)
+            .AsSplitQuery()
+            .Where(en => en.UserEmail == email)
+            .FirstOrDefaultAsync();
     }
 
     public async ValueTask AddByLoginHistoryAsync(PhoneNumber phoneNumber, string message)

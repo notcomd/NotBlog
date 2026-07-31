@@ -51,9 +51,9 @@ public class RedisInstanceOptions
     public string ConnectionString { get; set; } = "localhost:6379";
 
     /// <summary>
-    /// 默认数据库索引。
+    /// 默认数据库索引（Redis 首个逻辑数据库）。
     /// </summary>
-    public int DefaultDatabase { get; set; } = -1;
+    public int DefaultDatabase { get; set; } = 0;
 
     /// <summary>
     /// 连接超时时间（毫秒）。

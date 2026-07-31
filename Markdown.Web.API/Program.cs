@@ -1,9 +1,7 @@
 using System.Reflection;
-using Markdown.Infrastructure.EntityFramework;
+using Markdown.Infrastructure;
 using Markdown.Web.API.Apis;
 using NotBlog.ServiceDefaults;
-using Notcomd.EventBus.Extension;
-using NotMediator;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,6 +26,9 @@ builder.Services.AddAuthentication("Bearer")
 
 // 配置 PostgreSQL DbContext
 builder.Services.AddNpgsql<MarkDownDbContext>("MarkDownPostgres");
+
+// 配置 Markdown 基础设施（仓储等）
+builder.Services.AddMarkdownInfrastructure();
 
 // 配置 NotMediator（领域事件中介）
 builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
@@ -59,9 +60,13 @@ builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddProblemDetails();
 
+
+
 // 当前用户服务
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<Markdown.Domain.IServices.ICurrentUserService, Markdown.Web.API.Services.CurrentUserService>();
+
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 

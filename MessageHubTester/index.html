@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MessageHub 测试客户端</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <style>
+        :root {
+            --bg: #1a1a2e;
+            --card: #16213e;
+            --accent: #0f3460;
+            --highlight: #e94560;
+            --text: #eee;
+            --text-dim: #aaa;
+            --border: #2a2a4a;
+            --success: #2ecc71;
+            --warn: #f39c12;
+            --error: #e74c3c;
+            --info: #3498db;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 340px;
+            background: var(--card);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h2 {
+            font-size: 18px;
+            color: var(--highlight);
+            margin-bottom: 4px;
+        }
+
+        .section {
+            background: var(--accent);
+            border-radius: 8px;
+            padding: 14px;
+        }
+
+        .section h3 {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-bottom: 4px;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 8px 10px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text);
+            font-size: 13px;
+            font-family: inherit;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--highlight);
+            outline: none;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .row>* {
+            flex: 1;
+        }
+
+        button {
+            padding: 8px 14px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.85;
+        }
+
+        button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .btn-connect {
+            background: var(--success);
+            color: #fff;
+            width: 100%;
+            padding: 10px;
+        }
+
+        .btn-disconnect {
+            background: var(--error);
+            color: #fff;
+            width: 100%;
+            padding: 10px;
+        }
+
+        .btn-action {
+            background: var(--info);
+            color: #fff;
+            margin-top: 6px;
+            width: 100%;
+        }
+
+        .btn-send {
+            background: var(--highlight);
+            color: #fff;
+            margin-top: 6px;
+            width: 100%;
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        .status-connected {
+            background: var(--success);
+            box-shadow: 0 0 6px var(--success);
+        }
+
+        .status-disconnected {
+            background: var(--error);
+            box-shadow: 0 0 6px var(--error);
+        }
+
+        .status-connecting {
+            background: var(--warn);
+            box-shadow: 0 0 6px var(--warn);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        .log-area {
+            flex: 1;
+            background: var(--bg);
+            margin: 16px;
+            border-radius: 8px;
+            padding: 16px;
+            overflow-y: auto;
+            font-family: 'Cascadia Code', 'Consolas', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .log-entry {
+            padding: 4px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .log-time {
+            color: var(--text-dim);
+        }
+
+        .log-in {
+            color: var(--info);
+        }
+
+        .log-out {
+            color: var(--warn);
+        }
+
+        .log-err {
+            color: var(--error);
+        }
+
+        .log-ok {
+            color: var(--success);
+        }
+
+        .message-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .message-card .sender {
+            color: var(--highlight);
+            font-weight: 600;
+        }
+
+        .message-card .time {
+            color: var(--text-dim);
+            font-size: 11px;
+            float: right;
+        }
+
+        .message-card .body {
+            margin-top: 6px;
+            color: var(--text);
+        }
+
+        .message-card .meta {
+            color: var(--text-dim);
+            font-size: 11px;
+            margin-top: 4px;
+        }
+
+        .message-card .recalled {
+            color: var(--warn);
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar: Controls -->
+    <div class="sidebar">
+        <h2>MessageHub 测试工具</h2>
+
+        <!-- Connection -->
+        <div class="section">
+            <h3>连接配置</h3>
+            <label>Hub URL</label>
+            <input id="hubUrl" type="text" value="https://localhost:9092/MessageHub" placeholder="Hub 地址">
+
+            <label style="margin-top:8px;">JWT Token (Bearer)</label>
+            <textarea id="jwtToken" placeholder="粘贴 JWT access_token..." rows="3"></textarea>
+
+            <div style="margin-top:8px;">
+                <span class="status-dot status-disconnected" id="statusDot"></span>
+                <span id="statusText" style="font-size:12px;">未连接</span>
+            </div>
+
+            <div class="row" style="margin-top:8px;">
+                <button class="btn-connect" id="btnConnect" onclick="connect()">连接</button>
+                <button class="btn-disconnect" id="btnDisconnect" onclick="disconnect()" disabled>断开</button>
+            </div>
+        </div>
+
+        <!-- SendMessage -->
+        <div class="section">
+            <h3>发送消息 (SendMessage)</h3>
+            <div class="row">
+                <div><label>SessionId</label><input id="msgSessionId" placeholder="Guid"></div>
+                <div><label>类型</label>
+                    <select id="msgType">
+                        <option value="0">MessageText</option>
+                        <option value="1">MessageImage</option>
+                        <option value="2">MessageVideo</option>
+                        <option value="3">MessageAudio</option>
+                        <option value="4">MessageFile</option>
+                        <option value="6">MessageLocation</option>
+                        <option value="7">MessageLink</option>
+                        <option value="8">MessageExpression</option>
+                    </select>
+                </div>
+            </div>
+            <label style="margin-top:6px;">Content</label>
+            <input id="msgContent" placeholder="消息内容">
+            <label style="margin-top:6px;">MediaUrl</label>
+            <input id="msgMediaUrl" placeholder="https://...">
+            <button class="btn-send" onclick="sendMessage()">SendMessage</button>
+        </div>
+
+        <!-- Other Actions -->
+        <div class="section">
+            <h3>其他操作</h3>
+            <div class="row">
+                <button class="btn-action" onclick="joinSession()">JoinSession</button>
+                <button class="btn-action" onclick="leaveSession()">LeaveSession</button>
+            </div>
+            <div class="row" style="margin-top:6px;">
+                <button class="btn-action" onclick="markAsRead()">MarkAsRead</button>
+                <button class="btn-action" onclick="recallMessage()">RecallMessage</button>
+            </div>
+            <button class="btn-action" onclick="sendTypingIndicator()" style="margin-top:6px;">SendTypingIndicator</button>
+        </div>
+    </div>
+
+    <!-- Main: Log + Messages -->
+    <div class="main">
+        <div class="log-area" id="logArea">
+            <div class="log-entry">
+                <span class="log-time">[--:--:--]</span>
+                <span>等待连接...</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ─── State ───
+        let connection = null;
+        const hubUrl = document.getElementById('hubUrl');
+        const jwtToken = document.getElementById('jwtToken');
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const btnConnect = document.getElementById('btnConnect');
+        const btnDisconnect = document.getElementById('btnDisconnect');
+        const logArea = document.getElementById('logArea');
+
+        // ─── Helpers ───
+        function log(msg, cls = '') {
+            const now = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span class="log-time">[${now}]</span> <span class="${cls}">${msg}</span>`;
+            logArea.appendChild(entry);
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+
+        function setStatus(state) {
+            statusDot.className = 'status-dot';
+            if (state === 'connected') {
+                statusDot.classList.add('status-connected');
+                statusText.textContent = '已连接';
+                btnConnect.disabled = true;
+                btnDisconnect.disabled = false;
+            } else if (state === 'connecting') {
+                statusDot.classList.add('status-connecting');
+                statusText.textContent = '连接中...';
+                btnConnect.disabled = true;
+                btnDisconnect.disabled = true;
+            } else {
+                statusDot.classList.add('status-disconnected');
+                statusText.textContent = '未连接';
+                btnConnect.disabled = false;
+                btnDisconnect.disabled = true;
+            }
+        }
+
+        function guidOrRandom(id) {
+            return id && /^[0-9a-fA-F-]{36}$/.test(id) ? id : crypto.randomUUID();
+        }
+
+        // ─── Connect / Disconnect ───
+        async function connect() {
+            const url = hubUrl.value.trim();
+            if (!url) return log('请输入 Hub URL', 'log-err');
+
+            setStatus('connecting');
+            log(`正在连接 ${url} ...`, 'log-in');
+
+            connection = new signalR.HubConnectionBuilder()
+                .withUrl(url)
+                .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
+                .configureLogging(signalR.LogLevel.Information)
+                .build();
+
+            // ── 订阅服务端推送 ──
+            connection.on('ReceiveMessage', (message) => {
+                log(`<b>📩 ReceiveMessage</b> | Sender: ${message.senderId} | Type: ${message.messageType} | Content: ${message.content?.substring(0, 80) || '(空)'}`, 'log-in');
+                console.log('ReceiveMessage:', message);
+            });
+
+            connection.on('MessageRecalled', (messageId) => {
+                log(`<b>🔙 MessageRecalled</b> | ID: ${messageId}`, 'log-out');
+            });
+
+            connection.on('MessageRead', (messageId, readerId) => {
+                log(`<b>👁 MessageRead</b> | Msg: ${messageId} | Reader: ${readerId}`, 'log-ok');
+            });
+
+            connection.on('UserOnline', (userId) => {
+                log(`<b>🟢 UserOnline</b> | User: ${userId}`, 'log-in');
+            });
+
+            connection.on('UserOffline', (userId) => {
+                log(`<b>🔴 UserOffline</b> | User: ${userId}`, 'log-out');
+            });
+
+            connection.on('TypingIndicator', (sessionId, userId) => {
+                log(`<b>⌨ TypingIndicator</b> | Session: ${sessionId} | User: ${userId}`, 'log-out');
+            });
+
+            connection.on('UnreadCountUpdated', (sessionId, count) => {
+                log(`<b>📊 UnreadCountUpdated</b> | Session: ${sessionId} | Count: ${count}`, 'log-ok');
+            });
+
+            connection.onreconnecting((err) => {
+                log(`⚠ 正在重连... (${err?.message || '未知错误'})`, 'log-err');
+                setStatus('connecting');
+            });
+
+            connection.onreconnected((connectionId) => {
+                log(`✅ 重连成功 | ID: ${connectionId}`, 'log-ok');
+                setStatus('connected');
+            });
+
+            connection.onclose((err) => {
+                log(`❌ 连接已关闭 (${err?.message || '正常关闭'})`, 'log-err');
+                setStatus('disconnected');
+                connection = null;
+            });
+
+            try {
+                await connection.start();
+                log(`✅ 连接成功 | ID: ${connection.connectionId}`, 'log-ok');
+                setStatus('connected');
+            } catch (err) {
+                log(`❌ 连接失败: ${err.message}`, 'log-err');
+                setStatus('disconnected');
+                connection = null;
+            }
+        }
+
+        async function disconnect() {
+            if (connection) {
+                await connection.stop();
+                connection = null;
+                log('⏏ 手动断开连接', 'log-out');
+                setStatus('disconnected');
+            }
+        }
+
+        function ensureConnected() {
+            if (!connection || connection.state !== signalR.HubConnectionState.Connected) {
+                log('⚠ 尚未连接，请先连接', 'log-err');
+                return false;
+            }
+            return true;
+        }
+
+        // ── Hub Actions ──
+        async function sendMessage() {
+            if (!ensureConnected()) return;
+            const sessionId = guidOrRandom(document.getElementById('msgSessionId').value);
+            const msgType = parseInt(document.getElementById('msgType').value);
+            const content = document.getElementById('msgContent').value;
+            const mediaUrl = document.getElementById('msgMediaUrl').value;
+
+            const request = {
+                sessionId: sessionId,
+                messageType: msgType,
+                content: content || null,
+                mediaUrl: mediaUrl || null,
+                thumbnailUrl: null,
+                fileName: mediaUrl ? mediaUrl.split('/').pop() : null,
+                fileSize: null,
+                mimeType: null,
+                duration: null,
+                caption: null,
+                latitude: null,
+                longitude: null,
+                locationName: null,
+                linkUrl: null,
+                linkTitle: null,
+                linkDescription: null,
+                expressionCode: null,
+                replyToMessageId: null
+            };
+
+            log(`📤 SendMessage → Session: ${sessionId} | Type: ${msgType}`, 'log-out');
+            try {
+                await connection.invoke('SendMessage', sessionId, request);
+                log('✅ SendMessage 已发送', 'log-ok');
+            } catch (err) {
+                log(`❌ SendMessage 失败: ${err.message}`, 'log-err');
+            }
+        }
+
+        async function joinSession() {
+            if (!ensureConnected()) return;
+            const sessionId = prompt('输入 SessionId (Guid):', '');
+            if (!sessionId) return;
+            log(`📥 JoinSession → ${sessionId}`, 'log-out');
+            try {
+                await connection.invoke('JoinSession', sessionId);
+                log('✅ JoinSession 成功', 'log-ok');
+            } catch (err) {
+                log(`❌ JoinSession 失败: ${err.message}`, 'log-err');
+            }
+        }
+
+        async function leaveSession() {
+            if (!ensureConnected()) return;
+            const sessionId = prompt('输入 SessionId (Guid):', '');
+            if (!sessionId) return;
+            log(`📤 LeaveSession → ${sessionId}`, 'log-out');
+            try {
+                await connection.invoke('LeaveSession', sessionId);
+                log('✅ LeaveSession 成功', 'log-ok');
+            } catch (err) {
+                log(`❌ LeaveSession 失败: ${err.message}`, 'log-err');
+            }
+        }
+
+        async function markAsRead() {
+            if (!ensureConnected()) return;
+            const messageId = prompt('输入 MessageId (Guid):', '');
+            if (!messageId) return;
+            log(`👁 MarkAsRead → ${messageId}`, 'log-out');
+            try {
+                await connection.invoke('MarkAsRead', messageId);
+                log('✅ MarkAsRead 成功', 'log-ok');
+            } catch (err) {
+                log(`❌ MarkAsRead 失败: ${err.message}`, 'log-err');
+            }
+        }
+
+        async function recallMessage() {
+            if (!ensureConnected()) return;
+            const messageId = prompt('输入 MessageId (Guid):', '');
+            if (!messageId) return;
+            log(`🔙 RecallMessage → ${messageId}`, 'log-out');
+            try {
+                await connection.invoke('RecallMessage', messageId);
+                log('✅ RecallMessage 成功', 'log-ok');
+            } catch (err) {
+                log(`❌ RecallMessage 失败: ${err.message}`, 'log-err');
+            }
+        }
+
+        async function sendTypingIndicator() {
+            if (!ensureConnected()) return;
+            const sessionId = prompt('输入 SessionId (Guid):', '');
+            if (!sessionId) return;
+            log(`⌨ SendTypingIndicator → ${sessionId}`, 'log-out');
+            try {
+                await connection.invoke('SendTypingIndicator', sessionId);
+                log('✅ SendTypingIndicator 成功', 'log-ok');
+            } catch (err) {
+                log(`❌ SendTypingIndicator 失败: ${err.message}`, 'log-err');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,107 +1,121 @@
-﻿﻿namespace Identity.Domain.Entities.UserAggregate;
+﻿namespace Identity.Domain.Entities.UserAggregate;
 
 /// <summary>
-/// 用户访问失败
+/// 用户登录失败追踪与锁定策略
+/// 
+/// 策略: 连续失败 5 次后锁定 15 分钟；登录成功后自动清零。
+/// 锁定过期后下次尝试自动解除。
 /// </summary>
 public class UserAccessFail : Entity
 {
+    private const int MaxFailedAttempts = 5;
+    private static readonly TimeSpan LockOutDuration = TimeSpan.FromMinutes(15);
+
     protected UserAccessFail()
     {
         UserAccessFailGuid = Guid.CreateVersion7();
     }
 
     /// <summary>
-    /// 用户访问失败ID
+    /// 用户访问失败记录 ID
     /// </summary>
     public Guid UserAccessFailGuid { get; init; }
 
     /// <summary>
-    /// 用户ID
+    /// 关联的用户 ID（外键）
     /// </summary>
     public Guid UserGuid { get; init; }
 
     /// <summary>
-    /// 锁定结束时间
+    /// 锁定结束时间（null = 未锁定；过期 = 自动解除）
     /// </summary>
     public DateTimeOffset? LockOutEnd { get; private set; }
 
     /// <summary>
-    /// 访问失败次数
+    /// 连续失败次数
     /// </summary>
     public int AccessFaildCount { get; private set; }
 
     /// <summary>
-    /// 锁定用户,如果LockOutEnd不为null且大于当前时间，则表示用户被锁定
+    /// 当前是否处于有效锁定状态
     /// </summary>
-    public bool IsLockOut => LockOutEnd.HasValue && LockOutEnd.Value > DateTimeOffset.UtcNow;
+    public bool IsLockedOut => LockOutEnd.HasValue && LockOutEnd.Value > DateTimeOffset.UtcNow;
 
+    /// <summary>
+    /// 锁定是否已过期（可自动解除）
+    /// </summary>
+    private bool IsLockExpired => LockOutEnd.HasValue && LockOutEnd.Value <= DateTimeOffset.UtcNow;
+
+    // ────────────── 工厂 ──────────────
 
     public static UserAccessFail CreateUserAccessFail(Guid userGuid)
     {
-        if (userGuid != null)
-        {
-            var userAccessFail = new UserAccessFail
-            {
-                UserAccessFailGuid = Guid.CreateVersion7(),
-                UserGuid = userGuid,
-                LockOutEnd = null,
-                AccessFaildCount = 0
-            };
-            return userAccessFail;
-        }
+        if (userGuid == Guid.Empty)
+            throw new ArgumentNullException(nameof(userGuid), "User cannot be null");
 
-        throw new ArgumentNullException(nameof(UserGuid), "User cannot be null");
+        return new UserAccessFail
+        {
+            UserAccessFailGuid = Guid.CreateVersion7(),
+            UserGuid = userGuid,
+            LockOutEnd = null,
+            AccessFaildCount = 0
+        };
+    }
+
+    // ────────────── 核心方法 ──────────────
+
+    /// <summary>
+    /// 检查是否允许登录尝试（锁定且未过期则拒绝）
+    /// </summary>
+    public bool CanLogin()
+    {
+        if (IsLockExpired)
+            AutoUnlock();
+        return !IsLockedOut;
     }
 
     /// <summary>
-    /// 验证用户访问失败
+    /// 记录一次登录失败，返回 true 表示此次触发锁定
     /// </summary>
-    /// <param name="checkByPassword">是否检查密码</param>
-    /// <returns>是否允许访问</returns>
-    public bool VerifyByAccessFaild(bool checkByPassword)
+    public bool RecordFailure()
     {
-        if (AccessFaildCount <= 5)
+        if (IsLockExpired)
+            AutoUnlock();
+
+        if (IsLockedOut)
+            return false;
+
+        AccessFaildCount++;
+
+        if (AccessFaildCount > MaxFailedAttempts)
         {
-            if (!checkByPassword)
-            {
-                AccessFaildCount++;
-                if (AccessFaildCount > 5)
-                {
-                    LockOutEnd = DateTimeOffset.UtcNow.AddMinutes(15);
-                    return false; // 锁定用户
-                }
+            LockOutEnd = DateTimeOffset.UtcNow.Add(LockOutDuration);
+            return true;
+        }
 
-                return true; // 继续允许访问
-            }
+        return false;
+    }
 
+    /// <summary>
+    /// 记录登录成功，清零失败计数与锁定状态
+    /// </summary>
+    public void RecordSuccess()
+    {
+        if (IsLockExpired)
+            AutoUnlock();
+
+        if (!IsLockedOut)
+        {
             AccessFaildCount = 0;
             LockOutEnd = null;
-            return true; // 重置失败计数，允许访问
         }
-
-        return false; // 锁定用户
     }
 
-    /// <summary>
-    /// 重置用户访问失败
-    /// </summary>
-    public void ResetFailAsync()
+    // ────────────── 内部 ──────────────
+
+    private void AutoUnlock()
     {
-        if (!IsLockOut)
-            throw new InvalidOperationException("Cannot reset fails when not locked out.");
-        LockOutEnd = null;
         AccessFaildCount = 0;
-    }
-
-    /// <summary>
-    /// 关闭用户访问失败锁定
-    /// </summary>
-    /// <returns>是否成功关闭访问失败锁定</returns>
-    public bool CloseLockAsync()
-    {
-        if (!IsLockOut) return false;
-        if (LockOutEnd >= DateTime.UtcNow) return true;
-        ResetFailAsync();
-        return true;
+        LockOutEnd = null;
     }
 }

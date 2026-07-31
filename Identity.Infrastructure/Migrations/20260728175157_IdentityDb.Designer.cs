@@ -13,8 +13,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Identity.Infrastructure.Migrations
 {
     [DbContext(typeof(IdentityDbContext))]
-    [Migration("20260705193124_BlogIdentity")]
-    partial class BlogIdentity
+    [Migration("20260728175157_IdentityDb")]
+    partial class IdentityDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -38,21 +38,6 @@ namespace Identity.Infrastructure.Migrations
             modelBuilder.HasSequence("Userseq")
                 .IncrementsBy(10);
 
-            modelBuilder.Entity("GroupPermissions", b =>
-                {
-                    b.Property<int>("PermissionGuid")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("RoleGroupGuid")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("PermissionGuid", "RoleGroupGuid");
-
-                    b.HasIndex("RoleGroupGuid");
-
-                    b.ToTable("GroupPermissions");
-                });
-
             modelBuilder.Entity("Identity.Domain.Entities.ClientAggregate.NotClient", b =>
                 {
                     b.Property<Guid>("NotClientId")
@@ -60,48 +45,130 @@ namespace Identity.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("client_guid");
 
+                    b.PrimitiveCollection<HashSet<string>>("AllowedCorsOrigins")
+                        .HasColumnType("text[]")
+                        .HasColumnName("allowed_cors_origins");
+
+                    b.PrimitiveCollection<HashSet<string>>("AllowedGrantTypes")
+                        .IsRequired()
+                        .HasColumnType("text[]")
+                        .HasColumnName("allowed_grant_types");
+
+                    b.PrimitiveCollection<HashSet<string>>("AllowedScopes")
+                        .IsRequired()
+                        .HasColumnType("text[]")
+                        .HasColumnName("allowed_scopes");
+
+                    b.Property<string>("ApplicationDescription")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("application_description");
+
+                    b.Property<string>("ApplicationIcon")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("application_icon");
+
+                    b.Property<string>("ApplicationName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("application_name");
+
+                    b.Property<string>("ApplicationType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("application_type");
+
+                    b.Property<string>("ClientId")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("client_id");
+
+                    b.Property<string>("ClientSecret")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("client_secret");
+
+                    b.Property<string>("ContactEmail")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("contact_email");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("HomepageUri")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("homepage_uri");
+
                     b.Property<int>("Id")
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<int>("Id"), "NotClientseq");
 
-                    b.Property<string>("NotClientDescription")
+                    b.PrimitiveCollection<HashSet<string>>("PostLogoutRedirectUris")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text[]")
+                        .HasColumnName("post_logout_redirect_uris");
 
-                    b.Property<string>("NotClientName")
+                    b.Property<string>("PrivacyPolicyUri")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("privacy_policy_uri");
+
+                    b.PrimitiveCollection<HashSet<string>>("RedirectUris")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text[]")
+                        .HasColumnName("redirect_uris");
 
-                    b.Property<string>("NotClientPrivateKey")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<bool>("RequireConsent")
+                        .HasColumnType("boolean")
+                        .HasColumnName("require_consent");
 
-                    b.Property<string>("NotClientSecret")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<bool>("RequirePkce")
+                        .HasColumnType("boolean")
+                        .HasColumnName("require_pkce");
 
-                    b.Property<string>("NotClientType")
+                    b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("status");
 
-                    b.Property<string>("NotClientUri")
+                    b.Property<string>("TermsOfServiceUri")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("terms_of_service_uri");
+
+                    b.Property<string>("TokenEndpointAuthMethod")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("token_endpoint_auth_method");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
                     b.HasKey("NotClientId");
+
+                    b.HasIndex("ClientId")
+                        .IsUnique();
 
                     b.ToTable("NotClient", (string)null);
                 });
 
             modelBuilder.Entity("Identity.Domain.Entities.RoleAggregate.Permission", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("PermissionId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                        .HasColumnType("uuid");
 
                     b.Property<string>("ApiMethod")
                         .HasColumnType("text");
@@ -111,6 +178,9 @@ namespace Identity.Infrastructure.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Id")
+                        .HasColumnType("integer");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
@@ -122,9 +192,6 @@ namespace Identity.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid>("PermissionId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("PermissionName")
                         .IsRequired()
                         .HasColumnType("text");
@@ -133,9 +200,9 @@ namespace Identity.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("Id");
+                    b.HasKey("PermissionId");
 
-                    b.ToTable("Permission");
+                    b.ToTable("Permissions", (string)null);
                 });
 
             modelBuilder.Entity("Identity.Domain.Entities.RoleAggregate.RoleGroup", b =>
@@ -161,6 +228,11 @@ namespace Identity.Infrastructure.Migrations
                     b.Property<string>("RoleGroupName")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.PrimitiveCollection<HashSet<Guid>>("RoleGuids")
+                        .IsRequired()
+                        .HasColumnType("uuid[]")
+                        .HasColumnName("role_guids");
 
                     b.HasKey("RoleGroupGuid");
 
@@ -195,6 +267,11 @@ namespace Identity.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.PrimitiveCollection<HashSet<Guid>>("RoleGroupGuids")
+                        .IsRequired()
+                        .HasColumnType("uuid[]")
+                        .HasColumnName("role_group_guids");
+
                     b.Property<string>("RoleName")
                         .IsRequired()
                         .HasColumnType("text");
@@ -207,32 +284,6 @@ namespace Identity.Infrastructure.Migrations
                     b.HasKey("RoleGuid");
 
                     b.ToTable("Roles", (string)null);
-                });
-
-            modelBuilder.Entity("Identity.Domain.Entities.UserAggregate.PhoneNumber", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<long>("AddressRegion")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("PhoneCode")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("UserGuid")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserGuid")
-                        .IsUnique();
-
-                    b.ToTable("PhoneNumber");
                 });
 
             modelBuilder.Entity("Identity.Domain.Entities.UserAggregate.User", b =>
@@ -405,25 +456,43 @@ namespace Identity.Infrastructure.Migrations
                     b.ToTable("UserExternalLogins", (string)null);
                 });
 
-            modelBuilder.Entity("RoleGroupRoles", b =>
+            modelBuilder.Entity("Identity.Infrastructure.Idempotent.ClientRequest", b =>
                 {
+                    b.Property<Guid>("ClientRequestId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ClientRequestName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("ClientRequestId");
+
+                    b.ToTable("ClientRequest", (string)null);
+                });
+
+            modelBuilder.Entity("RoleGroupPermissions", b =>
+                {
+                    b.Property<Guid>("PermissionGuid")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid>("RoleGroupGuid")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("RoleGuid")
-                        .HasColumnType("uuid");
+                    b.HasKey("PermissionGuid", "RoleGroupGuid");
 
-                    b.HasKey("RoleGroupGuid", "RoleGuid");
+                    b.HasIndex("RoleGroupGuid");
 
-                    b.HasIndex("RoleGuid");
-
-                    b.ToTable("RoleGroupRoles");
+                    b.ToTable("RoleGroupPermissions");
                 });
 
             modelBuilder.Entity("RolePermissions", b =>
                 {
-                    b.Property<int>("PermissionGuid")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("PermissionGuid")
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("RoleGuid")
                         .HasColumnType("uuid");
@@ -435,33 +504,9 @@ namespace Identity.Infrastructure.Migrations
                     b.ToTable("RolePermissions");
                 });
 
-            modelBuilder.Entity("GroupPermissions", b =>
-                {
-                    b.HasOne("Identity.Domain.Entities.RoleAggregate.Permission", null)
-                        .WithMany()
-                        .HasForeignKey("PermissionGuid")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Identity.Domain.Entities.RoleAggregate.RoleGroup", null)
-                        .WithMany()
-                        .HasForeignKey("RoleGroupGuid")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Identity.Domain.Entities.UserAggregate.PhoneNumber", b =>
-                {
-                    b.HasOne("Identity.Domain.Entities.UserAggregate.User", null)
-                        .WithOne("PhoneNumber")
-                        .HasForeignKey("Identity.Domain.Entities.UserAggregate.PhoneNumber", "UserGuid")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("Identity.Domain.Entities.UserAggregate.User", b =>
                 {
-                    b.OwnsOne("Identity.Domain.Entities.UserAggregate.Address", "UserAddress", b1 =>
+                    b.OwnsOne("Identity.Domain.ValueObjects.Address", "UserAddress", b1 =>
                         {
                             b1.Property<Guid>("UserGuid")
                                 .HasColumnType("uuid");
@@ -498,6 +543,28 @@ namespace Identity.Infrastructure.Migrations
                                 .HasForeignKey("UserGuid");
                         });
 
+                    b.OwnsOne("Identity.Domain.ValueObjects.PhoneNumber", "PhoneNumber", b1 =>
+                        {
+                            b1.Property<Guid>("UserGuid")
+                                .HasColumnType("uuid");
+
+                            b1.Property<long>("AddressRegion")
+                                .HasColumnType("bigint");
+
+                            b1.Property<string>("PhoneCode")
+                                .IsRequired()
+                                .HasColumnType("text");
+
+                            b1.HasKey("UserGuid");
+
+                            b1.ToTable("User");
+
+                            b1.WithOwner()
+                                .HasForeignKey("UserGuid");
+                        });
+
+                    b.Navigation("PhoneNumber");
+
                     b.Navigation("UserAddress");
                 });
 
@@ -519,17 +586,17 @@ namespace Identity.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("RoleGroupRoles", b =>
+            modelBuilder.Entity("RoleGroupPermissions", b =>
                 {
-                    b.HasOne("Identity.Domain.Entities.RoleAggregate.RoleGroup", null)
+                    b.HasOne("Identity.Domain.Entities.RoleAggregate.Permission", null)
                         .WithMany()
-                        .HasForeignKey("RoleGroupGuid")
+                        .HasForeignKey("PermissionGuid")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Identity.Domain.Entities.RoleAggregate.Roles", null)
+                    b.HasOne("Identity.Domain.Entities.RoleAggregate.RoleGroup", null)
                         .WithMany()
-                        .HasForeignKey("RoleGuid")
+                        .HasForeignKey("RoleGroupGuid")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -551,8 +618,6 @@ namespace Identity.Infrastructure.Migrations
 
             modelBuilder.Entity("Identity.Domain.Entities.UserAggregate.User", b =>
                 {
-                    b.Navigation("PhoneNumber");
-
                     b.Navigation("UserAccessFail")
                         .IsRequired();
 

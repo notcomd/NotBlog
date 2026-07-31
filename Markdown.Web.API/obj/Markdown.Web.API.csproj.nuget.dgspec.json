@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "f:\\NotBlog\\Markdown.Web.API\\Markdown.Web.API.csproj": {}
+    "F:\\NotBlog\\Markdown.Web.API\\Markdown.Web.API.csproj": {}
   },
   "projects": {
-    "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj": {
+    "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj",
+        "projectUniqueName": "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj",
         "projectName": "DomainCommons",
-        "projectPath": "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj",
+        "projectPath": "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "f:\\NotBlog\\DomainCommons\\obj\\",
+        "outputPath": "F:\\NotBlog\\DomainCommons\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -31,6 +31,7 @@
         },
         "frameworks": {
           "net10.0": {
+            "framework": "net10.0",
             "targetAlias": "net10.0",
             "projectReferences": {}
           }
@@ -45,10 +46,11 @@
           "auditLevel": "low",
           "auditMode": "all"
         },
-        "SdkAnalysisLevel": "10.0.100"
+        "SdkAnalysisLevel": "10.0.300"
       },
       "frameworks": {
         "net10.0": {
+          "framework": "net10.0",
           "targetAlias": "net10.0",
           "dependencies": {
             "Microsoft.AspNetCore.Mvc.Core": {
@@ -76,7 +78,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.102/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.302/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",
@@ -354,14 +356,14 @@
         }
       }
     },
-    "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj": {
+    "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj",
+        "projectUniqueName": "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj",
         "projectName": "DomainInfrastructure",
-        "projectPath": "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj",
+        "projectPath": "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "f:\\NotBlog\\DomainInfrastructure\\obj\\",
+        "outputPath": "F:\\NotBlog\\DomainInfrastructure\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -381,10 +383,11 @@
         },
         "frameworks": {
           "net10.0": {
+            "framework": "net10.0",
             "targetAlias": "net10.0",
             "projectReferences": {
-              "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj": {
-                "projectPath": "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj"
+              "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj": {
+                "projectPath": "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj"
               }
             }
           }
@@ -399,10 +402,11 @@
           "auditLevel": "low",
           "auditMode": "all"
         },
-        "SdkAnalysisLevel": "10.0.100"
+        "SdkAnalysisLevel": "10.0.300"
       },
       "frameworks": {
         "net10.0": {
+          "framework": "net10.0",
           "targetAlias": "net10.0",
           "dependencies": {
             "Microsoft.AspNetCore.Mvc.Core": {
@@ -442,7 +446,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.102/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.302/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",
@@ -720,14 +724,14 @@
         }
       }
     },
-    "f:\\NotBlog\\Evenbus\\Evenbus.csproj": {
+    "F:\\NotBlog\\EventBus\\EventBus.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "f:\\NotBlog\\Evenbus\\Evenbus.csproj",
-        "projectName": "Evenbus",
-        "projectPath": "f:\\NotBlog\\Evenbus\\Evenbus.csproj",
+        "projectUniqueName": "F:\\NotBlog\\EventBus\\EventBus.csproj",
+        "projectName": "EventBus",
+        "projectPath": "F:\\NotBlog\\EventBus\\EventBus.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "f:\\NotBlog\\Evenbus\\obj\\",
+        "outputPath": "F:\\NotBlog\\EventBus\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -747,6 +751,7 @@
         },
         "frameworks": {
           "net10.0": {
+            "framework": "net10.0",
             "targetAlias": "net10.0",
             "projectReferences": {}
           }
@@ -765,6 +770,7 @@
       },
       "frameworks": {
         "net10.0": {
+          "framework": "net10.0",
           "targetAlias": "net10.0",
           "dependencies": {
             "Dynamic.Json": {
@@ -1106,14 +1112,14 @@
         }
       }
     },
-    "f:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj": {
+    "F:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "f:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj",
+        "projectUniqueName": "F:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj",
         "projectName": "Markdown.Domain",
-        "projectPath": "f:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj",
+        "projectPath": "F:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "f:\\NotBlog\\Markdown.Domain\\obj\\",
+        "outputPath": "F:\\NotBlog\\Markdown.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -1133,6 +1139,7 @@
         },
         "frameworks": {
           "net10.0": {
+            "framework": "net10.0",
             "targetAlias": "net10.0",
             "projectReferences": {}
           }
@@ -1147,10 +1154,11 @@
           "auditLevel": "low",
           "auditMode": "all"
         },
-        "SdkAnalysisLevel": "10.0.100"
+        "SdkAnalysisLevel": "10.0.300"
       },
       "frameworks": {
         "net10.0": {
+          "framework": "net10.0",
           "targetAlias": "net10.0",
           "dependencies": {
             "Microsoft.AspNetCore.Mvc.Core": {
@@ -1178,7 +1186,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.102/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.302/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",
@@ -1456,14 +1464,14 @@
         }
       }
     },
-    "f:\\NotBlog\\Markdown.Infrastructure\\Markdown.Infrastructure.csproj": {
+    "F:\\NotBlog\\Markdown.Infrastructure\\Markdown.Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "f:\\NotBlog\\Markdown.Infrastructure\\Markdown.Infrastructure.csproj",
+        "projectUniqueName": "F:\\NotBlog\\Markdown.Infrastructure\\Markdown.Infrastructure.csproj",
         "projectName": "Markdown.Infrastructure",
-        "projectPath": "f:\\NotBlog\\Markdown.Infrastructure\\Markdown.Infrastructure.csproj",
+        "projectPath": "F:\\NotBlog\\Markdown.Infrastructure\\Markdown.Infrastructure.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "f:\\NotBlog\\Markdown.Infrastructure\\obj\\",
+        "outputPath": "F:\\NotBlog\\Markdown.Infrastructure\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -1483,13 +1491,14 @@
         },
         "frameworks": {
           "net10.0": {
+            "framework": "net10.0",
             "targetAlias": "net10.0",
             "projectReferences": {
-              "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj": {
-                "projectPath": "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj"
+              "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj": {
+                "projectPath": "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj"
               },
-              "f:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj": {
-                "projectPath": "f:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj"
+              "F:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj": {
+                "projectPath": "F:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj"
               }
             }
           }
@@ -1504,10 +1513,11 @@
           "auditLevel": "low",
           "auditMode": "all"
         },
-        "SdkAnalysisLevel": "10.0.100"
+        "SdkAnalysisLevel": "10.0.300"
       },
       "frameworks": {
         "net10.0": {
+          "framework": "net10.0",
           "targetAlias": "net10.0",
           "dependencies": {
             "Microsoft.AspNetCore.Mvc.Core": {
@@ -1559,7 +1569,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.102/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.302/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",
@@ -1837,14 +1847,14 @@
         }
       }
     },
-    "f:\\NotBlog\\Markdown.Web.API\\Markdown.Web.API.csproj": {
+    "F:\\NotBlog\\Markdown.Web.API\\Markdown.Web.API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "f:\\NotBlog\\Markdown.Web.API\\Markdown.Web.API.csproj",
+        "projectUniqueName": "F:\\NotBlog\\Markdown.Web.API\\Markdown.Web.API.csproj",
         "projectName": "Markdown.Web.API",
-        "projectPath": "f:\\NotBlog\\Markdown.Web.API\\Markdown.Web.API.csproj",
+        "projectPath": "F:\\NotBlog\\Markdown.Web.API\\Markdown.Web.API.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "f:\\NotBlog\\Markdown.Web.API\\obj\\",
+        "outputPath": "F:\\NotBlog\\Markdown.Web.API\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -1864,19 +1874,20 @@
         },
         "frameworks": {
           "net10.0": {
+            "framework": "net10.0",
             "targetAlias": "net10.0",
             "projectReferences": {
-              "f:\\NotBlog\\Evenbus\\Evenbus.csproj": {
-                "projectPath": "f:\\NotBlog\\Evenbus\\Evenbus.csproj"
+              "F:\\NotBlog\\EventBus\\EventBus.csproj": {
+                "projectPath": "F:\\NotBlog\\EventBus\\EventBus.csproj"
               },
-              "f:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj": {
-                "projectPath": "f:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj"
+              "F:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj": {
+                "projectPath": "F:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj"
               },
-              "f:\\NotBlog\\Markdown.Infrastructure\\Markdown.Infrastructure.csproj": {
-                "projectPath": "f:\\NotBlog\\Markdown.Infrastructure\\Markdown.Infrastructure.csproj"
+              "F:\\NotBlog\\Markdown.Infrastructure\\Markdown.Infrastructure.csproj": {
+                "projectPath": "F:\\NotBlog\\Markdown.Infrastructure\\Markdown.Infrastructure.csproj"
               },
-              "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj": {
-                "projectPath": "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj"
+              "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj": {
+                "projectPath": "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj"
               }
             }
           }
@@ -1891,10 +1902,11 @@
           "auditLevel": "low",
           "auditMode": "all"
         },
-        "SdkAnalysisLevel": "10.0.100"
+        "SdkAnalysisLevel": "10.0.300"
       },
       "frameworks": {
         "net10.0": {
+          "framework": "net10.0",
           "targetAlias": "net10.0",
           "dependencies": {
             "Aspire.RabbitMQ.Client": {
@@ -1945,7 +1957,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.102/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.302/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.AspNetCore": "(,10.0.32767]",
             "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",
@@ -2363,14 +2375,14 @@
         }
       }
     },
-    "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj": {
+    "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj",
+        "projectUniqueName": "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj",
         "projectName": "NotBlog.ServiceDefaults",
-        "projectPath": "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj",
+        "projectPath": "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "f:\\NotBlog\\NotBlog.ServiceDefaults\\obj\\",
+        "outputPath": "F:\\NotBlog\\NotBlog.ServiceDefaults\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -2390,6 +2402,7 @@
         },
         "frameworks": {
           "net10.0": {
+            "framework": "net10.0",
             "targetAlias": "net10.0",
             "projectReferences": {}
           }
@@ -2404,10 +2417,11 @@
           "auditLevel": "low",
           "auditMode": "all"
         },
-        "SdkAnalysisLevel": "10.0.100"
+        "SdkAnalysisLevel": "10.0.300"
       },
       "frameworks": {
         "net10.0": {
+          "framework": "net10.0",
           "targetAlias": "net10.0",
           "dependencies": {
             "Microsoft.AspNetCore.Mvc.Core": {
@@ -2466,7 +2480,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.102/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.302/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.AspNetCore": "(,10.0.32767]",
             "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",

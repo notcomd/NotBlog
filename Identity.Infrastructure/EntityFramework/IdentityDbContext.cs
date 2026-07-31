@@ -1,3 +1,5 @@
+using Identity.Infrastructure.Idempotent;
+
 namespace Identity.Infrastructure.EntityFramework;
 
 public class IdentityDbContext : DbContext, IUnitOfWork
@@ -26,6 +28,8 @@ public class IdentityDbContext : DbContext, IUnitOfWork
 
     public DbSet<Permission> Permissions { get; set; }
 
+    public DbSet<ClientRequest> ClientRequests{get;set;}
+
     public bool HasActiveTransaction => _currentTransaction != null;
 
     public async Task<int> SavaChangesAsync(CancellationToken cancellationToken = default)
@@ -48,10 +52,7 @@ public class IdentityDbContext : DbContext, IUnitOfWork
         return base.GetHashCode();
     }
 
-    public IDbContextTransaction GetContextTransaction()
-    {
-        return _currentTransaction;
-    }
+    public IDbContextTransaction GetContextTransaction() => _currentTransaction;
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

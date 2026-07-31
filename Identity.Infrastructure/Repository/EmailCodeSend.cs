@@ -4,14 +4,13 @@ namespace Identity.Infrastructure.Repository;
 
 public class EmailCodeSend(IEmailManager emailManager) : IEmailCodeSend
 {
-    public async ValueTask SendEmailCodeAsync(string toEmail, string code)
+    public async Task<bool> SendEmailCodeAsync(string toEmail, string subject, string body)
     {
-        if (string.IsNullOrEmpty(toEmail) && string.IsNullOrEmpty(code))
+        if (string.IsNullOrEmpty(toEmail) && string.IsNullOrEmpty(subject) && string.IsNullOrEmpty(body))
         {
-            throw new ArgumentNullException($"{toEmail} and {code} is null");
+            throw new ArgumentNullException($"{toEmail} and {subject} and {body} is null");
         }
-
-        _ = await emailManager.SendAsync(new EmailMessage(toEmail, "账号注册",
-            $"这是注册账号的验证码，请好好使用不要丢失哦（*＾-＾*）验证码为：[{code}]"));
+        var result = await emailManager.SendAsync(new EmailMessage(toEmail, subject, body, isHtml: false));
+        return result.Success;
     }
 }

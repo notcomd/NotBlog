@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace Markdown.Web.API.Application.Dto;
 
 /// <summary>

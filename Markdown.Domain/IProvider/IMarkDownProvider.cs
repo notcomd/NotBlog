@@ -1,5 +1,3 @@
-using Markdown.Domain.Entities;
-
 namespace Markdown.Domain.IProvider;
 
 public interface IMarkDownProvider

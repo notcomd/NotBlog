@@ -156,3 +156,4 @@ f:\NotBlog\NotBlog.AppHost\bin\Debug\net10.0\System.Diagnostics.EventLog.dll
 f:\NotBlog\NotBlog.AppHost\bin\Debug\net10.0\runtimes\win\lib\net10.0\System.Diagnostics.EventLog.dll
 F:\NotBlog\NotBlog.AppHost\bin\Debug\net10.0\Microsoft.Extensions.Diagnostics.HealthChecks.dll
 F:\NotBlog\NotBlog.AppHost\bin\Debug\net10.0\Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions.dll
+F:\NotBlog\NotBlog.AppHost\obj\Debug\net10.0\Aspire\references\NotBlog_Yarp.ProjectMetadata.g.cs

@@ -1,5 +1,3 @@
-using Markdown.Domain.SeedWork;
-
 namespace Markdown.Domain.Entities;
 
 /// <summary>

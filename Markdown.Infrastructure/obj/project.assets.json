@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "targets": {
     "net10.0": {
       "Microsoft.AspNetCore.Authentication.Abstractions/2.3.9": {
@@ -1599,11 +1599,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "f:\\NotBlog\\Markdown.Infrastructure\\Markdown.Infrastructure.csproj",
+      "projectUniqueName": "F:\\NotBlog\\Markdown.Infrastructure\\Markdown.Infrastructure.csproj",
       "projectName": "Markdown.Infrastructure",
-      "projectPath": "f:\\NotBlog\\Markdown.Infrastructure\\Markdown.Infrastructure.csproj",
+      "projectPath": "F:\\NotBlog\\Markdown.Infrastructure\\Markdown.Infrastructure.csproj",
       "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-      "outputPath": "f:\\NotBlog\\Markdown.Infrastructure\\obj\\",
+      "outputPath": "F:\\NotBlog\\Markdown.Infrastructure\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -1623,13 +1623,14 @@
       },
       "frameworks": {
         "net10.0": {
+          "framework": "net10.0",
           "targetAlias": "net10.0",
           "projectReferences": {
-            "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj": {
-              "projectPath": "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj"
+            "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj": {
+              "projectPath": "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj"
             },
-            "f:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj": {
-              "projectPath": "f:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj"
+            "F:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj": {
+              "projectPath": "F:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj"
             }
           }
         }
@@ -1644,10 +1645,11 @@
         "auditLevel": "low",
         "auditMode": "all"
       },
-      "SdkAnalysisLevel": "10.0.100"
+      "SdkAnalysisLevel": "10.0.300"
     },
     "frameworks": {
       "net10.0": {
+        "framework": "net10.0",
         "targetAlias": "net10.0",
         "dependencies": {
           "Microsoft.AspNetCore.Mvc.Core": {
@@ -1699,7 +1701,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.102/PortableRuntimeIdentifierGraph.json",
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.302/PortableRuntimeIdentifierGraph.json",
         "packagesToPrune": {
           "Microsoft.CSharp": "(,4.7.32767]",
           "Microsoft.VisualBasic": "(,10.4.32767]",

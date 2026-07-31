@@ -1,7 +1,4 @@
-using Notcomd.EventBus.Core;
-using Notcomd.EventBus.Extension;
-
-namespace Markdown.Web.API.Application.IntegrationEventHandlers;
+namespace Markdown.Web.API.Application.IntegrationEvents.IntegrationEventHandlers;
 
 /// <summary>
 ///     Markdown 文档创建事件处理器（集成事件）

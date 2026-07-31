@@ -1,4 +1,4 @@
-﻿namespace Identity.Infrastructure.EntityConfig;
+namespace Identity.Infrastructure.EntityConfig;
 
 public class UserEntityTypeConfiguration : IEntityTypeConfiguration<User>
 {
@@ -30,8 +30,7 @@ public class UserEntityTypeConfiguration : IEntityTypeConfiguration<User>
 
         // 其他属性配置
 
-        builder.HasOne(on => on.PhoneNumber).WithOne()
-            .HasForeignKey<PhoneNumber>(on => on.UserGuid);
+        builder.OwnsOne(on => on.PhoneNumber);
 
         builder.HasOne(on => on.UserAccessFail).WithOne()
             .HasForeignKey<UserAccessFail>(on => on.UserGuid);

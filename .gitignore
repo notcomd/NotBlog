@@ -14,3 +14,4 @@ stylesheets/bundles
 /.vs
 bin/
 obj/
+.trae/

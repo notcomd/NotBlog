@@ -9,7 +9,7 @@
     <ItemGroup>
         <PackageReference Include="Aspire.RabbitMQ.Client" Version="13.4.6"/>
         <PackageReference Include="Aspire.StackExchange.Redis.DistributedCaching" Version="13.4.6"/>
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.11"/>
+       
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.9"/>
         <PackageReference Include="NotMediator" Version="1.0.5" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.2"/>

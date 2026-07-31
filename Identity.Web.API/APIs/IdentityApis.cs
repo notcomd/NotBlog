@@ -8,7 +8,7 @@ public static class IdentityApis
 {
     public static RouteGroupBuilder NotMapIdentityApi(this RouteGroupBuilder routeBuilder)
     {
-        var route = routeBuilder.MapGroup("/Identity").WithHttpLogging(HttpLoggingFields.All);
+        var route = routeBuilder.MapGroup("/identity").WithHttpLogging(HttpLoggingFields.All);
 
         route.MapPost("/Register", Register).WithHttpLogging(HttpLoggingFields.All);
 
@@ -39,7 +39,7 @@ public static class IdentityApis
         }
 
         var command = new RegisterByUserCommand(registerRequest.UserPassword, registerRequest.VerificationCode,
-            registerRequest.UserEmail, registerRequest.PhoneNumber);
+            registerRequest.UserEmail);
 
         var registerIdentity = new IdentifiedCommand<RegisterByUserCommand, bool>(Guid.CreateVersion7(), command);
 
@@ -50,7 +50,7 @@ public static class IdentityApis
         }
         else
         {
-            return Results.BadRequest("null");
+            return Results.BadRequest("注册失败");
         }
     }
 

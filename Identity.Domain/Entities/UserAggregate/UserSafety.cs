@@ -5,6 +5,7 @@ public class UserSafety : Entity
     private UserSafety(Guid userGuid)
     {
         UserSafetyGuid = Guid.CreateVersion7();
+        UserGuid = userGuid;
         BlackOrWhite = BlackOrWhite.AuthorityWhite;
         UserStatus = UserStatus.Normal;
     }

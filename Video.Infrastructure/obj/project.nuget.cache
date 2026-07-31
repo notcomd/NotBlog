@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "ROakimUHA4Q=",
+  "dgSpecHash": "cO+HDjZ+bqQ=",
   "success": true,
-  "projectFilePath": "f:\\NotBlog\\Video.Infrastructure\\Video.Infrastructure.csproj",
+  "projectFilePath": "F:\\NotBlog\\Video.Infrastructure\\Video.Infrastructure.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\notco\\.nuget\\packages\\aspire.stackexchange.redis\\13.4.6\\aspire.stackexchange.redis.13.4.6.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\aspnetcore.healthchecks.redis\\9.0.0\\aspnetcore.healthchecks.redis.9.0.0.nupkg.sha512",

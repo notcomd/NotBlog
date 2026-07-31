@@ -1,7 +1,3 @@
-using Markdown.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
 namespace Markdown.Infrastructure.Configuration;
 
 public class MarkDownEntityConfiguration : IEntityTypeConfiguration<MarkDown>

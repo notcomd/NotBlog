@@ -48,8 +48,7 @@ builder.AddProject<FileDev_Web_API>("filedev-web-api")
     .WithReference(notfile);
 
 
-builder.AddProject<NotBlog_Yarp>("notblog-yarp-gateway")
-    .WithReference(notfile);
+builder.AddProject<NotBlog_Yarp>("notblog-yarp-gateway");
 
 builder.AddProject<Identity_Web_API>("identity-web-api")
     .WithReference(identity)

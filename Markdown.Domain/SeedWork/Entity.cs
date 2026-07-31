@@ -1,5 +1,3 @@
-﻿using NotMediator;
-
 namespace Markdown.Domain.SeedWork;
 
 public abstract class Entity

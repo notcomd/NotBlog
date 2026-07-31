@@ -24,11 +24,9 @@ public class RoleEntityTypeConfiguration : IEntityTypeConfiguration<Roles>
                 j => j.HasOne<Permission>().WithMany().HasForeignKey("PermissionGuid"),
                 j => j.HasOne<Roles>().WithMany().HasForeignKey("RoleGuid"));
 
-        // 多对多: Roles ↔ RoleGroup（角色归属组）
-        builder.HasMany(r => r.RoleGroups)
-            .WithMany(g => g.Roles)
-            .UsingEntity<Dictionary<string, object>>("RoleGroupRoles",
-                j => j.HasOne<RoleGroup>().WithMany().HasForeignKey("RoleGroupGuid"),
-                j => j.HasOne<Roles>().WithMany().HasForeignKey("RoleGuid"));
+        // Guid 列表引用 RoleGroup（通过 ID 引用，不再持有对象引用，避免双向循环依赖）
+        builder.Property(r => r.RoleGroupGuids)
+            .HasColumnName("role_group_guids")
+            .HasColumnType("uuid[]");
     }
 }

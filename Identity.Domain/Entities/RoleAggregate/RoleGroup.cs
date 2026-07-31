@@ -1,4 +1,4 @@
-﻿namespace Identity.Domain.Entities.RoleAggregate;
+namespace Identity.Domain.Entities.RoleAggregate;
 
 public class RoleGroup : Entity, IAggregateRoot
 {
@@ -16,7 +16,7 @@ public class RoleGroup : Entity, IAggregateRoot
     protected RoleGroup()
     {
         RoleGroupGuid = Guid.CreateVersion7();
-        Roles = new List<Roles>();
+        RoleGuids = new List<Guid>();
         Permissions = new List<Permission>();
         CreatedRoleGroup = DateTimeOffset.UtcNow;
         IsDeleted = false;
@@ -38,9 +38,9 @@ public class RoleGroup : Entity, IAggregateRoot
     public string RoleGroupCode { get; private set; } = null!;
 
     /// <summary>
-    /// 角色组下的角色
+    /// 角色组下包含的角色 Guid 列表（通过 ID 引用 Roles 聚合根，避免双向循环依赖）
     /// </summary>
-    public ICollection<Roles>? Roles { get; private set; }
+    public List<Guid> RoleGuids { get; private set; }
 
     /// <summary>
     /// 角色组下的权限
@@ -57,25 +57,24 @@ public class RoleGroup : Entity, IAggregateRoot
     /// </summary>
     public bool IsDeleted { get; private set; }
 
-    public void ChangeRoleGroup(string roleGroupName, string roleGroupCode, ICollection<Roles> roles)
+    public void ChangeRoleGroup(string roleGroupName, string roleGroupCode, List<Guid> roleGuids)
     {
         RoleGroupName = roleGroupName;
         RoleGroupCode = roleGroupCode;
-        Roles = roles;
+        RoleGuids = roleGuids;
     }
 
-    public void RemoveRole(Roles role)
+    public void AddRole(Guid roleGuid)
     {
-        if (!Roles!.Contains(role))
-            throw new ArgumentException("Role not found");
-        Roles.Remove(role);
+        if (RoleGuids.Contains(roleGuid))
+            throw new ArgumentException("Role already exists in group");
+        RoleGuids.Add(roleGuid);
     }
 
-    public void AddRole(Roles role)
+    public void RemoveRole(Guid roleGuid)
     {
-        if (Roles!.Contains(role))
-            throw new ArgumentException("Role already exists");
-        Roles.Add(role);
+        if (!RoleGuids.Remove(roleGuid))
+            throw new ArgumentException("Role not found in group");
     }
 
     public void SoftDelete(bool deleted)

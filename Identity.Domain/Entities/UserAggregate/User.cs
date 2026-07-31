@@ -1,4 +1,4 @@
-﻿﻿using Identity.Domain.Events;
+﻿using Identity.Domain.Events;
 using Notcomd.Token.JWT.Security;
 
 namespace Identity.Domain.Entities.UserAggregate;
@@ -8,12 +8,8 @@ public class User : Entity, IAggregateRoot
     protected User()
     {
         UserGuid = Guid.CreateVersion7();
-        UserRoleGuid ??= new HashSet<Guid>();
-        AuthorGuids ??= new HashSet<Guid>();
-        UserAccessFail = UserAccessFail.CreateUserAccessFail(UserGuid) ??
-                         throw new ArgumentNullException(nameof(UserAccessFail));
-        UserSafety = UserSafety.CreateByUserSafety(UserGuid, null, null) ??
-                     throw new ArgumentNullException(nameof(UserSafety));
+        UserRoleGuid ??= new List<Guid>();
+        AuthorGuids ??= new List<Guid>();
         CreateDatetime = DateTimeOffset.UtcNow;
     }
 
@@ -25,12 +21,12 @@ public class User : Entity, IAggregateRoot
     /// <summary>
     /// 用户角色ID
     /// </summary>
-    public HashSet<Guid> UserRoleGuid { get; private set; }
+    public List<Guid> UserRoleGuid { get; private set; }
 
     /// <summary>
     /// 用户作者ID
     /// </summary>
-    public HashSet<Guid> AuthorGuids { get; private set; }
+    public List<Guid> AuthorGuids { get; private set; }
 
     /// <summary>
     /// 用户名
@@ -100,22 +96,23 @@ public class User : Entity, IAggregateRoot
             throw new ArgumentNullException(nameof(userEmail), "User email cannot be null or empty");
         if (string.IsNullOrEmpty(passwordHash))
             throw new ArgumentNullException(nameof(passwordHash), "Password hash cannot be null or empty");
-        if (imageCover == null)
-            throw new ArgumentNullException(nameof(imageCover), "Image cover cannot be null");
 
         var salt = await HashH256Tool.GenerateSValueTask() ?? throw new ArgumentNullException("salt is null");
         var stamp = await JwtRandom.GenerateSecurityStamp() ??
                     throw new ArgumentNullException("security stamp is null");
 
+        var userGuid = Guid.CreateVersion7();
         var user = new User
         {
+            UserGuid = userGuid,
             UserRoleGuid = [userRoleGuid],
             UserName = userEmail,
+            UserEmail = userEmail,
             PasswordHash = await HashH256Tool.CreateHash256Async(passwordHash, salt),
             ImageCover = imageCover,
-            UserAccessFail = UserAccessFail.CreateUserAccessFail(Guid.CreateVersion7()) ??
+            UserAccessFail = UserAccessFail.CreateUserAccessFail(userGuid) ??
                              throw new ArgumentNullException(nameof(UserAccessFail)),
-            UserSafety = UserSafety.CreateByUserSafety(Guid.CreateVersion7(), stamp, salt.ToString()) ??
+            UserSafety = UserSafety.CreateByUserSafety(userGuid, stamp, Encoding.UTF8.GetString(salt)) ??
                          throw new ArgumentNullException(nameof(UserSafety)),
             CreateDatetime = DateTimeOffset.UtcNow
         };
@@ -134,7 +131,7 @@ public class User : Entity, IAggregateRoot
     /// <param name="authorGuids">用户作者ID</param>
     /// <returns>用户手机号后的任务</returns>
     public static async Task<User> CreateByPhoneUser(
-        HashSet<Guid> userRoleGuid,
+        List<Guid> userRoleGuid,
         PhoneNumber phoneNumber,
         string passwordHash,
         Uri? imageCover,
@@ -146,29 +143,30 @@ public class User : Entity, IAggregateRoot
             throw new ArgumentNullException(nameof(phoneNumber), "Phone number cannot be null or empty");
         if (string.IsNullOrEmpty(passwordHash))
             throw new ArgumentNullException(nameof(passwordHash), "Password hash cannot be null or empty");
-        if (imageCover == null)
-            throw new ArgumentNullException(nameof(imageCover), "Image cover cannot be null");
 
         var salt = await HashH256Tool.GenerateSValueTask() ?? throw new ArgumentNullException("salt is null");
         var stamp = await JwtRandom.GenerateSecurityStamp() ??
                     throw new ArgumentNullException("security stamp is null");
 
+        var userGuid = Guid.CreateVersion7();
         var user = new User
         {
-            UserGuid = Guid.CreateVersion7(),
+            UserGuid = userGuid,
             UserRoleGuid = userRoleGuid,
+            UserName = phoneNumber.PhoneCode,
+            UserEmail = phoneNumber.PhoneCode,
             PhoneNumber = phoneNumber,
             PasswordHash = await HashH256Tool.CreateHash256Async(passwordHash, salt),
             ImageCover = imageCover,
-            UserAccessFail = UserAccessFail.CreateUserAccessFail(Guid.CreateVersion7()) ??
+            UserAccessFail = UserAccessFail.CreateUserAccessFail(userGuid) ??
                              throw new ArgumentNullException(nameof(UserAccessFail)),
-            UserSafety = UserSafety.CreateByUserSafety(Guid.CreateVersion7(), stamp, salt.ToString()) ??
-                         throw new ArgumentNullException(nameof(UserSafety)),
+            UserSafety = UserSafety.CreateByUserSafety(userGuid, stamp, salt.ToString()) ??
+                             throw new ArgumentNullException(nameof(UserSafety)),
             CreateDatetime = DateTimeOffset.UtcNow
         };
 
         user.AddDomainEvent(
-            new UserStartedByPhoneDomainEvent(user.UserGuid, userRoleGuid, phoneNumber, authorGuids));
+            new UserStartedByPhoneDomainEvent(user.UserGuid, [..userRoleGuid], phoneNumber, authorGuids));
         return user;
     }
 
@@ -195,7 +193,7 @@ public class User : Entity, IAggregateRoot
             throw new ArgumentOutOfRangeException(nameof(password), "密码长度不能小于 8 位");
 
         var salt = await HashH256Tool.GenerateSValueTask() ?? throw new ArgumentNullException("salt is null!");
-        var saltStr = salt.ToString() ?? throw new ArgumentNullException(nameof(salt), "Salt is null");
+        var saltStr = Encoding.UTF8.GetString(salt);
 
         UserSafety.ResetByPasswordSalt(saltStr);
         PasswordHash = await HashH256Tool.CreateHash256Async(password, Encoding.UTF8.GetBytes(UserSafety.PasswordSalt));
@@ -245,12 +243,20 @@ public class User : Entity, IAggregateRoot
     /// <returns>如果密码正确则返回 true，否则返回 false</returns>
     public async Task<bool> VerifyByPasswordAsync(string password)
     {
+        if (UserSafety is null)
+            throw new InvalidOperationException("UserSafety is not loaded. Ensure the navigation property is included in the query.");
+
         var isValid = await CheckByPasswordAsync(password);
 
-        if (!isValid)
+        if (isValid)
         {
-            UserAccessFail.VerifyByAccessFaild(false);
-            AddDomainEvent(new AccountLockedEvent(UserGuid));
+            UserAccessFail.RecordSuccess();
+        }
+        else
+        {
+            var justLocked = UserAccessFail.RecordFailure();
+            if (justLocked)
+                AddDomainEvent(new AccountLockedEvent(UserGuid));
         }
 
         return isValid;

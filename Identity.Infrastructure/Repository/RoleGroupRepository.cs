@@ -1,4 +1,4 @@
-﻿namespace Identity.Infrastructure.Repository;
+namespace Identity.Infrastructure.Repository;
 
 public class RoleGroupRepository(IdentityDbContext dbContext) : IRoleGroupRepository
 {
@@ -8,28 +8,26 @@ public class RoleGroupRepository(IdentityDbContext dbContext) : IRoleGroupReposi
 
 
     /// <summary>
-    /// 根据角色ID获取角色组
+    /// 根据角色 ID 获取包含该角色的角色组
     /// </summary>
-    /// <param name="roleId">角色ID</param>
+    /// <param name="roleId">角色 ID</param>
     /// <returns>角色组</returns>
     public async ValueTask<RoleGroup?> FindOneByRoleAsync(Guid roleId)
     {
         return await _dbContext.RoleGroups
-            .Include(x => x.Roles)
-            .Where<RoleGroup>(x => x.Roles.Any(en => en.RoleGuid == roleId))
+            .Where<RoleGroup>(x => x.RoleGuids.Contains(roleId))
             .FirstOrDefaultAsync();
     }
 
     /// <summary>
-    /// 根据角色ID获取所有角色组
+    /// 根据角色 ID 获取所有包含该角色的角色组
     /// </summary>
-    /// <param name="roleId">角色ID</param>
+    /// <param name="roleId">角色 ID</param>
     /// <returns>角色组列表</returns>
     public async Task<ICollection<RoleGroup>> FindAllByRoleAsync(Guid roleId)
     {
         return await _dbContext.RoleGroups
-            .Include(x => x.Roles)
-            .Where<RoleGroup>(x => x.Roles.Any(en => en.RoleGuid == roleId))
+            .Where<RoleGroup>(x => x.RoleGuids.Contains(roleId))
             .ToListAsync();
     }
 
@@ -37,7 +35,6 @@ public class RoleGroupRepository(IdentityDbContext dbContext) : IRoleGroupReposi
     /// <summary>
     /// 添加角色组
     /// </summary>
-    /// <param name="roleGroup">角色组</param>
     /// <param name="roleGroup">角色组</param>
     public async ValueTask AddOneByRoleGroupAsync(RoleGroup roleGroup)
     {
@@ -47,11 +44,12 @@ public class RoleGroupRepository(IdentityDbContext dbContext) : IRoleGroupReposi
     /// <summary>
     /// 删除角色组
     /// </summary>
-    /// <param name="roleGroupId">角色组ID</param>
+    /// <param name="roleGroupId">角色组 ID</param>
     public async ValueTask DeleteOneByRoleGroupAsync(Guid roleGroupId)
     {
-        _dbContext.RoleGroups.Attach(await _dbContext.RoleGroups.FindAsync(roleGroupId));
-        _dbContext.RoleGroups.Remove(await _dbContext.RoleGroups.FindAsync(roleGroupId));
+        var entity = await _dbContext.RoleGroups.FindAsync(roleGroupId);
+        if (entity is not null)
+            _dbContext.RoleGroups.Remove(entity);
     }
 
 

@@ -7,7 +7,6 @@ namespace Markdown.Domain.Entities;
 public class MarkQuote
 {
     private long _commentSome;
-
     private long _loveSome;
     private long _reviewSome;
     private long _shareSome;

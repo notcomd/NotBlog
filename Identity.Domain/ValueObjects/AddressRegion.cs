@@ -1,4 +1,4 @@
-﻿namespace Identity.Domain.Entities.UserAggregate;
+namespace Identity.Domain.ValueObjects;
 
 /// <summary>
 ///     电话号码国家地区代码

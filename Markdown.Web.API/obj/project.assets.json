@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "targets": {
     "net10.0": {
       "Aspire.RabbitMQ.Client/13.4.6": {
@@ -777,7 +777,7 @@
           "bin/placeholder/DomainInfrastructure.dll": {}
         }
       },
-      "Evenbus/1.0.0": {
+      "EventBus/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v10.0",
         "dependencies": {
@@ -789,10 +789,10 @@
           "RabbitMQ.Client": "7.2.1"
         },
         "compile": {
-          "bin/placeholder/Evenbus.dll": {}
+          "bin/placeholder/EventBus.dll": {}
         },
         "runtime": {
-          "bin/placeholder/Evenbus.dll": {}
+          "bin/placeholder/EventBus.dll": {}
         }
       },
       "Markdown.Domain/1.0.0": {
@@ -1930,10 +1930,10 @@
       "path": "../DomainInfrastructure/DomainInfrastructure.csproj",
       "msbuildProject": "../DomainInfrastructure/DomainInfrastructure.csproj"
     },
-    "Evenbus/1.0.0": {
+    "EventBus/1.0.0": {
       "type": "project",
-      "path": "../Evenbus/Evenbus.csproj",
-      "msbuildProject": "../Evenbus/Evenbus.csproj"
+      "path": "../EventBus/EventBus.csproj",
+      "msbuildProject": "../EventBus/EventBus.csproj"
     },
     "Markdown.Domain/1.0.0": {
       "type": "project",
@@ -1954,7 +1954,7 @@
   "projectFileDependencyGroups": {
     "net10.0": [
       "Aspire.RabbitMQ.Client >= 13.4.6",
-      "Evenbus >= 1.0.0",
+      "EventBus >= 1.0.0",
       "Markdown.Domain >= 1.0.0",
       "Markdown.Infrastructure >= 1.0.0",
       "Microsoft.AspNetCore.Authentication.JwtBearer >= 10.0.0",
@@ -1973,11 +1973,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "f:\\NotBlog\\Markdown.Web.API\\Markdown.Web.API.csproj",
+      "projectUniqueName": "F:\\NotBlog\\Markdown.Web.API\\Markdown.Web.API.csproj",
       "projectName": "Markdown.Web.API",
-      "projectPath": "f:\\NotBlog\\Markdown.Web.API\\Markdown.Web.API.csproj",
+      "projectPath": "F:\\NotBlog\\Markdown.Web.API\\Markdown.Web.API.csproj",
       "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-      "outputPath": "f:\\NotBlog\\Markdown.Web.API\\obj\\",
+      "outputPath": "F:\\NotBlog\\Markdown.Web.API\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -1997,19 +1997,20 @@
       },
       "frameworks": {
         "net10.0": {
+          "framework": "net10.0",
           "targetAlias": "net10.0",
           "projectReferences": {
-            "f:\\NotBlog\\Evenbus\\Evenbus.csproj": {
-              "projectPath": "f:\\NotBlog\\Evenbus\\Evenbus.csproj"
+            "F:\\NotBlog\\EventBus\\EventBus.csproj": {
+              "projectPath": "F:\\NotBlog\\EventBus\\EventBus.csproj"
             },
-            "f:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj": {
-              "projectPath": "f:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj"
+            "F:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj": {
+              "projectPath": "F:\\NotBlog\\Markdown.Domain\\Markdown.Domain.csproj"
             },
-            "f:\\NotBlog\\Markdown.Infrastructure\\Markdown.Infrastructure.csproj": {
-              "projectPath": "f:\\NotBlog\\Markdown.Infrastructure\\Markdown.Infrastructure.csproj"
+            "F:\\NotBlog\\Markdown.Infrastructure\\Markdown.Infrastructure.csproj": {
+              "projectPath": "F:\\NotBlog\\Markdown.Infrastructure\\Markdown.Infrastructure.csproj"
             },
-            "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj": {
-              "projectPath": "f:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj"
+            "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj": {
+              "projectPath": "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj"
             }
           }
         }
@@ -2024,10 +2025,11 @@
         "auditLevel": "low",
         "auditMode": "all"
       },
-      "SdkAnalysisLevel": "10.0.100"
+      "SdkAnalysisLevel": "10.0.300"
     },
     "frameworks": {
       "net10.0": {
+        "framework": "net10.0",
         "targetAlias": "net10.0",
         "dependencies": {
           "Aspire.RabbitMQ.Client": {
@@ -2078,7 +2080,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.102/PortableRuntimeIdentifierGraph.json",
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.302/PortableRuntimeIdentifierGraph.json",
         "packagesToPrune": {
           "Microsoft.AspNetCore": "(,10.0.32767]",
           "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",
@@ -2501,7 +2503,7 @@
       "code": "NU1510",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "PackageReference Microsoft.AspNetCore.Mvc.Core 将不会删除。请考虑从依赖项中移除此包，因为可能不需要它。",
+      "message": "PackageReference Microsoft.AspNetCore.Mvc.Core 将不会被裁剪。此包自动可用，无需显式引用。移除 PackageReference 项。",
       "libraryId": "Microsoft.AspNetCore.Mvc.Core",
       "targetGraphs": [
         "net10.0"

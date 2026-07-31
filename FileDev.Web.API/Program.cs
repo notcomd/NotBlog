@@ -65,7 +65,6 @@ app.UseFileAccess();
 app.UseMiddleware<FileCheckTypeMiddleware>();
 app.MapDefaultEndpoints();
 
-
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();

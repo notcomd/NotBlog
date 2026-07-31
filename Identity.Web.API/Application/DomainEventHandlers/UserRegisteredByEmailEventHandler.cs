@@ -14,13 +14,13 @@ namespace Identity.Web.API.Application.DomainEventHandlers;
 public class UserRegisteredByEmailEventHandler : INotificationHandler<UserStartedByEmailDomainEvent>
 {
     private readonly ILogger<UserRegisteredByEmailEventHandler> _logger;
-    private readonly IEmailSender _emailSender;
+    private readonly IEmailCodeSend _emailSender;
     private readonly IUserRoleRepository _userRoleRepository;
     private readonly IUserRepository _userRepository;
 
     public UserRegisteredByEmailEventHandler(
         ILogger<UserRegisteredByEmailEventHandler> logger,
-        IEmailSender emailSender,
+        IEmailCodeSend emailSender,
         IUserRoleRepository userRoleRepository,
         IUserRepository userRepository)
     {
@@ -75,18 +75,18 @@ public class UserRegisteredByEmailEventHandler : INotificationHandler<UserStarte
             </div>
             """;
 
-        var emailMessage = new EmailMessage(notification.UserEmail, "欢迎加入 NotBlog！", body, isHtml: true);
+        //var emailMessage = new EmailMessage(notification.UserEmail, "欢迎加入 NotBlog！", body, isHtml: true);
 
-        var result = await _emailSender.SendAsync(emailMessage, cancellationToken);
+        var result = await _emailSender.SendEmailCodeAsync(notification.UserEmail, "欢迎加入 NotBlog！", body);
 
-        if (result.Success)
+        if (result)
         {
             _logger.LogInformation("[{Time}] 欢迎邮件已发送至: {Email}", DateTime.UtcNow, notification.UserEmail);
         }
         else
         {
-            _logger.LogWarning("[{Time}] 欢迎邮件发送失败: {Email}, Error: {Error}",
-                DateTime.UtcNow, notification.UserEmail, result.ErrorMessage);
+            _logger.LogWarning("[{Time}] 欢迎邮件发送失败: {Email}",
+                DateTime.UtcNow, notification.UserEmail);
         }
     }
 
@@ -137,7 +137,7 @@ public class UserRegisteredByEmailEventHandler : INotificationHandler<UserStarte
         }
         else
         {
-            _logger.LogDebug("[{Time}] 用户 {UserGuid} 已拥有默认角色，跳过分配",
+            _logger.LogInformation("[{Time}] 用户 {UserGuid} 已拥有默认角色，跳过分配",
                 DateTime.UtcNow, user.UserGuid);
         }
     }

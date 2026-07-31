@@ -1,5 +1,3 @@
-using Markdown.Domain.SeedWork;
-
 namespace Markdown.Domain.Entities;
 
 public class MarkReview : Entity
@@ -34,6 +32,11 @@ public class MarkReview : Entity
     public Guid UserId { get; init; }
 
     public Guid? MarkAggregateRootGuid { get; private set; }
+
+    /// <summary>
+    ///     由聚合根调用，设置父评论 GUID
+    /// </summary>
+    internal void SetParentReviewGuid(Guid parentReviewGuid) => MarkAggregateRootGuid = parentReviewGuid;
 
     public string? MarkReviewContent { get; private set; } = null!;
 

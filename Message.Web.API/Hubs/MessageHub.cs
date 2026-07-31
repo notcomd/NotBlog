@@ -1,9 +1,10 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
-
+using Message.Web.API.Hubs;
 namespace Message.Web.API.Hubs;
 
-[Authorize]
+
+//[Authorize]
 public class MessageHub : Hub<IMessageClient>
 {
     private readonly IConnectionManager _connectionManager;
@@ -23,6 +24,10 @@ public class MessageHub : Hub<IMessageClient>
         _logger = logger;
     }
 
+    /// <summary>
+    /// 当用户连接到Hub时调用
+    /// </summary>
+    [HubMethodName("OnConnected")]
     public override async Task OnConnectedAsync()
     {
         try
@@ -56,6 +61,11 @@ public class MessageHub : Hub<IMessageClient>
         }
     }
 
+    /// <summary>
+    /// 当用户断开连接时调用
+    /// </summary>
+    /// <param name="exception">断开连接时发生的异常</param>
+    [HubMethodName("OnDisconnected")]
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         try
@@ -82,6 +92,12 @@ public class MessageHub : Hub<IMessageClient>
         }
     }
 
+    /// <summary>
+    /// 发送消息到指定会话
+    /// </summary>
+    /// <param name="sessionId">会话ID</param>
+    /// <param name="request">消息请求</param>
+    [HubMethodName("SendMessage")]
     public async Task SendMessage(Guid sessionId, SendMessageRequest request)
     {
         var userId = GetUserId();
@@ -121,6 +137,11 @@ public class MessageHub : Hub<IMessageClient>
         }
     }
 
+    /// <summary>
+    /// 标记消息为已读
+    /// </summary>
+    /// <param name="messageId">消息ID</param>
+    [HubMethodName("MarkAsRead")]
     public async Task MarkAsRead(Guid messageId)
     {
         var userId = GetUserId();
@@ -128,6 +149,11 @@ public class MessageHub : Hub<IMessageClient>
         await Clients.Caller.MessageRead(messageId, userId);
     }
 
+    /// <summary>
+    /// 召回指定消息
+    /// </summary>
+    /// <param name="messageId">消息ID</param>
+    [HubMethodName("RecallMessage")]
     public async Task RecallMessage(Guid messageId)
     {
         var userId = GetUserId();
@@ -135,18 +161,33 @@ public class MessageHub : Hub<IMessageClient>
         await Clients.Caller.MessageRecalled(messageId);
     }
 
+    /// <summary>
+    /// 加入指定会话
+    /// </summary>
+    /// <param name="sessionId">会话ID</param>
+    [HubMethodName("JoinSession")]
     public async Task JoinSession(Guid sessionId)
     {
         await Groups.AddToGroupAsync(Context.ConnectionId, $"session:{sessionId}");
         _logger.LogDebug("连接 {ConnectionId} 加入会话 {SessionId}", Context.ConnectionId, sessionId);
     }
 
+    /// <summary>
+    /// 离开指定会话
+    /// </summary>
+    /// <param name="sessionId">会话ID</param>
+    [HubMethodName("LeaveSession")]
     public async Task LeaveSession(Guid sessionId)
     {
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"session:{sessionId}");
         _logger.LogDebug("连接 {ConnectionId} 离开会话 {SessionId}", Context.ConnectionId, sessionId);
     }
 
+    /// <summary>
+    /// 发送正在输入指示
+    /// </summary>
+    /// <param name="sessionId">会话ID</param>
+    [HubMethodName("SendTypingIndicator")]
     public async Task SendTypingIndicator(Guid sessionId)
     {
         var userId = GetUserId();
@@ -164,6 +205,11 @@ public class MessageHub : Hub<IMessageClient>
         }
     }
 
+    /// <summary>
+    /// 获取当前连接的用户ID
+    /// </summary>
+    /// <returns>用户ID</returns>
+    /// <exception cref="HubException">如果用户标识无效</exception>
     private Guid GetUserId()
     {
         var userIdClaim = Context.User?.FindFirst("sub")?.Value
@@ -175,13 +221,3 @@ public class MessageHub : Hub<IMessageClient>
     }
 }
 
-public interface IMessageClient
-{
-    Task ReceiveMessage(MessageDto message);
-    Task MessageRecalled(Guid messageId);
-    Task MessageRead(Guid messageId, Guid readerId);
-    Task UserOnline(Guid userId);
-    Task UserOffline(Guid userId);
-    Task TypingIndicator(Guid sessionId, Guid userId);
-    Task UnreadCountUpdated(Guid sessionId, int count);
-}

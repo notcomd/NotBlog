@@ -1,8 +1,11 @@
-﻿using System.Text.Json;
-
 namespace Identity.Domain.Result;
 
-public sealed class IdentityResult<TResponse> : IActionResult where TResponse : class
+/// <summary>
+/// 领域结果对象 — 纯 POCO，不依赖任何 Web 框架
+/// 
+/// 在 Web.API 层通过扩展方法转换为 IResult 响应
+/// </summary>
+public sealed class IdentityResult<TResponse> where TResponse : class
 {
     private IdentityResult(string resultMessage, StatusCode statusCode, TResponse resultData,
         ResultType resultType = ResultType.ApplicationJson)
@@ -33,46 +36,7 @@ public sealed class IdentityResult<TResponse> : IActionResult where TResponse : 
     /// </summary>
     public ResultType ResultType { get; set; }
 
-    public Task ExecuteResultAsync(ActionContext context)
-    {
-        var response = context.HttpContext.Response;
-
-        response.ContentType = ResultType switch
-        {
-            ResultType.ApplicationJson => "application/json",
-            ResultType.ApplicationXml => "application/xml",
-            _ => "application/json"
-        };
-
-        response.StatusCode = StatusCode switch
-        {
-            StatusCode.Ok => 200,
-            StatusCode.Error => 400,
-            StatusCode.TimeOut => 408,
-            StatusCode.Reset => 205,
-            StatusCode.NotAuthorized => 401,
-            StatusCode.InternalServerError => 500,
-            _ => 500
-        };
-
-        var resultObj = new
-        {
-            message = ResultMessage,
-            status = StatusCode.ToString(),
-            data = ResultData
-        };
-
-        if (ResultType == ResultType.ApplicationXml)
-        {
-            var xmlSerializer = new XmlSerializer(resultObj.GetType());
-            using var stringWriter = new StringWriter();
-            xmlSerializer.Serialize(stringWriter, resultObj);
-            return response.WriteAsync(stringWriter.ToString());
-        }
-
-        var json = JsonSerializer.Serialize(resultObj);
-        return response.WriteAsync(json);
-    }
+    // ── 工厂方法 ──
 
     public static IdentityResult<TResponse> Success(string message, TResponse data,
         ResultType resultType = ResultType.ApplicationJson)
@@ -109,7 +73,6 @@ public sealed class IdentityResult<TResponse> : IActionResult where TResponse : 
     {
         return new IdentityResult<TResponse>(message, StatusCode.InternalServerError, data, resultType);
     }
-
 
     public static IdentityResult<TResponse> Other(string message, StatusCode statusCode, TResponse data,
         ResultType resultType = ResultType.ApplicationJson)

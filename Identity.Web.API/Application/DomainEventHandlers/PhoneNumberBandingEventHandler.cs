@@ -1,4 +1,3 @@
-using Identity.Domain.Entities.UserAggregate;
 using Identity.Domain.Events;
 using Identity.Domain.IRepository;
 

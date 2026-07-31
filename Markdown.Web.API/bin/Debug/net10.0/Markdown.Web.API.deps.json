@@ -9,7 +9,7 @@
       "Markdown.Web.API/1.0.0": {
         "dependencies": {
           "Aspire.RabbitMQ.Client": "13.4.6",
-          "Evenbus": "1.0.0",
+          "EventBus": "1.0.0",
           "Markdown.Domain": "1.0.0",
           "Markdown.Infrastructure": "1.0.0",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "10.0.0",
@@ -486,7 +486,7 @@
           }
         }
       },
-      "Evenbus/1.0.0": {
+      "EventBus/1.0.0": {
         "dependencies": {
           "Dynamic.Json": "1.4.2",
           "Microsoft.EntityFrameworkCore": "10.0.9",
@@ -496,7 +496,7 @@
           "RabbitMQ.Client": "7.2.1"
         },
         "runtime": {
-          "Evenbus.dll": {
+          "EventBus.dll": {
             "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
@@ -868,7 +868,7 @@
       "serviceable": false,
       "sha512": ""
     },
-    "Evenbus/1.0.0": {
+    "EventBus/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
