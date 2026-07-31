@@ -1,6 +1,8 @@
 using Identity.Domain.Options;
 using Identity.Infrastructure.Services;
 using Notcomd.Token.JWT.Extensions;
+using Identity.Domain.ICache;
+using Identity.Infrastructure.Cache;
 
 namespace Identity.Infrastructure;
 
@@ -21,6 +23,9 @@ public static class AddIdentityServer
         serviceCollection.AddDistributedMemoryCache();
         serviceCollection.AddScoped<ISmsCodeSend, SmsCodeSend>();
         serviceCollection.AddScoped<UserService>();
+        serviceCollection.AddScoped<IIdentityCacheService, IdentityCacheService>();
+
+
 
         return serviceCollection;
     }

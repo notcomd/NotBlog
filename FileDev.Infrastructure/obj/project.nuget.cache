@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "ekUcl1MAEtg=",
+  "dgSpecHash": "JVdCunjbpcM=",
   "success": true,
   "projectFilePath": "F:\\NotBlog\\FileDev.Infrastructure\\FileDev.Infrastructure.csproj",
   "expectedPackageFiles": [
@@ -51,12 +51,12 @@
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.options\\10.0.9\\microsoft.extensions.options.10.0.9.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.options.configurationextensions\\10.0.0\\microsoft.extensions.options.configurationextensions.10.0.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.primitives\\10.0.9\\microsoft.extensions.primitives.10.0.9.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.abstractions\\8.21.0\\microsoft.identitymodel.abstractions.8.21.0.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.jsonwebtokens\\8.21.0\\microsoft.identitymodel.jsonwebtokens.8.21.0.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.logging\\8.21.0\\microsoft.identitymodel.logging.8.21.0.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.abstractions\\8.22.0\\microsoft.identitymodel.abstractions.8.22.0.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.jsonwebtokens\\8.22.0\\microsoft.identitymodel.jsonwebtokens.8.22.0.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.logging\\8.22.0\\microsoft.identitymodel.logging.8.22.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.protocols\\8.19.2\\microsoft.identitymodel.protocols.8.19.2.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.protocols.openidconnect\\8.19.2\\microsoft.identitymodel.protocols.openidconnect.8.19.2.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.tokens\\8.21.0\\microsoft.identitymodel.tokens.8.21.0.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.tokens\\8.22.0\\microsoft.identitymodel.tokens.8.22.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.net.http.headers\\2.3.9\\microsoft.net.http.headers.2.3.9.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\newtonsoft.json\\9.0.1\\newtonsoft.json.9.0.1.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\notmediator\\1.0.5\\notmediator.1.0.5.nupkg.sha512",
@@ -66,9 +66,9 @@
     "C:\\Users\\notco\\.nuget\\packages\\opentelemetry.api\\1.15.3\\opentelemetry.api.1.15.3.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\opentelemetry.api.providerbuilderextensions\\1.15.3\\opentelemetry.api.providerbuilderextensions.1.15.3.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\opentelemetry.extensions.hosting\\1.15.3\\opentelemetry.extensions.hosting.1.15.3.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\respite\\3.0.17\\respite.3.0.17.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\stackexchange.redis\\3.0.17\\stackexchange.redis.3.0.17.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\system.identitymodel.tokens.jwt\\8.21.0\\system.identitymodel.tokens.jwt.8.21.0.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\respite\\3.0.25\\respite.3.0.25.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\stackexchange.redis\\3.0.25\\stackexchange.redis.3.0.25.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\system.identitymodel.tokens.jwt\\8.22.0\\system.identitymodel.tokens.jwt.8.22.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\system.io.hashing\\10.0.8\\system.io.hashing.10.0.8.nupkg.sha512"
   ],
   "logs": [

@@ -23,5 +23,5 @@ public record MarkdownCreatedDomainEvent(
     Guid MarkDownGuid,
     Guid MarkUserGuid,
     string FileName,
-    DateTime CreatedAt
+    DateTimeOffset CreatedAt
 ) : INotifications;

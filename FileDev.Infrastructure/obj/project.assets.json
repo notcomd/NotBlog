@@ -858,7 +858,7 @@
           "buildTransitive/net8.0/_._": {}
         }
       },
-      "Microsoft.IdentityModel.Abstractions/8.21.0": {
+      "Microsoft.IdentityModel.Abstractions/8.22.0": {
         "type": "package",
         "compile": {
           "lib/net10.0/Microsoft.IdentityModel.Abstractions.dll": {
@@ -871,10 +871,10 @@
           }
         }
       },
-      "Microsoft.IdentityModel.JsonWebTokens/8.21.0": {
+      "Microsoft.IdentityModel.JsonWebTokens/8.22.0": {
         "type": "package",
         "dependencies": {
-          "Microsoft.IdentityModel.Tokens": "8.21.0"
+          "Microsoft.IdentityModel.Tokens": "8.22.0"
         },
         "compile": {
           "lib/net10.0/Microsoft.IdentityModel.JsonWebTokens.dll": {
@@ -887,10 +887,10 @@
           }
         }
       },
-      "Microsoft.IdentityModel.Logging/8.21.0": {
+      "Microsoft.IdentityModel.Logging/8.22.0": {
         "type": "package",
         "dependencies": {
-          "Microsoft.IdentityModel.Abstractions": "8.21.0"
+          "Microsoft.IdentityModel.Abstractions": "8.22.0"
         },
         "compile": {
           "lib/net10.0/Microsoft.IdentityModel.Logging.dll": {
@@ -936,12 +936,12 @@
           }
         }
       },
-      "Microsoft.IdentityModel.Tokens/8.21.0": {
+      "Microsoft.IdentityModel.Tokens/8.22.0": {
         "type": "package",
         "dependencies": {
           "Microsoft.Bcl.Cryptography": "10.0.2",
           "Microsoft.Extensions.Logging.Abstractions": "8.0.0",
-          "Microsoft.IdentityModel.Logging": "8.21.0"
+          "Microsoft.IdentityModel.Logging": "8.22.0"
         },
         "compile": {
           "lib/net10.0/Microsoft.IdentityModel.Tokens.dll": {
@@ -1094,7 +1094,7 @@
           }
         }
       },
-      "RESPite/3.0.17": {
+      "RESPite/3.0.25": {
         "type": "package",
         "compile": {
           "lib/net10.0/RESPite.dll": {}
@@ -1103,11 +1103,11 @@
           "lib/net10.0/RESPite.dll": {}
         }
       },
-      "StackExchange.Redis/3.0.17": {
+      "StackExchange.Redis/3.0.25": {
         "type": "package",
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "10.0.5",
-          "RESPite": "3.0.17",
+          "RESPite": "3.0.25",
           "System.IO.Hashing": "10.0.5"
         },
         "compile": {
@@ -1121,11 +1121,11 @@
           }
         }
       },
-      "System.IdentityModel.Tokens.Jwt/8.21.0": {
+      "System.IdentityModel.Tokens.Jwt/8.22.0": {
         "type": "package",
         "dependencies": {
-          "Microsoft.IdentityModel.JsonWebTokens": "8.21.0",
-          "Microsoft.IdentityModel.Tokens": "8.21.0"
+          "Microsoft.IdentityModel.JsonWebTokens": "8.22.0",
+          "Microsoft.IdentityModel.Tokens": "8.22.0"
         },
         "compile": {
           "lib/net10.0/System.IdentityModel.Tokens.Jwt.dll": {
@@ -1196,7 +1196,6 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v10.0",
         "dependencies": {
-          "Microsoft.AspNetCore.Mvc.Core": "2.3.11",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.9"
         },
         "compile": {
@@ -2287,10 +2286,10 @@
         "useSharedDesignerContext.txt"
       ]
     },
-    "Microsoft.IdentityModel.Abstractions/8.21.0": {
-      "sha512": "XYgEmYpUvng0oYIagDJ+uebboQSnWtCV7q9zMyXlBw6ZqLLCHcmGUb7TpXvQ3HWY4OzbOCUQm2Ac0saPSnwqSw==",
+    "Microsoft.IdentityModel.Abstractions/8.22.0": {
+      "sha512": "LU3V3owsu4vGpCg2kyL7SsQEuHwcoJ8FSNBqzLADzCf3/PcKUTcx5Plsd51DoTJMfK/WigXV/03UhaN5JXE6uQ==",
       "type": "package",
-      "path": "microsoft.identitymodel.abstractions/8.21.0",
+      "path": "microsoft.identitymodel.abstractions/8.22.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -2309,14 +2308,14 @@
         "lib/net9.0/Microsoft.IdentityModel.Abstractions.xml",
         "lib/netstandard2.0/Microsoft.IdentityModel.Abstractions.dll",
         "lib/netstandard2.0/Microsoft.IdentityModel.Abstractions.xml",
-        "microsoft.identitymodel.abstractions.8.21.0.nupkg.sha512",
+        "microsoft.identitymodel.abstractions.8.22.0.nupkg.sha512",
         "microsoft.identitymodel.abstractions.nuspec"
       ]
     },
-    "Microsoft.IdentityModel.JsonWebTokens/8.21.0": {
-      "sha512": "iiA5uimwlRe4Drd8YKOaB8IQkgGOjxGjO6mu5zCGFjaEBpB6yNOluZ33zJFXiW5MQYRC6ypMnOXsiR5SPrO+tw==",
+    "Microsoft.IdentityModel.JsonWebTokens/8.22.0": {
+      "sha512": "kv6peMLjALZLDAy2H3F77KjVRdwiscn2p/g3ui2chcbuEcAX2MpAbyDcYnJ7Vyh8jZ1aJWrniUMCDWoOgnu4NQ==",
       "type": "package",
-      "path": "microsoft.identitymodel.jsonwebtokens/8.21.0",
+      "path": "microsoft.identitymodel.jsonwebtokens/8.22.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -2335,14 +2334,14 @@
         "lib/net9.0/Microsoft.IdentityModel.JsonWebTokens.xml",
         "lib/netstandard2.0/Microsoft.IdentityModel.JsonWebTokens.dll",
         "lib/netstandard2.0/Microsoft.IdentityModel.JsonWebTokens.xml",
-        "microsoft.identitymodel.jsonwebtokens.8.21.0.nupkg.sha512",
+        "microsoft.identitymodel.jsonwebtokens.8.22.0.nupkg.sha512",
         "microsoft.identitymodel.jsonwebtokens.nuspec"
       ]
     },
-    "Microsoft.IdentityModel.Logging/8.21.0": {
-      "sha512": "LgIWUUX386xCbvjq2ex8iXGIu2raDWrrIQ4OyYZKaNWMhzvN8YOTbAYMFJC+iHmKnkNBM8g7mLak9KQodldH3g==",
+    "Microsoft.IdentityModel.Logging/8.22.0": {
+      "sha512": "G9Tl0yXSlr2pkXv4EpXjO16M4q6oo9N/od+gNyOusZ8yM8LZg1H3f/QOMFuOJiV6znzY5MkAREU97JRRnqpEQw==",
       "type": "package",
-      "path": "microsoft.identitymodel.logging/8.21.0",
+      "path": "microsoft.identitymodel.logging/8.22.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -2361,7 +2360,7 @@
         "lib/net9.0/Microsoft.IdentityModel.Logging.xml",
         "lib/netstandard2.0/Microsoft.IdentityModel.Logging.dll",
         "lib/netstandard2.0/Microsoft.IdentityModel.Logging.xml",
-        "microsoft.identitymodel.logging.8.21.0.nupkg.sha512",
+        "microsoft.identitymodel.logging.8.22.0.nupkg.sha512",
         "microsoft.identitymodel.logging.nuspec"
       ]
     },
@@ -2417,10 +2416,10 @@
         "microsoft.identitymodel.protocols.openidconnect.nuspec"
       ]
     },
-    "Microsoft.IdentityModel.Tokens/8.21.0": {
-      "sha512": "xFnFEl4VrhAJEbqtRrpgfAACgkm6NYo7cWYKYROH00N9/M5OYrRwTP0lHsginnLrqPrseLcSqAueQNRCyGNsdw==",
+    "Microsoft.IdentityModel.Tokens/8.22.0": {
+      "sha512": "i4lywKKUuVmheCUA+w/q8QNPReNI0qanHI9hhz48AFqD1ljyb8sxPL2RbXOGiPV13XdJ4kxieL9ukS7tD43LxA==",
       "type": "package",
-      "path": "microsoft.identitymodel.tokens/8.21.0",
+      "path": "microsoft.identitymodel.tokens/8.22.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -2439,7 +2438,7 @@
         "lib/net9.0/Microsoft.IdentityModel.Tokens.xml",
         "lib/netstandard2.0/Microsoft.IdentityModel.Tokens.dll",
         "lib/netstandard2.0/Microsoft.IdentityModel.Tokens.xml",
-        "microsoft.identitymodel.tokens.8.21.0.nupkg.sha512",
+        "microsoft.identitymodel.tokens.8.22.0.nupkg.sha512",
         "microsoft.identitymodel.tokens.nuspec"
       ]
     },
@@ -2655,10 +2654,10 @@
         "opentelemetry.extensions.hosting.nuspec"
       ]
     },
-    "RESPite/3.0.17": {
-      "sha512": "68slEMyRTUNLc75DruEDsEohFmFfNwkHLLtwQ46bobF+8Tl+UXMKM1kM87ihhKy6JdAqy1RrvAfvBWeLmcY9Gg==",
+    "RESPite/3.0.25": {
+      "sha512": "v4vA1MttS78DQINFIY5BLOtWdA9OXoSSZk4VVdSzM7B2GezKsFHqTQpTHCZXuUuQ6+gPmvh8DkT60wEEtCojSg==",
       "type": "package",
-      "path": "respite/3.0.17",
+      "path": "respite/3.0.25",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -2669,15 +2668,15 @@
         "lib/net8.0/RESPite.dll",
         "lib/netstandard2.0/RESPite.dll",
         "readme.md",
-        "respite.3.0.17.nupkg.sha512",
+        "respite.3.0.25.nupkg.sha512",
         "respite.nuspec",
         "seredis.png"
       ]
     },
-    "StackExchange.Redis/3.0.17": {
-      "sha512": "ItAm9lokZ1mWsQLF3u4Yw4eb/gvkX6Rp9bLAe1KUKgKAjPkALoQwTc6jJLtBZoOv9LT7RwvSIXZZb9FF30QhOg==",
+    "StackExchange.Redis/3.0.25": {
+      "sha512": "ak+9jk7f5oE25gBaCT7Epr8jYD3EyTEuMr5oxlY8EZE7o01xcaGLWTg+xeE6PaRV1ko9/fMdlvSEjdrdgpBb0g==",
       "type": "package",
-      "path": "stackexchange.redis/3.0.17",
+      "path": "stackexchange.redis/3.0.25",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -2695,14 +2694,14 @@
         "lib/netstandard2.0/StackExchange.Redis.dll",
         "lib/netstandard2.0/StackExchange.Redis.xml",
         "seredis.png",
-        "stackexchange.redis.3.0.17.nupkg.sha512",
+        "stackexchange.redis.3.0.25.nupkg.sha512",
         "stackexchange.redis.nuspec"
       ]
     },
-    "System.IdentityModel.Tokens.Jwt/8.21.0": {
-      "sha512": "dKsTkmlpUf/I6g1Aw9joWaZAahXvC0gWGQvkXW1IjZLSefC/4LhQI0tL0VIs64/NZQbl4XnQvLQyu6c7z1pMxg==",
+    "System.IdentityModel.Tokens.Jwt/8.22.0": {
+      "sha512": "CpXGfNhLl6EgYaOC9XYsc1p7Ci9HtAy0soHJDSBNGse647al4tTq9RDr+LQsrF4Ls79Dx7VfzN34km0W4DWPow==",
       "type": "package",
-      "path": "system.identitymodel.tokens.jwt/8.21.0",
+      "path": "system.identitymodel.tokens.jwt/8.22.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -2721,7 +2720,7 @@
         "lib/net9.0/System.IdentityModel.Tokens.Jwt.xml",
         "lib/netstandard2.0/System.IdentityModel.Tokens.Jwt.dll",
         "lib/netstandard2.0/System.IdentityModel.Tokens.Jwt.xml",
-        "system.identitymodel.tokens.jwt.8.21.0.nupkg.sha512",
+        "system.identitymodel.tokens.jwt.8.22.0.nupkg.sha512",
         "system.identitymodel.tokens.jwt.nuspec"
       ]
     },

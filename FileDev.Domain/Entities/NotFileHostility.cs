@@ -1,5 +1,5 @@
 namespace FileDev.Domain.Entities;
 
-public class NotFileHostility : Entity
+public class NotFileHostility : Entity, IAggregateRoot
 {
 }

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "cO+HDjZ+bqQ=",
+  "dgSpecHash": "Efp1tY591Nc=",
   "success": true,
   "projectFilePath": "F:\\NotBlog\\Video.Infrastructure\\Video.Infrastructure.csproj",
   "expectedPackageFiles": [
@@ -60,12 +60,12 @@
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.options\\10.0.9\\microsoft.extensions.options.10.0.9.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.options.configurationextensions\\10.0.0\\microsoft.extensions.options.configurationextensions.10.0.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.primitives\\10.0.9\\microsoft.extensions.primitives.10.0.9.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.abstractions\\8.21.0\\microsoft.identitymodel.abstractions.8.21.0.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.jsonwebtokens\\8.21.0\\microsoft.identitymodel.jsonwebtokens.8.21.0.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.logging\\8.21.0\\microsoft.identitymodel.logging.8.21.0.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.abstractions\\8.22.0\\microsoft.identitymodel.abstractions.8.22.0.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.jsonwebtokens\\8.22.0\\microsoft.identitymodel.jsonwebtokens.8.22.0.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.logging\\8.22.0\\microsoft.identitymodel.logging.8.22.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.protocols\\8.19.2\\microsoft.identitymodel.protocols.8.19.2.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.protocols.openidconnect\\8.19.2\\microsoft.identitymodel.protocols.openidconnect.8.19.2.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.tokens\\8.21.0\\microsoft.identitymodel.tokens.8.21.0.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.tokens\\8.22.0\\microsoft.identitymodel.tokens.8.22.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.net.http.headers\\2.3.9\\microsoft.net.http.headers.2.3.9.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.visualstudio.solutionpersistence\\1.0.52\\microsoft.visualstudio.solutionpersistence.1.0.52.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\mono.texttemplating\\3.0.0\\mono.texttemplating.3.0.0.nupkg.sha512",
@@ -86,7 +86,7 @@
     "C:\\Users\\notco\\.nuget\\packages\\system.composition.hosting\\9.0.0\\system.composition.hosting.9.0.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\system.composition.runtime\\9.0.0\\system.composition.runtime.9.0.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\system.composition.typedparts\\9.0.0\\system.composition.typedparts.9.0.0.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\system.identitymodel.tokens.jwt\\8.21.0\\system.identitymodel.tokens.jwt.8.21.0.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\system.identitymodel.tokens.jwt\\8.22.0\\system.identitymodel.tokens.jwt.8.22.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\system.io.hashing\\10.0.8\\system.io.hashing.10.0.8.nupkg.sha512"
   ],
   "logs": []

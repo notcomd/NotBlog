@@ -89,14 +89,14 @@ public class FileChunkManager : IFileChunkManager
 
     // ── 状态查询（Redis优先，DB降级） ──
 
-    public async Task<HashSet<int>> GetUploadedChunksAsync(string fileKey, CancellationToken ct = default)
+    public async Task<List<int>> GetUploadedChunksAsync(string fileKey, CancellationToken ct = default)
     {
         // 优先 Redis
         try
         {
             var members = await _redis.SetMembersAsync(ChunkSetKey(fileKey), ct).ConfigureAwait(false);
             if (members.Any())
-                return members.Select(int.Parse).ToHashSet();
+                return members.Select(int.Parse).ToList<int>();
         }
         catch (Exception ex)
         {
@@ -105,7 +105,7 @@ public class FileChunkManager : IFileChunkManager
 
         // 降级 DB
         var record = await _repository.GetByFileKeyAsync(fileKey, ct).ConfigureAwait(false);
-        return record?.UploadedChunks ?? new HashSet<int>();
+        return record?.UploadedChunks ?? [];
     }
 
     public async Task<FileChunkRecord?> GetUploadStatusAsync(string fileKey, CancellationToken ct = default)

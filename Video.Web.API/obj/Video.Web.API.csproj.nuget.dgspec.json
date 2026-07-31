@@ -433,10 +433,6 @@
           "framework": "net10.0",
           "targetAlias": "net10.0",
           "dependencies": {
-            "Microsoft.AspNetCore.Mvc.Core": {
-              "target": "Package",
-              "version": "[2.3.11, )"
-            },
             "Microsoft.Extensions.DependencyInjection.Abstractions": {
               "target": "Package",
               "version": "[10.0.9, )"
@@ -1146,7 +1142,7 @@
           "auditLevel": "low",
           "auditMode": "all"
         },
-        "SdkAnalysisLevel": "10.0.100"
+        "SdkAnalysisLevel": "10.0.300"
       },
       "frameworks": {
         "net10.0": {
@@ -1214,7 +1210,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.102/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.302/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",
@@ -3152,8 +3148,8 @@
               "F:\\NotBlog\\CacheMemory\\CacheMemory.csproj": {
                 "projectPath": "F:\\NotBlog\\CacheMemory\\CacheMemory.csproj"
               },
-              "F:\\NotBlog\\Eventbus\\EventBus.csproj": {
-                "projectPath": "F:\\NotBlog\\Eventbus\\EventBus.csproj"
+              "F:\\NotBlog\\EventBus\\EventBus.csproj": {
+                "projectPath": "F:\\NotBlog\\EventBus\\EventBus.csproj"
               },
               "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj": {
                 "projectPath": "F:\\NotBlog\\NotBlog.ServiceDefaults\\NotBlog.ServiceDefaults.csproj"

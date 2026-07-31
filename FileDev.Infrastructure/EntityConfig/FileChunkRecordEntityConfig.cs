@@ -40,7 +40,7 @@ public class FileChunkRecordEntityConfig : IEntityTypeConfiguration<FileChunkRec
             .HasConversion(
                 v => string.Join(",", v.OrderBy(x => x)),
                 v => v.Split(',', StringSplitOptions.RemoveEmptyEntries)
-                    .Select(int.Parse).ToHashSet()
+                    .Select(int.Parse).ToList()
             )
             .HasColumnName("UploadedChunksCsv")
             .HasMaxLength(4000);

@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using System.Text.Json.Serialization;
+using Identity.Domain.Dto.OAuth;
 using Identity.Domain.Options;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
@@ -17,7 +18,7 @@ public class GithubAuthService(
     {
         var builder = new UriBuilder("https://github.com/login/oauth/authorize")
         {
-            Query = $"client_id={Uri.EscapeDataString(clientId)}" + $"?state={Guid.CreateVersion7()}"
+            Query = $"client_id={Uri.EscapeDataString(clientId)}" + $"&state={Guid.CreateVersion7()}"
         };
         return builder.Uri.ToString();
     }
@@ -39,7 +40,6 @@ public class GithubAuthService(
         if (!userInfo.TryGetValue("login", out var login) || !userInfo.TryGetValue("name", out var name))
             return string.Empty;
 
-        // Parse GitHub user ID
         var githubId = userInfo.TryGetValue("id", out var idObj)
             ? idObj?.ToString()
             : null;
@@ -48,8 +48,6 @@ public class GithubAuthService(
             return string.Empty;
 
         var displayName = name.ToString() ?? login.ToString() ?? string.Empty;
-
-        // Persist the external login record
         var userExternalLogin = UserExternalLogin.Create(
             LoginProviderType.GitHub,
             githubId,
@@ -59,13 +57,85 @@ public class GithubAuthService(
 
         await userExternalLoginRepository.AddAsync(userExternalLogin);
 
-        //var jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, };
         return JsonSerializer.Serialize(userInfo, _jsonSerializerOptions);
+    }
+
+    public async Task<GitHubUserInfo?> GetGitHubUserAsync(string code)
+    {
+        if (string.IsNullOrEmpty(code))
+            return null;
+
+        // ── 1. 用 code 换取 access_token ──
+        var tokenData = await ExchangeCode(code);
+        if (!tokenData.TryGetValue("access_token", out var tokenObj))
+            return null;
+
+        var token = tokenObj?.ToString();
+        if (string.IsNullOrEmpty(token))
+            return null;
+
+        // ── 2. 获取 GitHub 用户基本信息 ──
+        var userInfo = await GetByGithubUserInfo(token);
+        if (!userInfo.TryGetValue("login", out var login) || !userInfo.TryGetValue("name", out var name))
+            return null;
+
+        var githubId = userInfo.TryGetValue("id", out var idObj)
+            ? idObj?.ToString()
+            : null;
+
+        if (string.IsNullOrEmpty(githubId))
+            return null;
+
+        // ── 3. 获取用户邮箱 ──
+        var email = await GetGitHubUserEmailAsync(token);
+
+        // ── 4. 获取头像 URL ──
+        var avatarUrl = userInfo.TryGetValue("avatar_url", out var avatarObj)
+            ? avatarObj?.ToString()
+            : null;
+
+        return new GitHubUserInfo(
+            githubId,
+            login.ToString()!,
+            name.ToString()!,
+            email,
+            avatarUrl,
+            token);
     }
 
     public Task<bool> BindLinkUserAsync()
     {
         throw new NotImplementedException();
+    }
+
+    /// <summary>
+    /// 获取 GitHub 用户的主邮箱（优先 primary+verified，回退到任意 verified）
+    /// </summary>
+    private async Task<string?> GetGitHubUserEmailAsync(string token)
+    {
+        try
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, "https://api.github.com/user/emails");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            request.Headers.UserAgent.Add(new ProductInfoHeaderValue("GitHubOAuthNotBlog", "1.0"));
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            var http = httpClientFactory.CreateClient();
+            var response = await http.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+
+            var json = await response.Content.ReadAsStringAsync();
+            var emails = JsonSerializer.Deserialize<List<GitHubEmailInfo>>(json, _jsonSerializerOptions);
+
+            var primary = emails?.FirstOrDefault(e => e.Primary && e.Verified)
+                ?? emails?.FirstOrDefault(e => e.Verified);
+
+            return primary?.Email;
+        }
+        catch (Exception)
+        {
+            return null;
+        }
     }
 
     private async Task<Dictionary<string, object>> GetByGithubUserInfo(string token)
@@ -110,4 +180,11 @@ public class GithubAuthService(
         return JsonSerializer.Deserialize<Dictionary<string, object>>(json)
                ?? new Dictionary<string, object>();
     }
+
+    private record GitHubEmailInfo(
+        [property: JsonPropertyName("email")] string Email,
+        [property: JsonPropertyName("primary")] bool Primary,
+        [property: JsonPropertyName("verified")] bool Verified,
+        [property: JsonPropertyName("visibility")] string? Visibility
+    );
 }

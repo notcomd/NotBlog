@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "f:\\NotBlog\\NotEmail\\NotEmail.csproj": {}
+    "F:\\NotBlog\\NotEmail\\NotEmail.csproj": {}
   },
   "projects": {
-    "f:\\NotBlog\\NotEmail\\NotEmail.csproj": {
+    "F:\\NotBlog\\NotEmail\\NotEmail.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "f:\\NotBlog\\NotEmail\\NotEmail.csproj",
+        "projectUniqueName": "F:\\NotBlog\\NotEmail\\NotEmail.csproj",
         "projectName": "NotEmail",
-        "projectPath": "f:\\NotBlog\\NotEmail\\NotEmail.csproj",
+        "projectPath": "F:\\NotBlog\\NotEmail\\NotEmail.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "f:\\NotBlog\\NotEmail\\obj\\",
+        "outputPath": "F:\\NotBlog\\NotEmail\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"

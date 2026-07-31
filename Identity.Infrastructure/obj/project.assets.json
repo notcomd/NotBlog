@@ -887,7 +887,7 @@
           "buildTransitive/net8.0/_._": {}
         }
       },
-      "Microsoft.IdentityModel.Abstractions/8.21.0": {
+      "Microsoft.IdentityModel.Abstractions/8.22.0": {
         "type": "package",
         "compile": {
           "lib/net10.0/Microsoft.IdentityModel.Abstractions.dll": {
@@ -900,10 +900,10 @@
           }
         }
       },
-      "Microsoft.IdentityModel.JsonWebTokens/8.21.0": {
+      "Microsoft.IdentityModel.JsonWebTokens/8.22.0": {
         "type": "package",
         "dependencies": {
-          "Microsoft.IdentityModel.Tokens": "8.21.0"
+          "Microsoft.IdentityModel.Tokens": "8.22.0"
         },
         "compile": {
           "lib/net10.0/Microsoft.IdentityModel.JsonWebTokens.dll": {
@@ -916,10 +916,10 @@
           }
         }
       },
-      "Microsoft.IdentityModel.Logging/8.21.0": {
+      "Microsoft.IdentityModel.Logging/8.22.0": {
         "type": "package",
         "dependencies": {
-          "Microsoft.IdentityModel.Abstractions": "8.21.0"
+          "Microsoft.IdentityModel.Abstractions": "8.22.0"
         },
         "compile": {
           "lib/net10.0/Microsoft.IdentityModel.Logging.dll": {
@@ -965,12 +965,12 @@
           }
         }
       },
-      "Microsoft.IdentityModel.Tokens/8.21.0": {
+      "Microsoft.IdentityModel.Tokens/8.22.0": {
         "type": "package",
         "dependencies": {
           "Microsoft.Bcl.Cryptography": "10.0.2",
           "Microsoft.Extensions.Logging.Abstractions": "8.0.0",
-          "Microsoft.IdentityModel.Logging": "8.21.0"
+          "Microsoft.IdentityModel.Logging": "8.22.0"
         },
         "compile": {
           "lib/net10.0/Microsoft.IdentityModel.Tokens.dll": {
@@ -1183,11 +1183,11 @@
           }
         }
       },
-      "System.IdentityModel.Tokens.Jwt/8.21.0": {
+      "System.IdentityModel.Tokens.Jwt/8.22.0": {
         "type": "package",
         "dependencies": {
-          "Microsoft.IdentityModel.JsonWebTokens": "8.21.0",
-          "Microsoft.IdentityModel.Tokens": "8.21.0"
+          "Microsoft.IdentityModel.JsonWebTokens": "8.22.0",
+          "Microsoft.IdentityModel.Tokens": "8.22.0"
         },
         "compile": {
           "lib/net10.0/System.IdentityModel.Tokens.Jwt.dll": {
@@ -2452,10 +2452,10 @@
         "useSharedDesignerContext.txt"
       ]
     },
-    "Microsoft.IdentityModel.Abstractions/8.21.0": {
-      "sha512": "XYgEmYpUvng0oYIagDJ+uebboQSnWtCV7q9zMyXlBw6ZqLLCHcmGUb7TpXvQ3HWY4OzbOCUQm2Ac0saPSnwqSw==",
+    "Microsoft.IdentityModel.Abstractions/8.22.0": {
+      "sha512": "LU3V3owsu4vGpCg2kyL7SsQEuHwcoJ8FSNBqzLADzCf3/PcKUTcx5Plsd51DoTJMfK/WigXV/03UhaN5JXE6uQ==",
       "type": "package",
-      "path": "microsoft.identitymodel.abstractions/8.21.0",
+      "path": "microsoft.identitymodel.abstractions/8.22.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -2474,14 +2474,14 @@
         "lib/net9.0/Microsoft.IdentityModel.Abstractions.xml",
         "lib/netstandard2.0/Microsoft.IdentityModel.Abstractions.dll",
         "lib/netstandard2.0/Microsoft.IdentityModel.Abstractions.xml",
-        "microsoft.identitymodel.abstractions.8.21.0.nupkg.sha512",
+        "microsoft.identitymodel.abstractions.8.22.0.nupkg.sha512",
         "microsoft.identitymodel.abstractions.nuspec"
       ]
     },
-    "Microsoft.IdentityModel.JsonWebTokens/8.21.0": {
-      "sha512": "iiA5uimwlRe4Drd8YKOaB8IQkgGOjxGjO6mu5zCGFjaEBpB6yNOluZ33zJFXiW5MQYRC6ypMnOXsiR5SPrO+tw==",
+    "Microsoft.IdentityModel.JsonWebTokens/8.22.0": {
+      "sha512": "kv6peMLjALZLDAy2H3F77KjVRdwiscn2p/g3ui2chcbuEcAX2MpAbyDcYnJ7Vyh8jZ1aJWrniUMCDWoOgnu4NQ==",
       "type": "package",
-      "path": "microsoft.identitymodel.jsonwebtokens/8.21.0",
+      "path": "microsoft.identitymodel.jsonwebtokens/8.22.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -2500,14 +2500,14 @@
         "lib/net9.0/Microsoft.IdentityModel.JsonWebTokens.xml",
         "lib/netstandard2.0/Microsoft.IdentityModel.JsonWebTokens.dll",
         "lib/netstandard2.0/Microsoft.IdentityModel.JsonWebTokens.xml",
-        "microsoft.identitymodel.jsonwebtokens.8.21.0.nupkg.sha512",
+        "microsoft.identitymodel.jsonwebtokens.8.22.0.nupkg.sha512",
         "microsoft.identitymodel.jsonwebtokens.nuspec"
       ]
     },
-    "Microsoft.IdentityModel.Logging/8.21.0": {
-      "sha512": "LgIWUUX386xCbvjq2ex8iXGIu2raDWrrIQ4OyYZKaNWMhzvN8YOTbAYMFJC+iHmKnkNBM8g7mLak9KQodldH3g==",
+    "Microsoft.IdentityModel.Logging/8.22.0": {
+      "sha512": "G9Tl0yXSlr2pkXv4EpXjO16M4q6oo9N/od+gNyOusZ8yM8LZg1H3f/QOMFuOJiV6znzY5MkAREU97JRRnqpEQw==",
       "type": "package",
-      "path": "microsoft.identitymodel.logging/8.21.0",
+      "path": "microsoft.identitymodel.logging/8.22.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -2526,7 +2526,7 @@
         "lib/net9.0/Microsoft.IdentityModel.Logging.xml",
         "lib/netstandard2.0/Microsoft.IdentityModel.Logging.dll",
         "lib/netstandard2.0/Microsoft.IdentityModel.Logging.xml",
-        "microsoft.identitymodel.logging.8.21.0.nupkg.sha512",
+        "microsoft.identitymodel.logging.8.22.0.nupkg.sha512",
         "microsoft.identitymodel.logging.nuspec"
       ]
     },
@@ -2582,10 +2582,10 @@
         "microsoft.identitymodel.protocols.openidconnect.nuspec"
       ]
     },
-    "Microsoft.IdentityModel.Tokens/8.21.0": {
-      "sha512": "xFnFEl4VrhAJEbqtRrpgfAACgkm6NYo7cWYKYROH00N9/M5OYrRwTP0lHsginnLrqPrseLcSqAueQNRCyGNsdw==",
+    "Microsoft.IdentityModel.Tokens/8.22.0": {
+      "sha512": "i4lywKKUuVmheCUA+w/q8QNPReNI0qanHI9hhz48AFqD1ljyb8sxPL2RbXOGiPV13XdJ4kxieL9ukS7tD43LxA==",
       "type": "package",
-      "path": "microsoft.identitymodel.tokens/8.21.0",
+      "path": "microsoft.identitymodel.tokens/8.22.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -2604,7 +2604,7 @@
         "lib/net9.0/Microsoft.IdentityModel.Tokens.xml",
         "lib/netstandard2.0/Microsoft.IdentityModel.Tokens.dll",
         "lib/netstandard2.0/Microsoft.IdentityModel.Tokens.xml",
-        "microsoft.identitymodel.tokens.8.21.0.nupkg.sha512",
+        "microsoft.identitymodel.tokens.8.22.0.nupkg.sha512",
         "microsoft.identitymodel.tokens.nuspec"
       ]
     },
@@ -3093,10 +3093,10 @@
         "stackexchange.redis.nuspec"
       ]
     },
-    "System.IdentityModel.Tokens.Jwt/8.21.0": {
-      "sha512": "dKsTkmlpUf/I6g1Aw9joWaZAahXvC0gWGQvkXW1IjZLSefC/4LhQI0tL0VIs64/NZQbl4XnQvLQyu6c7z1pMxg==",
+    "System.IdentityModel.Tokens.Jwt/8.22.0": {
+      "sha512": "CpXGfNhLl6EgYaOC9XYsc1p7Ci9HtAy0soHJDSBNGse647al4tTq9RDr+LQsrF4Ls79Dx7VfzN34km0W4DWPow==",
       "type": "package",
-      "path": "system.identitymodel.tokens.jwt/8.21.0",
+      "path": "system.identitymodel.tokens.jwt/8.22.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -3115,7 +3115,7 @@
         "lib/net9.0/System.IdentityModel.Tokens.Jwt.xml",
         "lib/netstandard2.0/System.IdentityModel.Tokens.Jwt.dll",
         "lib/netstandard2.0/System.IdentityModel.Tokens.Jwt.xml",
-        "system.identitymodel.tokens.jwt.8.21.0.nupkg.sha512",
+        "system.identitymodel.tokens.jwt.8.22.0.nupkg.sha512",
         "system.identitymodel.tokens.jwt.nuspec"
       ]
     },
@@ -3267,23 +3267,23 @@
           "framework": "net10.0",
           "targetAlias": "net10.0",
           "projectReferences": {
-            "f:\\NotBlog\\CacheMemory\\CacheMemory.csproj": {
-              "projectPath": "f:\\NotBlog\\CacheMemory\\CacheMemory.csproj"
+            "F:\\NotBlog\\CacheMemory\\CacheMemory.csproj": {
+              "projectPath": "F:\\NotBlog\\CacheMemory\\CacheMemory.csproj"
             },
-            "f:\\NotBlog\\CommonsInitializer\\CommonsInitializer.csproj": {
-              "projectPath": "f:\\NotBlog\\CommonsInitializer\\CommonsInitializer.csproj"
+            "F:\\NotBlog\\CommonsInitializer\\CommonsInitializer.csproj": {
+              "projectPath": "F:\\NotBlog\\CommonsInitializer\\CommonsInitializer.csproj"
             },
-            "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj": {
-              "projectPath": "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj"
+            "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj": {
+              "projectPath": "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj"
             },
-            "f:\\NotBlog\\Identity.Domain\\Identity.Domain.csproj": {
-              "projectPath": "f:\\NotBlog\\Identity.Domain\\Identity.Domain.csproj"
+            "F:\\NotBlog\\Identity.Domain\\Identity.Domain.csproj": {
+              "projectPath": "F:\\NotBlog\\Identity.Domain\\Identity.Domain.csproj"
             },
-            "f:\\NotBlog\\JWToken\\Token.JWT.csproj": {
-              "projectPath": "f:\\NotBlog\\JWToken\\Token.JWT.csproj"
+            "F:\\NotBlog\\JWToken\\Token.JWT.csproj": {
+              "projectPath": "F:\\NotBlog\\JWToken\\Token.JWT.csproj"
             },
-            "f:\\NotBlog\\NotEmail\\NotEmail.csproj": {
-              "projectPath": "f:\\NotBlog\\NotEmail\\NotEmail.csproj"
+            "F:\\NotBlog\\NotEmail\\NotEmail.csproj": {
+              "projectPath": "F:\\NotBlog\\NotEmail\\NotEmail.csproj"
             }
           }
         }

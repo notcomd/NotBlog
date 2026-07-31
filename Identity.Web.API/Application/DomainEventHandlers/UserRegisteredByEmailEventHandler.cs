@@ -112,7 +112,7 @@ public class UserRegisteredByEmailEventHandler : INotificationHandler<UserStarte
         {
             defaultRole = Roles.RoleFactory.CreateUserRole();
             await _userRoleRepository.AddByUserRoleAsync(defaultRole);
-            await _userRoleRepository.UnitOfWork.SavaChangesAsync(cancellationToken);
+            await _userRoleRepository.UnitOfWork.SavaEntitiesAsync(cancellationToken);      
 
             _logger.LogInformation("[{Time}] 默认 'User' 角色已创建: RoleGuid={RoleGuid}",
                 DateTime.UtcNow, defaultRole.RoleGuid);

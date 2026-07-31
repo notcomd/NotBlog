@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "f:\\NotBlog\\JWToken\\Token.JWT.csproj": {}
+    "F:\\NotBlog\\JWToken\\Token.JWT.csproj": {}
   },
   "projects": {
-    "f:\\NotBlog\\JWToken\\Token.JWT.csproj": {
+    "F:\\NotBlog\\JWToken\\Token.JWT.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "f:\\NotBlog\\JWToken\\Token.JWT.csproj",
+        "projectUniqueName": "F:\\NotBlog\\JWToken\\Token.JWT.csproj",
         "projectName": "Token.JWT",
-        "projectPath": "f:\\NotBlog\\JWToken\\Token.JWT.csproj",
+        "projectPath": "F:\\NotBlog\\JWToken\\Token.JWT.csproj",
         "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-        "outputPath": "f:\\NotBlog\\JWToken\\obj\\",
+        "outputPath": "F:\\NotBlog\\JWToken\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"

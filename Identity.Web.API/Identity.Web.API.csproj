@@ -7,27 +7,38 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Aspire.RabbitMQ.Client" Version="13.4.6"/>
-        <PackageReference Include="Aspire.StackExchange.Redis.DistributedCaching" Version="13.4.6"/>
-        <PackageReference Include="MailKit" Version="4.17.0"/>
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.9"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.9"/>
+        <Protobuf Include="Protos\filestorage.proto" GrpcServices="Client" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Aspire.RabbitMQ.Client" Version="13.4.6" />
+        <PackageReference Include="Aspire.StackExchange.Redis.DistributedCaching" Version="13.4.6" />
+        <PackageReference Include="Google.Protobuf" Version="3.29.3" />
+        <PackageReference Include="Grpc.Net.Client" Version="2.80.0" />
+        <PackageReference Include="Grpc.Net.ClientFactory" Version="2.80.0" />
+        <PackageReference Include="Grpc.Tools" Version="*">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="MailKit" Version="4.17.0" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.9" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.9" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.9">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="NotMediator" Version="1.0.5" />
-        <PackageReference Include="Scalar.AspNetCore" Version="2.16.5"/>
+        <PackageReference Include="Scalar.AspNetCore" Version="2.16.5" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\CacheMemory\CacheMemory.csproj"/>
-        <ProjectReference Include="..\CommonsInitializer\CommonsInitializer.csproj"/>
-        <ProjectReference Include="..\EventBus\EventBus.csproj"/>
+        <ProjectReference Include="..\CacheMemory\CacheMemory.csproj" />
+        <ProjectReference Include="..\CommonsInitializer\CommonsInitializer.csproj" />
+        <ProjectReference Include="..\EventBus\EventBus.csproj" />
         <ProjectReference Include="..\NotBlog.ServiceDefaults\NotBlog.ServiceDefaults.csproj" />
-        <ProjectReference Include="..\NotEmail\NotEmail.csproj"/>
-        <ProjectReference Include="..\Identity.Infrastructure\Identity.Infrastructure.csproj"/>
-        <ProjectReference Include="..\JWToken\Token.JWT.csproj"/>
+        <ProjectReference Include="..\NotEmail\NotEmail.csproj" />
+        <ProjectReference Include="..\Identity.Infrastructure\Identity.Infrastructure.csproj" />
+        <ProjectReference Include="..\JWToken\Token.JWT.csproj" />
     </ItemGroup>
 
 </Project>

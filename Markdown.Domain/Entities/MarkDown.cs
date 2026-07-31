@@ -11,8 +11,8 @@ public class MarkDown : Entity, IAggregateRoot
         MarkDownTagboard = [];
         MarkReviews = [];
         OldMarkDowns = [];
-        CreateAt = DateTime.UtcNow;
-        UpdateAt = DateTime.UtcNow;
+        CreateAt = DateTimeOffset.UtcNow;
+        UpdateAt = DateTimeOffset.UtcNow;
     }
 
     // 私有全参数构造函数，供 Builder 调用
@@ -58,9 +58,9 @@ public class MarkDown : Entity, IAggregateRoot
 
     public bool IsDelete { get; private set; }
 
-    public DateTime CreateAt { get; init; }
+    public DateTimeOffset CreateAt { get; init; }
 
-    public DateTime UpdateAt { get; private set; }
+    public DateTimeOffset UpdateAt { get; private set; }
 
     public ICollection<MarkReview> MarkReviews { get; private set; }
 
@@ -99,7 +99,7 @@ public class MarkDown : Entity, IAggregateRoot
         }
 
         MarkReviews.Remove(review);
-        UpdateAt = DateTime.UtcNow;
+        UpdateAt = DateTimeOffset.UtcNow;
     }
 
     /// <summary>
@@ -120,7 +120,7 @@ public class MarkDown : Entity, IAggregateRoot
         parentReview.MarkQuote.AddReview();
         MarkReviews.Add(childReview);
 
-        UpdateAt = DateTime.UtcNow;
+        UpdateAt = DateTimeOffset.UtcNow;
         return childReview;
     }
 
@@ -154,7 +154,7 @@ public class MarkDown : Entity, IAggregateRoot
         MarkDownName = markDownName;
         MarkDownContent = markDownContent;
         MarkDownHash = markDownHash;
-        UpdateAt = DateTime.UtcNow;
+        UpdateAt = DateTimeOffset.UtcNow;
 
         return Task.FromResult(this);
     }
@@ -172,7 +172,7 @@ public class MarkDown : Entity, IAggregateRoot
     public void SoftDelete()
     {
         IsDelete = true;
-        UpdateAt = DateTime.UtcNow;
+        UpdateAt = DateTimeOffset.UtcNow;
     }
 
     /// <summary>
@@ -181,7 +181,7 @@ public class MarkDown : Entity, IAggregateRoot
     public void Restore()
     {
         IsDelete = false;
-        UpdateAt = DateTime.UtcNow;
+        UpdateAt = DateTimeOffset.UtcNow;
     }
 
     /// <summary>
@@ -193,7 +193,7 @@ public class MarkDown : Entity, IAggregateRoot
         if (!string.IsNullOrWhiteSpace(tag) && !MarkDownTagboard.Contains(tag))
         {
             MarkDownTagboard.Add(tag);
-            UpdateAt = DateTime.UtcNow;
+            UpdateAt = DateTimeOffset.UtcNow;
         }
     }
 
@@ -208,7 +208,7 @@ public class MarkDown : Entity, IAggregateRoot
             MarkDownTagboard.Add(tag);
         }
 
-        UpdateAt = DateTime.UtcNow;
+        UpdateAt = DateTimeOffset.UtcNow;
     }
 
     /// <summary>
@@ -220,7 +220,7 @@ public class MarkDown : Entity, IAggregateRoot
     {
         if (MarkDownTagboard.Remove(tag))
         {
-            UpdateAt = DateTime.UtcNow;
+            UpdateAt = DateTimeOffset.UtcNow;
             return true;
         }
 
@@ -235,7 +235,7 @@ public class MarkDown : Entity, IAggregateRoot
         if (MarkDownTagboard.Count > 0)
         {
             MarkDownTagboard.Clear();
-            UpdateAt = DateTime.UtcNow;
+            UpdateAt = DateTimeOffset.UtcNow;
         }
     }
 
@@ -256,7 +256,7 @@ public class MarkDown : Entity, IAggregateRoot
     public void UpdateMarkOption(MarkDownAuth markOption)
     {
         MarkDownAuth = markOption;
-        UpdateAt = DateTime.UtcNow;
+        UpdateAt = DateTimeOffset.UtcNow;
     }
 
     /// <summary>

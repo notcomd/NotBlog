@@ -60,7 +60,6 @@ public static class IdentityApis
     {
         var data = await identityService.UserService
             .LogInByCheckPasswordAsync(loginRequest.Email, loginRequest.Password, loginRequest.Code);
-
         return Results.Ok(data);
     }
 

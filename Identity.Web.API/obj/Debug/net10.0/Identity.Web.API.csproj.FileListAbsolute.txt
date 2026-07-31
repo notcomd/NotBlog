@@ -189,3 +189,8 @@ F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\CacheMemory.dll
 F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\CacheMemory.pdb
 F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\EventBus.dll
 F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\EventBus.pdb
+F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\Google.Protobuf.dll
+F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\Grpc.Core.Api.dll
+F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\Grpc.Net.Client.dll
+F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\Grpc.Net.ClientFactory.dll
+F:\NotBlog\Identity.Web.API\bin\Debug\net10.0\Grpc.Net.Common.dll

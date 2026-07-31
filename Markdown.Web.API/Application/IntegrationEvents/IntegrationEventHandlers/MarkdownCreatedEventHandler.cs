@@ -25,5 +25,5 @@ public record MarkdownCreatedEventData : IntegrationEvent
     public Guid MarkDownGuid { get; init; }
     public Guid MarkUserGuid { get; init; }
     public string FileName { get; init; } = string.Empty;
-    public DateTime CreatedAt { get; init; }
+    public DateTimeOffset CreatedAt { get; init; }
 }

@@ -17,5 +17,5 @@ public class NotBlog_AppHost
     /// <summary>
     /// The path to the Aspire Host project.
     /// </summary>
-    public static string ProjectPath => """f:\NotBlog\NotBlog.AppHost""";
+    public static string ProjectPath => """F:\NotBlog\NotBlog.AppHost""";
 }

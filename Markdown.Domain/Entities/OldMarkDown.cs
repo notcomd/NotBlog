@@ -45,12 +45,12 @@ public class OldMarkDown : Entity
     /// <summary>
     ///     历史版本创建时间
     /// </summary>
-    public DateTime CreateAt { get; private set; }
+    public DateTimeOffset CreateAt { get; private set; }
 
     /// <summary>
     ///     历史版本更新时间（归档时间）
     /// </summary>
-    public DateTime UpdateAt { get; private set; }
+    public DateTimeOffset UpdateAt { get; private set; }
 
     /// <summary>
     ///     导航属性：关联的当前文档
@@ -70,8 +70,8 @@ public class OldMarkDown : Entity
     private OldMarkDown()
     {
         OldMarkDownGuid = Guid.CreateVersion7();
-        CreateAt = DateTime.UtcNow;
-        UpdateAt = DateTime.UtcNow;
+        CreateAt = DateTimeOffset.UtcNow;
+        UpdateAt = DateTimeOffset.UtcNow;
         IsDelete = false;
     }
 
@@ -99,7 +99,7 @@ public class OldMarkDown : Entity
         OldMarkDownContent = content ?? throw new ArgumentNullException(nameof(content));
         OldMarkDownHash = hash ?? throw new ArgumentNullException(nameof(hash));
         Status = authType;
-        UpdateAt = DateTime.UtcNow;
+        UpdateAt = DateTimeOffset.UtcNow;
     }
 
     /// <summary>
@@ -108,7 +108,7 @@ public class OldMarkDown : Entity
     internal void SoftDelete()
     {
         IsDelete = true;
-        UpdateAt = DateTime.UtcNow;
+        UpdateAt = DateTimeOffset.UtcNow;
     }
 
     /// <summary>

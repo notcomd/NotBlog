@@ -8,8 +8,8 @@ public class FileChunkRecord : Entity, IAggregateRoot
     private FileChunkRecord()
     {
         RecordId = Guid.CreateVersion7();
-        UploadedChunks = new HashSet<int>();
-        CreatedAt = DateTime.UtcNow;
+        UploadedChunks = new List<int>();
+        CreatedAt = DateTimeOffset.UtcNow;
         Status = ChunkUploadStatus.Pending;
     }
 
@@ -68,7 +68,7 @@ public class FileChunkRecord : Entity, IAggregateRoot
     public int TotalChunks { get; private set; }
 
     /// <summary>已完成上传的分片索引集合</summary>
-    public HashSet<int> UploadedChunks { get; private set; }
+    public List<int> UploadedChunks { get; private set; }
 
     public string FileMd5 { get; private set; } = null!;
 
@@ -82,9 +82,9 @@ public class FileChunkRecord : Entity, IAggregateRoot
 
     public ChunkUploadStatus Status { get; private set; }
 
-    public DateTime CreatedAt { get; init; }
+    public DateTimeOffset CreatedAt { get; init; }
 
-    public DateTime? CompletedAt { get; private set; }
+    public DateTimeOffset? CompletedAt { get; private set; }
 
     /// <summary>标记分片已上传</summary>
     public void MarkChunkUploaded(int chunkIndex)
@@ -110,7 +110,7 @@ public class FileChunkRecord : Entity, IAggregateRoot
                 $"还有 {TotalChunks - UploadedChunks.Count} 个分片未上传，无法合并");
 
         Status = ChunkUploadStatus.Merged;
-        CompletedAt = DateTime.UtcNow;
+        CompletedAt = DateTimeOffset.UtcNow;
     }
 
     /// <summary>标记失败</summary>
@@ -123,7 +123,7 @@ public class FileChunkRecord : Entity, IAggregateRoot
     public void MarkCancelled()
     {
         Status = ChunkUploadStatus.Cancelled;
-        CompletedAt = DateTime.UtcNow;
+        CompletedAt = DateTimeOffset.UtcNow;
     }
 }
 

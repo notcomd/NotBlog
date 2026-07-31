@@ -26,12 +26,12 @@ public class NotFileGroupEntityConfiguration : IEntityTypeConfiguration<NotFileG
             .HasConversion(
                 v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
                 v => System.Text.Json.JsonSerializer.Deserialize<HashSet<Guid>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new HashSet<Guid>())
-            .HasColumnType("nvarchar(max)");
+            .HasColumnType("text");
 
         builder.Property(x => x.FileGroupTags)
             .HasConversion(
                 v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
                 v => System.Text.Json.JsonSerializer.Deserialize<HashSet<string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new HashSet<string>())
-            .HasColumnType("nvarchar(max)");
+            .HasColumnType("text");
     }
 }

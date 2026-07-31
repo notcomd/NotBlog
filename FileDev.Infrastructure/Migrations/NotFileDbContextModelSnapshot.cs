@@ -38,10 +38,10 @@ namespace FileDev.Infrastructure.Migrations
                     b.Property<int>("ChunkSize")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime?>("CompletedAt")
+                    b.Property<DateTimeOffset?>("CompletedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("FileDescription")
@@ -123,7 +123,7 @@ namespace FileDev.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<int>("Id"), "NotFileSeq");
 
-                    b.Property<DateTime?>("DeleteTime")
+                    b.Property<DateTimeOffset?>("DeleteTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("FileDescription")
@@ -151,9 +151,6 @@ namespace FileDev.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text[]");
 
-                    b.Property<int>("FileType")
-                        .HasColumnType("integer");
-
                     b.Property<string>("FileUri")
                         .IsRequired()
                         .HasColumnType("text");
@@ -161,10 +158,10 @@ namespace FileDev.Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTime>("UpdateTime")
+                    b.Property<DateTimeOffset>("UpdateTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("UploadTime")
+                    b.Property<DateTimeOffset>("UploadTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("UserId")
@@ -183,6 +180,9 @@ namespace FileDev.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<int>("Id"), "NotFileGroupseq");
 
+                    b.Property<int>("Depth")
+                        .HasColumnType("integer");
+
                     b.Property<string>("FileGroupDescription")
                         .HasColumnType("text");
 
@@ -190,15 +190,16 @@ namespace FileDev.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.PrimitiveCollection<HashSet<string>>("FileGroupTags")
+                    b.Property<string>("FileGroupTags")
                         .IsRequired()
-                        .HasColumnType("text[]");
+                        .HasColumnType("text");
 
                     b.Property<int>("FileIdentity")
                         .HasColumnType("integer");
 
-                    b.Property<int>("FileType")
-                        .HasColumnType("integer");
+                    b.Property<string>("FileIds")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
@@ -206,16 +207,21 @@ namespace FileDev.Infrastructure.Migrations
                     b.Property<Guid>("NotFileGroupId")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("UpdateTime")
+                    b.Property<Guid?>("ParentGroupId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdateTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("UploadTime")
+                    b.Property<DateTimeOffset>("UploadTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ParentGroupId");
 
                     b.ToTable("NotFileGroup", (string)null);
                 });
@@ -236,6 +242,22 @@ namespace FileDev.Infrastructure.Migrations
                     b.HasKey("ClientRequestId");
 
                     b.ToTable("ClientRequest", (string)null);
+                });
+
+            modelBuilder.Entity("FileDev.Domain.Entities.NotFileGroup", b =>
+                {
+                    b.HasOne("FileDev.Domain.Entities.NotFileGroup", "Parent")
+                        .WithMany("Children")
+                        .HasForeignKey("ParentGroupId")
+                        .HasPrincipalKey("NotFileGroupId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Parent");
+                });
+
+            modelBuilder.Entity("FileDev.Domain.Entities.NotFileGroup", b =>
+                {
+                    b.Navigation("Children");
                 });
 #pragma warning restore 612, 618
         }

@@ -29,12 +29,12 @@ public interface INotFileStorageService
     /// 上传单个分片
     /// </summary>
     Task<NotFileStorageResponse> UploadChunkAsync(string fileKey, int chunkIndex, byte[] chunkContent,
-        string chunkHash = null);
+        string? chunkHash = null);
 
     /// <summary>
     /// 合并分片为完整文件
     /// </summary>
-    Task<NotFileStorageResponse> MergeChunksAsync(string fileKey, int totalChunks, string expectedFileHash = null,
+    Task<NotFileStorageResponse> MergeChunksAsync(string fileKey, int totalChunks, string? expectedFileHash = null,
         bool overwrite = true);
 
     /// <summary>

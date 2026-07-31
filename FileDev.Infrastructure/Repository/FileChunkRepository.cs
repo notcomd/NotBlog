@@ -41,7 +41,7 @@ public class FileChunkRepository : IFileChunkRepository
             _context.Set<FileChunkRecord>().Remove(record);
     }
 
-    public async Task<IEnumerable<FileChunkRecord>> GetExpiredRecordsAsync(DateTime threshold,
+    public async Task<IEnumerable<FileChunkRecord>> GetExpiredRecordsAsync(DateTimeOffset threshold,
         CancellationToken ct = default)
     {
         return await _context.Set<FileChunkRecord>()

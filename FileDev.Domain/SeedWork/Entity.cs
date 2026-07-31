@@ -1,11 +1,11 @@
-﻿using NotMediator;
+using NotMediator;
 
 namespace FileDev.Domain.SeedWork;
 
 public abstract class Entity
 {
 
-    private List<INotifications> _domainEventbus;
+    private List<INotifications>? _domainEventbus;
 
     private int _id;
 
@@ -69,10 +69,10 @@ public abstract class Entity
         return base.GetHashCode();
     }
 
-    public static bool operator ==(Entity left, Entity? right)
+    public static bool operator ==(Entity? left, Entity? right)
     {
-        if (Equals(left, null))
-            return Equals(right, null) ? true : false;
+        if (left is null)
+            return right is null;
         return left.Equals(right);
     }
 

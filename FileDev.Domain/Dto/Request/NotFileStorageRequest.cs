@@ -7,12 +7,12 @@ public record NotFileStorageRequest
     /// <summary>
     /// 文件相对路径（如：docs/2026/test.txt）
     /// </summary>
-    public string FileRelativePath { get; set; }
+    public string FileRelativePath { get; set; } = string.Empty;
     
     /// <summary>
     /// 文件内容（文本/二进制）
     /// </summary>
-    public byte[] FileContent { get; set; }
+    public byte[] FileContent { get; set; } = [];
     
     /// <summary>
     /// 是否覆盖已存在的文件

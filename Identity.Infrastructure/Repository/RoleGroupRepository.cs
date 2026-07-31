@@ -38,7 +38,7 @@ public class RoleGroupRepository(IdentityDbContext dbContext) : IRoleGroupReposi
     /// <param name="roleGroup">角色组</param>
     public async ValueTask AddOneByRoleGroupAsync(RoleGroup roleGroup)
     {
-        throw new NotImplementedException();
+        await _dbContext.RoleGroups.AddAsync(roleGroup);
     }
 
     /// <summary>

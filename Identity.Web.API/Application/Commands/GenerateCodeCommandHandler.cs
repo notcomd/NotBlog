@@ -1,4 +1,5 @@
 using CacheMemory.Core;
+using Identity.Domain.ICache;
 using Identity.Infrastructure.Idempotent;
 
 namespace Identity.Web.API.Application.Commands;
@@ -6,7 +7,7 @@ namespace Identity.Web.API.Application.Commands;
 public class GenerateCodeCommandHandler(
     ILogger<GenerateCodeCommandHandler> logger,
     IEmailCodeSend emailCodeSend,
-    IRedisCacheService redisCacheService)
+    IIdentityCacheService identityCacheService)
     : IRequestHandler<GenerateCodeCommand, string>
 {
     public async Task<string> Handler(GenerateCodeCommand request, CancellationToken cancellationToken)
@@ -15,13 +16,8 @@ public class GenerateCodeCommandHandler(
         {
             var code = await JwtRandom.CreateRandomStringValueTask();
 
-            var b = await redisCacheService.SetAddAsync($"Login_{request.Email}", code, cancellationToken);
+            await identityCacheService.SetStringAsync($"Login_{request.Email}", code, cancellationToken);
 
-            if (!b)
-            {
-                logger.LogError("redis error");
-                return string.Empty;
-            }
 
             logger.LogInformation("[{Time}] 创建验证码: {Code}", DateTime.UtcNow, code);
 

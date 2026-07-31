@@ -11,6 +11,6 @@ public class MarkdownResponse
     public string Hash { get; set; } = null!;
     public List<string> Tags { get; set; } = new();
     public string Auth { get; set; } = null!;
-    public DateTime CreateAt { get; set; }
-    public DateTime UpdateAt { get; set; }
+    public DateTimeOffset CreateAt { get; set; }
+    public DateTimeOffset UpdateAt { get; set; }
 }

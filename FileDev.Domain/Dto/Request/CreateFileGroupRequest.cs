@@ -9,7 +9,7 @@ public class CreateFileGroupRequest
 
     public string? Description { get; set; } = null;
 
-    public Guid? ParentGroupId { get; set; } = Guid.Empty;
+    public Guid? ParentGroupId { get; set; }
     
     public FileIdentity FileIdentity { get; set; } = FileIdentity.FilePublic;
 

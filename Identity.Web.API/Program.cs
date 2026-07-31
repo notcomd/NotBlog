@@ -21,9 +21,25 @@ builder.Services.AddNotBlogServices(builder.Configuration.GetConnectionString("I
 #endif
 builder.Services.AddIdentityService(builder.Configuration.GetSection("JwtOptions"));
 
+builder.Services.AddMigration<IdentityDbContext, IdentityDbSeeder>();
+
 builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
 
 builder.Services.AddScoped<IdentityService>();
+
+// ═══ gRPC 客户端注册（调用 FileDev 文件服务） ═══
+builder.Services.AddGrpcClient<Identity.Web.API.Grpc.FileStorage.FileStorageClient>(o =>
+{
+    var grpcAddress = builder.Configuration["FileStorageGrpc:Address"]
+        ?? "https://localhost:5002";
+    o.Address = new Uri(grpcAddress);
+})
+.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+{
+    // 开发环境允许自签名证书
+    ServerCertificateCustomValidationCallback =
+        HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+});
 
 builder.Services.AddControllers();
 
@@ -93,14 +109,20 @@ if (app.Environment.IsDevelopment())
 
 //登入注册端点
 app.MapGroup("api/identity/ready").NotMapIdentityApi();
-// 权限映射端点（供网关启动时拉取）
+// 权限映射端点（供网关启动时拉取）+ 权限 CRUD
 app.MapGroup("api/identity/permission").MapPermissionApi();
+// 角色组管理端点
+app.MapGroup("api/identity/rolegroup").MapRoleGroupApi();
+// 角色管理端点
+app.MapGroup("api/identity/role").MapRoleApi();
 // 注册 Github 认证 API
 app.MapGroup("api/identity/git").GithubAuthApis();
 // 注册 OAuth 端点
 app.MapGroup("api/identity/auth").MapOAuthEndpoints();
 //管理端点
 app.MapGroup("api/identity/manger").MapUserManagerApi();
+//头像上传端点
+app.MapGroup("api/identity").MapAvatarApi();
 
 app.MapControllers();
 

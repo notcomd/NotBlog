@@ -5,7 +5,7 @@ public class MarkReview : Entity
     private MarkReview()
     {
         MarkReviewGuid = Guid.CreateVersion7();
-        MarkReviewTime = DateTime.UtcNow;
+        MarkReviewTime = DateTimeOffset.UtcNow;
         MarkReviewAuth = MarkReviewAuth.ReviewAuthPublic;
         MarkReviews = new List<MarkReview>();
         ReviewImages = new List<ReviewImage>();
@@ -20,8 +20,8 @@ public class MarkReview : Entity
         UserId = userGuid;
         MarkReviewContent = markReviewContent;
         ReviewImages = reviewImage;
-        MarkReviewTime = DateTime.Now;
-        MarkAggregateRootGuid = Guid.Empty;
+        MarkReviewTime = DateTimeOffset.UtcNow;
+        //MarkAggregateRootGuid = Guid.Empty;
     }
 
 
@@ -40,7 +40,7 @@ public class MarkReview : Entity
 
     public string? MarkReviewContent { get; private set; } = null!;
 
-    public DateTime MarkReviewTime { get; private set; }
+    public DateTimeOffset MarkReviewTime { get; private set; }
 
     public MarkReviewAuth MarkReviewAuth { get; private set; }
 

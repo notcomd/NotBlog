@@ -34,16 +34,16 @@
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.objectpool\\8.0.11\\microsoft.extensions.objectpool.8.0.11.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.options\\8.0.2\\microsoft.extensions.options.8.0.2.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.extensions.primitives\\10.0.9\\microsoft.extensions.primitives.10.0.9.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.abstractions\\8.21.0\\microsoft.identitymodel.abstractions.8.21.0.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.jsonwebtokens\\8.21.0\\microsoft.identitymodel.jsonwebtokens.8.21.0.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.logging\\8.21.0\\microsoft.identitymodel.logging.8.21.0.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.abstractions\\8.22.0\\microsoft.identitymodel.abstractions.8.22.0.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.jsonwebtokens\\8.22.0\\microsoft.identitymodel.jsonwebtokens.8.22.0.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.logging\\8.22.0\\microsoft.identitymodel.logging.8.22.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.protocols\\8.19.2\\microsoft.identitymodel.protocols.8.19.2.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.protocols.openidconnect\\8.19.2\\microsoft.identitymodel.protocols.openidconnect.8.19.2.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.tokens\\8.21.0\\microsoft.identitymodel.tokens.8.21.0.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\microsoft.identitymodel.tokens\\8.22.0\\microsoft.identitymodel.tokens.8.22.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.net.http.headers\\2.3.9\\microsoft.net.http.headers.2.3.9.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\newtonsoft.json\\9.0.1\\newtonsoft.json.9.0.1.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\notmediator\\1.0.5\\notmediator.1.0.5.nupkg.sha512",
-    "C:\\Users\\notco\\.nuget\\packages\\system.identitymodel.tokens.jwt\\8.21.0\\system.identitymodel.tokens.jwt.8.21.0.nupkg.sha512"
+    "C:\\Users\\notco\\.nuget\\packages\\system.identitymodel.tokens.jwt\\8.22.0\\system.identitymodel.tokens.jwt.8.22.0.nupkg.sha512"
   ],
   "logs": [
     {

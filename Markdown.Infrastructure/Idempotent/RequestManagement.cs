@@ -20,7 +20,7 @@ public class RequestManagement(MarkDownDbContext context) : IRequestManagement
             {
                 ClientRequestId = id,
                 ClientRequestName = typeof(T).Name,
-                Created = DateTime.UtcNow,
+                Created = DateTimeOffset.UtcNow,
             };
         _context.Add(requset);
         await _context.SaveChangesAsync();

@@ -11,10 +11,10 @@ public class FileResult
     public double FileSize { get; set; }
     public Uri FileUri { get; set; } = null!;
     public FileIdentity FileIdentity { get; set; }
-    public DateTime UploadTime { get; set; }
-    public DateTime UpdateTime { get; set; }
+    public DateTimeOffset UploadTime { get; set; }
+    public DateTimeOffset UpdateTime { get; set; }
     public bool IsDeleted { get; set; }
-    public DateTime? DeleteTime { get; set; }
+    public DateTimeOffset? DeleteTime { get; set; }
 
     public static FileResult FromEntity(NotFile file)
     {

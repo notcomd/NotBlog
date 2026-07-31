@@ -1,3 +1,4 @@
+using Identity.Web.API.Application.Commands;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Mvc;
 
@@ -5,26 +6,114 @@ namespace Identity.Web.API.APIs;
 
 /// <summary>
 /// 权限路由映射 API
-/// 
-/// 供网关启动时调用，获取 URL→PermissionCode 映射表。
-/// 映射数据存储在 appsettings.json 的 "PermissionMappings" 节，
-/// 作为权限码与路由绑定的唯一权威来源。
+///
+/// 提供权限 CRUD 操作及 URL→PermissionCode 映射表查询。
 /// </summary>
 public static class PermissionApi
 {
     public static RouteGroupBuilder MapPermissionApi(this RouteGroupBuilder routeBuilder)
     {
-        var route = routeBuilder.MapGroup("/permission")
-            .WithHttpLogging(HttpLoggingFields.None); // 启动时高频调用，关闭日志避免噪音
+        var route = routeBuilder.MapGroup("/permission");
 
-        route.MapGet("/mappings", GetMappings);
+        // ── 网关映射查询（启动时高频调用）──
+        route.MapGet("/mappings", GetMappings)
+            .WithHttpLogging(HttpLoggingFields.None);
+
+        // ── 权限 CRUD ──
+        route.MapPost(string.Empty, CreatePermissionAsync)
+            .WithHttpLogging(HttpLoggingFields.All)
+            .WithDescription("创建权限")
+            .Produces<CreatePermissionResult>(StatusCodes.Status201Created)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        route.MapPut("/{permissionId:guid}", UpdatePermissionAsync)
+            .WithHttpLogging(HttpLoggingFields.All)
+            .WithDescription("更新权限")
+            .Produces<bool>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        route.MapDelete("/{permissionId:guid}", DeletePermissionAsync)
+            .WithHttpLogging(HttpLoggingFields.All)
+            .WithDescription("删除权限（软删除）")
+            .Produces<bool>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
 
         return route;
     }
 
+    // ──────────── 权限 CRUD 端点实现 ────────────
+
     /// <summary>
-    /// GET /api/ready/permission/mappings
-    /// 
+    /// POST /api/identity/permission — 创建权限
+    /// </summary>
+    private static async Task<IResult> CreatePermissionAsync(
+        [FromServices] INotMediator mediator,
+        [FromBody] CreatePermissionCommand command)
+    {
+        try
+        {
+            var identityCommand = new IdentifiedCommand<CreatePermissionCommand, CreatePermissionResult>(
+                Guid.CreateVersion7(), command);
+            var result = await mediator.SendAsync(identityCommand);
+
+            return string.IsNullOrEmpty(result.PermissionCode)
+                ? Results.Problem("创建失败，请重试", statusCode: StatusCodes.Status500InternalServerError)
+                : Results.Created($"/api/identity/permission/{result.PermissionId}", result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.BadRequest(new { error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// PUT /api/identity/permission/{permissionId} — 更新权限
+    /// </summary>
+    private static async Task<IResult> UpdatePermissionAsync(
+        [FromServices] INotMediator mediator,
+        [FromRoute] Guid permissionId,
+        [FromBody] UpdatePermissionCommand update)
+    {
+        try
+        {
+            var command = update with { PermissionId = permissionId };
+            var identityCommand = new IdentifiedCommand<UpdatePermissionCommand, bool>(
+                Guid.CreateVersion7(), command);
+            var result = await mediator.SendAsync(identityCommand);
+            return Results.Ok(new { success = result });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.BadRequest(new { error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// DELETE /api/identity/permission/{permissionId} — 删除权限（软删除）
+    /// </summary>
+    private static async Task<IResult> DeletePermissionAsync(
+        [FromServices] INotMediator mediator,
+        [FromRoute] Guid permissionId)
+    {
+        try
+        {
+            var command = new DeletePermissionCommand(permissionId);
+            var identityCommand = new IdentifiedCommand<DeletePermissionCommand, bool>(
+                Guid.CreateVersion7(), command);
+            var result = await mediator.SendAsync(identityCommand);
+            return Results.Ok(new { success = result });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.BadRequest(new { error = ex.Message });
+        }
+    }
+
+    // ──────────── 网关映射查询（已有）────────────
+
+    /// <summary>
+    /// GET /api/identity/permission/mappings
+    ///
     /// 返回全部 URL→PermissionCode 映射，供网关启动时加载路由表。
     /// 响应格式与 NotBlog_Yarp 的 PermissionOptions.Mappings 完全兼容。
     /// </summary>

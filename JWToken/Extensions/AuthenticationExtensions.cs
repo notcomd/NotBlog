@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
@@ -44,6 +44,9 @@ public static class AuthenticationExtensions
 
         if (string.IsNullOrEmpty(options.PrivateKey))
             throw new InvalidOperationException("JWT 签名密钥（PrivateKey）未配置");
+
+        // 注册到 DI options 系统，确保 IOptionsSnapshot<JwtOptions> 可以解析
+        services.Configure<JwtOptions>(configuration);
 
         return services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(x => { x.TokenValidationParameters = BuildValidationParameters(options); });

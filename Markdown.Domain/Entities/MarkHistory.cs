@@ -8,8 +8,8 @@ public class MarkHistory : Entity, IAggregateRoot
     private MarkHistory()
     {
         MarkHositoryGuid = Guid.CreateVersion7();
-        ReadTime = DateTime.UtcNow;
-        LastReadTime = DateTime.UtcNow;
+        ReadTime = DateTimeOffset.UtcNow;
+        LastReadTime = DateTimeOffset.UtcNow;
         ReadingProgress = 0;
     }
 
@@ -42,12 +42,12 @@ public class MarkHistory : Entity, IAggregateRoot
     /// <summary>
     ///     首次阅读时间
     /// </summary>
-    public DateTime ReadTime { get; init; }
+    public DateTimeOffset ReadTime { get; init; }
 
     /// <summary>
     ///     最后阅读时间
     /// </summary>
-    public DateTime LastReadTime { get; private set; }
+    public DateTimeOffset LastReadTime { get; private set; }
 
     /// <summary>
     ///     阅读笔记或备注
@@ -68,14 +68,14 @@ public class MarkHistory : Entity, IAggregateRoot
             throw new ArgumentOutOfRangeException(nameof(progress), "阅读进度必须在 0-100 之间");
         
         ReadingProgress = progress;
-        LastReadTime = DateTime.UtcNow;
+        LastReadTime = DateTimeOffset.UtcNow;
         return Task.FromResult(this);
     }
 
     public Task<MarkHistory> AddReadCountAsync()
     {
         ReadCount++;
-        LastReadTime = DateTime.UtcNow;
+        LastReadTime = DateTimeOffset.UtcNow;
         return Task.FromResult(this);
     }
 

@@ -6,5 +6,5 @@ public class ChangeFileGroupEvent(Guid fileId, Guid userId):INotifications
 {
     public Guid FileId { get; } = fileId;
     public Guid UserId { get; } = userId;
-    public DateTime OccurredOn { get; } = DateTime.UtcNow;
+    public DateTimeOffset OccurredOn { get; } = DateTimeOffset.UtcNow;
 }

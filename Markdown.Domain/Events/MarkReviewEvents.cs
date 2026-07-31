@@ -9,7 +9,7 @@ public record MarkReviewCreatedDomainEvent(
     Guid UserId,
     string Content,
     IEnumerable<ReviewImage> ReviewImage,
-    DateTime CreatedAt
+    DateTimeOffset CreatedAt
 ) : INotifications;
 
 /// <summary>
@@ -18,7 +18,7 @@ public record MarkReviewCreatedDomainEvent(
 public record MarkReviewDeletedDomainEvent(
     Guid MarkReviewGuid,
     Guid MarkDownGuid,
-    DateTime DeletedAt
+    DateTimeOffset DeletedAt
 ) : INotifications;
 
 /// <summary>
@@ -28,7 +28,7 @@ public record MarkReviewAuthUpdatedDomainEvent(
     Guid MarkReviewGuid,
     MarkReviewAuth OldAuth,
     MarkReviewAuth NewAuth,
-    DateTime UpdatedAt
+    DateTimeOffset UpdatedAt
 ) : INotifications;
 
 /// <summary>
@@ -38,7 +38,7 @@ public record MarkReviewLikedDomainEvent(
     Guid MarkReviewGuid,
     Guid LikedByUserId,
     long NewLoveCount,
-    DateTime LikedAt
+    DateTimeOffset LikedAt
 ) : INotifications;
 
 /// <summary>
@@ -48,5 +48,5 @@ public record ChildReviewAddedDomainEvent(
     Guid ParentReviewGuid,
     Guid ChildReviewGuid,
     Guid MarkDownGuid,
-    DateTime AddedAt
+    DateTimeOffset AddedAt
 ) : INotifications;

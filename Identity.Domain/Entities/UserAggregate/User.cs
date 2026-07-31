@@ -112,7 +112,7 @@ public class User : Entity, IAggregateRoot
             ImageCover = imageCover,
             UserAccessFail = UserAccessFail.CreateUserAccessFail(userGuid) ??
                              throw new ArgumentNullException(nameof(UserAccessFail)),
-            UserSafety = UserSafety.CreateByUserSafety(userGuid, stamp, Encoding.UTF8.GetString(salt)) ??
+            UserSafety = UserSafety.CreateByUserSafety(userGuid, stamp, Convert.ToBase64String(salt)) ??
                          throw new ArgumentNullException(nameof(UserSafety)),
             CreateDatetime = DateTimeOffset.UtcNow
         };
@@ -193,10 +193,10 @@ public class User : Entity, IAggregateRoot
             throw new ArgumentOutOfRangeException(nameof(password), "密码长度不能小于 8 位");
 
         var salt = await HashH256Tool.GenerateSValueTask() ?? throw new ArgumentNullException("salt is null!");
-        var saltStr = Encoding.UTF8.GetString(salt);
+        var saltStr = Convert.ToBase64String(salt);
 
         UserSafety.ResetByPasswordSalt(saltStr);
-        PasswordHash = await HashH256Tool.CreateHash256Async(password, Encoding.UTF8.GetBytes(UserSafety.PasswordSalt));
+        PasswordHash = await HashH256Tool.CreateHash256Async(password, Convert.FromBase64String(UserSafety.PasswordSalt));
     }
 
     /// <summary>
@@ -307,6 +307,6 @@ public class User : Entity, IAggregateRoot
         return await HashH256Tool.VerifyPasswordValueTask(
             password,
             PasswordHash,
-            Encoding.UTF8.GetBytes(salt));
+            Convert.FromBase64String(salt));
     }
 }

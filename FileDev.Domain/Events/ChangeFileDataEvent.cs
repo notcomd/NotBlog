@@ -19,7 +19,7 @@ public class ChangeFileDataEvent(Guid fileId,
     public string FileDescription { get; init; } = fileDescription;
     public FileIdentity FileIdentity { get; init; } = fileIdentity;
     public string FileMd5 { get; init; } = fileMd5;
-    public DateTime OccurredOn { get; } = DateTime.UtcNow;
+    public DateTimeOffset OccurredOn { get; } = DateTimeOffset.UtcNow;
 
-    private string GetDebuggerDisplay() => this.ToString();
+    private string GetDebuggerDisplay() => this.ToString() ?? "";
 }

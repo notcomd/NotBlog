@@ -31,14 +31,15 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<FileCheckTypeMiddleware>();
 
 // ═══ EventBus 注册 ═══
+var eventBusCfg = builder.Configuration.GetSection("EventBus");
 builder.Services.AddSingleton<IConnectionFactory>(_ => new ConnectionFactory
 {
-    HostName = builder.Configuration.GetValue<string?>("IntegrationEventRabbitMQOptions:HostName") ?? "localhost",
-    UserName = builder.Configuration.GetValue<string?>("IntegrationEventRabbitMQOptions:UserName") ?? "guest",
-    Password = builder.Configuration.GetValue<string?>("IntegrationEventRabbitMQOptions:Password") ?? "guest",
-    Port = builder.Configuration.GetValue<int?>("IntegrationEventRabbitMQOptions:Port") ?? 5672
+    HostName = eventBusCfg["HostName"] ?? "localhost",
+    UserName = eventBusCfg["UserName"] ?? "guest",
+    Password = eventBusCfg["Password"] ?? "guest",
+    Port = int.TryParse(eventBusCfg["Port"], out var p) ? p : 5672
 });
-builder.Services.AddEventBus("filedev_events", Assembly.GetExecutingAssembly());
+builder.Services.AddEventBus(eventBusCfg, Assembly.GetExecutingAssembly());
 
 // 绑定文件存储配置（包括 AllowedExtensions 白名单）
 builder.Services.Configure<NotFileStorageOptions>(

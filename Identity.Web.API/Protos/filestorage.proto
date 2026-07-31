@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+option csharp_namespace = "Identity.Web.API.Grpc";
+
+package filestorage;
+
+service FileStorage {
+  rpc UploadFile (UploadFileRequest) returns (UploadFileResponse);
+  rpc UploadImage (UploadImageRequest) returns (UploadImageResponse);
+}
+
+enum FileIdentity {
+  FILE_IDENTITY_UNSPECIFIED = 0;
+  FILE_PUBLIC = 1;
+  FILE_PRIVATE = 2;
+  FILE_PRIVATE_PUBLIC = 3;
+  FILE_PASSWORD_PROTECTED = 4;
+}
+
+message UploadFileRequest {
+  string user_id = 1;
+  string file_name = 2;
+  bytes file_content = 3;
+  repeated string file_tags = 4;
+  string file_description = 5;
+  FileIdentity file_identity = 6;
+  string expected_md5 = 7;
+}
+
+message UploadFileResponse {
+  bool success = 1;
+  string file_id = 2;
+  string file_uri = 3;
+  string file_md5 = 4;
+  int64 file_size = 5;
+  string error_message = 6;
+}
+
+message UploadImageRequest {
+  string user_id = 1;
+  string file_name = 2;
+  bytes image_content = 3;
+  repeated string file_tags = 4;
+  string file_description = 5;
+  FileIdentity file_identity = 6;
+  bool validate_format = 7;
+  int32 max_width = 8;
+  int32 max_height = 9;
+}
+
+message UploadImageResponse {
+  bool success = 1;
+  string file_id = 2;
+  string file_uri = 3;
+  string file_md5 = 4;
+  int64 file_size = 5;
+  int32 width = 6;
+  int32 height = 7;
+  string format = 8;
+  string error_message = 9;
+}

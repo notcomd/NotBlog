@@ -20,13 +20,13 @@ public class NotFile : Entity, IAggregateRoot
 
     public FileIdentity FileIdentity { get; private set; }
 
-    public DateTime UploadTime { get; init; }
+    public DateTimeOffset UploadTime { get; init; }
 
-    public DateTime UpdateTime { get; private set; }
+    public DateTimeOffset UpdateTime { get; private set; }
 
     public bool IsDeleted { get; private set; }
 
-    public DateTime? DeleteTime { get; private set; }
+    public DateTimeOffset? DeleteTime { get; private set; }
 
     public NotFile(Guid userId, string fileName, HashSet<string>? fileTags, string fileDescription,
            long fileSize, Uri fileUri, string fileMd5,
@@ -53,8 +53,8 @@ public class NotFile : Entity, IAggregateRoot
     private NotFile()
     {
         FileId = Guid.CreateVersion7();
-        UploadTime = DateTime.UtcNow;
-        UpdateTime = DateTime.UtcNow;
+        UploadTime = DateTimeOffset.UtcNow;
+        UpdateTime = DateTimeOffset.UtcNow;
         FileTags = [];
         IsDeleted = false;
     }
@@ -81,7 +81,7 @@ public class NotFile : Entity, IAggregateRoot
         if (!FileMd5.Equals(fileMd5))
             FileMd5 = fileMd5;
 
-        UpdateTime = DateTime.UtcNow;
+        UpdateTime = DateTimeOffset.UtcNow;
         AddDomainEvent(new ChangeFileDataEvent(this.FileId, this.UserId, this.FileName, this.FileTags,
             fileDescription ?? this.FileDescription, this.FileIdentity, this.FileMd5));
     }
@@ -102,7 +102,7 @@ public class NotFile : Entity, IAggregateRoot
             throw new ArgumentException("标签不能为 null 或空白", nameof(tag));
 
         FileTags.Add(tag);
-        UpdateTime = DateTime.UtcNow;
+        UpdateTime = DateTimeOffset.UtcNow;
     }
 
     public bool IsEquesFile(string fileMd5)
@@ -113,7 +113,7 @@ public class NotFile : Entity, IAggregateRoot
     public void RemoveTag(string tag)
     {
         if (FileTags.Remove(tag))
-            UpdateTime = DateTime.UtcNow;
+            UpdateTime = DateTimeOffset.UtcNow;
     }
 
 
@@ -123,8 +123,8 @@ public class NotFile : Entity, IAggregateRoot
             throw new InvalidOperationException("文件已经被删除");
 
         IsDeleted = true;
-        DeleteTime = DateTime.UtcNow;
-        UpdateTime = DateTime.UtcNow;
+        DeleteTime = DateTimeOffset.UtcNow;
+        UpdateTime = DateTimeOffset.UtcNow;
         /// 添加领域事件
         AddDomainEvent(new DeleteFileEvent(this.FileId, this.UserId));
        }
@@ -135,7 +135,7 @@ public class NotFile : Entity, IAggregateRoot
             throw new InvalidOperationException("文件没有被删除");
         IsDeleted = false;
         DeleteTime = null;
-        UpdateTime = DateTime.UtcNow;
+        UpdateTime = DateTimeOffset.UtcNow;
     }
 
 
@@ -218,9 +218,8 @@ public class NotFile : Entity, IAggregateRoot
             return new NotFile(
                 _userId,
                 _fileName,
-                _fileTags, // 保证非null
+                _fileTags,
                 _fileDescription,
-               // _fileType,
                 _fileSize,
                 _fileUri,
                 _fileMd5,

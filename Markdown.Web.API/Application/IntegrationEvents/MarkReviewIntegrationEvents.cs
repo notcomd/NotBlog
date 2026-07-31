@@ -9,7 +9,7 @@ public record MarkReviewCreatedIntegrationEvent(
     Guid UserId,
     string UserName,
     string Content,
-    DateTime CreatedAt
+    DateTimeOffset CreatedAt
 ) : IntegrationEvent;
 
 /// <summary>
@@ -18,7 +18,7 @@ public record MarkReviewCreatedIntegrationEvent(
 public record MarkReviewDeletedIntegrationEvent(
     Guid MarkReviewGuid,
     Guid MarkDownGuid,
-    DateTime DeletedAt
+    DateTimeOffset DeletedAt
 ) : IntegrationEvent;
 
 /// <summary>
@@ -29,7 +29,7 @@ public record MarkReviewLikedIntegrationEvent(
     Guid MarkDownGuid,
     Guid LikedByUserId,
     long NewLoveCount,
-    DateTime LikedAt
+    DateTimeOffset LikedAt
 ) : IntegrationEvent;
 
 /// <summary>
@@ -40,5 +40,5 @@ public record ChildReviewAddedIntegrationEvent(
     Guid ChildReviewGuid,
     Guid MarkDownGuid,
     Guid UserId,
-    DateTime AddedAt
+    DateTimeOffset AddedAt
 ) : IntegrationEvent;

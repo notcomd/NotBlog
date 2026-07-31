@@ -2503,7 +2503,7 @@
       "code": "NU1510",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "PackageReference Microsoft.AspNetCore.Mvc.Core 将不会被裁剪。此包自动可用，无需显式引用。移除 PackageReference 项。",
+      "message": "PackageReference Microsoft.AspNetCore.Mvc.Core 将不会删除。请考虑从依赖项中移除此包，因为可能不需要它。",
       "libraryId": "Microsoft.AspNetCore.Mvc.Core",
       "targetGraphs": [
         "net10.0"

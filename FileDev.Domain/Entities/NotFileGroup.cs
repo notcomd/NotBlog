@@ -20,14 +20,15 @@ public class NotFileGroup : Entity, IAggregateRoot
 
     public string? FileGroupDescription { get; private set; }
 
-    public DateTime UploadTime { get; init; }
+    public DateTimeOffset UploadTime { get; init; }
 
-    public DateTime UpdateTime { get; private set; }
+    public DateTimeOffset UpdateTime { get; private set; }
 
     public bool IsDeleted { get; private set; }
+
     public FileIdentity FileIdentity { get; private set; }
 
-    // ---- EF Core 自引用导航属性 ----
+
 
     public NotFileGroup? Parent { get; private set; }
     public ICollection<NotFileGroup> Children { get; private set; } = [];
@@ -40,8 +41,8 @@ public class NotFileGroup : Entity, IAggregateRoot
     public NotFileGroup()
     {
         NotFileGroupId = Guid.CreateVersion7();
-        UploadTime = DateTime.Now;
-        UpdateTime = DateTime.Now;
+        UploadTime = DateTimeOffset.UtcNow;
+        UpdateTime = DateTimeOffset.UtcNow;
         FileIdentity = FileIdentity.FilePublic;
     }
 
@@ -114,7 +115,7 @@ public class NotFileGroup : Entity, IAggregateRoot
         ParentGroupId = targetParentId;
         Parent = newParent;
         Depth = newParent == null ? 0 : newParent.Depth + 1;
-        UpdateTime = DateTime.Now;
+        UpdateTime = DateTimeOffset.UtcNow;
     }
 
     /// <summary>
@@ -130,7 +131,7 @@ public class NotFileGroup : Entity, IAggregateRoot
                 $"同级下已存在名为 '{newName}' 的文件组");
 
         FileGroupName = newName;
-        UpdateTime = DateTime.Now;
+        UpdateTime = DateTimeOffset.UtcNow;
     }
 
     /// <summary>
@@ -156,37 +157,37 @@ public class NotFileGroup : Entity, IAggregateRoot
             FileGroupDescription = fileGroupDescription;
         if (fileIdentity != null)
             FileIdentity = fileIdentity.Value;
-        UpdateTime = DateTime.Now;
+        UpdateTime = DateTimeOffset.UtcNow;
     }
 
     public void AddFile(Guid fileId)
     {
         FileIds.Add(fileId);
-        UpdateTime = DateTime.Now;
+        UpdateTime = DateTimeOffset.UtcNow;
     }
 
     public void RemoveFile(Guid fileId)
     {
         FileIds.Remove(fileId);
-        UpdateTime = DateTime.Now;
+        UpdateTime = DateTimeOffset.UtcNow;
     }
 
     public void AddTag(string tag)
     {
         FileGroupTags.Add(tag);
-        UpdateTime = DateTime.Now;
+        UpdateTime = DateTimeOffset.UtcNow;
     }
 
     public void SoftDelete()
     {
         IsDeleted = true;
-        UpdateTime = DateTime.Now;
+        UpdateTime = DateTimeOffset.UtcNow;
     }
 
     public void Restore()
     {
         IsDeleted = false;
-        UpdateTime = DateTime.Now;
+        UpdateTime = DateTimeOffset.UtcNow;
     }
 
     /// <summary>

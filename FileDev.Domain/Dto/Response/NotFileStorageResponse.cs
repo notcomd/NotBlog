@@ -10,12 +10,12 @@ public record NotFileStorageResponse
     /// <summary>
     /// 文件完整路径/访问URL
     /// </summary>
-    public string FullPath { get; set; }
+    public string FullPath { get; set; } = string.Empty;
     
     /// <summary>
     /// 错误信息（失败时返回）
     /// </summary>
-    public string ErrorMessage { get; set; }
+    public string ErrorMessage { get; set; } = string.Empty;
     
     /// <summary>
     /// 文件大小（字节）
@@ -25,5 +25,5 @@ public record NotFileStorageResponse
     /// <summary>
     /// 文件实际哈希值（校验用）
     /// </summary>
-    public string ActualHash { get; set; }
+    public string ActualHash { get; set; } = string.Empty;
 }

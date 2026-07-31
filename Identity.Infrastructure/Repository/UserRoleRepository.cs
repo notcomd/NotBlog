@@ -1,4 +1,4 @@
-﻿namespace Identity.Infrastructure.Repository;
+namespace Identity.Infrastructure.Repository;
 
 public class UserRoleRepository(IdentityDbContext userRoleDbContext) : IUserRoleRepository
 {
@@ -12,8 +12,7 @@ public class UserRoleRepository(IdentityDbContext userRoleDbContext) : IUserRole
 
     public async ValueTask<Roles?> FindByUserRoleAsync(Guid guid)
     {
-        var data = await userRoleDbContext.FindAsync<Roles>(guid);
-        return data ?? throw new ArgumentNullException(nameof(data));
+        return await userRoleDbContext.FindAsync<Roles>(guid);
     }
 
     public async ValueTask<HashSet<Roles>?> FindByUserRoleAsync(HashSet<Guid>? roleGuid)
@@ -39,12 +38,10 @@ public class UserRoleRepository(IdentityDbContext userRoleDbContext) : IUserRole
 
     public async ValueTask<Roles?> FindByUserRoleAsync(string roleName)
     {
-        var data = await
-            userRoleDbContext.Roles
-                .Include(en => en.Permissions)
-                .Where(en => en.RoleName == roleName)
-                .SingleOrDefaultAsync();
-        return data ?? throw new ArgumentNullException($"{roleName}");
+        return await userRoleDbContext.Roles
+            .Include(en => en.Permissions)
+            .Where(en => en.RoleName == roleName)
+            .SingleOrDefaultAsync();
     }
 
     public async ValueTask<bool> IsUserRoleAsync(Guid guid)
@@ -60,7 +57,9 @@ public class UserRoleRepository(IdentityDbContext userRoleDbContext) : IUserRole
 
     public async ValueTask<bool> UpByUserRoleAsync(Roles userRole)
     {
-        if ((await FindByUserRoleAsync(userRole.RoleGuid) ?? throw new InvalidOperationException()) == userRole) return true;
+        var existing = await FindByUserRoleAsync(userRole.RoleGuid);
+        if (existing is null)
+            return false;
         userRoleDbContext.Update(userRole);
         return true;
     }

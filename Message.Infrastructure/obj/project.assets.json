@@ -1335,7 +1335,6 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v10.0",
         "dependencies": {
-          "Microsoft.AspNetCore.Mvc.Core": "2.3.11",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.9"
         },
         "compile": {

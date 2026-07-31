@@ -23,5 +23,5 @@ HashSet<string>? fileGroupTags = null,
 
     public HashSet<string>? FileGroupTags { get; } = fileGroupTags;
 
-    public DateTime OccurredOn { get; } = DateTime.UtcNow;
+    public DateTimeOffset OccurredOn { get; } = DateTimeOffset.UtcNow;
 }

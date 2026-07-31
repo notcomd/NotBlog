@@ -15,6 +15,6 @@ public interface IFileChunkRepository : IRepository<FileChunkRecord>
     Task DeleteAsync(string fileKey, CancellationToken ct = default);
 
     /// <summary>获取过期的分片记录（用于后台清理）</summary>
-    Task<IEnumerable<FileChunkRecord>> GetExpiredRecordsAsync(DateTime threshold,
+    Task<IEnumerable<FileChunkRecord>> GetExpiredRecordsAsync(DateTimeOffset threshold,
         CancellationToken ct = default);
 }

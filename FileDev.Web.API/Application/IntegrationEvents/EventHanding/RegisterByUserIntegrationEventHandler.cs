@@ -7,6 +7,7 @@ namespace FileDev.Web.API.Application.IntegrationEvents.EventHanding;
 /// 消费 Identity 服务发布的用户注册事件。
 /// 路由键: RegisterByUserIntegrationEvent
 /// </summary>
+
 public class RegisterByUserIntegrationEventHandler(ILogger<RegisterByUserIntegrationEventHandler> logger,                                                   
                                                    INotMediator notMediator)
     : IIntegrationEventHandler<RegisterByUserIntegrationEvent>
@@ -24,7 +25,6 @@ public class RegisterByUserIntegrationEventHandler(ILogger<RegisterByUserIntegra
             UserGuid = @event.UserId,
             FileGroupName = "默认文件组",
             FileIdentity = FileIdentity.FilePublic,
-            ParentGroupId = Guid.Empty,
             FileGroupTags = [],
             FileGroupDescription = "默认文件组"
         };

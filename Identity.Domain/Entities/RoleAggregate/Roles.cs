@@ -129,19 +129,41 @@ public class Roles : Entity, IAggregateRoot
 
     public static class RoleFactory
     {
+        public static Roles CreateRootRole()
+        {
+            return new Roles("Root", "ROOT", RoleAuthority.Root, RoleStatus.Normal, "系统根角色，拥有所有权限");
+        }
+
         public static Roles CreateAdminRole()
         {
-            return new Roles("Administrator", "ADMIN", RoleAuthority.Admin, RoleStatus.Normal);
+            return new Roles("Administrator", "ADMIN", RoleAuthority.Admin, RoleStatus.Normal, "管理员角色");
         }
 
         public static Roles CreateUserRole()
         {
-            return new Roles("User", "USER", RoleAuthority.User, RoleStatus.Normal);
+            return new Roles("User", "USER", RoleAuthority.User, RoleStatus.Normal, "普通用户角色");
         }
 
         public static Roles CreateGuestRole()
         {
-            return new Roles("Guest", "GUEST", RoleAuthority.Guest, RoleStatus.Normal);
+            return new Roles("Guest", "GUEST", RoleAuthority.Guest, RoleStatus.Normal, "游客角色，仅有只读权限");
         }
+
+        public static Roles CreateUnknownRole()
+        {
+            return new Roles("Unknown", "UNKNOWN", RoleAuthority.Unknown, RoleStatus.Normal, "无权限角色，拒绝所有访问");
+        }
+
+        /// <summary>
+        /// 获取所有系统默认角色列表
+        /// </summary>
+        public static IReadOnlyList<Roles> GetDefaultRoles() =>
+        [
+            CreateRootRole(),
+            CreateAdminRole(),
+            CreateUserRole(),
+            CreateGuestRole(),
+            CreateUnknownRole()
+        ];
     }
 }

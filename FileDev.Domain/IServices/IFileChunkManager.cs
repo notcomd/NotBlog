@@ -18,7 +18,7 @@ public interface IFileChunkManager
     Task MarkChunkUploadedAsync(string fileKey, int chunkIndex, CancellationToken ct = default);
 
     /// <summary>从 Redis 优先获取已上传分片列表（Redis 不可用时降级到 DB）</summary>
-    Task<HashSet<int>> GetUploadedChunksAsync(string fileKey, CancellationToken ct = default);
+    Task<List<int>> GetUploadedChunksAsync(string fileKey, CancellationToken ct = default);
 
     /// <summary>获取完整的断点续传状态（含 fileKey、总分片数、已上传分片）</summary>
     Task<FileChunkRecord?> GetUploadStatusAsync(string fileKey, CancellationToken ct = default);

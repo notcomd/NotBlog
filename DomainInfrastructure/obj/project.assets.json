@@ -1451,11 +1451,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj",
+      "projectUniqueName": "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj",
       "projectName": "DomainInfrastructure",
-      "projectPath": "f:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj",
+      "projectPath": "F:\\NotBlog\\DomainInfrastructure\\DomainInfrastructure.csproj",
       "packagesPath": "C:\\Users\\notco\\.nuget\\packages\\",
-      "outputPath": "f:\\NotBlog\\DomainInfrastructure\\obj\\",
+      "outputPath": "F:\\NotBlog\\DomainInfrastructure\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "D:\\Microsoft_Visual_Studio_Tools\\NuGetPackages"
@@ -1478,8 +1478,8 @@
           "framework": "net10.0",
           "targetAlias": "net10.0",
           "projectReferences": {
-            "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj": {
-              "projectPath": "f:\\NotBlog\\DomainCommons\\DomainCommons.csproj"
+            "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj": {
+              "projectPath": "F:\\NotBlog\\DomainCommons\\DomainCommons.csproj"
             }
           }
         }

@@ -26,7 +26,7 @@ public sealed class CreateUserExternalLoginCommandHandler(
             request.ProviderRefreshToken, null);
 
         await userExternalLoginRepository.AddAsync(data);
-        await userExternalLoginRepository.UnitOfWork.SavaChangesAsync(cancellationToken);
+        await userExternalLoginRepository.UnitOfWork.SavaEntitiesAsync(cancellationToken);
         return true;
     }
 }
