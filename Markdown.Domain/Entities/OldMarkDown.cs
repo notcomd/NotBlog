@@ -105,7 +105,7 @@ public class OldMarkDown : Entity
     /// <summary>
     ///     标记为已删除（软删除）
     /// </summary>
-    internal void SoftDelete()
+    public void SoftDelete()
     {
         IsDelete = true;
         UpdateAt = DateTimeOffset.UtcNow;

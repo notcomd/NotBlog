@@ -1,4 +1,4 @@
-﻿﻿﻿using DomainInfrastructure;
+﻿﻿using DomainInfrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using NotMediator;
@@ -23,6 +23,8 @@ public class VideoDbContext(DbContextOptions<VideoDbContext> options, INotMediat
     public DbSet<VideoBarrage> VideoBarrages { get; set; }
 
     public DbSet<VideoReview> VideoReviews { get; set; }
+
+    public DbSet<VideoHistory> VideoHistories { get; set; }
 
     public bool HasActiveTransaction => _currentTransaction != null;
 

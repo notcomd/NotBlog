@@ -1,6 +1,7 @@
 using System.Reflection;
 using Message.Infrastructure;
 using Message.Infrastructure.EntityFramework;
+using Message.Web.API.Extensions;
 using Message.Web.API.Middleware;
 using NotBlog.ServiceDefaults;
 using NotMediator;
@@ -14,29 +15,18 @@ builder.AddRedisDistributedCache("Redis");
 builder.Services.AddNpgsql<MessageDbContext>("PostgresSQL");
 builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
 
-builder.AddRedisDistributedCache("Redis");
 builder.Services.AddMessageInfrastructure(builder.Configuration);
 builder.Services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<MessageDbContext>());
 builder.Services.AddHttpContextAccessor();
+
+// ═══ Web 应用层服务统一注册（SignalR / JWT 认证 / gRPC 文件客户端 / 推送服务 / CORS） ═══
+builder.Services.AddMessageWebApiServices(builder.Configuration);
 
 builder.Services.AddOpenApi();
 
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddProblemDetails();
-
-builder.Services.AddSignalR();
-
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(policy =>
-    {
-        policy.AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials()
-              .SetIsOriginAllowed(_ => true);
-    });
-});
 
 var app = builder.Build();
 
@@ -54,6 +44,7 @@ app.UseHttpsRedirection();
 
 app.UseExceptionHandling();
 app.UseUserContext();
+app.UseAuthentication();
 
 app.UseAuthorization();
 

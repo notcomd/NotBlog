@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- 测试框架：NUnit + VSTest 适配器 -->
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1"/>
+        <PackageReference Include="NUnit" Version="4.3.2"/>
+        <PackageReference Include="NUnit3TestAdapter" Version="4.6.0"/>
+        <PackageReference Include="coverlet.collector" Version="6.0.4">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <!-- 模拟框架：用于 Mock SignalR / gRPC / 领域服务依赖 -->
+        <PackageReference Include="Moq" Version="4.20.72"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Message.Web.API\Message.Web.API.csproj"/>
+        <ProjectReference Include="..\Message.Domain\Message.Domain.csproj"/>
+    </ItemGroup>
+
+</Project>

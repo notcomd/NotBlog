@@ -3,7 +3,6 @@ global using Message.Domain.Entities;
 global using Message.Domain.Entities.Group;
 global using Message.Domain.Entities.Tweet;
 global using Message.Domain.Enums;
-global using Message.Domain.IProvider;
 global using Message.Domain.IRepository;
 global using Message.Domain.IServices;
 global using Message.Domain.SeedWork;

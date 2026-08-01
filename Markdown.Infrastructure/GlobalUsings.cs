@@ -1,6 +1,5 @@
 // 全局 using 指令 — Markdown.Infrastructure 项目
 global using Markdown.Domain.Entities;
-global using Markdown.Domain.IProvider;
 global using Markdown.Infrastructure.EntityFramework;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.EntityFrameworkCore.Metadata.Builders;

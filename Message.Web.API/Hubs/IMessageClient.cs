@@ -46,4 +46,10 @@ public interface IMessageClient
     /// <param name="sessionId">会话ID</param>
     /// <param name="count">未读消息数量</param>
     Task UnreadCountUpdated(Guid sessionId, int count);
+
+    /// <summary>
+    /// 文件分片上传进度
+    /// </summary>
+    /// <param name="progress">上传进度信息（文件Key、已完成分片数、总分片数、百分比等）</param>
+    Task UploadProgress(ChunkUploadProgress progress);
 }

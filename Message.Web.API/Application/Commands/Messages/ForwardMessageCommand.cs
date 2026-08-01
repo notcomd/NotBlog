@@ -1,0 +1,86 @@
+using MessageEntity = Message.Domain.Entities.Message;
+
+namespace Message.Web.API.Application.Commands.Messages;
+
+/// <summary>
+/// 转发消息命令。
+/// <para>CQRS 命令侧：仅返回新消息的标识（Guid），不返回业务实体/DTO。</para>
+/// </summary>
+/// <param name="MessageId">源消息 ID</param>
+/// <param name="TargetSessionId">目标会话 ID</param>
+/// <param name="ForwardedBy">转发者用户 ID</param>
+/// <param name="ForwardType">转发类型</param>
+/// <param name="Comment">转发附言</param>
+public record ForwardMessageCommand(
+    Guid MessageId,
+    Guid TargetSessionId,
+    Guid ForwardedBy,
+    ForwardType ForwardType,
+    string? Comment) : IRequest<Guid>;
+
+/// <summary>
+/// 转发消息命令处理程序。
+/// </summary>
+public class ForwardMessageCommandHandler(
+    IMessageRepository messageRepository,
+    IChatSessionRepository sessionRepository,
+    ILogger<ForwardMessageCommandHandler> logger) : IRequestHandler<ForwardMessageCommand, Guid>
+{
+    public async Task<Guid> Handler(ForwardMessageCommand command, CancellationToken cancellationToken)
+    {
+        var originalMessage = await messageRepository.GetByIdAsync(command.MessageId);
+        if (originalMessage == null)
+            throw new KeyNotFoundException("原消息不存在");
+
+        await ValidateSessionAndSenderAsync(command.TargetSessionId, command.ForwardedBy);
+
+        var forwardedMessage = CreateForwardedMessage(originalMessage, command.TargetSessionId, command.ForwardedBy);
+        forwardedMessage.MarkAsForwarded(command.MessageId);
+
+        await messageRepository.AddAsync(forwardedMessage);
+        await messageRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
+
+        logger.LogInformation("消息 {MessageId} 转发成功：新消息 {NewMessageId}，目标会话={TargetSessionId}",
+            command.MessageId, forwardedMessage.MessageId, command.TargetSessionId);
+        return forwardedMessage.MessageId;
+    }
+
+    private async Task ValidateSessionAndSenderAsync(Guid sessionId, Guid senderId)
+    {
+        var session = await sessionRepository.GetByIdAsync(sessionId);
+        if (session == null)
+            throw new InvalidOperationException("会话不存在");
+    }
+
+    /// <summary>
+    /// 创建转发消息
+    /// </summary>
+    /// <param name="original"></param>
+    /// <param name="targetSessionId"></param>
+    /// <param name="forwardedBy"></param>
+    /// <returns></returns>
+    /// <exception cref="NotSupportedException"></exception>
+    private MessageEntity CreateForwardedMessage(MessageEntity original, Guid targetSessionId, Guid forwardedBy)
+    {
+        return original.MessageType switch
+        {
+            MessageType.MessageText => MessageEntity.CreateTextMessage(targetSessionId, forwardedBy,
+                original.Content ?? ""),
+            MessageType.MessageImage => MessageEntity.CreateImageMessage(targetSessionId, forwardedBy,
+                original.MediaUri!, original.Caption, original.ThumbnailUri),
+            MessageType.MessageVideo => MessageEntity.CreateVideoMessage(targetSessionId, forwardedBy,
+                original.MediaUri!, original.Duration ?? 0, original.Caption, original.ThumbnailUri),
+            MessageType.MessageAudio => MessageEntity.CreateAudioMessage(targetSessionId, forwardedBy,
+                original.MediaUri!, original.Duration ?? 0, original.Caption),
+            MessageType.MessageFile => MessageEntity.CreateFileMessage(targetSessionId, forwardedBy, original.MediaUri!,
+                original.FileName ?? "", (long)(original.FileSize ?? 0), original.MimeType ?? ""),
+            MessageType.MessageLocation => MessageEntity.CreateLocationMessage(targetSessionId, forwardedBy,
+                original.Latitude ?? 0, original.Longitude ?? 0, original.LocationName ?? ""),
+            MessageType.MessageLink => MessageEntity.CreateLinkMessage(targetSessionId, forwardedBy,
+                original.LinkUrl ?? "", original.LinkTitle, original.LinkDescription),
+            MessageType.MessageExpression => MessageEntity.CreateExpressionMessage(targetSessionId, forwardedBy,
+                original.ExpressionCode ?? ""),
+            _ => throw new NotSupportedException($"不支持的消息类型: {original.MessageType}")
+        };
+    }
+}

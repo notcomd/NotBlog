@@ -1,15 +1,15 @@
 using NotMediator;
-using Video.Domain.Server;
 using Video.Domain.ValueObjects;
+using Video.Web.API.Application.Behaviors;
 
 namespace Video.Web.API.Application.Commands;
 
-/// <summary>Add a review to a video.</summary>
+/// <summary>添加视频评论命令 — 带幂等性保护。</summary>
 public record AddVideoReviewCommand(
+    Guid RequestId,
     Guid VideoGuid,
     Guid UserGuid,
     Guid? RootReview,
     string? Body,
     List<VideoImage>? VideoImages,
-    string? ContentType = null) : IRequest<bool>;
-
+    string? ContentType = null) : IRequest<bool>, IIdempotentRequest;

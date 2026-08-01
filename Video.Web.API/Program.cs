@@ -1,10 +1,13 @@
+using System.Reflection;
 using CacheMemory.Extensions;
 using NotBlog.ServiceDefaults;
+using Notcomd.EventBus.Extension;
 using NotMediator;
 using Scalar.AspNetCore;
 using Video.Infrastructure;
 using Video.Infrastructure.EntityFramework;
 using Video.Web.API.Apis;
+using Video.Web.API.Application.Commands;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +25,10 @@ builder.Services.AddVideoInfrastructure(fileDevBaseUrl);
 // Apply ReviewContent configuration from appsettings.json
 builder.Configuration.ConfigureReviewContentOptions();
 
+// Configure gRPC client options
+builder.Services.Configure<GrpcClientOptions>(
+    builder.Configuration.GetSection(GrpcClientOptions.SectionName));
+
 // Add HTTP client for streaming proxy to FileDev
 builder.Services.AddHttpClient("FileDevProxy", client =>
 {
@@ -30,7 +37,30 @@ builder.Services.AddHttpClient("FileDevProxy", client =>
 });
 
 builder.Services.AddAuthorization();
-builder.Services.AddNotMediator();
+
+// NotMediator with pipeline behaviors
+builder.Services.AddNotMediator(typeof(Program).Assembly);
+
+// 配置 EventBus（通过 IConfiguration 配置驱动）
+// IConnectionFactory 来源：Aspire AddRabbitMQClient("EventBus") 或手动注册
+var eventBusCfg = builder.Configuration.GetSection("EventBus");
+#if DEBUG
+builder.Services.AddSingleton<RabbitMQ.Client.IConnectionFactory>(_ =>
+{
+    var host = eventBusCfg["HostName"] ?? "localhost";
+    var userName = eventBusCfg["UserName"] ?? "guest";
+    var password = eventBusCfg["Password"] ?? "guest";
+    return new RabbitMQ.Client.ConnectionFactory
+    {
+        HostName = host,
+        UserName = userName,
+        Password = password
+    };
+});
+#else
+builder.AddRabbitMQClient("EventBus");
+#endif
+builder.Services.AddEventBus(eventBusCfg, Assembly.GetExecutingAssembly());
 
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
@@ -55,5 +85,6 @@ app.MapVideoCollectionEndpoints();
 app.MapVideoReviewEndpoints();
 app.MapVideoBarrageEndpoints();
 app.MapVideoStreamEndpoints();
+app.MapVideoWatchStatsEndpoints();
 
 app.Run();

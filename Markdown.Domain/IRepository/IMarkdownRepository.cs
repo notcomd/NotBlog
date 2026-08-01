@@ -59,4 +59,45 @@ public interface IMarkdownRepository : IRepository<MarkDown>
     ///     根据 GUID 删除 MarkDown 聚合根（软删除）
     /// </summary>
     Task DeleteAsync(Guid markDownGuid);
+
+    // ===== OldMarkDown 历史版本查询（通过聚合根导航属性访问） =====
+
+    /// <summary>
+    ///     获取指定文档的所有历史版本
+    /// </summary>
+    Task<IEnumerable<OldMarkDown>> GetOldMarkDownsByMarkDownGuidAsync(Guid markDownGuid);
+
+    /// <summary>
+    ///     根据 GUID 获取单个历史版本
+    /// </summary>
+    Task<OldMarkDown?> GetOldMarkDownByGuidAsync(Guid oldMarkDownGuid);
+
+    /// <summary>
+    ///     软删除历史版本记录
+    /// </summary>
+    Task DeleteOldMarkDownAsync(Guid oldMarkDownGuid);
+
+    // ===== 评论持久化操作（通过聚合根） =====
+
+    /// <summary>
+    ///     通过聚合根添加评论
+    /// </summary>
+    Task<MarkReview> AddReviewAsync(Guid markDownGuid, MarkReview review);
+
+    /// <summary>
+    ///     更新评论内容
+    /// </summary>
+    Task<MarkReview> UpdateReviewAsync(Guid reviewGuid, string content);
+
+    /// <summary>
+    ///     软删除评论（通过聚合根）
+    /// </summary>
+    Task DeleteReviewAsync(Guid reviewGuid);
+
+    // ===== 列表查询 =====
+
+    /// <summary>
+    ///     获取所有非删除的公开 Markdown 文档（分页）
+    /// </summary>
+    Task<IEnumerable<MarkDown>> FindAllMarkDownsAsync(int skip = 0, int take = 20);
 }

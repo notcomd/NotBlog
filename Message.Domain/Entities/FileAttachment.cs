@@ -4,8 +4,13 @@ namespace Message.Domain.Entities;
 
 /// <summary>
 ///  文件附件
+///  <para>
+///  DDD 说明：文件附件是 <see cref="Message"/> 聚合内的<b>实体</b>（由聚合根通过
+///  <see cref="Message.AddAttachment"/> 统一管理），因此不声明为聚合根。
+///  其生命周期始终隶属于所属消息，独立仓储仅用于查询投影场景。
+///  </para>
 /// </summary>
-public class FileAttachment : Entity, IAggregateRoot
+public class FileAttachment : Entity
 {
     /// <summary>
     /// 创建文件附件

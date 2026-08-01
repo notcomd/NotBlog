@@ -11,3 +11,6 @@ f:\NotBlog\DomainCommons\obj\Debug\net10.0\DomainCommons.dll
 f:\NotBlog\DomainCommons\obj\Debug\net10.0\refint\DomainCommons.dll
 f:\NotBlog\DomainCommons\obj\Debug\net10.0\DomainCommons.pdb
 f:\NotBlog\DomainCommons\obj\Debug\net10.0\ref\DomainCommons.dll
+C:\Users\notco\AppData\Local\Temp\NotBlogBuildCheck\DomainCommons.deps.json
+C:\Users\notco\AppData\Local\Temp\NotBlogBuildCheck\DomainCommons.dll
+C:\Users\notco\AppData\Local\Temp\NotBlogBuildCheck\DomainCommons.pdb

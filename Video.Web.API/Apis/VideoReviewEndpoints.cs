@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using NotMediator;
 using Video.Domain.Cache;
 using Video.Domain.Entities;
@@ -11,7 +12,7 @@ using Video.Web.API.Application.Commands;
 namespace Video.Web.API.Apis;
 
 /// <summary>
-/// 视频评论接口
+/// 视频评论接口 — 遵循 CQRS 架构，命令操作带幂等性保护。
 /// </summary>
 public static class VideoReviewEndpoints
 {
@@ -32,13 +33,14 @@ public static class VideoReviewEndpoints
             .WithName("GetReviewReplies")
             .WithDescription("Get replies to a specific review");
 
-        group.MapPut("/{reviewGuid:guid}/interaction", UpdateReviewInteractionAsync)
-            .WithName("UpdateReviewInteraction")
-            .WithDescription("Increment or decrement a comment interaction counter (upvote/stars/watch/down/ballot/share)");
-
         group.MapGet("/{reviewGuid:guid}/interaction", GetReviewInteractionAsync)
             .WithName("GetReviewInteraction")
             .WithDescription("Get interaction counter values for a specific review");
+
+        // 评论点赞接口（通过 CQRS Command）
+        group.MapPost("/{reviewGuid:guid}/like", LikeReviewAsync)
+            .WithName("LikeReview")
+            .WithDescription("Like/unlike a review (upvote/down/ballot/share)");
 
         return group;
     }
@@ -72,7 +74,14 @@ public static class VideoReviewEndpoints
                     new IVideoResult<string>(VideoResultType.VideoResultNotFound, 404, "Video not found.", null),
                     statusCode: 404);
 
-            var command=new AddVideoReviewCommand(request.VideoGuid, request.UserGuid, request.RootReview, request.Body, request.VideoImages);
+            var command = new AddVideoReviewCommand(
+                RequestId: Guid.CreateVersion7(),
+                VideoGuid: request.VideoGuid,
+                UserGuid: request.UserGuid,
+                RootReview: request.RootReview,
+                Body: request.Body,
+                VideoImages: request.VideoImages);
+
             await notMediator.SendAsync(command);
 
             logger.LogInformation("Review added to video {VideoGuid} by user {UserGuid}",
@@ -97,13 +106,8 @@ public static class VideoReviewEndpoints
     }
 
     /// <summary>
-    /// 获取视频评论
+    /// 获取视频评论（查询操作）
     /// </summary>
-    /// <param name="videoGuid">视频ID</param>
-    /// <param name="videoService">视频服务</param>
-    /// <param name="cacheService">缓存服务</param>
-    /// <param name="loggerFactory">日志工厂</param>
-    /// <returns>视频评论列表</returns>
     private static async Task<IResult> GetVideoReviewsAsync(
         Guid videoGuid,
         IVideoService videoService,
@@ -158,14 +162,8 @@ public static class VideoReviewEndpoints
     }
 
     /// <summary>
-    /// 获取评论回复
+    /// 获取评论回复（查询操作）
     /// </summary>
-    /// <param name="reviewGuid">评论ID</param>
-    /// <param name="videoGuid">视频ID</param>
-    /// <param name="videoService">视频服务</param>
-    /// <param name="cacheService">缓存服务</param>
-    /// <param name="loggerFactory">日志工厂</param>
-    /// <returns>评论回复列表</returns>
     private static async Task<IResult> GetReviewRepliesAsync(
         Guid reviewGuid,
         Guid videoGuid,
@@ -222,23 +220,14 @@ public static class VideoReviewEndpoints
     }
 
     /// <summary>
-    /// 更新评论互动
+    /// 评论点赞/取消点赞（命令操作 — CQRS + 幂等性）
     /// </summary>
-    /// <param name="reviewGuid">评论ID</param>
-    /// <param name="request">互动互动请求</param>
-    /// <param name="videoService">视频服务</param>
-    /// <param name="videoRepository">视频仓库</param>
-    /// <param name="loggerFactory">日志工厂</param>
-    /// <returns>更新结果</returns>
-    private static async Task<IResult> UpdateReviewInteractionAsync(
+    private static async Task<IResult> LikeReviewAsync(
         Guid reviewGuid,
-        RequestReviewInteraction request,
-        INotMediator mediator,
-        IVideoService videoService,
-        IVideoRepository videoRepository,
-        ILoggerFactory loggerFactory)
+        [FromBody] RequestReviewInteraction request,
+        [FromServices] VideoServiceDI videoServiceDI)
     {
-        var logger = loggerFactory.CreateLogger("VideoReviewEndpoint");
+        var logger = videoServiceDI.Logger;
 
         try
         {
@@ -247,94 +236,40 @@ public static class VideoReviewEndpoints
                     new IVideoResult<string>(VideoResultType.VideoResultBadRequest, 400, error!, null),
                     statusCode: 400);
 
-            var video = await videoService.GetByVideoAsync(request.VideoGuid);
-            if (video is null)
+            var command = new LikeVideoReviewCommand(
+                RequestId: Guid.CreateVersion7(),
+                VideoGuid: request.VideoGuid,
+                UserGuid: Guid.Empty, // 可从认证上下文获取
+                ReviewGuid: reviewGuid,
+                Field: request.Field,
+                IsLike: request.IsIncrement);
+
+            var result = await videoServiceDI.NotMediator.SendAsync(command);
+
+            if (!result.Success)
                 return Results.Json(
-                    new IVideoResult<string>(VideoResultType.VideoResultNotFound, 404, "Video not found.", null),
-                    statusCode: 404);
+                    new IVideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
+                        result.ErrorMessage ?? "Failed to like review.", null),
+                    statusCode: 400);
 
-            var review = video.VideoReviews?.FirstOrDefault(r => r.VideoReviewGuid == reviewGuid);
-            if (review is null)
-                return Results.Json(
-                    new IVideoResult<string>(VideoResultType.VideoResultNotFound, 404, "Review not found.", null),
-                    statusCode: 404);
+            logger.LogInformation("Review {ReviewGuid}: {Field} like operation completed, NewCount={Count}",
+                reviewGuid, request.Field, result.NewCount);
 
-            var quote = review.VideoQuote;
-            var normalized = request.Field.ToLowerInvariant();
-
-            if (request.IsIncrement)
-            {
-                switch (normalized)
-                {
-                    case "upvote": quote.UpUpvote(); break;
-                    case "stars": quote.UpStars(); break;
-                    case "watch": quote.UpWatch(); break;
-                    case "down": quote.UpDown(); break;
-                    case "ballot": quote.UpBallot(); break;
-                    case "share": quote.UpShare(); break;
-                    default:
-                        return Results.Json(
-                            new IVideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
-                                $"Invalid quote field: {request.Field}", null),
-                            statusCode: 400);
-                }
-            }
-            else
-            {
-                switch (normalized)
-                {
-                    case "upvote": quote.DownUpvote(); break;
-                    case "stars": quote.DownStars(); break;
-                    case "down": quote.DownDown(); break;
-                    case "ballot": quote.DownBallot(); break;
-                    case "share": quote.DownShare(); break;
-                    default:
-                        return Results.Json(
-                            new IVideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
-                                $"Invalid quote field: {request.Field}", null),
-                            statusCode: 400);
-                }
-            }
-
-            await videoRepository.UpdateByVideoAsync(video);
-
-            var direction = request.IsIncrement ? "incremented" : "decremented";
-            logger.LogInformation("Review {ReviewGuid}: {Field} {Direction}",
-                reviewGuid, request.Field, direction);
-
-            return Results.Ok(new IVideoResult<string>(VideoResultType.VideoResultOk, 200,
-                $"Review interaction '{request.Field}' {direction} successfully.", "OK"));
-        }
-        catch (InvalidOperationException)
-        {
-            return Results.Json(
-                new IVideoResult<string>(VideoResultType.VideoResultNotFound, 404, "Review not found.", null),
-                statusCode: 404);
-        }
-        catch (ArgumentException ex)
-        {
-            return Results.Json(
-                new IVideoResult<string>(VideoResultType.VideoResultBadRequest, 400, ex.Message, null),
-                statusCode: 400);
+            return Results.Ok(new IVideoResult<object>(VideoResultType.VideoResultOk, 200,
+                $"Review like '{request.Field}' updated.", new { NewCount = result.NewCount }));
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to update interaction for review {ReviewGuid}", reviewGuid);
+            logger.LogError(ex, "Failed to like review {ReviewGuid}", reviewGuid);
             return Results.Json(
                 new IVideoResult<string>(VideoResultType.VideoResultInternalServerError, 500, ex.Message, null),
                 statusCode: 500);
         }
     }
 
-
     /// <summary>
-    /// 获取评论互动
+    /// 获取评论互动统计（查询操作）
     /// </summary>
-    /// <param name="reviewGuid">评论ID</param>
-    /// <param name="videoGuid">视频ID</param>
-    /// <param name="videoService">视频服务</param>
-    /// <param name="loggerFactory">日志工厂</param>
-    /// <returns>评论互动</returns>
     private static async Task<IResult> GetReviewInteractionAsync(
         Guid reviewGuid,
         Guid videoGuid,

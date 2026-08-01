@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "vnl6YXHvM8w=",
+  "dgSpecHash": "LAkf+1Tk18o=",
   "success": true,
   "projectFilePath": "F:\\NotBlog\\Video.Web.API\\Video.Web.API.csproj",
   "expectedPackageFiles": [
@@ -8,6 +8,12 @@
     "C:\\Users\\notco\\.nuget\\packages\\aspire.stackexchange.redis.distributedcaching\\13.4.6\\aspire.stackexchange.redis.distributedcaching.13.4.6.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\aspnetcore.healthchecks.redis\\9.0.0\\aspnetcore.healthchecks.redis.9.0.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\dynamic.json\\1.4.2\\dynamic.json.1.4.2.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\google.protobuf\\3.33.0\\google.protobuf.3.33.0.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\grpc.core.api\\2.80.0\\grpc.core.api.2.80.0.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\grpc.net.client\\2.80.0\\grpc.net.client.2.80.0.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\grpc.net.clientfactory\\2.80.0\\grpc.net.clientfactory.2.80.0.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\grpc.net.common\\2.80.0\\grpc.net.common.2.80.0.nupkg.sha512",
+    "C:\\Users\\notco\\.nuget\\packages\\grpc.tools\\2.83.0\\grpc.tools.2.83.0.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\10.0.10\\microsoft.aspnetcore.authentication.jwtbearer.10.0.10.nupkg.sha512",
     "C:\\Users\\notco\\.nuget\\packages\\microsoft.aspnetcore.mvc.core\\2.3.11\\microsoft.aspnetcore.mvc.core.2.3.11.nupkg.sha512",
@@ -86,6 +92,18 @@
       "warningLevel": 1,
       "filePath": "F:\\NotBlog\\Video.Web.API\\Video.Web.API.csproj",
       "libraryId": "Microsoft.AspNetCore.Mvc.Core",
+      "targetGraphs": [
+        "net10.0"
+      ]
+    },
+    {
+      "code": "NU1603",
+      "level": "Warning",
+      "message": "Video.Web.API 依赖于 Google.Protobuf (>= 3.32.3)，但没有找到 Google.Protobuf 3.32.3。已改为解析 Google.Protobuf 3.33.0。",
+      "projectPath": "F:\\NotBlog\\Video.Web.API\\Video.Web.API.csproj",
+      "warningLevel": 1,
+      "filePath": "F:\\NotBlog\\Video.Web.API\\Video.Web.API.csproj",
+      "libraryId": "Google.Protobuf",
       "targetGraphs": [
         "net10.0"
       ]

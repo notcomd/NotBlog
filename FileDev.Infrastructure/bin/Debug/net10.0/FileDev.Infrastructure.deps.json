@@ -14,7 +14,7 @@
           "Microsoft.AspNetCore.Mvc.Core": "2.3.11",
           "Microsoft.EntityFrameworkCore": "10.0.9",
           "NotMediator": "1.0.5",
-          "StackExchange.Redis": "3.0.25",
+          "StackExchange.Redis": "3.1.0",
           "Token.JWT": "1.0.0"
         },
         "runtime": {
@@ -26,7 +26,7 @@
           "AspNetCore.HealthChecks.Redis": "9.0.0",
           "Microsoft.Extensions.DependencyInjection.AutoActivation": "10.6.0",
           "OpenTelemetry.Extensions.Hosting": "1.15.3",
-          "StackExchange.Redis": "3.0.25",
+          "StackExchange.Redis": "3.1.0",
           "System.IO.Hashing": "10.0.8"
         },
         "runtime": {
@@ -38,7 +38,7 @@
       },
       "AspNetCore.HealthChecks.Redis/9.0.0": {
         "dependencies": {
-          "StackExchange.Redis": "3.0.25"
+          "StackExchange.Redis": "3.1.0"
         },
         "runtime": {
           "lib/net8.0/HealthChecks.Redis.dll": {
@@ -111,7 +111,7 @@
       },
       "Microsoft.Extensions.Caching.StackExchangeRedis/10.0.9": {
         "dependencies": {
-          "StackExchange.Redis": "3.0.25"
+          "StackExchange.Redis": "3.1.0"
         },
         "runtime": {
           "lib/net10.0/Microsoft.Extensions.Caching.StackExchangeRedis.dll": {
@@ -283,23 +283,23 @@
           }
         }
       },
-      "RESPite/3.0.25": {
+      "RESPite/3.1.0": {
         "runtime": {
           "lib/net10.0/RESPite.dll": {
             "assemblyVersion": "3.0.0.0",
-            "fileVersion": "3.0.25.33140"
+            "fileVersion": "3.1.0.49039"
           }
         }
       },
-      "StackExchange.Redis/3.0.25": {
+      "StackExchange.Redis/3.1.0": {
         "dependencies": {
-          "RESPite": "3.0.25",
+          "RESPite": "3.1.0",
           "System.IO.Hashing": "10.0.8"
         },
         "runtime": {
           "lib/net10.0/StackExchange.Redis.dll": {
             "assemblyVersion": "3.0.0.0",
-            "fileVersion": "3.0.25.33140"
+            "fileVersion": "3.1.0.49039"
           }
         }
       },
@@ -327,7 +327,7 @@
         "dependencies": {
           "Aspire.StackExchange.Redis": "13.4.6",
           "Microsoft.Extensions.Caching.StackExchangeRedis": "10.0.9",
-          "StackExchange.Redis": "3.0.25"
+          "StackExchange.Redis": "3.1.0"
         },
         "runtime": {
           "CacheMemory.dll": {
@@ -587,19 +587,19 @@
       "path": "opentelemetry.extensions.hosting/1.15.3",
       "hashPath": "opentelemetry.extensions.hosting.1.15.3.nupkg.sha512"
     },
-    "RESPite/3.0.25": {
+    "RESPite/3.1.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-v4vA1MttS78DQINFIY5BLOtWdA9OXoSSZk4VVdSzM7B2GezKsFHqTQpTHCZXuUuQ6+gPmvh8DkT60wEEtCojSg==",
-      "path": "respite/3.0.25",
-      "hashPath": "respite.3.0.25.nupkg.sha512"
+      "sha512": "sha512-Xf2mFsMahfIpcF2rAkCd0TLSOz0Zwmg2SuI5zv5Lagmx/BiZbjoAU8VQyGUgpx8C1V0qdfXznsUgDLx4OLPpkg==",
+      "path": "respite/3.1.0",
+      "hashPath": "respite.3.1.0.nupkg.sha512"
     },
-    "StackExchange.Redis/3.0.25": {
+    "StackExchange.Redis/3.1.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-ak+9jk7f5oE25gBaCT7Epr8jYD3EyTEuMr5oxlY8EZE7o01xcaGLWTg+xeE6PaRV1ko9/fMdlvSEjdrdgpBb0g==",
-      "path": "stackexchange.redis/3.0.25",
-      "hashPath": "stackexchange.redis.3.0.25.nupkg.sha512"
+      "sha512": "sha512-brWRCTBSKJjQxbiJhKfvLPinEAyUScUsGOrf8EHiWcOLaFzeM0367Co5YEzHywLdueXOtZCr6zKhSRU/tiEXxQ==",
+      "path": "stackexchange.redis/3.1.0",
+      "hashPath": "stackexchange.redis.3.1.0.nupkg.sha512"
     },
     "System.IdentityModel.Tokens.Jwt/8.22.0": {
       "type": "package",

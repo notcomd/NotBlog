@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Video.Domain.Entities;
+using Video.Web.API.Application.Commands;
 using Video.Web.API.Dto.Request;
+using Video.Domain.ValueObjects;
 
 namespace Video.Web.API.Apis;
 
 /// <summary>
-/// 添加视频接口
+/// 添加视频接口 — 通过 gRPC 调用 FileDev 服务上传视频文件和封面。
 /// </summary>
 public static class AddVideoEndpoints
 {
@@ -17,7 +19,7 @@ public static class AddVideoEndpoints
 
         group.MapPost("/", AddVideoAsync)
             .WithName("AddVideo")
-            .WithDescription("Upload video file and create video metadata")
+            .WithDescription("Upload video file and cover image via gRPC to FileDev service")
             .Produces<IVideoResult<string>>(200)
             .ProducesProblem(400)
             .ProducesProblem(500)
@@ -42,36 +44,54 @@ public static class AddVideoEndpoints
                         "Video file is required.", null),
                     statusCode: 400);
 
-            // 1. Upload video file to FileDev service
-            await using var videoStream = videoFile.OpenReadStream();
-            var uploadResult = await videoServiceDI.FileDevClient.UploadVideoAsync(
-                videoStream, videoFile.FileName, request.AffiliatedAuthorizes.FirstOrDefault());
+            // 读取视频文件内容
+            byte[] videoFileContent;
+            await using (var videoStream = videoFile.OpenReadStream())
+            {
+                using var ms = new MemoryStream();
+                await videoStream.CopyToAsync(ms);
+                videoFileContent = ms.ToArray();
+            }
 
-            var coverUri = new Uri(uploadResult.FileUri, UriKind.RelativeOrAbsolute);
+            // 读取封面图片内容（如果有）
+            byte[]? coverImageContent = null;
+            string? coverImageFileName = null;
             if (coverImage is { Length: > 0 })
             {
                 await using var coverStream = coverImage.OpenReadStream();
-                var coverResult = await videoServiceDI.FileDevClient.UploadVideoAsync(
-                    coverStream, coverImage.FileName, request.AffiliatedAuthorizes.FirstOrDefault());
-                coverUri = new Uri(coverResult.FileUri, UriKind.RelativeOrAbsolute);
+                using var ms = new MemoryStream();
+                await coverStream.CopyToAsync(ms);
+                coverImageContent = ms.ToArray();
+                coverImageFileName = coverImage.FileName;
             }
 
-            // 2. Create video entity and persist
-            var videoFileUri = new Uri(uploadResult.FileUri, UriKind.RelativeOrAbsolute);
-            var video = new Videos(
-                request.AffiliatedAuthorizes,
-                request.VideoName,
-                coverUri,
-                videoFileUri,
-                request.BriefIntroduction,
-                request.Tags);
+            // 构建通过 gRPC 上传的命令（带幂等性 RequestId）
+            var userId = request.AffiliatedAuthorizes.FirstOrDefault();
+            var command = new UploadVideoViaGrpcCommand(
+                RequestId: Guid.CreateVersion7(),
+                UserId: userId,
+                VideoName: request.VideoName,
+                BriefIntroduction: request.BriefIntroduction,
+                VideoFileContent: videoFileContent,
+                VideoFileName: videoFile.FileName,
+                CoverImageContent: coverImageContent,
+                CoverImageFileName: coverImageFileName,
+                Tags: request.Tags,
+                VideoControl: VideoControl.VideoControlBuilder());
 
-            await videoServiceDI.VideoRepository.AddByVideoAsync(video);
+            var result = await videoServiceDI.NotMediator.SendAsync(command);
 
-            logger.LogInformation("Video created: {VideoName} ({VideoGuid})", request.VideoName, video.VideoGuid);
+            if (!result.Success)
+                return Results.Json(
+                    new IVideoResult<string>(VideoResultType.VideoResultInternalServerError, 500,
+                        result.ErrorMessage ?? "Upload failed.", null),
+                    statusCode: 500);
+
+            logger.LogInformation("Video created via gRPC: {VideoName} ({VideoGuid})",
+                request.VideoName, result.VideoGuid);
 
             return Results.Ok(new IVideoResult<string>(VideoResultType.VideoResultOk, 200,
-                "Video created successfully.", video.VideoGuid.ToString()));
+                "Video created successfully.", result.VideoGuid.ToString()));
         }
         catch (Exception ex)
         {

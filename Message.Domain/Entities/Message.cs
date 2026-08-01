@@ -1,4 +1,4 @@
-﻿using Message.Domain.Entities.MessageContent;
+using Message.Domain.Entities.MessageContent;
 using Message.Domain.Entities.Recall;
 using Message.Domain.Enums;
 using Message.Domain.Events;
@@ -37,7 +37,7 @@ public class Message : Entity, IAggregateRoot
     public Guid MessageId { get; init; }
     public Guid SessionId { get; init; }
     public Guid SenderId { get; init; }
-    public Guid? ReceiverId { get; set; }
+    public Guid? ReceiverId { get; private set; }
     public MessageType MessageType { get; private set; }
     public MessageStatus Status { get; private set; }
 
@@ -48,7 +48,7 @@ public class Message : Entity, IAggregateRoot
     public double? Duration { get; private set; }
     public string? FileName { get; private set; }
     public string? MimeType { get; private set; }
-    public string? Caption { get; set; }
+    public string? Caption { get; private set; }
     public double? Latitude { get; private set; }
     public double? Longitude { get; private set; }
     public string? LocationName { get; private set; }

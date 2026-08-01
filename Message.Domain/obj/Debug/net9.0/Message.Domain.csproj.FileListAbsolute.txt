@@ -11,3 +11,6 @@ F:\NotBlog\Message.Domain\obj\Debug\net9.0\Message.Domain.dll
 F:\NotBlog\Message.Domain\obj\Debug\net9.0\refint\Message.Domain.dll
 F:\NotBlog\Message.Domain\obj\Debug\net9.0\Message.Domain.pdb
 F:\NotBlog\Message.Domain\obj\Debug\net9.0\ref\Message.Domain.dll
+C:\Users\notco\AppData\Local\Temp\NotBlogBuildCheck\Message.Domain.deps.json
+C:\Users\notco\AppData\Local\Temp\NotBlogBuildCheck\Message.Domain.dll
+C:\Users\notco\AppData\Local\Temp\NotBlogBuildCheck\Message.Domain.pdb

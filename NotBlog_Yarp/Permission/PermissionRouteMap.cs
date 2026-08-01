@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 
 namespace NotBlog_Yarp.Permission;
@@ -8,15 +9,30 @@ namespace NotBlog_Yarp.Permission;
 /// 维护网关需要鉴权的全部路由与权限码对应关系。
 /// 配置来源：appsettings.json 的 "PermissionRoutes" 节。
 /// 支持路径参数匹配（如 /api/articles/{id}）。
+/// 
+/// 线程安全：PermissionMappingInitializer 会在启动后从 Identity 拉取映射并
+/// 并发替换（ClearMappings/AddMap），因此对 _entries 的读写统一加锁，
+/// 正则缓存使用 ConcurrentDictionary，保证与请求处理并发安全。
 /// </summary>
 public class PermissionRouteMap
 {
+    private readonly object _lock = new();
     private readonly List<RouteEntry> _entries = new();
+    private readonly ConcurrentDictionary<string, Regex> _regexCache = new();
     private readonly HashSet<string> _publicPaths = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> _bypassPaths = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>已注册的映射条目数</summary>
-    public int Count => _entries.Count;
+    public int Count
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return _entries.Count;
+            }
+        }
+    }
 
     /// <summary>
     /// 清空全部 URL→PermissionCode 映射条目（保留 PublicPaths 和 BypassPaths）
@@ -24,8 +40,11 @@ public class PermissionRouteMap
     /// </summary>
     public void ClearMappings()
     {
-        _entries.Clear();
-        _regexCache.Clear();
+        lock (_lock)
+        {
+            _entries.Clear();
+            _regexCache.Clear();
+        }
     }
 
     /// <summary>
@@ -40,7 +59,10 @@ public class PermissionRouteMap
         ArgumentException.ThrowIfNullOrWhiteSpace(pathPattern);
         ArgumentException.ThrowIfNullOrWhiteSpace(permissionCode);
 
-        _entries.Add(new RouteEntry(method.ToUpperInvariant(), pathPattern, permissionCode));
+        lock (_lock)
+        {
+            _entries.Add(new RouteEntry(method.ToUpperInvariant(), pathPattern, permissionCode));
+        }
     }
 
     /// <summary>
@@ -91,7 +113,14 @@ public class PermissionRouteMap
     /// <returns>是否匹配成功</returns>
     public bool TryMatch(string path, string method, out string permissionCode)
     {
-        foreach (var entry in _entries)
+        // 在锁内快照条目，避免与 PermissionMappingInitializer 的并发替换冲突
+        RouteEntry[] entries;
+        lock (_lock)
+        {
+            entries = _entries.ToArray();
+        }
+
+        foreach (var entry in entries)
         {
             if (!string.Equals(entry.Method, method, StringComparison.OrdinalIgnoreCase))
                 continue;
@@ -160,33 +189,34 @@ public class PermissionRouteMap
         return map;
     }
 
-    // 缓存已编译的正则，避免每次匹配都重新构造
-    private readonly Dictionary<string, Regex> _regexCache = new();
-
     /// <summary>
     /// 将路径模式中的 {param} / {**param} 替换为正则进行匹配
-    ///   {param}      → 单段匹配 [^/]+
-    ///   {**param}    → 多段匹配 .+
+    ///   /{**param}    → (?:/.*)?  （多段，可匹配空剩余，含尾斜杠）
+    ///   {**param}     → .*        （多段）
+    ///   {param}       → [^/]+     （单段）
     /// </summary>
     private bool MatchPattern(string path, string pattern)
     {
-        if (!_regexCache.TryGetValue(pattern, out var regex))
+        var regex = _regexCache.GetOrAdd(pattern, p =>
         {
             // 1. 先处理 ** 通配符（多段）
-            var regexPattern = Regex.Escape(pattern)
+            var regexPattern = Regex.Escape(p)
                 .Replace("\\{", "{")
                 .Replace("\\}", "}");
 
+            // 带斜杠的 catch-all（如 /{**catch-all}）→ 可选路径，允许空剩余
             regexPattern = Regex.Replace(regexPattern,
-                @"\{\*\*[^}]+\}", ".+");
+                @"/\{\*\*[^}]+\}", "(?:/.*)?");
+            // 剩余 catch-all（不带前导斜杠）→ 任意剩余
+            regexPattern = Regex.Replace(regexPattern,
+                @"\{\*\*[^}]+\}", ".*");
             // 2. 再处理普通参数（单段）
             regexPattern = Regex.Replace(regexPattern,
                 @"\{[^}]+\}", "[^/]+");
 
-            regex = new Regex("^" + regexPattern + "$",
+            return new Regex("^" + regexPattern + "$",
                 RegexOptions.IgnoreCase | RegexOptions.Compiled);
-            _regexCache[pattern] = regex;
-        }
+        });
 
         return regex.IsMatch(path);
     }

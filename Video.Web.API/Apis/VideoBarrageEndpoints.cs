@@ -9,6 +9,7 @@ namespace Video.Web.API.Apis;
 
 /// <summary>
 /// 视频弹幕接口 — 支持文本、图片及混合弹幕。
+/// 所有写操作通过 CQRS 命令 + Redis 幂等性保护。
 /// </summary>
 public static class VideoBarrageEndpoints
 {
@@ -30,8 +31,7 @@ public static class VideoBarrageEndpoints
 
     private static async Task<IResult> AddBarrageAsync(
        [FromForm] RequestAddBarrage request,
-        [FromServices] VideoServiceDI videoServiceDI
-       )
+        [FromServices] VideoServiceDI videoServiceDI)
     {
         var logger = videoServiceDI.Logger;
 
@@ -57,15 +57,20 @@ public static class VideoBarrageEndpoints
                     img.Width, img.Height, img.Format, img.FileSize, img.ThumbnailUrl))
                 .ToList();
 
-            var videoBarrage = new AddVideoBarrageCommand(
-                request.VideoGuid, request.UserGuid, request.VideoBarrageBody, domainImages);
-            await videoServiceDI.NotMediator.SendAsync(videoBarrage);
+            var command = new AddVideoBarrageCommand(
+                RequestId: Guid.CreateVersion7(),
+                VideoGuid: request.VideoGuid,
+                UserGuid: request.UserGuid,
+                Body: request.VideoBarrageBody,
+                VideoImages: domainImages);
+
+            var barrageGuid = await videoServiceDI.NotMediator.SendAsync(command);
 
             logger.LogInformation("Barrage added to video {VideoGuid} by user {UserGuid}",
                 request.VideoGuid, request.UserGuid);
 
             return Results.Ok(new IVideoResult<string>(VideoResultType.VideoResultOk, 200,
-                "Barrage published successfully.", videoBarrage.VideoGuid.ToString()));
+                "Barrage published successfully.", barrageGuid.ToString()));
         }
         catch (ArgumentException ex)
         {
@@ -84,8 +89,7 @@ public static class VideoBarrageEndpoints
 
     private static async Task<IResult> GetBarragesAsync(
         Guid videoGuid,
-        [FromServices] VideoServiceDI videoServiceDI
-       )
+        [FromServices] VideoServiceDI videoServiceDI)
     {
         var logger = videoServiceDI.Logger;
 

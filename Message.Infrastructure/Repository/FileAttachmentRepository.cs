@@ -4,7 +4,6 @@ namespace Message.Infrastructure.Repository;
 
 public class FileAttachmentRepository(MessageDbContext context) : IFileAttachmentRepository
 {
-    public IUnitOfWork UnitOfWork => context;
     private readonly DbSet<FileAttachment> _dbSet = context.Set<FileAttachment>();
 
     public async Task<FileAttachment?> GetByIdAsync(Guid attachmentId)

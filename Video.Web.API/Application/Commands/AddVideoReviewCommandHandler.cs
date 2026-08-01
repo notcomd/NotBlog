@@ -5,37 +5,26 @@ using Video.Domain.IRepository;
 namespace Video.Web.API.Application.Commands;
 
 /// <summary>
-/// 添加视频评论命令处理程序
+/// 添加视频评论命令处理器。
 /// </summary>
-
-public class AddVideoReviewCommandHandler : IRequestHandler<AddVideoReviewCommand, bool>
+public class AddVideoReviewCommandHandler(
+    IVideoCacheService cacheService,
+    IVideoRepository videoRepository,
+    ILogger<AddVideoReviewCommandHandler> logger)
+    : IRequestHandler<AddVideoReviewCommand, bool>
 {
-    private readonly IVideoCacheService _cacheService;
-    private readonly IVideoRepository _videoRepository;
-    private readonly ILogger<AddVideoReviewCommandHandler> _logger;
-
-    public AddVideoReviewCommandHandler(IVideoCacheService cacheService,
-                                        IVideoRepository videoRepository,
-                                        ILogger<AddVideoReviewCommandHandler> logger)
-    {
-        _cacheService = cacheService;
-        _videoRepository = videoRepository;
-        _logger = logger;
-    }
-
     public async Task<bool> Handler(AddVideoReviewCommand request, CancellationToken cancellationToken)
     {
-        
-        _logger.LogInformation("Adding review to video {VideoGuid} by user {UserGuid}",
+        logger.LogInformation("Adding review to video {VideoGuid} by user {UserGuid}",
             request.VideoGuid, request.UserGuid);
 
-        var video = await _cacheService.GetVideoMetaAsync(request.VideoGuid, cancellationToken);
+        var video = await cacheService.GetVideoMetaAsync(request.VideoGuid, cancellationToken);
         if (video is null)
         {
-            video = await _videoRepository.FindByVideoAsync(request.VideoGuid);
+            video = await videoRepository.FindByVideoAsync(request.VideoGuid);
             if (video is null)
             {
-                _logger.LogError("Video not found: {VideoGuid}", request.VideoGuid);
+                logger.LogError("Video not found: {VideoGuid}", request.VideoGuid);
                 return false;
             }
         }
@@ -46,16 +35,17 @@ public class AddVideoReviewCommandHandler : IRequestHandler<AddVideoReviewComman
                 .FirstOrDefault(r => r.VideoReviewGuid == rootId);
             if (parent is null)
             {
-                _logger.LogError("Parent review not found: {RootReview}", rootId);
+                logger.LogError("Parent review not found: {RootReview}", rootId);
                 return false;
             }
         }
+
         video.AddByVideoReview(request.UserGuid, request.RootReview,
             request.Body, request.VideoImages);
-        await _videoRepository.UnitOfWork.SavaEntitiesAsync(cancellationToken);
-        // 4. 使缓存失效
-        await _cacheService.RemoveVideoMetaAsync(request.VideoGuid, cancellationToken);
-        _logger.LogInformation("Review added successfully to video {VideoGuid}", request.VideoGuid);
+        await videoRepository.UnitOfWork.SavaEntitiesAsync(cancellationToken);
+        await cacheService.RemoveVideoMetaAsync(request.VideoGuid, cancellationToken);
+
+        logger.LogInformation("Review added successfully to video {VideoGuid}", request.VideoGuid);
         return true;
     }
 }

@@ -46,9 +46,9 @@ public class MessageFriends : Entity, IAggregateRoot
 
     public FriendshipStatus Status { get; private set; }
 
-    public string? Remark { get; set; }
+    public string? Remark { get; private set; }
 
-    public string? FriendGroupName { get; set; }
+    public string? FriendGroupName { get; private set; }
 
     public bool IsBlocked { get; private set; }
 

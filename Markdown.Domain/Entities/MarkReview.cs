@@ -67,6 +67,15 @@ public class MarkReview : Entity
         return Task.FromResult(this);
     }
 
+    /// <summary>
+    ///     更新评论内容
+    /// </summary>
+    /// <param name="content">新的评论内容</param>
+    public void UpdateContent(string content)
+    {
+        MarkReviewContent = content ?? throw new ArgumentNullException(nameof(content));
+    }
+
     public void AddReviewImage(ReviewImage reviewImage)
     {
         ReviewImages?.Add(reviewImage);

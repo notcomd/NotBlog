@@ -1,458 +1,643 @@
+using Message.Web.API.Application.Commands.Tweets;
+using Message.Web.API.Application.Queries.Tweets;
+
 namespace Message.Web.API.APIs;
 
+/// <summary>
+/// 推文接口（静态函数模式 + CQRS）。
+/// <para>
+/// 设计约定：
+/// - 所有端点处理程序均为<b>静态函数</b>（不使用 Action/Lambda 创建接口）；
+/// - 依赖服务通过 <c>[FromServices]</c> 特性注入，生命周期由服务注册文件统一管理；
+/// - 数据写操作通过 <see cref="INotMediator"/> 分发到命令处理程序（Commands），
+///   命令仅返回操作结果（bool / 新实体 ID），不返回业务实体/DTO；
+/// - 数据读操作通过 <see cref="INotMediator"/> 分发到查询处理程序（Queries），
+///   查询不修改任何数据状态，仅返回只读结果。
+/// </para>
+/// </summary>
 public static class TweetsApi
 {
+    /// <summary>映射推文相关端点组</summary>
     public static RouteGroupBuilder MapTweetsApi(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/tweets")
             .WithTags("Tweets");
 
-        group.MapPost("/", async (
-            [FromBody] CreateTweetRequest request,
-            ITweetProvider tweetProvider,
-            ICurrentUserService currentUserService,
-            ILoggerFactory loggerFactory) =>
-        {
-            var logger = loggerFactory.CreateLogger("TweetsApi");
-            try
-            {
-                var userId = currentUserService.GetUserId();
-                var tweet = await tweetProvider.CreateTweetAsync(userId, request.Content, request.MediaUrls,
-                    request.LinkUrl, visibility: request.Visibility);
+        // POST / — 创建推文
+        group.MapPost("/", CreateTweetAsync)
+            .WithSummary("创建推文")
+            .WithDescription("发布一条新推文")
+            .Accepts<CreateTweetRequest>("application/json")
+            .Produces<ApiResponse<Guid>>();
 
-                var dto = MapToDto(tweet);
-                return Results.Ok(ApiResponse<TweetDto>.Created(dto, "推文创建成功"));
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "创建推文失败");
-                return Results.Ok(ApiResponse<TweetDto>.Error("创建推文失败"));
-            }
-        })
-        .WithSummary("创建推文")
-        .WithDescription("发布一条新推文")
-        .Accepts<CreateTweetRequest>("application/json")
-        .Produces<ApiResponse<TweetDto>>();
+        // POST /draft — 保存草稿
+        group.MapPost("/draft", SaveDraftAsync)
+            .WithSummary("保存草稿")
+            .WithDescription("保存一条推文草稿")
+            .Accepts<CreateTweetRequest>("application/json")
+            .Produces<ApiResponse<Guid>>();
 
-        group.MapPost("/draft", async (
-            [FromBody] CreateTweetRequest request,
-            ITweetProvider tweetProvider,
-            ICurrentUserService currentUserService,
-            ILoggerFactory loggerFactory) =>
-        {
-            var logger = loggerFactory.CreateLogger("TweetsApi");
-            try
-            {
-                var userId = currentUserService.GetUserId();
-                var tweet = await tweetProvider.SaveDraftAsync(userId, request.Content, request.MediaUrls,
-                    request.LinkUrl, visibility: request.Visibility);
+        // GET /{tweetGuid} — 获取推文详情
+        group.MapGet("/{tweetGuid}", GetTweetAsync)
+            .WithSummary("获取推文详情")
+            .WithDescription("根据推文ID获取推文详情，包含当前用户的交互状态")
+            .Produces<ApiResponse<TweetDto>>();
 
-                var dto = MapToDto(tweet);
-                return Results.Ok(ApiResponse<TweetDto>.Created(dto, "草稿保存成功"));
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "保存草稿失败");
-                return Results.Ok(ApiResponse<TweetDto>.Error("保存草稿失败"));
-            }
-        })
-        .WithSummary("保存草稿")
-        .WithDescription("保存一条推文草稿")
-        .Accepts<CreateTweetRequest>("application/json")
-        .Produces<ApiResponse<TweetDto>>();
+        // GET /user/{userGuid} — 获取用户推文列表
+        group.MapGet("/user/{userGuid}", GetUserTweetsAsync)
+            .WithSummary("获取用户推文列表")
+            .WithDescription("获取指定用户的推文列表，支持分页")
+            .Produces<ApiResponse<PagedResult<TweetDto>>>();
 
-        group.MapGet("/{tweetGuid}", async (
-            Guid tweetGuid,
-            ITweetProvider tweetProvider,
-            ICurrentUserService currentUserService,
-            ILoggerFactory loggerFactory) =>
-        {
-            var logger = loggerFactory.CreateLogger("TweetsApi");
-            try
-            {
-                var tweet = await tweetProvider.GetTweetAsync(tweetGuid);
-                if (tweet == null)
-                    return Results.Ok(ApiResponse<TweetDto>.NotFound("推文不存在"));
+        // GET /timeline — 获取时间线
+        group.MapGet("/timeline", GetTimelineAsync)
+            .WithSummary("获取时间线")
+            .WithDescription("获取当前用户的时间线推文，支持分页")
+            .Produces<ApiResponse<PagedResult<TweetDto>>>();
 
-                var currentUserId = currentUserService.GetUserId();
-                var isLiked = await tweetProvider.GetInteractionStatusAsync(tweetGuid, currentUserId, InteractionType.Like);
-                var isFavorited = await tweetProvider.GetInteractionStatusAsync(tweetGuid, currentUserId, InteractionType.Favorite);
-                var isCoined = await tweetProvider.GetInteractionStatusAsync(tweetGuid, currentUserId, InteractionType.Coin);
+        // GET /trending — 获取趋势推文
+        group.MapGet("/trending", GetTrendingAsync)
+            .WithSummary("获取趋势推文")
+            .WithDescription("获取热门趋势推文列表，支持分页")
+            .Produces<ApiResponse<PagedResult<TweetDto>>>();
 
-                var dto = MapToDto(tweet, isLiked, isFavorited, isCoined);
-                return Results.Ok(ApiResponse<TweetDto>.Ok(dto));
-            }
-            catch (KeyNotFoundException)
-            {
-                return Results.Ok(ApiResponse<TweetDto>.NotFound("推文不存在"));
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "获取推文详情失败");
-                return Results.Ok(ApiResponse<TweetDto>.Error("获取推文详情失败"));
-            }
-        })
-        .WithSummary("获取推文详情")
-        .WithDescription("根据推文ID获取推文详情，包含当前用户的交互状态")
-        .Produces<ApiResponse<TweetDto>>();
+        // PUT /{tweetGuid} — 更新草稿
+        group.MapPut("/{tweetGuid}", UpdateDraftAsync)
+            .WithSummary("更新草稿")
+            .WithDescription("更新指定的推文草稿")
+            .Accepts<UpdateTweetRequest>("application/json")
+            .Produces<ApiResponse>();
 
-        group.MapGet("/user/{userGuid}", async (
-            Guid userGuid,
-            ITweetProvider tweetProvider,
-            ILoggerFactory loggerFactory,
-            [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 20) =>
-        {
-            var logger = loggerFactory.CreateLogger("TweetsApi");
-            try
-            {
-                var tweets = await tweetProvider.GetUserTweetsAsync(userGuid, page, pageSize);
+        // DELETE /{tweetGuid} — 删除推文
+        group.MapDelete("/{tweetGuid}", DeleteTweetAsync)
+            .WithSummary("删除推文")
+            .WithDescription("删除指定的推文")
+            .Produces<ApiResponse>();
 
-                var result = new PagedResult<TweetDto>
-                {
-                    Items = tweets.Select(t => MapToDto(t)).ToList(),
-                    Total = tweets.Count(),
-                    Page = page,
-                    PageSize = pageSize
-                };
+        // POST /{tweetGuid}/pin — 置顶推文
+        group.MapPost("/{tweetGuid}/pin", PinTweetAsync)
+            .WithSummary("置顶推文")
+            .WithDescription("将指定推文置顶")
+            .Produces<ApiResponse>();
 
-                return Results.Ok(ApiResponse<PagedResult<TweetDto>>.Ok(result));
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "获取用户推文列表失败");
-                return Results.Ok(ApiResponse<PagedResult<TweetDto>>.Error("获取用户推文列表失败"));
-            }
-        })
-        .WithSummary("获取用户推文列表")
-        .WithDescription("获取指定用户的推文列表，支持分页")
-        .Produces<ApiResponse<PagedResult<TweetDto>>>();
+        // POST /{tweetGuid}/unpin — 取消置顶推文
+        group.MapPost("/{tweetGuid}/unpin", UnpinTweetAsync)
+            .WithSummary("取消置顶推文")
+            .WithDescription("取消指定推文的置顶状态")
+            .Produces<ApiResponse>();
 
-        group.MapGet("/timeline", async (
-            ITweetProvider tweetProvider,
-            ICurrentUserService currentUserService,
-            ILoggerFactory loggerFactory,
-            [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 20) =>
-        {
-            var logger = loggerFactory.CreateLogger("TweetsApi");
-            try
-            {
-                var userId = currentUserService.GetUserId();
-                var tweets = await tweetProvider.GetTimelineAsync(userId, page, pageSize);
+        // POST /{tweetGuid}/like — 点赞推文
+        group.MapPost("/{tweetGuid}/like", LikeTweetAsync)
+            .WithSummary("点赞推文")
+            .WithDescription("对指定推文进行点赞")
+            .Produces<ApiResponse>();
 
-                var result = new PagedResult<TweetDto>
-                {
-                    Items = tweets.Select(t => MapToDto(t)).ToList(),
-                    Total = tweets.Count(),
-                    Page = page,
-                    PageSize = pageSize
-                };
+        // DELETE /{tweetGuid}/like — 取消点赞
+        group.MapDelete("/{tweetGuid}/like", UnlikeTweetAsync)
+            .WithSummary("取消点赞")
+            .WithDescription("取消对指定推文的点赞")
+            .Produces<ApiResponse>();
 
-                return Results.Ok(ApiResponse<PagedResult<TweetDto>>.Ok(result));
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "获取时间线失败");
-                return Results.Ok(ApiResponse<PagedResult<TweetDto>>.Error("获取时间线失败"));
-            }
-        })
-        .WithSummary("获取时间线")
-        .WithDescription("获取当前用户的时间线推文，支持分页")
-        .Produces<ApiResponse<PagedResult<TweetDto>>>();
+        // POST /{tweetGuid}/favorite — 收藏推文
+        group.MapPost("/{tweetGuid}/favorite", FavoriteTweetAsync)
+            .WithSummary("收藏推文")
+            .WithDescription("收藏指定推文")
+            .Produces<ApiResponse>();
 
-        group.MapGet("/trending", async (
-            ITweetProvider tweetProvider,
-            ILoggerFactory loggerFactory,
-            [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 20) =>
-        {
-            var logger = loggerFactory.CreateLogger("TweetsApi");
-            try
-            {
-                var tweets = await tweetProvider.GetTrendingAsync(page, pageSize);
+        // DELETE /{tweetGuid}/favorite — 取消收藏
+        group.MapDelete("/{tweetGuid}/favorite", UnfavoriteTweetAsync)
+            .WithSummary("取消收藏")
+            .WithDescription("取消对指定推文的收藏")
+            .Produces<ApiResponse>();
 
-                var result = new PagedResult<TweetDto>
-                {
-                    Items = tweets.Select(t => MapToDto(t)).ToList(),
-                    Total = tweets.Count(),
-                    Page = page,
-                    PageSize = pageSize
-                };
+        // POST /{tweetGuid}/share — 分享推文
+        group.MapPost("/{tweetGuid}/share", ShareTweetAsync)
+            .WithSummary("分享推文")
+            .WithDescription("分享指定推文")
+            .Produces<ApiResponse>();
 
-                return Results.Ok(ApiResponse<PagedResult<TweetDto>>.Ok(result));
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "获取趋势推文失败");
-                return Results.Ok(ApiResponse<PagedResult<TweetDto>>.Error("获取趋势推文失败"));
-            }
-        })
-        .WithSummary("获取趋势推文")
-        .WithDescription("获取热门趋势推文列表，支持分页")
-        .Produces<ApiResponse<PagedResult<TweetDto>>>();
+        // POST /{tweetGuid}/coin — 投币推文
+        group.MapPost("/{tweetGuid}/coin", CoinTweetAsync)
+            .WithSummary("投币推文")
+            .WithDescription("对指定推文进行投币")
+            .Produces<ApiResponse>();
 
-        group.MapPut("/{tweetGuid}", async (
-            Guid tweetGuid,
-            [FromBody] UpdateTweetRequest request,
-            ITweetProvider tweetProvider,
-            ICurrentUserService currentUserService,
-            ILoggerFactory loggerFactory) =>
-        {
-            var logger = loggerFactory.CreateLogger("TweetsApi");
-            try
-            {
-                var userId = currentUserService.GetUserId();
-                var tweet = await tweetProvider.UpdateDraftAsync(tweetGuid, userId, request.Content,
-                    request.MediaUrls, request.LinkUrl, visibility: request.Visibility);
-
-                var dto = MapToDto(tweet);
-                return Results.Ok(ApiResponse<TweetDto>.Ok(dto, "草稿更新成功"));
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "更新草稿失败");
-                return Results.Ok(ApiResponse<TweetDto>.Error("更新草稿失败"));
-            }
-        })
-        .WithSummary("更新草稿")
-        .WithDescription("更新指定的推文草稿")
-        .Accepts<UpdateTweetRequest>("application/json")
-        .Produces<ApiResponse<TweetDto>>();
-
-        group.MapDelete("/{tweetGuid}", async (
-            Guid tweetGuid,
-            ITweetProvider tweetProvider,
-            ICurrentUserService currentUserService,
-            ILoggerFactory loggerFactory) =>
-        {
-            var logger = loggerFactory.CreateLogger("TweetsApi");
-            try
-            {
-                var userId = currentUserService.GetUserId();
-                await tweetProvider.DeleteTweetAsync(tweetGuid, userId);
-                return Results.Ok(ApiResponse.Ok("推文已删除"));
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "删除推文失败");
-                return Results.Ok(ApiResponse.Error("删除推文失败"));
-            }
-        })
-        .WithSummary("删除推文")
-        .WithDescription("删除指定的推文")
-        .Produces<ApiResponse>();
-
-        group.MapPost("/{tweetGuid}/pin", async (
-            Guid tweetGuid,
-            ITweetProvider tweetProvider,
-            ICurrentUserService currentUserService,
-            ILoggerFactory loggerFactory) =>
-        {
-            var logger = loggerFactory.CreateLogger("TweetsApi");
-            try
-            {
-                var userId = currentUserService.GetUserId();
-                await tweetProvider.PinTweetAsync(tweetGuid, userId);
-                return Results.Ok(ApiResponse.Ok("推文已置顶"));
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "置顶推文失败");
-                return Results.Ok(ApiResponse.Error("置顶推文失败"));
-            }
-        })
-        .WithSummary("置顶推文")
-        .WithDescription("将指定推文置顶")
-        .Produces<ApiResponse>();
-
-        group.MapPost("/{tweetGuid}/unpin", async (
-            Guid tweetGuid,
-            ITweetProvider tweetProvider,
-            ICurrentUserService currentUserService,
-            ILoggerFactory loggerFactory) =>
-        {
-            var logger = loggerFactory.CreateLogger("TweetsApi");
-            try
-            {
-                var userId = currentUserService.GetUserId();
-                await tweetProvider.UnpinTweetAsync(tweetGuid, userId);
-                return Results.Ok(ApiResponse.Ok("已取消置顶"));
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "取消置顶失败");
-                return Results.Ok(ApiResponse.Error("取消置顶失败"));
-            }
-        })
-        .WithSummary("取消置顶推文")
-        .WithDescription("取消指定推文的置顶状态")
-        .Produces<ApiResponse>();
-
-        group.MapPost("/{tweetGuid}/like", async (
-            Guid tweetGuid,
-            ITweetProvider tweetProvider,
-            ICurrentUserService currentUserService,
-            ILoggerFactory loggerFactory) =>
-        {
-            var logger = loggerFactory.CreateLogger("TweetsApi");
-            try
-            {
-                var userId = currentUserService.GetUserId();
-                var tweet = await tweetProvider.LikeAsync(tweetGuid, userId);
-                return Results.Ok(ApiResponse<TweetDto>.Ok(MapToDto(tweet, true)));
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "点赞推文失败");
-                return Results.Ok(ApiResponse<TweetDto>.Error("点赞推文失败"));
-            }
-        })
-        .WithSummary("点赞推文")
-        .WithDescription("对指定推文进行点赞")
-        .Produces<ApiResponse<TweetDto>>();
-
-        group.MapDelete("/{tweetGuid}/like", async (
-            Guid tweetGuid,
-            ITweetProvider tweetProvider,
-            ICurrentUserService currentUserService,
-            ILoggerFactory loggerFactory) =>
-        {
-            var logger = loggerFactory.CreateLogger("TweetsApi");
-            try
-            {
-                var userId = currentUserService.GetUserId();
-                var tweet = await tweetProvider.UnlikeAsync(tweetGuid, userId);
-                return Results.Ok(ApiResponse<TweetDto>.Ok(MapToDto(tweet)));
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "取消点赞失败");
-                return Results.Ok(ApiResponse<TweetDto>.Error("取消点赞失败"));
-            }
-        })
-        .WithSummary("取消点赞")
-        .WithDescription("取消对指定推文的点赞")
-        .Produces<ApiResponse<TweetDto>>();
-
-        group.MapPost("/{tweetGuid}/favorite", async (
-            Guid tweetGuid,
-            ITweetProvider tweetProvider,
-            ICurrentUserService currentUserService,
-            ILoggerFactory loggerFactory) =>
-        {
-            var logger = loggerFactory.CreateLogger("TweetsApi");
-            try
-            {
-                var userId = currentUserService.GetUserId();
-                var tweet = await tweetProvider.FavoriteAsync(tweetGuid, userId);
-                return Results.Ok(ApiResponse<TweetDto>.Ok(MapToDto(tweet, isFavorited: true)));
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "收藏推文失败");
-                return Results.Ok(ApiResponse<TweetDto>.Error("收藏推文失败"));
-            }
-        })
-        .WithSummary("收藏推文")
-        .WithDescription("收藏指定推文")
-        .Produces<ApiResponse<TweetDto>>();
-
-        group.MapDelete("/{tweetGuid}/favorite", async (
-            Guid tweetGuid,
-            ITweetProvider tweetProvider,
-            ICurrentUserService currentUserService,
-            ILoggerFactory loggerFactory) =>
-        {
-            var logger = loggerFactory.CreateLogger("TweetsApi");
-            try
-            {
-                var userId = currentUserService.GetUserId();
-                var tweet = await tweetProvider.UnfavoriteAsync(tweetGuid, userId);
-                return Results.Ok(ApiResponse<TweetDto>.Ok(MapToDto(tweet)));
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "取消收藏失败");
-                return Results.Ok(ApiResponse<TweetDto>.Error("取消收藏失败"));
-            }
-        })
-        .WithSummary("取消收藏")
-        .WithDescription("取消对指定推文的收藏")
-        .Produces<ApiResponse<TweetDto>>();
-
-        group.MapPost("/{tweetGuid}/share", async (
-            Guid tweetGuid,
-            ITweetProvider tweetProvider,
-            ICurrentUserService currentUserService,
-            ILoggerFactory loggerFactory) =>
-        {
-            var logger = loggerFactory.CreateLogger("TweetsApi");
-            try
-            {
-                var userId = currentUserService.GetUserId();
-                var tweet = await tweetProvider.ShareAsync(tweetGuid, userId);
-                return Results.Ok(ApiResponse<TweetDto>.Ok(MapToDto(tweet)));
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "分享推文失败");
-                return Results.Ok(ApiResponse<TweetDto>.Error("分享推文失败"));
-            }
-        })
-        .WithSummary("分享推文")
-        .WithDescription("分享指定推文")
-        .Produces<ApiResponse<TweetDto>>();
-
-        group.MapPost("/{tweetGuid}/coin", async (
-            Guid tweetGuid,
-            ITweetProvider tweetProvider,
-            ICurrentUserService currentUserService,
-            ILoggerFactory loggerFactory) =>
-        {
-            var logger = loggerFactory.CreateLogger("TweetsApi");
-            try
-            {
-                var userId = currentUserService.GetUserId();
-                var tweet = await tweetProvider.CoinAsync(tweetGuid, userId);
-                return Results.Ok(ApiResponse<TweetDto>.Ok(MapToDto(tweet, isCoined: true)));
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "投币失败");
-                return Results.Ok(ApiResponse<TweetDto>.Error("投币失败"));
-            }
-        })
-        .WithSummary("投币推文")
-        .WithDescription("对指定推文进行投币")
-        .Produces<ApiResponse<TweetDto>>();
-
-        group.MapPost("/{tweetGuid}/view", async (
-            Guid tweetGuid,
-            ITweetProvider tweetProvider,
-            ICurrentUserService currentUserService,
-            ILoggerFactory loggerFactory) =>
-        {
-            var logger = loggerFactory.CreateLogger("TweetsApi");
-            try
-            {
-                var userId = currentUserService.GetUserId();
-                await tweetProvider.RecordViewAsync(tweetGuid, userId, null);
-                return Results.Ok(ApiResponse.Ok("已记录查看"));
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "记录查看失败");
-                return Results.Ok(ApiResponse.Error("记录查看失败"));
-            }
-        })
-        .WithSummary("记录查看")
-        .WithDescription("记录用户查看了指定推文")
-        .Produces<ApiResponse>();
+        // POST /{tweetGuid}/view — 记录查看
+        group.MapPost("/{tweetGuid}/view", RecordViewAsync)
+            .WithSummary("记录查看")
+            .WithDescription("记录用户查看了指定推文")
+            .Produces<ApiResponse>();
 
         return group;
     }
 
+    /// <summary>
+    /// 创建推文（命令侧）。
+    /// </summary>
+    /// <param name="request">创建推文请求体</param>
+    /// <param name="currentUser">当前用户服务</param>
+    /// <param name="mediator">中介者（命令/查询分发）</param>
+    /// <param name="ct">取消令牌</param>
+    /// <returns>新推文 ID</returns>
+    private static async Task<IResult> CreateTweetAsync(
+        [FromBody] CreateTweetRequest request,
+        [FromServices] ICurrentUserService currentUser,
+        [FromServices] INotMediator mediator,
+        CancellationToken ct)
+    {
+        try
+        {
+            var userId = currentUser.GetUserId();
+            var tweetId = await mediator.SendAsync(
+                new CreateTweetCommand(
+                    userId,
+                    request.Content,
+                    request.MediaUrls,
+                    request.LinkUrl,
+                    ParseVisibility(request.Visibility)),
+                ct);
+
+            return Results.Ok(ApiResponse<Guid>.Created(tweetId, "推文创建成功"));
+        }
+        catch (Exception ex)
+        {
+            return Results.Ok(ApiResponse<Guid>.Error($"创建推文失败: {ex.Message}"));
+        }
+    }
+
+    /// <summary>
+    /// 保存推文草稿（命令侧）。
+    /// </summary>
+    /// <param name="request">创建推文请求体</param>
+    /// <param name="currentUser">当前用户服务</param>
+    /// <param name="mediator">中介者（命令/查询分发）</param>
+    /// <param name="ct">取消令牌</param>
+    /// <returns>新草稿 ID</returns>
+    private static async Task<IResult> SaveDraftAsync(
+        [FromBody] CreateTweetRequest request,
+        [FromServices] ICurrentUserService currentUser,
+        [FromServices] INotMediator mediator,
+        CancellationToken ct)
+    {
+        try
+        {
+            var userId = currentUser.GetUserId();
+            var draftId = await mediator.SendAsync(
+                new SaveDraftCommand(
+                    userId,
+                    request.Content,
+                    request.MediaUrls,
+                    request.LinkUrl,
+                    ParseVisibility(request.Visibility)),
+                ct);
+
+            return Results.Ok(ApiResponse<Guid>.Created(draftId, "草稿保存成功"));
+        }
+        catch (Exception ex)
+        {
+            return Results.Ok(ApiResponse<Guid>.Error($"保存草稿失败: {ex.Message}"));
+        }
+    }
+
+    /// <summary>
+    /// 获取推文详情（查询侧，含当前用户的交互状态）。
+    /// </summary>
+    /// <param name="tweetGuid">推文ID（路由参数）</param>
+    /// <param name="currentUser">当前用户服务</param>
+    /// <param name="mediator">中介者（命令/查询分发）</param>
+    /// <param name="ct">取消令牌</param>
+    /// <returns>推文 DTO</returns>
+    private static async Task<IResult> GetTweetAsync(
+        Guid tweetGuid,
+        [FromServices] ICurrentUserService currentUser,
+        [FromServices] INotMediator mediator,
+        CancellationToken ct)
+    {
+        try
+        {
+            var currentUserId = currentUser.GetUserId();
+            var result = await mediator.SendAsync(new GetTweetDetailQuery(tweetGuid, currentUserId), ct);
+            if (result.Tweet == null)
+                return Results.Ok(ApiResponse<TweetDto>.NotFound("推文不存在"));
+
+            var dto = MapToDto(result.Tweet, result.IsLiked, result.IsFavorited, result.IsCoined);
+            return Results.Ok(ApiResponse<TweetDto>.Ok(dto));
+        }
+        catch (KeyNotFoundException)
+        {
+            return Results.Ok(ApiResponse<TweetDto>.NotFound("推文不存在"));
+        }
+        catch (Exception ex)
+        {
+            return Results.Ok(ApiResponse<TweetDto>.Error($"获取推文详情失败: {ex.Message}"));
+        }
+    }
+
+    /// <summary>
+    /// 获取指定用户的推文列表（查询侧，分页）。
+    /// </summary>
+    /// <param name="userGuid">用户ID（路由参数）</param>
+    /// <param name="mediator">中介者（命令/查询分发）</param>
+    /// <param name="page">页码（从1开始）</param>
+    /// <param name="pageSize">每页条数</param>
+    /// <param name="ct">取消令牌</param>
+    /// <returns>分页推文列表</returns>
+    private static async Task<IResult> GetUserTweetsAsync(
+        Guid userGuid,
+        [FromServices] INotMediator mediator,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            var tweets = await mediator.SendAsync(new GetUserTweetsQuery(userGuid, page, pageSize), ct);
+
+            var result = new PagedResult<TweetDto>
+            {
+                Items = tweets.Select(t => MapToDto(t)).ToList(),
+                TotalCount = tweets.Count(),
+                Page = page,
+                PageSize = pageSize
+            };
+
+            return Results.Ok(ApiResponse<PagedResult<TweetDto>>.Ok(result));
+        }
+        catch (Exception ex)
+        {
+            return Results.Ok(ApiResponse<PagedResult<TweetDto>>.Error($"获取用户推文列表失败: {ex.Message}"));
+        }
+    }
+
+    /// <summary>
+    /// 获取当前用户的时间线推文（查询侧，分页）。
+    /// </summary>
+    /// <param name="currentUser">当前用户服务</param>
+    /// <param name="mediator">中介者（命令/查询分发）</param>
+    /// <param name="page">页码（从1开始）</param>
+    /// <param name="pageSize">每页条数</param>
+    /// <param name="ct">取消令牌</param>
+    /// <returns>分页时间线推文</returns>
+    private static async Task<IResult> GetTimelineAsync(
+        [FromServices] ICurrentUserService currentUser,
+        [FromServices] INotMediator mediator,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            var userId = currentUser.GetUserId();
+            var tweets = await mediator.SendAsync(new GetTimelineQuery(userId, page, pageSize), ct);
+
+            var result = new PagedResult<TweetDto>
+            {
+                Items = tweets.Select(t => MapToDto(t)).ToList(),
+                TotalCount = tweets.Count(),
+                Page = page,
+                PageSize = pageSize
+            };
+
+            return Results.Ok(ApiResponse<PagedResult<TweetDto>>.Ok(result));
+        }
+        catch (Exception ex)
+        {
+            return Results.Ok(ApiResponse<PagedResult<TweetDto>>.Error($"获取时间线失败: {ex.Message}"));
+        }
+    }
+
+    /// <summary>
+    /// 获取热门趋势推文（查询侧，分页）。
+    /// </summary>
+    /// <param name="mediator">中介者（命令/查询分发）</param>
+    /// <param name="page">页码（从1开始）</param>
+    /// <param name="pageSize">每页条数</param>
+    /// <param name="ct">取消令牌</param>
+    /// <returns>分页趋势推文</returns>
+    private static async Task<IResult> GetTrendingAsync(
+        [FromServices] INotMediator mediator,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            var tweets = await mediator.SendAsync(new GetTrendingQuery(page, pageSize), ct);
+
+            var result = new PagedResult<TweetDto>
+            {
+                Items = tweets.Select(t => MapToDto(t)).ToList(),
+                TotalCount = tweets.Count(),
+                Page = page,
+                PageSize = pageSize
+            };
+
+            return Results.Ok(ApiResponse<PagedResult<TweetDto>>.Ok(result));
+        }
+        catch (Exception ex)
+        {
+            return Results.Ok(ApiResponse<PagedResult<TweetDto>>.Error($"获取趋势推文失败: {ex.Message}"));
+        }
+    }
+
+    /// <summary>
+    /// 更新推文草稿（命令侧）。
+    /// </summary>
+    /// <param name="tweetGuid">推文ID（路由参数）</param>
+    /// <param name="request">更新推文请求体</param>
+    /// <param name="currentUser">当前用户服务</param>
+    /// <param name="mediator">中介者（命令/查询分发）</param>
+    /// <param name="ct">取消令牌</param>
+    /// <returns>操作结果</returns>
+    private static async Task<IResult> UpdateDraftAsync(
+        Guid tweetGuid,
+        [FromBody] UpdateTweetRequest request,
+        [FromServices] ICurrentUserService currentUser,
+        [FromServices] INotMediator mediator,
+        CancellationToken ct)
+    {
+        try
+        {
+            var userId = currentUser.GetUserId();
+            await mediator.SendAsync(
+                new UpdateDraftCommand(
+                    tweetGuid,
+                    userId,
+                    request.Content,
+                    request.MediaUrls,
+                    request.LinkUrl,
+                    ParseVisibility(request.Visibility)),
+                ct);
+
+            return Results.Ok(ApiResponse.Ok("草稿更新成功"));
+        }
+        catch (Exception ex)
+        {
+            return Results.Ok(ApiResponse.Error($"更新草稿失败: {ex.Message}"));
+        }
+    }
+
+    /// <summary>
+    /// 删除推文（命令侧，仅限作者本人）。
+    /// </summary>
+    /// <param name="tweetGuid">推文ID（路由参数）</param>
+    /// <param name="currentUser">当前用户服务</param>
+    /// <param name="mediator">中介者（命令/查询分发）</param>
+    /// <param name="ct">取消令牌</param>
+    /// <returns>操作结果</returns>
+    private static async Task<IResult> DeleteTweetAsync(
+        Guid tweetGuid,
+        [FromServices] ICurrentUserService currentUser,
+        [FromServices] INotMediator mediator,
+        CancellationToken ct)
+    {
+        try
+        {
+            var userId = currentUser.GetUserId();
+            await mediator.SendAsync(new DeleteTweetCommand(tweetGuid, userId), ct);
+            return Results.Ok(ApiResponse.Ok("推文已删除"));
+        }
+        catch (Exception ex)
+        {
+            return Results.Ok(ApiResponse.Error($"删除推文失败: {ex.Message}"));
+        }
+    }
+
+    /// <summary>
+    /// 置顶推文（命令侧）。
+    /// </summary>
+    /// <param name="tweetGuid">推文ID（路由参数）</param>
+    /// <param name="currentUser">当前用户服务</param>
+    /// <param name="mediator">中介者（命令/查询分发）</param>
+    /// <param name="ct">取消令牌</param>
+    /// <returns>操作结果</returns>
+    private static async Task<IResult> PinTweetAsync(
+        Guid tweetGuid,
+        [FromServices] ICurrentUserService currentUser,
+        [FromServices] INotMediator mediator,
+        CancellationToken ct)
+    {
+        try
+        {
+            var userId = currentUser.GetUserId();
+            await mediator.SendAsync(new PinTweetCommand(tweetGuid, userId), ct);
+            return Results.Ok(ApiResponse.Ok("推文已置顶"));
+        }
+        catch (Exception ex)
+        {
+            return Results.Ok(ApiResponse.Error($"置顶推文失败: {ex.Message}"));
+        }
+    }
+
+    /// <summary>
+    /// 取消置顶推文（命令侧）。
+    /// </summary>
+    /// <param name="tweetGuid">推文ID（路由参数）</param>
+    /// <param name="currentUser">当前用户服务</param>
+    /// <param name="mediator">中介者（命令/查询分发）</param>
+    /// <param name="ct">取消令牌</param>
+    /// <returns>操作结果</returns>
+    private static async Task<IResult> UnpinTweetAsync(
+        Guid tweetGuid,
+        [FromServices] ICurrentUserService currentUser,
+        [FromServices] INotMediator mediator,
+        CancellationToken ct)
+    {
+        try
+        {
+            var userId = currentUser.GetUserId();
+            await mediator.SendAsync(new UnpinTweetCommand(tweetGuid, userId), ct);
+            return Results.Ok(ApiResponse.Ok("已取消置顶"));
+        }
+        catch (Exception ex)
+        {
+            return Results.Ok(ApiResponse.Error($"取消置顶失败: {ex.Message}"));
+        }
+    }
+
+    /// <summary>
+    /// 点赞推文（命令侧）。
+    /// </summary>
+    /// <param name="tweetGuid">推文ID（路由参数）</param>
+    /// <param name="currentUser">当前用户服务</param>
+    /// <param name="mediator">中介者（命令/查询分发）</param>
+    /// <param name="ct">取消令牌</param>
+    /// <returns>操作结果</returns>
+    private static async Task<IResult> LikeTweetAsync(
+        Guid tweetGuid,
+        [FromServices] ICurrentUserService currentUser,
+        [FromServices] INotMediator mediator,
+        CancellationToken ct)
+    {
+        try
+        {
+            var userId = currentUser.GetUserId();
+            await mediator.SendAsync(new LikeTweetCommand(tweetGuid, userId), ct);
+            return Results.Ok(ApiResponse.Ok("点赞成功"));
+        }
+        catch (Exception ex)
+        {
+            return Results.Ok(ApiResponse.Error($"点赞推文失败: {ex.Message}"));
+        }
+    }
+
+    /// <summary>
+    /// 取消点赞推文（命令侧）。
+    /// </summary>
+    /// <param name="tweetGuid">推文ID（路由参数）</param>
+    /// <param name="currentUser">当前用户服务</param>
+    /// <param name="mediator">中介者（命令/查询分发）</param>
+    /// <param name="ct">取消令牌</param>
+    /// <returns>操作结果</returns>
+    private static async Task<IResult> UnlikeTweetAsync(
+        Guid tweetGuid,
+        [FromServices] ICurrentUserService currentUser,
+        [FromServices] INotMediator mediator,
+        CancellationToken ct)
+    {
+        try
+        {
+            var userId = currentUser.GetUserId();
+            await mediator.SendAsync(new UnlikeTweetCommand(tweetGuid, userId), ct);
+            return Results.Ok(ApiResponse.Ok("已取消点赞"));
+        }
+        catch (Exception ex)
+        {
+            return Results.Ok(ApiResponse.Error($"取消点赞失败: {ex.Message}"));
+        }
+    }
+
+    /// <summary>
+    /// 收藏推文（命令侧）。
+    /// </summary>
+    /// <param name="tweetGuid">推文ID（路由参数）</param>
+    /// <param name="currentUser">当前用户服务</param>
+    /// <param name="mediator">中介者（命令/查询分发）</param>
+    /// <param name="ct">取消令牌</param>
+    /// <returns>操作结果</returns>
+    private static async Task<IResult> FavoriteTweetAsync(
+        Guid tweetGuid,
+        [FromServices] ICurrentUserService currentUser,
+        [FromServices] INotMediator mediator,
+        CancellationToken ct)
+    {
+        try
+        {
+            var userId = currentUser.GetUserId();
+            await mediator.SendAsync(new FavoriteTweetCommand(tweetGuid, userId), ct);
+            return Results.Ok(ApiResponse.Ok("收藏成功"));
+        }
+        catch (Exception ex)
+        {
+            return Results.Ok(ApiResponse.Error($"收藏推文失败: {ex.Message}"));
+        }
+    }
+
+    /// <summary>
+    /// 取消收藏推文（命令侧）。
+    /// </summary>
+    /// <param name="tweetGuid">推文ID（路由参数）</param>
+    /// <param name="currentUser">当前用户服务</param>
+    /// <param name="mediator">中介者（命令/查询分发）</param>
+    /// <param name="ct">取消令牌</param>
+    /// <returns>操作结果</returns>
+    private static async Task<IResult> UnfavoriteTweetAsync(
+        Guid tweetGuid,
+        [FromServices] ICurrentUserService currentUser,
+        [FromServices] INotMediator mediator,
+        CancellationToken ct)
+    {
+        try
+        {
+            var userId = currentUser.GetUserId();
+            await mediator.SendAsync(new UnfavoriteTweetCommand(tweetGuid, userId), ct);
+            return Results.Ok(ApiResponse.Ok("已取消收藏"));
+        }
+        catch (Exception ex)
+        {
+            return Results.Ok(ApiResponse.Error($"取消收藏失败: {ex.Message}"));
+        }
+    }
+
+    /// <summary>
+    /// 分享推文（命令侧）。
+    /// </summary>
+    /// <param name="tweetGuid">推文ID（路由参数）</param>
+    /// <param name="currentUser">当前用户服务</param>
+    /// <param name="mediator">中介者（命令/查询分发）</param>
+    /// <param name="ct">取消令牌</param>
+    /// <returns>操作结果</returns>
+    private static async Task<IResult> ShareTweetAsync(
+        Guid tweetGuid,
+        [FromServices] ICurrentUserService currentUser,
+        [FromServices] INotMediator mediator,
+        CancellationToken ct)
+    {
+        try
+        {
+            var userId = currentUser.GetUserId();
+            await mediator.SendAsync(new ShareTweetCommand(tweetGuid, userId), ct);
+            return Results.Ok(ApiResponse.Ok("分享成功"));
+        }
+        catch (Exception ex)
+        {
+            return Results.Ok(ApiResponse.Error($"分享推文失败: {ex.Message}"));
+        }
+    }
+
+    /// <summary>
+    /// 对推文投币（命令侧）。
+    /// </summary>
+    /// <param name="tweetGuid">推文ID（路由参数）</param>
+    /// <param name="currentUser">当前用户服务</param>
+    /// <param name="mediator">中介者（命令/查询分发）</param>
+    /// <param name="ct">取消令牌</param>
+    /// <returns>操作结果</returns>
+    private static async Task<IResult> CoinTweetAsync(
+        Guid tweetGuid,
+        [FromServices] ICurrentUserService currentUser,
+        [FromServices] INotMediator mediator,
+        CancellationToken ct)
+    {
+        try
+        {
+            var userId = currentUser.GetUserId();
+            await mediator.SendAsync(new CoinTweetCommand(tweetGuid, userId), ct);
+            return Results.Ok(ApiResponse.Ok("投币成功"));
+        }
+        catch (Exception ex)
+        {
+            return Results.Ok(ApiResponse.Error($"投币失败: {ex.Message}"));
+        }
+    }
+
+    /// <summary>
+    /// 记录用户查看了推文（命令侧）。
+    /// </summary>
+    /// <param name="tweetGuid">推文ID（路由参数）</param>
+    /// <param name="currentUser">当前用户服务</param>
+    /// <param name="mediator">中介者（命令/查询分发）</param>
+    /// <param name="ct">取消令牌</param>
+    /// <returns>操作结果</returns>
+    private static async Task<IResult> RecordViewAsync(
+        Guid tweetGuid,
+        [FromServices] ICurrentUserService currentUser,
+        [FromServices] INotMediator mediator,
+        CancellationToken ct)
+    {
+        try
+        {
+            var userId = currentUser.GetUserId();
+            await mediator.SendAsync(new RecordTweetViewCommand(tweetGuid, userId), ct);
+            return Results.Ok(ApiResponse.Ok("已记录查看"));
+        }
+        catch (Exception ex)
+        {
+            return Results.Ok(ApiResponse.Error($"记录查看失败: {ex.Message}"));
+        }
+    }
+
+    /// <summary>推文实体 → DTO 映射</summary>
     private static TweetDto MapToDto(Tweet tweet, bool isLiked = false, bool isFavorited = false, bool isCoined = false) => new()
     {
         TweetGuid = tweet.TweetGuid,
@@ -488,4 +673,13 @@ public static class TweetsApi
         IsFavorited = isFavorited,
         IsCoined = isCoined
     };
+
+    /// <summary>将请求中的可见性字符串解析为枚举（与 Provider 解析逻辑保持一致）</summary>
+    private static Visibility ParseVisibility(string? visibility) =>
+        visibility?.ToLower() switch
+        {
+            "followers" => Visibility.Followers,
+            "private" => Visibility.Private,
+            _ => Visibility.Public
+        };
 }

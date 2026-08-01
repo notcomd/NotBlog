@@ -27,7 +27,7 @@ public class HttpPermissionServiceClient : IPermissionServiceClient
     {
         try
         {
-            var response = await _http.GetAsync("api/ready/permission/mappings", ct);
+            var response = await _http.GetAsync("api/identity/permission/mappings", ct);
 
             if (!response.IsSuccessStatusCode)
             {

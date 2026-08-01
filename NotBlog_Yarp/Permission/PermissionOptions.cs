@@ -18,8 +18,7 @@ public class PermissionOptions
     /// <summary>精确绕过路径列表（在已映射的权限前缀下，对特定精确路径放行）</summary>
     public string[] BypassPaths { get; init; } = [];
 
-    /// <summary>HTTP 方法 → 路径模式 → 权限编码的映射列表</summary>
-    [Required(ErrorMessage = "PermissionRoutes:Mappings 必须存在（可为空数组 []）")]
+    /// <summary>HTTP 方法 → 路径模式 → 权限编码的映射列表（可为空数组，未映射的路径默认放行）</summary>
     public RouteMapping[] Mappings { get; init; } = [];
 
     /// <summary>开发用户配置（仅 ConfigPermissionServiceClient 使用）</summary>

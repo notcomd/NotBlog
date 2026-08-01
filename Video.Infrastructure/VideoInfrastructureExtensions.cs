@@ -18,6 +18,7 @@ public static class VideoInfrastructureExtensions
         // Repositories
         services.AddScoped<IVideoRepository, VideoRepository>();
         services.AddScoped<IVideoCollectionRepository, VideoCollectionRepository>();
+        services.AddScoped<IVideoHistoryRepository, VideoHistoryRepository>();
 
         // Domain Services — I-prefix interfaces with Infrastructure implementations
         services.AddScoped<IVideoCollectionService, VideoCollectionService>();

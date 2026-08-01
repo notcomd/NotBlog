@@ -10,7 +10,7 @@ public class RequestReviewInteraction
     public Guid VideoGuid { get; init; }
 
     /// <summary>用于修改的互动字段</summary>
-    public string Field { get; init;}
+    public string Field { get; init;} = string.Empty;
 
     /// <summary>是否增加</summarysummary>
     public bool IsIncrement { get; init; } = true;

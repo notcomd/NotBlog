@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using NotBlog_Yarp.Extensions;
 using NotBlog_Yarp.Middlewares;
 using NotBlog_Yarp.Permission;
 using NotBlog_Yarp.Transforms;
@@ -71,17 +70,13 @@ if (!string.IsNullOrWhiteSpace(identityBaseUrl))
 }
 else
 {
-    // 开发/测试模式：从配置文件读取用户权限（不依赖 Identity，支持 IOptionsSnapshot 热重载）
+    // 开发/测试模式：从配置文件读取用户权限（不依赖 Identity，支持 IOptionsMonitor 热重载）
     builder.Services.AddSingleton<IPermissionServiceClient, ConfigPermissionServiceClient>();
 }
 
 // ========== 5. YARP 反向代理 + 自定义 Header 注入 Transform ==========
 builder.Services.AddReverseProxy()
-    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
-    .AddTransforms(context =>
-    {
-        context.AddUserContextTransform();
-    });
+    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
 // ========== 6. 注册自定义 Transform Provider ==========
 builder.Services.AddSingleton<ITransformProvider, UserContextTransformProvider>();

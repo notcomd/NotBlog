@@ -3,12 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using Video.Domain.Entities;
 using Video.Domain.IRepository;
 using Video.Domain.Server;
+using Video.Web.API.Application.Commands;
 using Video.Web.API.Dto.Request;
 
 namespace Video.Web.API.Apis;
 
 /// <summary>
-/// 视频接口
+/// 视频接口 — 查询视频列表 + 视频点赞（CQRS + 幂等性）
 /// </summary>
 public static class VideoEndpoints
 {
@@ -40,6 +41,11 @@ public static class VideoEndpoints
             .WithDescription("Update video information")
             .RequireAuthorization();
 
+        // --- POST 视频点赞 ---
+        group.MapPost("/{videoGuid:guid}/like", LikeVideoAsync)
+            .WithName("LikeVideo")
+            .WithDescription("Like/unlike a video (upvote/down/ballot/share)");
+
         return group;
     }
 
@@ -49,7 +55,6 @@ public static class VideoEndpoints
     private static async Task<Results<Ok<IVideoResult<List<Videos>>>,
      JsonHttpResult<IVideoResult<List<Videos>>>>>
         GetByVideoListAsync([FromServices] VideoServiceDI videoServiceDI)
-        
     {
         var videoModel = await videoServiceDI.VideoRepository.FindByVideoListAsync();
         return TypedResults.Ok(new IVideoResult<List<Videos>>(VideoResultType.VideoResultOk, 200, "OK", videoModel));
@@ -58,7 +63,7 @@ public static class VideoEndpoints
     /// <summary>
     /// 根据分页获取视频
     /// </summary>
-    private static async Task<Results<Ok<IVideoResult<List<Videos>>>, 
+    private static async Task<Results<Ok<IVideoResult<List<Videos>>>,
     JsonHttpResult<IVideoResult<List<Videos>>>>>
         GetByVideoPage(int index, int pageSize, [FromServices] VideoServiceDI videoServiceDI)
     {
@@ -69,7 +74,7 @@ public static class VideoEndpoints
     /// <summary>
     /// 根据视频名称获取视频
     /// </summary>
-    private static async Task<Results<Ok<IVideoResult<Videos>>, 
+    private static async Task<Results<Ok<IVideoResult<Videos>>,
     JsonHttpResult<IVideoResult<Videos>>>>
         GetByVideoNameAsync(string videoName, [FromServices] VideoServiceDI videoServiceDI)
     {
@@ -80,7 +85,7 @@ public static class VideoEndpoints
     /// <summary>
     /// 模糊搜索视频
     /// </summary>
-    private static async Task<Results<Ok<IVideoResult<List<Videos>>>, 
+    private static async Task<Results<Ok<IVideoResult<List<Videos>>>,
     JsonHttpResult<IVideoResult<List<Videos>>>>>
         BlurredByVideoAsync(string videoName, [FromServices] VideoServiceDI videoServiceDI)
     {
@@ -93,8 +98,7 @@ public static class VideoEndpoints
     /// </summary>
     private static async Task<IResult> UpdateByVideoAsync(
         [FromBody] RequestUpdateByVideo updateVideo,
-        [FromServices] VideoServiceDI videoServiceDI
-       )
+        [FromServices] VideoServiceDI videoServiceDI)
     {
         if (updateVideo is null)
         {
@@ -119,4 +123,58 @@ public static class VideoEndpoints
 
         return Results.Ok(new IVideoResult<string>(VideoResultType.VideoResultOk, 200, "Update successful.", "UP!"));
     }
+
+    /// <summary>
+    /// 视频点赞/取消点赞（命令操作 — CQRS + 幂等性）
+    /// </summary>
+    private static async Task<IResult> LikeVideoAsync(
+        Guid videoGuid,
+        [FromBody] VideoLikeRequest request,
+        [FromServices] VideoServiceDI videoServiceDI)
+    {
+        var logger = videoServiceDI.Logger;
+
+        try
+        {
+            var validFields = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                { "upvote", "down", "ballot", "share" };
+
+            if (!validFields.Contains(request.Field))
+                return Results.Json(
+                    new IVideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
+                        $"Invalid field '{request.Field}'. Valid: upvote, down, ballot, share.", null),
+                    statusCode: 400);
+
+            var command = new LikeVideoCommand(
+                RequestId: Guid.CreateVersion7(),
+                VideoGuid: videoGuid,
+                UserGuid: request.UserGuid,
+                Field: request.Field,
+                IsLike: request.IsLike);
+
+            var result = await videoServiceDI.NotMediator.SendAsync(command);
+
+            if (!result.Success)
+                return Results.Json(
+                    new IVideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
+                        result.ErrorMessage ?? "Failed to like video.", null),
+                    statusCode: 400);
+
+            logger.LogInformation("Video {VideoGuid}: {Field} like operation, NewCount={Count}",
+                videoGuid, request.Field, result.NewCount);
+
+            return Results.Ok(new IVideoResult<object>(VideoResultType.VideoResultOk, 200,
+                "Video like updated.", new { Field = request.Field, NewCount = result.NewCount }));
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to like video {VideoGuid}", videoGuid);
+            return Results.Json(
+                new IVideoResult<string>(VideoResultType.VideoResultInternalServerError, 500, ex.Message, null),
+                statusCode: 500);
+        }
+    }
 }
+
+/// <summary>视频点赞请求 DTO。</summary>
+public record VideoLikeRequest(Guid UserGuid, string Field, bool IsLike = true);

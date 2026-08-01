@@ -5,6 +5,7 @@ using Identity.Domain.Dto.OAuth;
 using Identity.Domain.Entities.RoleAggregate;
 using Identity.Domain.Entities.UserExternalLoginAggregate;
 using Identity.Web.API.Application.IntegrationEvents.Events;
+using Microsoft.Extensions.Options;
 using Notcomd.Token.JWT.Core;
 
 namespace Identity.Web.API.Application.Commands;

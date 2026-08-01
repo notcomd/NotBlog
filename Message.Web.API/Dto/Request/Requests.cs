@@ -99,3 +99,90 @@ public class UploadFileRequest
     public long FileSize { get; init; }
     public string FileUrl { get; init; } = string.Empty;
 }
+
+// ─────────────────────────────────────────────────────────
+// 大文件分片上传（断点续传）请求模型。
+// 同时供 FilesApi（REST）与 MessageHub（SignalR）两种通道使用，
+// 内部均通过 FileDev 的 gRPC 服务完成分片上传。
+// ─────────────────────────────────────────────────────────
+
+/// <summary>初始化分片上传请求</summary>
+public class ChunkUploadInitRequest
+{
+    /// <summary>文件名（含扩展名）</summary>
+    public string FileName { get; init; } = string.Empty;
+
+    /// <summary>文件总大小（字节）</summary>
+    public long TotalSize { get; init; }
+
+    /// <summary>文件整体 MD5（可选，用于完整性校验与秒传）</summary>
+    public string? FileMd5 { get; init; }
+
+    /// <summary>是否公开文件（默认私有）</summary>
+    public bool IsPublic { get; init; }
+
+    /// <summary>文件描述</summary>
+    public string? Description { get; init; }
+}
+
+/// <summary>上传单个分片请求</summary>
+public class ChunkUploadRequest
+{
+    /// <summary>分片上传记录键（由初始化接口返回）</summary>
+    public string FileKey { get; init; } = string.Empty;
+
+    /// <summary>分片索引（从0开始）</summary>
+    public int ChunkIndex { get; init; }
+
+    /// <summary>分片二进制数据</summary>
+    public byte[] ChunkData { get; init; } = [];
+
+    /// <summary>分片 MD5（可选，用于服务端一致性校验）</summary>
+    public string? ChunkMd5 { get; init; }
+}
+
+/// <summary>查询分片上传状态请求（用于断点续传）</summary>
+public class ChunkStatusRequest
+{
+    /// <summary>分片上传记录键</summary>
+    public string FileKey { get; init; } = string.Empty;
+}
+
+/// <summary>合并分片请求</summary>
+public class ChunkMergeRequest
+{
+    /// <summary>分片上传记录键</summary>
+    public string FileKey { get; init; } = string.Empty;
+
+    /// <summary>最终文件名（可选，默认使用初始化时的文件名）</summary>
+    public string? FileName { get; init; }
+
+    /// <summary>文件描述</summary>
+    public string? Description { get; init; }
+}
+
+/// <summary>取消分片上传请求</summary>
+public class ChunkCancelRequest
+{
+    /// <summary>分片上传记录键</summary>
+    public string FileKey { get; init; } = string.Empty;
+}
+
+/// <summary>
+/// 断点续传请求：一次性提交缺失分片集合，
+/// 服务端查询已上传分片后仅上传缺失部分，并实时推送上传进度。
+/// </summary>
+public class ChunkResumeRequest
+{
+    /// <summary>分片上传记录键</summary>
+    public string FileKey { get; init; } = string.Empty;
+
+    /// <summary>总分片数</summary>
+    public int TotalChunks { get; init; }
+
+    /// <summary>单个分片大小（字节），用于与服务端分片参数核对</summary>
+    public int ChunkSize { get; init; }
+
+    /// <summary>待上传分片集合（分片索引 → 分片二进制数据）</summary>
+    public Dictionary<int, byte[]> Chunks { get; init; } = [];
+}

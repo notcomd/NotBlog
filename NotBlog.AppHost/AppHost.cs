@@ -44,7 +44,7 @@ builder.AddProject<Projects.Video_Web_API>("video-web-api")
     .WithReference(post)
     .WithReference(redis);
 #endif
-builder.AddProject<FileDev_Web_API>("filedev-web-api")
+var filedev = builder.AddProject<FileDev_Web_API>("filedev-web-api")
     .WithReference(notfile);
 
 
@@ -58,9 +58,11 @@ builder.AddProject<Markdown_Web_API>("markdown-web-api")
     .WithReference(mark)
     .WithReference(redis);
 
+// message-web-api 通过服务发现（filedev-web-api）调用 FileDev 的文件上传 gRPC 服务
 builder.AddProject<Message_Web_API>("message-web-api")
     .WithReference(message)
-    .WithReference(redis);
+    .WithReference(redis)
+    .WithReference(filedev);
 
 builder.AddProject<Video_Web_API>("video-web-api")
     .WithReference(video)

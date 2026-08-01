@@ -1,6 +1,7 @@
-﻿using DomainInfrastructure;
+using DomainInfrastructure;
 using Markdown.Domain.SeedWork;
 using Markdown.Infrastructure.Configuration;
+using Markdown.Infrastructure.Idempotent;
 using Microsoft.EntityFrameworkCore.Storage;
 using NotMediator;
 
@@ -16,6 +17,8 @@ public class MarkDownDbContext(DbContextOptions<MarkDownDbContext> options, INot
     public bool HasActiveTransaction => _currentTransaction != null;
 
     public DbSet<MarkDown> Markdowns { get; set; }
+
+    public DbSet<ClientRequest> ClientRequests { get; set; }
 
 
     /// <summary>
@@ -44,6 +47,15 @@ public class MarkDownDbContext(DbContextOptions<MarkDownDbContext> options, INot
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfiguration(new MarkDownEntityConfiguration());
         modelBuilder.ApplyConfiguration(new MarkReviewEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new MarkHositoryEntityConfiguration());
+
+        // ClientRequest 幂等性记录表配置
+        modelBuilder.Entity<ClientRequest>(entity =>
+        {
+            entity.ToTable("ClientRequest");
+            entity.HasKey(e => e.ClientRequestId);
+            entity.Property(e => e.ClientRequestName).HasMaxLength(256).IsRequired();
+        });
     }
 
     public async Task<IDbContextTransaction> BeginTransactionAsync()

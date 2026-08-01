@@ -1,5 +1,4 @@
 using Message.Infrastructure.EntityFramework;
-using Message.Infrastructure.Provider;
 using Message.Infrastructure.Repository;
 using Message.Infrastructure.Services;
 using Microsoft.Extensions.Configuration;
@@ -27,7 +26,6 @@ public static class ServiceCollectionExtensions
         });
 
         RegisterRepositories(services);
-        RegisterProviders(services);
         RegisterServices(services);
 
         return services;
@@ -40,7 +38,6 @@ public static class ServiceCollectionExtensions
         services.AddDbContext<MessageDbContext>(optionsAction);
 
         RegisterRepositories(services);
-        RegisterProviders(services);
         RegisterServices(services);
 
         return services;
@@ -52,7 +49,6 @@ public static class ServiceCollectionExtensions
         services.AddDbContext<MessageDbContext>(options => { options.UseInMemoryDatabase("MessageDb"); });
 
         RegisterRepositories(services);
-        RegisterProviders(services);
         RegisterServices(services);
 
         return services;
@@ -72,20 +68,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITweetAuditRepository, TweetAuditRepository>();
         services.AddScoped<ITweetReportRepository, TweetReportRepository>();
         services.AddScoped<ITweetNotificationRepository, TweetNotificationRepository>();
-    }
-
-    private static void RegisterProviders(IServiceCollection services)
-    {
-        services.AddScoped<IMessageProvider, MessageProvider>();
-        services.AddScoped<IChatSessionProvider, ChatSessionProvider>();
-        services.AddScoped<IFriendProvider, FriendProvider>();
-        services.AddScoped<IGroupProvider, GroupProvider>();
-        services.AddScoped<IFileProvider, FileProvider>();
-
-        services.AddScoped<ITweetProvider, TweetProvider>();
-        services.AddScoped<ICommentProvider, CommentProvider>();
-        services.AddScoped<IAuditProvider, AuditProvider>();
-        services.AddScoped<IReportProvider, ReportProvider>();
     }
 
     private static void RegisterServices(IServiceCollection services)

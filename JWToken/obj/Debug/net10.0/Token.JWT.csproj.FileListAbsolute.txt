@@ -11,3 +11,6 @@ f:\NotBlog\JWToken\obj\Debug\net10.0\Token.JWT.dll
 f:\NotBlog\JWToken\obj\Debug\net10.0\refint\Token.JWT.dll
 f:\NotBlog\JWToken\obj\Debug\net10.0\Token.JWT.pdb
 f:\NotBlog\JWToken\obj\Debug\net10.0\ref\Token.JWT.dll
+C:\Users\notco\AppData\Local\Temp\NotBlogBuildCheck\Token.JWT.deps.json
+C:\Users\notco\AppData\Local\Temp\NotBlogBuildCheck\Token.JWT.dll
+C:\Users\notco\AppData\Local\Temp\NotBlogBuildCheck\Token.JWT.pdb

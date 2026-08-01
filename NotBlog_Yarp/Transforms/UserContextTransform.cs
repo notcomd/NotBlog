@@ -10,6 +10,13 @@ namespace NotBlog_Yarp.Transforms;
 /// </summary>
 public class UserContextTransformProvider : ITransformProvider
 {
+    private readonly ILogger<UserContextTransformProvider> _logger;
+
+    public UserContextTransformProvider(ILogger<UserContextTransformProvider> logger)
+    {
+        _logger = logger;
+    }
+
     public void ValidateRoute(TransformRouteValidationContext context) { }
 
     public void ValidateCluster(TransformClusterValidationContext context) { }
@@ -24,7 +31,7 @@ public class UserContextTransformProvider : ITransformProvider
     /// 从 HttpContext.Items 读取 DataScope（由 PermissionFilterMiddleware 注入），
     /// 注入到下游请求的 Header: X-User-Id, X-User-Roles, X-Data-Scope
     /// </summary>
-    private static ValueTask ApplyAsync(RequestTransformContext context)
+    private ValueTask ApplyAsync(RequestTransformContext context)
     {
         var user = context.HttpContext.User;
         var path = context.HttpContext.Request.Path;
@@ -58,19 +65,21 @@ public class UserContextTransformProvider : ITransformProvider
                     context.ProxyRequest.Headers.Add("X-Data-Scope", scopeValue);
                 }
 
-                Console.WriteLine(
-                    $"[Transform] OK   | Path={path} | X-User-Id={userId} | X-User-Roles={string.Join(",", roles)}");
+                _logger.LogDebug(
+                    "[Transform] OK   | Path={Path} | X-User-Id={UserId} | X-User-Roles={Roles}",
+                    path, userId, string.Join(",", roles));
             }
             else
             {
-                var allClaims = string.Join(", ", user.Claims.Select(c => $"{c.Type}={c.Value}"));
-                Console.WriteLine(
-                    $"[Transform] NULL | Path={path} | Auth=OK 但 UserId 为空 | Claims=[{allClaims}]");
+                var claimTypes = string.Join(", ", user.Claims.Select(c => c.Type).Distinct());
+                _logger.LogWarning(
+                    "[Transform] NULL | Path={Path} | Auth=OK 但 UserId 为空 | ClaimTypes=[{ClaimTypes}]",
+                    path, claimTypes);
             }
         }
         else
         {
-            Console.WriteLine($"[Transform] SKIP | Path={path} | Auth=未认证");
+            _logger.LogDebug("[Transform] SKIP | Path={Path} | Auth=未认证", path);
         }
 
         return ValueTask.CompletedTask;

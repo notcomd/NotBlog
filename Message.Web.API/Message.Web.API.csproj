@@ -9,16 +9,28 @@
     <ItemGroup>
         <PackageReference Include="Aspire.RabbitMQ.Client" Version="13.4.6"/>
         <PackageReference Include="Aspire.StackExchange.Redis.DistributedCaching" Version="13.4.6"/>
-       
+        <PackageReference Include="Google.Protobuf" Version="3.29.3"/>
+        <PackageReference Include="Grpc.Net.Client" Version="2.80.0"/>
+        <PackageReference Include="Grpc.Net.ClientFactory" Version="2.80.0"/>
+        <PackageReference Include="Grpc.Tools" Version="*">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.9"/>
-        <PackageReference Include="NotMediator" Version="1.0.5" />
+        <PackageReference Include="NotMediator" Version="1.0.5"/>
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.2"/>
         <PackageReference Include="Scalar.AspNetCore" Version="2.16.4"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Message.Infrastructure\Message.Infrastructure.csproj" />
-      <ProjectReference Include="..\NotBlog.ServiceDefaults\NotBlog.ServiceDefaults.csproj" />
+        <!-- 引用 FileDev.Web.API 的 gRPC 协议定义（客户端模式），用于调用文件存储服务 -->
+        <Protobuf Include="Protos\filestorage.proto" GrpcServices="Client"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\JWToken\Token.JWT.csproj"/>
+      <ProjectReference Include="..\Message.Infrastructure\Message.Infrastructure.csproj"/>
+      <ProjectReference Include="..\NotBlog.ServiceDefaults\NotBlog.ServiceDefaults.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -28,6 +40,9 @@
         <Folder Include="Application\DomainEventHandlers\"/>
       <Folder Include="Dto\Request\" />
       <Folder Include="Dto\Response\" />
+      <Folder Include="Grpc\" />
+      <Folder Include="Extensions\" />
+      <Folder Include="Services\" />
     </ItemGroup>
 
 </Project>

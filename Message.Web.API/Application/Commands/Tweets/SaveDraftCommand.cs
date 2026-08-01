@@ -1,0 +1,60 @@
+namespace Message.Web.API.Application.Commands.Tweets;
+
+/// <summary>
+/// 保存推文草稿命令。
+/// <para>CQRS 命令侧：仅返回新草稿的标识（Guid），不返回业务实体/DTO。</para>
+/// </summary>
+/// <param name="UserId">作者用户 ID</param>
+/// <param name="Content">草稿内容</param>
+/// <param name="MediaUrls">媒体 URL 列表</param>
+/// <param name="LinkUrl">链接 URL</param>
+/// <param name="Visibility">可见性</param>
+public record SaveDraftCommand(
+    Guid UserId,
+    string Content,
+    IEnumerable<string>? MediaUrls,
+    string? LinkUrl,
+    Visibility Visibility) : IRequest<Guid>;
+
+/// <summary>
+/// 保存推文草稿命令处理程序。
+/// </summary>
+public class SaveDraftCommandHandler(
+    ITweetRepository tweetRepository,
+    ILogger<SaveDraftCommandHandler> logger) : IRequestHandler<SaveDraftCommand, Guid>
+{
+    public async Task<Guid> Handler(SaveDraftCommand command, CancellationToken cancellationToken)
+    {
+        try
+        {
+            logger.LogInformation("开始保存草稿，作者: {AuthorGuid}", command.UserId);
+
+            var linkMetadata = CreateLinkMetadata(command.LinkUrl);
+            var parsedVisibility = ParseVisibility(command.Visibility.ToString());
+            var tweet = Tweet.Create(command.UserId, command.Content, null, linkMetadata, null, parsedVisibility);
+
+            await tweetRepository.AddAsync(tweet);
+            await tweetRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
+
+            logger.LogInformation("草稿保存成功，ID: {TweetGuid}", tweet.TweetGuid);
+            logger.LogInformation("保存草稿成功：{TweetGuid}", tweet.TweetGuid);
+            return tweet.TweetGuid;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "保存草稿失败，作者: {AuthorGuid}", command.UserId);
+            throw;
+        }
+    }
+
+    private static LinkMetadata? CreateLinkMetadata(string? linkUrl) =>
+        string.IsNullOrWhiteSpace(linkUrl) ? null : LinkMetadata.Create(linkUrl);
+
+    private static Visibility ParseVisibility(string? visibility) =>
+        visibility?.ToLower() switch
+        {
+            "followers" => Visibility.Followers,
+            "private" => Visibility.Private,
+            _ => Visibility.Public
+        };
+}

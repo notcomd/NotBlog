@@ -1094,7 +1094,7 @@
           }
         }
       },
-      "RESPite/3.0.25": {
+      "RESPite/3.1.0": {
         "type": "package",
         "compile": {
           "lib/net10.0/RESPite.dll": {}
@@ -1103,11 +1103,11 @@
           "lib/net10.0/RESPite.dll": {}
         }
       },
-      "StackExchange.Redis/3.0.25": {
+      "StackExchange.Redis/3.1.0": {
         "type": "package",
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "10.0.5",
-          "RESPite": "3.0.25",
+          "RESPite": "3.1.0",
           "System.IO.Hashing": "10.0.5"
         },
         "compile": {
@@ -2654,10 +2654,10 @@
         "opentelemetry.extensions.hosting.nuspec"
       ]
     },
-    "RESPite/3.0.25": {
-      "sha512": "v4vA1MttS78DQINFIY5BLOtWdA9OXoSSZk4VVdSzM7B2GezKsFHqTQpTHCZXuUuQ6+gPmvh8DkT60wEEtCojSg==",
+    "RESPite/3.1.0": {
+      "sha512": "Xf2mFsMahfIpcF2rAkCd0TLSOz0Zwmg2SuI5zv5Lagmx/BiZbjoAU8VQyGUgpx8C1V0qdfXznsUgDLx4OLPpkg==",
       "type": "package",
-      "path": "respite/3.0.25",
+      "path": "respite/3.1.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -2668,15 +2668,15 @@
         "lib/net8.0/RESPite.dll",
         "lib/netstandard2.0/RESPite.dll",
         "readme.md",
-        "respite.3.0.25.nupkg.sha512",
+        "respite.3.1.0.nupkg.sha512",
         "respite.nuspec",
         "seredis.png"
       ]
     },
-    "StackExchange.Redis/3.0.25": {
-      "sha512": "ak+9jk7f5oE25gBaCT7Epr8jYD3EyTEuMr5oxlY8EZE7o01xcaGLWTg+xeE6PaRV1ko9/fMdlvSEjdrdgpBb0g==",
+    "StackExchange.Redis/3.1.0": {
+      "sha512": "brWRCTBSKJjQxbiJhKfvLPinEAyUScUsGOrf8EHiWcOLaFzeM0367Co5YEzHywLdueXOtZCr6zKhSRU/tiEXxQ==",
       "type": "package",
-      "path": "stackexchange.redis/3.0.25",
+      "path": "stackexchange.redis/3.1.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -2694,7 +2694,7 @@
         "lib/netstandard2.0/StackExchange.Redis.dll",
         "lib/netstandard2.0/StackExchange.Redis.xml",
         "seredis.png",
-        "stackexchange.redis.3.0.25.nupkg.sha512",
+        "stackexchange.redis.3.1.0.nupkg.sha512",
         "stackexchange.redis.nuspec"
       ]
     },

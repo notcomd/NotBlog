@@ -7,15 +7,15 @@ namespace NotBlog_Yarp.Permission;
 /// 
 /// 从 PermissionOptions.DevUsers 读取用户权限映射，
 /// 不依赖 Identity 服务，适合本地开发和集成测试场景。
-/// 使用 IOptionsSnapshot 支持配置热重载。
+/// 使用 IOptionsMonitor 支持配置热重载（且与 Singleton 生命周期兼容）。
 /// </summary>
 public class ConfigPermissionServiceClient : IPermissionServiceClient
 {
-    private readonly IOptionsSnapshot<PermissionOptions> _options;
+    private readonly IOptionsMonitor<PermissionOptions> _options;
     private readonly ILogger<ConfigPermissionServiceClient> _logger;
 
     public ConfigPermissionServiceClient(
-        IOptionsSnapshot<PermissionOptions> options,
+        IOptionsMonitor<PermissionOptions> options,
         ILogger<ConfigPermissionServiceClient> logger)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
@@ -29,7 +29,7 @@ public class ConfigPermissionServiceClient : IPermissionServiceClient
         if (userId == Guid.Empty || string.IsNullOrWhiteSpace(permissionCode))
             return Task.FromResult(false);
 
-        var devUsers = _options.Value.DevUsers;
+        var devUsers = _options.CurrentValue.DevUsers;
         if (devUsers is null || devUsers.Count == 0)
         {
             _logger.LogDebug(
@@ -57,7 +57,7 @@ public class ConfigPermissionServiceClient : IPermissionServiceClient
         if (userId == Guid.Empty)
             return Task.FromResult("0|");
 
-        var devUsers = _options.Value.DevUsers;
+        var devUsers = _options.CurrentValue.DevUsers;
         if (devUsers is not null &&
             devUsers.TryGetValue(userId.ToString(), out var userConfig) &&
             !string.IsNullOrWhiteSpace(userConfig.DataScope))

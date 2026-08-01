@@ -15,7 +15,7 @@ public record VideoServiceDI(
     IVideoCacheService VideoCacheService,
     INotMediator NotMediator,
     IVideoCollectionRepository VideoCollectionRepository,
-    IVideoHistoryRepository VideoHistoryRepository,
+    IVideoHistoryRepository? VideoHistoryRepository,
     ILogger<VideoServiceDI> Logger,
     FileDevClient FileDevClient
 );

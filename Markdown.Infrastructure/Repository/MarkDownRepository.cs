@@ -305,4 +305,187 @@ public class MarkDownRepository(
             throw;
         }
     }
+
+    // ==================== OldMarkDown 历史版本查询 ====================
+
+    /// <summary>
+    ///     获取指定文档的所有历史版本
+    /// </summary>
+    public async Task<IEnumerable<OldMarkDown>> GetOldMarkDownsByMarkDownGuidAsync(Guid markDownGuid)
+    {
+        try
+        {
+            var oldVersions = await markDownDbContext.Markdowns
+                .Where(m => m.MarkDownGuid == markDownGuid)
+                .SelectMany(m => m.OldMarkDowns)
+                .Where(o => !o.IsDelete)
+                .OrderByDescending(o => o.CreateAt)
+                .ToListAsync();
+
+            logger.LogInformation("获取到 Markdown {Guid} 的 {Count} 个历史版本", markDownGuid, oldVersions.Count);
+            return oldVersions;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "获取历史版本失败：{MarkDownGuid}", markDownGuid);
+            throw;
+        }
+    }
+
+    /// <summary>
+    ///     根据 GUID 获取单个历史版本
+    /// </summary>
+    public async Task<OldMarkDown?> GetOldMarkDownByGuidAsync(Guid oldMarkDownGuid)
+    {
+        try
+        {
+            var oldVersion = await markDownDbContext.Markdowns
+                .SelectMany(m => m.OldMarkDowns)
+                .FirstOrDefaultAsync(o => o.OldMarkDownGuid == oldMarkDownGuid);
+
+            if (oldVersion is null)
+                logger.LogWarning("历史版本不存在：{OldMarkDownGuid}", oldMarkDownGuid);
+
+            return oldVersion;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "获取历史版本失败：{OldMarkDownGuid}", oldMarkDownGuid);
+            throw;
+        }
+    }
+
+    /// <summary>
+    ///     软删除历史版本记录
+    /// </summary>
+    public async Task DeleteOldMarkDownAsync(Guid oldMarkDownGuid)
+    {
+        try
+        {
+            var oldVersion = await markDownDbContext.Markdowns
+                .SelectMany(m => m.OldMarkDowns)
+                .FirstOrDefaultAsync(o => o.OldMarkDownGuid == oldMarkDownGuid)
+                ?? throw new KeyNotFoundException($"历史版本不存在：{oldMarkDownGuid}");
+
+            oldVersion.SoftDelete();
+            logger.LogInformation("历史版本已软删除：{OldMarkDownGuid}", oldMarkDownGuid);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "删除历史版本失败：{OldMarkDownGuid}", oldMarkDownGuid);
+            throw;
+        }
+    }
+
+    // ==================== 评论持久化操作（通过聚合根） ====================
+
+    /// <summary>
+    ///     通过聚合根添加评论
+    /// </summary>
+    public async Task<MarkReview> AddReviewAsync(Guid markDownGuid, MarkReview review)
+    {
+        ArgumentNullException.ThrowIfNull(review);
+
+        try
+        {
+            var markDown = await GetMarkDownTrackedAsync(markDownGuid)
+                ?? throw new KeyNotFoundException($"MarkDown 文档不存在：{markDownGuid}");
+
+            if (markDown.IsDelete)
+                throw new InvalidOperationException("已删除的文档无法添加评论");
+
+            await markDown.AddByMarkReviewAsync(review);
+            logger.LogInformation("已为文档 {MarkDownGuid} 添加评论 {ReviewGuid}", markDownGuid, review.MarkReviewGuid);
+            return review;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "添加评论失败：{MarkDownGuid}", markDownGuid);
+            throw;
+        }
+    }
+
+    /// <summary>
+    ///     更新评论内容
+    /// </summary>
+    public async Task<MarkReview> UpdateReviewAsync(Guid reviewGuid, string content)
+    {
+        if (string.IsNullOrWhiteSpace(content))
+            throw new ArgumentNullException(nameof(content));
+
+        try
+        {
+            var review = await markDownDbContext.Markdowns
+                .SelectMany(m => m.MarkReviews)
+                .FirstOrDefaultAsync(r => r.MarkReviewGuid == reviewGuid)
+                ?? throw new KeyNotFoundException($"评论不存在：{reviewGuid}");
+
+            if (review.IsDelete)
+                throw new InvalidOperationException("已删除的评论无法修改");
+
+            // 使用领域方法更新内容
+            review.UpdateContent(content);
+
+            logger.LogInformation("评论已更新：{ReviewGuid}", reviewGuid);
+            return review;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "更新评论失败：{ReviewGuid}", reviewGuid);
+            throw;
+        }
+    }
+
+    /// <summary>
+    ///     软删除评论（通过聚合根）
+    /// </summary>
+    public async Task DeleteReviewAsync(Guid reviewGuid)
+    {
+        try
+        {
+            // 获取评论所属的文档，通过聚合根删除
+            var markDown = await markDownDbContext.Markdowns
+                .Include(m => m.MarkReviews)
+                .FirstOrDefaultAsync(m => m.MarkReviews.Any(r => r.MarkReviewGuid == reviewGuid))
+                ?? throw new KeyNotFoundException($"未找到包含评论 {reviewGuid} 的文档");
+
+            if (markDown.IsDelete)
+                throw new InvalidOperationException("已删除的文档无法操作评论");
+
+            markDown.RemoveReview(reviewGuid);
+            logger.LogInformation("评论已软删除：{ReviewGuid}", reviewGuid);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "删除评论失败：{ReviewGuid}", reviewGuid);
+            throw;
+        }
+    }
+
+    // ==================== 列表查询 ====================
+
+    /// <summary>
+    ///     获取所有非删除的公开 Markdown 文档（分页）
+    /// </summary>
+    public async Task<IEnumerable<MarkDown>> FindAllMarkDownsAsync(int skip = 0, int take = 20)
+    {
+        try
+        {
+            var markdowns = await markDownDbContext.Markdowns
+                .AsNoTracking()
+                .Where(x => !x.IsDelete && x.MarkDownAuth == MarkDownAuth.PublicMark)
+                .OrderByDescending(x => x.CreateAt)
+                .Skip(skip)
+                .Take(take)
+                .ToListAsync();
+
+            logger.LogInformation("获取公开文档列表，共 {Count} 篇", markdowns.Count);
+            return markdowns;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "获取公开文档列表失败");
+            throw;
+        }
+    }
 }
