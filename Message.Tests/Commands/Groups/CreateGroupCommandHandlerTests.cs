@@ -1,6 +1,7 @@
 using Message.Domain.Entities.Group;
 using Message.Domain.Enums;
 using Message.Domain.IRepository;
+using Message.Domain.IServices;
 using Message.Domain.SeedWork;
 using Message.Web.API.Application.Commands.Groups;
 using Microsoft.Extensions.Logging;
@@ -21,14 +22,21 @@ public class CreateGroupCommandHandlerTests
 
     private Mock<IGroupRepository> _groupRepository = null!;
     private Mock<IUnitOfWork> _unitOfWork = null!;
+    private Mock<ICurrentUserService> _currentUser = null!;
 
     [SetUp]
     public void Setup()
     {
         _groupRepository = new Mock<IGroupRepository>();
         _unitOfWork = new Mock<IUnitOfWork>();
+        _currentUser = new Mock<ICurrentUserService>();
+        _currentUser.Setup(c => c.GetUserId()).Returns(UserId);
         _groupRepository.SetupGet(r => r.UnitOfWork).Returns(_unitOfWork.Object);
     }
+
+    private CreateGroupCommandHandler CreateHandler() => new(
+        _groupRepository.Object, _currentUser.Object,
+        new Mock<ILogger<CreateGroupCommandHandler>>().Object);
 
     [Test]
     public async Task CreateGroup_无初始成员时_应仅创建群组并返回群组ID()
@@ -38,9 +46,7 @@ public class CreateGroupCommandHandlerTests
             .Callback<Group>(g => added = g)
             .ReturnsAsync((Group g) => g);
 
-        var handler = new CreateGroupCommandHandler(
-            _groupRepository.Object,
-            new Mock<ILogger<CreateGroupCommandHandler>>().Object);
+        var handler = CreateHandler();
 
         var result = await handler.Handler(
             new CreateGroupCommand(UserId, "测试群", 500, false, null), CancellationToken.None);
@@ -68,9 +74,7 @@ public class CreateGroupCommandHandlerTests
             .ReturnsAsync((Group g) => g);
 
         var initialMembers = new HashSet<Guid> { MemberA, MemberB };
-        var handler = new CreateGroupCommandHandler(
-            _groupRepository.Object,
-            new Mock<ILogger<CreateGroupCommandHandler>>().Object);
+        var handler = CreateHandler();
 
         var result = await handler.Handler(
             new CreateGroupCommand(UserId, "测试群", 500, false, initialMembers), CancellationToken.None);

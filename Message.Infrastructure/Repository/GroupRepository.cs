@@ -68,12 +68,29 @@ public class GroupRepository(MessageDbContext context) : IGroupRepository
     /// <returns></returns>
     public async Task<IEnumerable<Group>> SearchAsync(string searchTerm, int page, int pageSize)
     {
+        if (pageSize < 1) pageSize = 10;
+        if (pageSize > 100) pageSize = 100;
         var query = DbSet
             .Where(g => g.IsPublic && !g.IsDismissed &&
                         (g.GroupName.Contains(searchTerm) ||
                          (g.Description != null && g.Description.Contains(searchTerm))));
 
-        return await query.OrderBy(g => g.GroupName).ToListAsync();
+        // F-06：真正分页（此前未应用 Skip/Take，返回全量数据）
+        return await query.OrderBy(g => g.GroupName)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+    }
+
+    /// <summary>
+    /// 搜索群组总数（F-06 分页 TotalCount）
+    /// </summary>
+    public async Task<int> SearchCountAsync(string searchTerm)
+    {
+        return await DbSet.CountAsync(g =>
+            g.IsPublic && !g.IsDismissed &&
+            (g.GroupName.Contains(searchTerm) ||
+             (g.Description != null && g.Description.Contains(searchTerm))));
     }
 
 

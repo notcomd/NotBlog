@@ -15,14 +15,18 @@ public static class UserManagerApi
     }
 
 
-    public static Task<IResult> GetUserInfo([FromServices] IdentityService identityService,
+    public static async Task<IResult> GetUserInfo([FromServices] IdentityService identityService,
         [FromQuery] string userQuery)
     {
-        return Task.FromResult<IResult>(Results.Json(identityService.UserService.GetUserInfoAsync(userQuery)));
+        // F-07：await 后返回真实用户数据（修复此前未 await 导致的 Task 序列化问题）
+        var user = await identityService.UserService.GetUserInfoAsync(userQuery);
+        return user is null ? Results.NotFound() : Results.Json(user);
     }
 
-    public static Task<IResult> GetUserAllAsync([FromServices] IdentityService identityService)
+    public static async Task<IResult> GetUserAllAsync([FromServices] IdentityService identityService)
     {
-        return Task.FromResult<IResult>(Results.Empty);
+        // F-07：返回全部用户（含 UserSafety / UserAccessFail 导航）
+        var users = await identityService.UserService.FindUserByVagueAsync();
+        return Results.Json(users);
     }
 }

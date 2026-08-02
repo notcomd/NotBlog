@@ -1,3 +1,4 @@
+using Message.Infrastructure.Services;
 using MessageEntity = Message.Domain.Entities.Message;
 
 namespace Message.Web.API.Application.Commands.Messages;
@@ -51,7 +52,9 @@ public record SendMessageCommand(
 public class SendMessageCommandHandler(
     IMessageRepository messageRepository,
     IChatSessionRepository sessionRepository,
-    ILogger<SendMessageCommandHandler> logger) : IRequestHandler<SendMessageCommand, Guid>
+    ILogger<SendMessageCommandHandler> logger,
+    UnreadCountCacheService unreadCountCache,
+    SessionCacheService sessionCache) : IRequestHandler<SendMessageCommand, Guid>
 {
     public async Task<Guid> Handler(SendMessageCommand command, CancellationToken cancellationToken)
     {
@@ -76,6 +79,14 @@ public class SendMessageCommandHandler(
             _ => throw new NotSupportedException($"不支持的消息类型: {command.MessageType}")
         };
 
+        // Q-05：未读计数缓存采用"写时失效"策略——私聊消息会改变接收者未读数，直接删除缓存键，
+        // 读路径 miss 时回源 DB 重建（群聊消息 ReceiverId 为空，不参与未读计数，无需失效）
+        if (message.ReceiverId is { } receiverId)
+            await unreadCountCache.InvalidateAsync(receiverId, cancellationToken);
+
+        // Q-05：会话最后消息已变化，失效会话详情缓存
+        await sessionCache.InvalidateSessionAsync(command.SessionId, cancellationToken);
+
         logger.LogInformation("发送消息成功：{MessageId}，类型={MessageType}，会话={SessionId}",
             message.MessageId, message.MessageType, message.SessionId);
         return message.MessageId;
@@ -84,9 +95,17 @@ public class SendMessageCommandHandler(
     private async Task<MessageEntity> SendTextMessageAsync(Guid sessionId, Guid senderId, string content,
         CancellationToken cancellationToken)
     {
-        await ValidateSessionAndSenderAsync(sessionId, senderId);
+        var session = await ValidateSessionAndSenderAsync(sessionId, senderId);
+
+        // S-17：内容净化 + 长度校验 + 敏感词过滤（拒绝策略）
+        content = SafeContentSanitizer.Sanitize(content);
+        if (content.Length > 2000)
+            throw new ArgumentException("消息内容不能超过2000个字符");
+        RejectIfSensitive(content, "消息");
 
         var message = MessageEntity.CreateTextMessage(sessionId, senderId, content);
+        ApplyPrivateReceiver(message, session, senderId);
+
         await messageRepository.AddAsync(message);
 
         await UpdateSessionLastMessageAsync(sessionId, message.MessageId, content);
@@ -98,9 +117,12 @@ public class SendMessageCommandHandler(
     private async Task<MessageEntity> SendImageMessageAsync(Guid sessionId, Guid senderId, Uri mediaUri,
         string? caption = null, string? thumbnailUri = null, CancellationToken cancellationToken = default)
     {
-        await ValidateSessionAndSenderAsync(sessionId, senderId);
+        var session = await ValidateSessionAndSenderAsync(sessionId, senderId);
 
+        caption = SanitizeField(caption);
         var message = MessageEntity.CreateImageMessage(sessionId, senderId, mediaUri, caption, thumbnailUri);
+        ApplyPrivateReceiver(message, session, senderId);
+
         await messageRepository.AddAsync(message);
 
         await UpdateSessionLastMessageAsync(sessionId, message.MessageId, "[图片]");
@@ -113,10 +135,12 @@ public class SendMessageCommandHandler(
         double durationSeconds, string? caption = null, string? thumbnailUri = null,
         CancellationToken cancellationToken = default)
     {
-        await ValidateSessionAndSenderAsync(sessionId, senderId);
+        var session = await ValidateSessionAndSenderAsync(sessionId, senderId);
 
         var message =
             MessageEntity.CreateVideoMessage(sessionId, senderId, mediaUri, durationSeconds, caption, thumbnailUri);
+        ApplyPrivateReceiver(message, session, senderId);
+
         await messageRepository.AddAsync(message);
 
         await UpdateSessionLastMessageAsync(sessionId, message.MessageId, "[视频]");
@@ -128,9 +152,12 @@ public class SendMessageCommandHandler(
     private async Task<MessageEntity> SendAudioMessageAsync(Guid sessionId, Guid senderId, Uri mediaUri,
         double durationSeconds, string? caption = null, CancellationToken cancellationToken = default)
     {
-        await ValidateSessionAndSenderAsync(sessionId, senderId);
+        var session = await ValidateSessionAndSenderAsync(sessionId, senderId);
 
+        caption = SanitizeField(caption);
         var message = MessageEntity.CreateAudioMessage(sessionId, senderId, mediaUri, durationSeconds, caption);
+        ApplyPrivateReceiver(message, session, senderId);
+
         await messageRepository.AddAsync(message);
 
         await UpdateSessionLastMessageAsync(sessionId, message.MessageId, "[语音]");
@@ -142,9 +169,11 @@ public class SendMessageCommandHandler(
     private async Task<MessageEntity> SendFileMessageAsync(Guid sessionId, Guid senderId, Uri mediaUri, string fileName,
         long fileSize, string mimeType, CancellationToken cancellationToken)
     {
-        await ValidateSessionAndSenderAsync(sessionId, senderId);
+        var session = await ValidateSessionAndSenderAsync(sessionId, senderId);
 
         var message = MessageEntity.CreateFileMessage(sessionId, senderId, mediaUri, fileName, fileSize, mimeType);
+        ApplyPrivateReceiver(message, session, senderId);
+
         await messageRepository.AddAsync(message);
 
         await UpdateSessionLastMessageAsync(sessionId, message.MessageId, $"[文件] {fileName}");
@@ -156,9 +185,11 @@ public class SendMessageCommandHandler(
     private async Task<MessageEntity> SendLocationMessageAsync(Guid sessionId, Guid senderId, double latitude,
         double longitude, string locationName, CancellationToken cancellationToken)
     {
-        await ValidateSessionAndSenderAsync(sessionId, senderId);
+        var session = await ValidateSessionAndSenderAsync(sessionId, senderId);
 
         var message = MessageEntity.CreateLocationMessage(sessionId, senderId, latitude, longitude, locationName);
+        ApplyPrivateReceiver(message, session, senderId);
+
         await messageRepository.AddAsync(message);
 
         await UpdateSessionLastMessageAsync(sessionId, message.MessageId, $"[位置] {locationName}");
@@ -170,9 +201,13 @@ public class SendMessageCommandHandler(
     private async Task<MessageEntity> SendLinkMessageAsync(Guid sessionId, Guid senderId, string linkUrl,
         string? title = null, string? description = null, CancellationToken cancellationToken = default)
     {
-        await ValidateSessionAndSenderAsync(sessionId, senderId);
+        var session = await ValidateSessionAndSenderAsync(sessionId, senderId);
 
+        title = SanitizeField(title);
+        description = SanitizeField(description);
         var message = MessageEntity.CreateLinkMessage(sessionId, senderId, linkUrl, title, description);
+        ApplyPrivateReceiver(message, session, senderId);
+
         await messageRepository.AddAsync(message);
 
         await UpdateSessionLastMessageAsync(sessionId, message.MessageId, title ?? linkUrl);
@@ -184,9 +219,11 @@ public class SendMessageCommandHandler(
     private async Task<MessageEntity> SendExpressionMessageAsync(Guid sessionId, Guid senderId, string expressionCode,
         CancellationToken cancellationToken)
     {
-        await ValidateSessionAndSenderAsync(sessionId, senderId);
+        var session = await ValidateSessionAndSenderAsync(sessionId, senderId);
 
         var message = MessageEntity.CreateExpressionMessage(sessionId, senderId, expressionCode);
+        ApplyPrivateReceiver(message, session, senderId);
+
         await messageRepository.AddAsync(message);
 
         await UpdateSessionLastMessageAsync(sessionId, message.MessageId, "[表情]");
@@ -195,11 +232,48 @@ public class SendMessageCommandHandler(
         return message;
     }
 
-    private async Task ValidateSessionAndSenderAsync(Guid sessionId, Guid senderId)
+    /// <summary>
+    /// F-04：私聊会话设置消息接收者（对端用户），激活离线消息/未读查询（GetUnreadMessagesAsync 依赖 ReceiverId）；群聊保持 null。
+    /// </summary>
+    private static void ApplyPrivateReceiver(MessageEntity message, ChatSession session, Guid senderId)
+    {
+        if (session.SessionType != SessionType.Private)
+            return;
+        var receiver = session.Participants.FirstOrDefault(p => p != senderId);
+        if (receiver != Guid.Empty)
+            message.SetReceiver(receiver);
+    }
+
+    /// <summary>S-17：净化可选文本字段（null/空白原样保留，避免引入空字符串语义差异）。</summary>
+    private static string? SanitizeField(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return value;
+
+        var sanitized = SafeContentSanitizer.Sanitize(value);
+        // P-05：附加文本字段（媒体描述/链接标题/链接描述）长度上限
+        if (sanitized.Length > 2000)
+            throw new ArgumentException("消息附加文本不能超过2000个字符");
+        return sanitized;
+    }
+
+    /// <summary>S-17：敏感词拒绝策略，命中时抛出业务异常（API 层映射为 400）。</summary>
+    private static void RejectIfSensitive(string content, string fieldName)
+    {
+        var (isSensitive, matchedWord) = SensitiveWordFilter.ContainsSensitive(content);
+        if (isSensitive)
+            throw new InvalidOperationException($"{fieldName}包含敏感内容（{matchedWord}），已拒绝发送");
+    }
+
+    private async Task<ChatSession> ValidateSessionAndSenderAsync(Guid sessionId, Guid senderId)
     {
         var session = await sessionRepository.GetByIdAsync(sessionId);
         if (session == null)
             throw new InvalidOperationException("会话不存在");
+        // 修复 S-05：与 MessageHub 行为一致，非参与者禁止向会话发送消息（REST 与 Hub 对齐）
+        if (!session.IsParticipant(senderId))
+            throw new InvalidOperationException("您不是该会话的参与者");
+        return session;
     }
 
     private async Task UpdateSessionLastMessageAsync(Guid sessionId, Guid messageId, string? content)

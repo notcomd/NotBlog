@@ -1,3 +1,5 @@
+using Message.Web.API.Hubs;
+using Microsoft.AspNetCore.SignalR;
 using NotMediator;
 
 namespace Message.Web.API.Application.DomainEventHandlers;
@@ -5,12 +7,12 @@ namespace Message.Web.API.Application.DomainEventHandlers;
 public class UserOnlineEventHandler : INotificationHandler<UserOnlineEvent>
 {
     private readonly IConnectionManager _connectionManager;
-    private readonly IHubContext<Hub> _hubContext;
+    private readonly IHubContext<MessageHub, IMessageClient> _hubContext;
     private readonly ILogger<UserOnlineEventHandler> _logger;
 
     public UserOnlineEventHandler(
         IConnectionManager connectionManager,
-        IHubContext<Hub> hubContext,
+        IHubContext<MessageHub, IMessageClient> hubContext,
         ILogger<UserOnlineEventHandler> logger)
     {
         _connectionManager = connectionManager;

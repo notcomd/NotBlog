@@ -1,6 +1,8 @@
 using Message.Domain.Entities;
 using Message.Domain.Enums;
 using Message.Domain.IRepository;
+using Message.Domain.IServices;
+using Message.Tests.TestHelpers;
 using Message.Web.API.Application.Queries.Sessions;
 using Moq;
 
@@ -18,11 +20,14 @@ public class SessionQueryHandlerTests
     private static readonly Guid SessionId = Guid.NewGuid();
 
     private Mock<IChatSessionRepository> _sessionRepository = null!;
+    private Mock<ICurrentUserService> _currentUser = null!;
 
     [SetUp]
     public void Setup()
     {
         _sessionRepository = new Mock<IChatSessionRepository>();
+        _currentUser = new Mock<ICurrentUserService>();
+        _currentUser.Setup(c => c.GetUserId()).Returns(UserId);
     }
 
     // ---------- GetSessionQueryHandler ----------
@@ -33,7 +38,7 @@ public class SessionQueryHandlerTests
         var session = new ChatSession(SessionType.Private, UserId);
         _sessionRepository.Setup(r => r.GetByIdAsync(SessionId)).ReturnsAsync(session);
 
-        var handler = new GetSessionQueryHandler(_sessionRepository.Object);
+        var handler = new GetSessionQueryHandler(_sessionRepository.Object, _currentUser.Object);
 
         var result = await handler.Handler(new GetSessionQuery(SessionId), CancellationToken.None);
 
@@ -49,7 +54,22 @@ public class SessionQueryHandlerTests
     {
         _sessionRepository.Setup(r => r.GetByIdAsync(SessionId)).ReturnsAsync((ChatSession?)null);
 
-        var handler = new GetSessionQueryHandler(_sessionRepository.Object);
+        var handler = new GetSessionQueryHandler(_sessionRepository.Object, _currentUser.Object);
+
+        var result = await handler.Handler(new GetSessionQuery(SessionId), CancellationToken.None);
+
+        Assert.That(result, Is.Null);
+    }
+
+    [Test]
+    public async Task GetSession_非参与者读取他人会话_应返回null()
+    {
+        // 会话参与者仅 OtherUser，当前用户（UserId）非参与者
+        var otherUser = Guid.NewGuid();
+        var session = new ChatSession(SessionType.Private, otherUser, new HashSet<Guid> { otherUser });
+        _sessionRepository.Setup(r => r.GetByIdAsync(SessionId)).ReturnsAsync(session);
+
+        var handler = new GetSessionQueryHandler(_sessionRepository.Object, _currentUser.Object);
 
         var result = await handler.Handler(new GetSessionQuery(SessionId), CancellationToken.None);
 
@@ -82,7 +102,8 @@ public class SessionQueryHandlerTests
     {
         _sessionRepository.Setup(r => r.GetTotalUnreadCountAsync(UserId)).ReturnsAsync(42);
 
-        var handler = new GetTotalUnreadCountQueryHandler(_sessionRepository.Object);
+        var handler = new GetTotalUnreadCountQueryHandler(_sessionRepository.Object,
+            CacheServicesTestFactory.CreateUnreadCountCache());
 
         var result = await handler.Handler(new GetTotalUnreadCountQuery(UserId), CancellationToken.None);
 

@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,7 +14,7 @@ namespace DomainInfrastructure;
 public static class EFCoreInitializerHelper
 {
     /// <summary>
-    /// 自动扫描并注册所有非抽象 DbContext 子类到 DI 容器
+    /// 自动扫描并注册所有非抽象 DbContext 子类到 DI 容器（所有 DbContext 共用同一配置委托）
     /// </summary>
     /// <param name="services">服务集合</param>
     /// <param name="optionsBuilder">DbContext 配置委托（如设置连接字符串）</param>
@@ -34,6 +34,49 @@ public static class EFCoreInitializerHelper
         if (optionsBuilder == null) throw new ArgumentNullException(nameof(optionsBuilder));
         if (assemblies == null) throw new ArgumentNullException(nameof(assemblies));
 
+        return RegisterAllDbContexts(services, _ => optionsBuilder, assemblies, contextLifetime, optionsLifetime);
+    }
+
+    /// <summary>
+    /// 自动扫描并注册所有非抽象 DbContext 子类到 DI 容器（按 DbContext 类型指定独立连接串）
+    /// </summary>
+    /// <param name="services">服务集合</param>
+    /// <param name="connectionStringSelector">按 DbContext 类型返回其连接字符串的委托</param>
+    /// <param name="assemblies">要扫描的程序集集合</param>
+    /// <param name="contextLifetime">DbContext 生命周期，默认 Scoped</param>
+    /// <param name="optionsLifetime">DbContextOptions 生命周期，默认 Scoped</param>
+    /// <exception cref="ArgumentNullException">当任一参数为 null 时抛出</exception>
+    /// <exception cref="InvalidOperationException">当无法找到 AddDbContext 方法时抛出</exception>
+    public static IServiceCollection AddAllDbContexts(
+        this IServiceCollection services,
+        Func<Type, string> connectionStringSelector,
+        IEnumerable<Assembly> assemblies,
+        ServiceLifetime contextLifetime = ServiceLifetime.Scoped,
+        ServiceLifetime optionsLifetime = ServiceLifetime.Scoped)
+    {
+        if (services == null) throw new ArgumentNullException(nameof(services));
+        if (connectionStringSelector == null) throw new ArgumentNullException(nameof(connectionStringSelector));
+        if (assemblies == null) throw new ArgumentNullException(nameof(assemblies));
+
+        // 为每个 DbContext 类型构造独立委托：ctx => ctx.UseNpgsql(connectionStringSelector(contextType))
+        return RegisterAllDbContexts(
+            services,
+            contextType => ctx => ctx.UseNpgsql(connectionStringSelector(contextType)),
+            assemblies,
+            contextLifetime,
+            optionsLifetime);
+    }
+
+    /// <summary>
+    /// 扫描程序集并反射调用 AddDbContext 完成注册的核心逻辑。
+    /// </summary>
+    private static IServiceCollection RegisterAllDbContexts(
+        IServiceCollection services,
+        Func<Type, Action<DbContextOptionsBuilder>> optionsBuilderFactory,
+        IEnumerable<Assembly> assemblies,
+        ServiceLifetime contextLifetime,
+        ServiceLifetime optionsLifetime)
+    {
         var addDbContextMethod = FindAddDbContextMethod();
 
         foreach (var assembly in assemblies)
@@ -45,6 +88,7 @@ public static class EFCoreInitializerHelper
             {
                 try
                 {
+                    var optionsBuilder = optionsBuilderFactory(dbContextType);
                     var genericMethod = addDbContextMethod.MakeGenericMethod(dbContextType);
                     genericMethod.Invoke(null, new object[]
                     {
@@ -56,7 +100,8 @@ public static class EFCoreInitializerHelper
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(
+                    // 静态库无 logger 可用，用 Debug 输出避免正式环境噪音
+                    System.Diagnostics.Debug.WriteLine(
                         $"注册 DbContext {dbContextType.FullName} 失败: {ex.InnerException?.Message ?? ex.Message}");
                 }
             }

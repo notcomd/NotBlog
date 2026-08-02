@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using Microsoft.Extensions.Options;
 
 namespace NotBlog_Yarp.Permission;
 
@@ -10,16 +11,24 @@ namespace NotBlog_Yarp.Permission;
 /// 预期 Identity 侧端点：
 ///   POST /api/permission/check  → { userId, permissionCode } → { hasPermission: bool }
 ///   GET  /api/permission/datascope/{userId} → { scopeType, values }
+///
+/// 失败降级（F-12）：Identity 不可用/端点缺失时按 PermissionOptions.FailPolicy 处理
+/// （Open = 放行 / Closed = 拒绝），避免权限服务短暂不可用时全站 403。
 /// </summary>
 public class HttpPermissionServiceClient : IPermissionServiceClient
 {
     private readonly HttpClient _http;
     private readonly ILogger<HttpPermissionServiceClient> _logger;
+    private readonly IOptions<PermissionOptions> _options;
 
-    public HttpPermissionServiceClient(HttpClient http, ILogger<HttpPermissionServiceClient> logger)
+    public HttpPermissionServiceClient(
+        HttpClient http,
+        ILogger<HttpPermissionServiceClient> logger,
+        IOptions<PermissionOptions> options)
     {
         _http = http ?? throw new ArgumentNullException(nameof(http));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _options = options ?? throw new ArgumentNullException(nameof(options));
     }
 
     /// <inheritdoc />
@@ -78,9 +87,9 @@ public class HttpPermissionServiceClient : IPermissionServiceClient
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogWarning(
-                    "[HttpPermissionClient] CheckAndGetScope 非成功 {StatusCode} UserId={UserId} Code={Code}",
-                    (int)response.StatusCode, userId, permissionCode);
-                return PermissionCheckResult.Denied();
+                    "[HttpPermissionClient] CheckAndGetScope 非成功 {StatusCode} UserId={UserId} Code={Code}（FailPolicy={Policy}）",
+                    (int)response.StatusCode, userId, permissionCode, _options.Value.FailPolicy);
+                return FailOpenResult();
             }
 
             var result = await response.Content.ReadFromJsonAsync<CombinedResult>(ct);
@@ -98,13 +107,19 @@ public class HttpPermissionServiceClient : IPermissionServiceClient
         {
             _logger.LogError(ex,
                 "[HttpPermissionClient] CheckAndGetScope 无法连接 Identity UserId={UserId}", userId);
-            return PermissionCheckResult.Denied();
+            return FailOpenResult();
         }
         catch (TaskCanceledException)
         {
             _logger.LogWarning(
                 "[HttpPermissionClient] CheckAndGetScope 超时 UserId={UserId}", userId);
-            return PermissionCheckResult.Denied();
+            return FailOpenResult();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,
+                "[HttpPermissionClient] CheckAndGetScope 异常 UserId={UserId} Code={Code}", userId, permissionCode);
+            return FailOpenResult();
         }
     }
 
@@ -123,9 +138,9 @@ public class HttpPermissionServiceClient : IPermissionServiceClient
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogWarning(
-                    "[HttpPermissionClient] Identity 返回非成功状态码 {StatusCode} UserId={UserId} Code={Code}",
-                    (int)response.StatusCode, userId, permissionCode);
-                return false;
+                    "[HttpPermissionClient] Identity 返回非成功状态码 {StatusCode} UserId={UserId} Code={Code}（FailPolicy={Policy}）",
+                    (int)response.StatusCode, userId, permissionCode, _options.Value.FailPolicy);
+                return FailOpen();
             }
 
             var result = await response.Content.ReadFromJsonAsync<CheckResult>(ct);
@@ -140,19 +155,19 @@ public class HttpPermissionServiceClient : IPermissionServiceClient
             _logger.LogError(ex,
                 "[HttpPermissionClient] 无法连接 Identity 服务 UserId={UserId} Code={Code}",
                 userId, permissionCode);
-            return false; // fail-closed: 无法确认权限时拒绝
+            return FailOpen(); // 降级策略：Open 放行 / Closed 拒绝
         }
         catch (TaskCanceledException)
         {
             _logger.LogWarning(
                 "[HttpPermissionClient] 请求超时 UserId={UserId} Code={Code}", userId, permissionCode);
-            return false;
+            return FailOpen();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex,
                 "[HttpPermissionClient] 权限检查异常 UserId={UserId} Code={Code}", userId, permissionCode);
-            return false;
+            return FailOpen();
         }
     }
 
@@ -201,6 +216,31 @@ public class HttpPermissionServiceClient : IPermissionServiceClient
                 "[HttpPermissionClient] GetDataScope 异常 UserId={UserId}", userId);
             return "0|";
         }
+    }
+
+    /// <summary>
+    /// 权限服务失败时的降级结果（F-12）：
+    /// FailPolicy=Open → 放行（返回通过 + 默认 Own 数据范围）；Closed → 拒绝。
+    /// </summary>
+    private PermissionCheckResult FailOpenResult()
+    {
+        if (_options.Value.FailOpen)
+        {
+            _logger.LogWarning("[HttpPermissionClient] 权限服务不可用，按 FailPolicy=Open 放行（fail-open 降级）");
+            return PermissionCheckResult.Granted("0|");
+        }
+        return PermissionCheckResult.Denied();
+    }
+
+    /// <summary>权限服务失败时的布尔降级结果（F-12）：Open → true（放行），Closed → false（拒绝）</summary>
+    private bool FailOpen()
+    {
+        if (_options.Value.FailOpen)
+        {
+            _logger.LogWarning("[HttpPermissionClient] 权限服务不可用，按 FailPolicy=Open 放行（fail-open 降级）");
+            return true;
+        }
+        return false;
     }
 
     private sealed class CombinedResult

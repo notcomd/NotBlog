@@ -23,13 +23,8 @@ public class LikeVideoReviewCommandHandler(
             return new LikeVideoReviewResult(false, 0,
                 $"Invalid field '{request.Field}'. Valid: upvote, down, ballot, share.");
 
-        var video = await cacheService.GetVideoMetaAsync(request.VideoGuid, cancellationToken);
-        if (video is null)
-        {
-            video = await videoRepository.FindByVideoAsync(request.VideoGuid);
-            if (video is null)
-                return new LikeVideoReviewResult(false, 0, "Video not found.");
-        }
+        // 写路径必须从仓储加载实体，确保被 DbContext 跟踪后修改可落库
+        var video = await videoRepository.FindByVideoWithDetailsAsync(request.VideoGuid);
 
         var review = video.VideoReviews?.FirstOrDefault(r => r.VideoReviewGuid == request.ReviewGuid);
         if (review is null)
@@ -57,8 +52,12 @@ public class LikeVideoReviewCommandHandler(
             }
         }
 
-        await videoRepository.UnitOfWork.SavaEntitiesAsync(cancellationToken);
+        await videoRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
         await cacheService.RemoveVideoMetaAsync(request.VideoGuid, cancellationToken);
+        await cacheService.InvalidateVideoReviewCachesAsync(request.VideoGuid, ct: cancellationToken);
+        await cacheService.RemoveVideoReviewRepliesAsync(request.ReviewGuid, cancellationToken);
+        if (review.RootReview is { } rootReviewId && rootReviewId != Guid.Empty)
+            await cacheService.RemoveVideoReviewRepliesAsync(rootReviewId, cancellationToken);
 
         var newCount = normalized switch
         {

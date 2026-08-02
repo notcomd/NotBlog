@@ -32,6 +32,19 @@ public class VideoRepository(ILogger<IVideoRepository> videoLogger, VideoDbConte
         return videoModel;
     }
 
+    public async Task<Videos> FindByVideoWithDetailsAsync(Guid findVideoGuid)
+    {
+        var videoModel = await videoDbContext.Videos
+            .Include(en => en.VideoQuote)
+            .Include(en => en.VideoControl)
+            .Include(en => en.VideoReviews)
+            .Include(en => en.VideoBarrageList)
+            .SingleOrDefaultAsync(en => en.VideoGuid == findVideoGuid);
+        if (videoModel is null) throw new AggregateException($"[{DateTimeOffset.UtcNow}]无法查询到相关信息");
+        videoLogger.LogWarning($"[{DateTimeOffset.UtcNow}]查询数据{findVideoGuid}完成");
+        return videoModel;
+    }
+
     public async Task<Videos> FindByNvidAsync(string nvId)
     {
         var videoModel = await videoDbContext.Videos
@@ -60,24 +73,27 @@ public class VideoRepository(ILogger<IVideoRepository> videoLogger, VideoDbConte
         await videoDbContext.Videos.AddRangeAsync(addVideos);
     }
 
-    public async Task UpdateByQuoteAsync(VideoQuote videoQuote)
+    public async Task UpdateByQuoteAsync(Guid videoGuid, VideoQuote videoQuote)
     {
         await videoDbContext.Videos
+            .Where(en => en.VideoGuid == videoGuid)
             .ExecuteUpdateAsync(en => en.SetProperty(ens => ens.VideoQuote, videoQuote)
             );
     }
 
-    public async Task UpdateByControlAsync(VideoControl videoControl)
+    public async Task UpdateByControlAsync(Guid videoGuid, VideoControl videoControl)
     {
         await videoDbContext.Videos
+            .Where(en => en.VideoGuid == videoGuid)
             .ExecuteUpdateAsync(en => en.SetProperty(ens => ens.VideoControl, videoControl)
             );
     }
 
 
-    public async Task UpdateByTimeSpaceAsync(TimeSpace timeSpace)
+    public async Task UpdateByTimeSpaceAsync(Guid videoGuid, TimeSpace timeSpace)
     {
         await videoDbContext.Videos
+            .Where(en => en.VideoGuid == videoGuid)
             .ExecuteUpdateAsync(en => en.SetProperty(ens => ens.TimeSpace, timeSpace)
             );
     }
@@ -88,6 +104,9 @@ public class VideoRepository(ILogger<IVideoRepository> videoLogger, VideoDbConte
         var videoModel = await videoDbContext.Videos
             .Include(en => en.VideoQuote)
             .Include(en => en.VideoControl)
+            .Where(en => !en.VideoControl.VideoDelete
+                && en.VideoControl.AuthorVideo == AuthorVideo.VideoPublic
+                && en.VideoControl.VideoDisplay)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
@@ -108,7 +127,11 @@ public class VideoRepository(ILogger<IVideoRepository> videoLogger, VideoDbConte
     public async Task<Videos> FindByVideoName(string name)
     {
         var videoModel = await videoDbContext.Videos
-            .SingleOrDefaultAsync(en => en.VideoName == name);
+            .Where(en => en.VideoName == name
+                && !en.VideoControl.VideoDelete
+                && en.VideoControl.AuthorVideo == AuthorVideo.VideoPublic
+                && en.VideoControl.VideoDisplay)
+            .SingleOrDefaultAsync();
         if (videoModel is null) throw new AggregateException($"[{DateTimeOffset.UtcNow}]无法查询到相关信息");
         videoLogger.LogWarning($"[{DateTimeOffset.UtcNow}]查询数据{name}完成");
         return videoModel;
@@ -118,25 +141,30 @@ public class VideoRepository(ILogger<IVideoRepository> videoLogger, VideoDbConte
     public async Task<List<Videos>> BlurredByVideoName(string videoName)
     {
         var videoModel = await videoDbContext.Videos
-            .Where(en => en.VideoName.Contains(videoName))
+            .Where(en => en.VideoName.Contains(videoName)
+                && !en.VideoControl.VideoDelete
+                && en.VideoControl.AuthorVideo == AuthorVideo.VideoPublic
+                && en.VideoControl.VideoDisplay)
             .ToListAsync();
         return videoModel;
     }
 
 
-    public async Task DeleteByVideoControlAsync(VideoControl videoControl)
+    public async Task DeleteByVideoControlAsync(Guid videoGuid, VideoControl videoControl)
     {
         await videoDbContext.Videos
+            .Where(en => en.VideoGuid == videoGuid)
             .ExecuteUpdateAsync(up => up.SetProperty(en => en.VideoControl.VideoDelete, videoControl.VideoDelete)
             );
     }
 
 
-    public async Task DeleteByVideoControlRangeAsync(List<VideoControl> videoControl)
+    public async Task DeleteByVideoControlRangeAsync(List<Videos> videosList)
     {
-        foreach (var item in videoControl)
+        foreach (var item in videosList)
             await videoDbContext.Videos
-                .ExecuteUpdateAsync(up => up.SetProperty(en => en.VideoControl.VideoDelete, item.VideoDelete)
+                .Where(en => en.VideoGuid == item.VideoGuid)
+                .ExecuteUpdateAsync(up => up.SetProperty(en => en.VideoControl.VideoDelete, item.VideoControl.VideoDelete)
                 );
     }
 

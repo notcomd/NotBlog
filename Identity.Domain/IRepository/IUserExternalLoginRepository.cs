@@ -1,4 +1,4 @@
-﻿﻿using Identity.Domain.Entities.UserExternalLoginAggregate;
+﻿using Identity.Domain.Entities.UserExternalLoginAggregate;
 
 namespace Identity.Domain.IRepository;
 
@@ -28,6 +28,11 @@ public interface IUserExternalLoginRepository : IRepository<UserExternalLogin>
     /// 获取所有外部登录记录
     /// </summary>
     Task<IReadOnlyList<UserExternalLogin>> GetAllAsync();
+
+    /// <summary>
+    /// 删除外部登录绑定记录（F-07：真实解绑链路）
+    /// </summary>
+    Task DeleteAsync(UserExternalLogin login);
 
 
     Task<UserExternalLogin?> FindOneByUserIdAndProviderAsync(LoginProviderType provider, string providerKey);

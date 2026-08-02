@@ -26,23 +26,17 @@ public class UpdateVideoCommandHandler : IRequestHandler<UpdateVideoCommand, boo
 
         _logger.LogInformation("[UpdateVideoCommandHandler] 更新视频元数据: VideoGuid={VideoGuid}",
             request.VideoGuid);
-        var video = await _videoCacheService.GetVideoMetaAsync(request.VideoGuid, cancellationToken);
-
-        if (video is null)
-        {
-            video = await _videoRepository.FindByVideoAsync(request.VideoGuid);
-            if (video is null)
-            {
-                throw new KeyNotFoundException($"Video with Guid {request.VideoGuid} not found.");
-            }
-        }
+        // 写路径必须从仓储加载实体，确保被 DbContext 跟踪后更新可落库
+        // （缓存反序列化出的实体未被跟踪，直接 SaveChanges 会静默丢失）
+        var video = await _videoRepository.FindByVideoWithDetailsAsync(request.VideoGuid);
 
         video.UpDataVideo(request.VideoName, request.BriefIntroduction,
         request.VideoCover, request.VideoFileUri,
         request.Tags, request.VideoControl);
 
-        await _videoRepository.UnitOfWork.SavaEntitiesAsync(cancellationToken);
+        await _videoRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
         await _videoCacheService.RemoveVideoMetaAsync(request.VideoGuid, cancellationToken);
+        await _videoCacheService.InvalidateVideoListsAsync(cancellationToken);
 
         _logger.LogInformation("[UpdateVideoCommandHandler] 更新视频元数据成功: VideoGuid={VideoGuid}",
             request.VideoGuid);

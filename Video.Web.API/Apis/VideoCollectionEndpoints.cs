@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Video.Domain.Entities;
+using Video.Domain.IServices;
 using Video.Web.API.Application.Commands;
 
 namespace Video.Web.API.Apis;
@@ -87,7 +88,8 @@ public static class VideoCollectionEndpoints
     private static async Task<IResult> AddVideoToCollectionAsync(
         Guid collectionGuid,
         [FromBody] AddToCollectionRequest request,
-        [FromServices] VideoServiceDI videoServiceDI)
+        [FromServices] VideoServiceDI videoServiceDI,
+        [FromServices] ICurrentUserService currentUser)
     {
         var logger = videoServiceDI.Logger;
 
@@ -99,10 +101,11 @@ public static class VideoCollectionEndpoints
                         "VideoGuid and CollectionGuid are required.", null),
                     statusCode: 400);
 
+            // 收藏者身份由服务端解析，禁止信任客户端传入的 UserGuid
             var command = new AddVideoToCollectionCommand(
                 RequestId: Guid.CreateVersion7(),
                 VideoGuid: request.VideoGuid,
-                UserGuid: request.UserGuid,
+                UserGuid: currentUser.UserGuid,
                 CollectionGuid: collectionGuid);
 
             var result = await videoServiceDI.NotMediator.SendAsync(command);

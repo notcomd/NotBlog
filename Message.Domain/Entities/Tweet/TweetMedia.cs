@@ -27,11 +27,11 @@ public class TweetMedia : Entity
     /// <summary>
     /// 媒体类型
     /// </summary>
-    public string MediaType { get; private set; }
+    public string MediaType { get; private set; } = null!;
     /// <summary>
     /// 媒体URL
     /// </summary>
-    public string MediaUrl { get; private set; }
+    public string MediaUrl { get; private set; } = null!;
     /// <summary>
     /// 缩略图URL
     /// </summary>

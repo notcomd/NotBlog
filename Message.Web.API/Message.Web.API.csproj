@@ -7,16 +7,16 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Aspire.RabbitMQ.Client" Version="13.4.6"/>
         <PackageReference Include="Aspire.StackExchange.Redis.DistributedCaching" Version="13.4.6"/>
         <PackageReference Include="Google.Protobuf" Version="3.29.3"/>
         <PackageReference Include="Grpc.Net.Client" Version="2.80.0"/>
         <PackageReference Include="Grpc.Net.ClientFactory" Version="2.80.0"/>
-        <PackageReference Include="Grpc.Tools" Version="*">
+        <PackageReference Include="Grpc.Tools" Version="2.83.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.9"/>
+        <PackageReference Include="Microsoft.OpenApi" Version="2.7.5"/>
         <PackageReference Include="NotMediator" Version="1.0.5"/>
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.2"/>
         <PackageReference Include="Scalar.AspNetCore" Version="2.16.4"/>

@@ -26,7 +26,9 @@ public class CurrentUserService : ICurrentUserService
         var userIdClaim = _httpContextAccessor.HttpContext?.User?
                               .FindFirst("sub")?.Value
                           ?? _httpContextAccessor.HttpContext?.User?
-                              .FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                              .FindFirst(ClaimTypes.NameIdentifier)?.Value
+                          ?? _httpContextAccessor.HttpContext?.User?
+                              .FindFirst("user_guid")?.Value;
 
         return Guid.TryParse(userIdClaim, out var userId)
             ? userId
@@ -38,8 +40,14 @@ public class CurrentUserService : ICurrentUserService
         if (_roles.Length > 0)
             return _roles[0];
 
-        return _httpContextAccessor.HttpContext?.User?
-            .FindFirst(ClaimTypes.Role)?.Value;
+        // Identity 将多个角色以逗号拼接为单个 Role Claim，故需拆分后取首个角色
+        var roleClaim = _httpContextAccessor.HttpContext?.User?
+            .FindAll(ClaimTypes.Role)
+            .SelectMany(c => c.Value.Split(',',
+                StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            .FirstOrDefault();
+
+        return roleClaim;
     }
 
     public string? GetClaim(string claimType)
@@ -53,9 +61,12 @@ public class CurrentUserService : ICurrentUserService
         if (_roles.Length > 0)
             return _roles.Contains("Admin", StringComparer.OrdinalIgnoreCase);
 
+        // Identity 将多个角色以逗号拼接为单个 Role Claim，故需拆分后判断是否包含 Admin
         var roleClaim = _httpContextAccessor.HttpContext?.User?
             .FindAll(ClaimTypes.Role)
-            .Any(c => c.Value.Equals("Admin", StringComparison.OrdinalIgnoreCase));
+            .SelectMany(c => c.Value.Split(',',
+                StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            .Any(r => r.Equals("Admin", StringComparison.OrdinalIgnoreCase));
 
         return roleClaim ?? false;
     }

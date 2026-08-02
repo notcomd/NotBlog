@@ -13,16 +13,19 @@ public static class RoleApi
             .WithHttpLogging(HttpLoggingFields.All);
 
         route.MapPost(string.Empty, CreateRoleAsync)
+            .RequireAuthorization("AdminOnly")
             .WithDescription("创建角色")
             .Produces<CreateRoleResult>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest);
 
         route.MapPut("/{roleId:guid}", UpdateRoleAsync)
+            .RequireAuthorization("AdminOnly")
             .WithDescription("更新角色")
             .Produces<bool>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest);
 
         route.MapDelete("/{roleId:guid}", DeleteRoleAsync)
+            .RequireAuthorization("AdminOnly")
             .WithDescription("删除角色（软删除）")
             .Produces<bool>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest);
@@ -32,12 +35,13 @@ public static class RoleApi
 
     private static async Task<IResult> CreateRoleAsync(
         [FromServices] INotMediator mediator,
-        [FromBody] CreateRoleCommand command)
+        [FromBody] CreateRoleCommand command,
+        HttpContext httpContext)
     {
         try
         {
             var identityCommand = new IdentifiedCommand<CreateRoleCommand, CreateRoleResult>(
-                Guid.CreateVersion7(), command);
+                IdentityApis.GetIdempotencyKey(httpContext), command);
             var result = await mediator.SendAsync(identityCommand);
 
             return string.IsNullOrEmpty(result.RoleName)
@@ -53,13 +57,14 @@ public static class RoleApi
     private static async Task<IResult> UpdateRoleAsync(
         [FromServices] INotMediator mediator,
         [FromRoute] Guid roleId,
-        [FromBody] UpdateRoleCommand update)
+        [FromBody] UpdateRoleCommand update,
+        HttpContext httpContext)
     {
         try
         {
             var command = update with { RoleGuid = roleId };
             var identityCommand = new IdentifiedCommand<UpdateRoleCommand, bool>(
-                Guid.CreateVersion7(), command);
+                IdentityApis.GetIdempotencyKey(httpContext), command);
             var result = await mediator.SendAsync(identityCommand);
             return Results.Ok(new { success = result });
         }
@@ -71,13 +76,14 @@ public static class RoleApi
 
     private static async Task<IResult> DeleteRoleAsync(
         [FromServices] INotMediator mediator,
-        [FromRoute] Guid roleId)
+        [FromRoute] Guid roleId,
+        HttpContext httpContext)
     {
         try
         {
             var command = new DeleteRoleCommand(roleId);
             var identityCommand = new IdentifiedCommand<DeleteRoleCommand, bool>(
-                Guid.CreateVersion7(), command);
+                IdentityApis.GetIdempotencyKey(httpContext), command);
             var result = await mediator.SendAsync(identityCommand);
             return Results.Ok(new { success = result });
         }

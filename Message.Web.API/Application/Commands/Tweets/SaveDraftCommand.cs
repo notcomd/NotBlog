@@ -31,7 +31,16 @@ public class SaveDraftCommandHandler(
 
             var linkMetadata = CreateLinkMetadata(command.LinkUrl);
             var parsedVisibility = ParseVisibility(command.Visibility.ToString());
-            var tweet = Tweet.Create(command.UserId, command.Content, null, linkMetadata, null, parsedVisibility);
+
+            // S-17：内容净化 + 长度校验（上限 500 字符）+ 敏感词拒绝（与发布策略一致）
+            var safeContent = SafeContentSanitizer.Sanitize(command.Content);
+            if (safeContent.Length > 500)
+                throw new ArgumentException("推文内容不能超过500个字符");
+            var (isSensitive, matchedWord) = SensitiveWordFilter.ContainsSensitive(safeContent);
+            if (isSensitive)
+                throw new InvalidOperationException($"推文内容包含敏感内容（{matchedWord}），已拒绝保存");
+
+            var tweet = Tweet.Create(command.UserId, safeContent, null, linkMetadata, null, parsedVisibility);
 
             await tweetRepository.AddAsync(tweet);
             await tweetRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);

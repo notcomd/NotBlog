@@ -1,4 +1,4 @@
-using Message.Web.API.Application.Commands.Reports;
+﻿using Message.Web.API.Application.Commands.Reports;
 using Message.Web.API.Application.Queries.Reports;
 
 namespace Message.Web.API.APIs;
@@ -22,7 +22,8 @@ public static class ReportsApi
     public static RouteGroupBuilder MapReportsApi(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/reports")
-            .WithTags("Reports");
+            .WithTags("Reports")
+            .RequireAuthorization();
 
         // POST / — 提交举报
         group.MapPost("/", SubmitReportAsync)
@@ -65,7 +66,7 @@ public static class ReportsApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse.Error($"提交举报失败: {ex.Message}"));
+            return Results.Json(ApiResponse.Error($"提交举报失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -88,11 +89,11 @@ public static class ReportsApi
         try
         {
             var userId = currentUser.GetUserId();
-            var reports = await mediator.SendAsync(new GetMyReportsQuery(userId, page, pageSize), ct);
+            var paged = await mediator.SendAsync(new GetMyReportsQuery(userId, page, pageSize), ct);
 
             var result = new PagedResult<object>
             {
-                Items = [.. reports.Select(report => new
+                Items = [.. paged.Items.Select(report => new
                 {
                     report.ReportGuid,
                     report.ReporterGuid,
@@ -107,7 +108,7 @@ public static class ReportsApi
                     report.ReviewTime,
                     report.CreateTime
                 })],
-                TotalCount = reports.Count(),
+                TotalCount = paged.TotalCount,
                 Page = page,
                 PageSize = pageSize
             };
@@ -116,7 +117,7 @@ public static class ReportsApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse<PagedResult<object>>.Error($"获取我的举报列表失败: {ex.Message}"));
+            return Results.Json(ApiResponse<PagedResult<object>>.Error($"获取我的举报列表失败: {ex.Message}"), statusCode: 500);
         }
     }
 }

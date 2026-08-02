@@ -57,7 +57,7 @@ public class VideoService : IVideoService
         if (_cacheService is not null && video is not null)
             _ = _cacheService.SetVideoMetaAsync(video);
 
-        return video;
+        return video!;
     }
 
     public async Task<Videos> GetByVideoAsync(string videoName)
@@ -75,7 +75,7 @@ public class VideoService : IVideoService
         if (_cacheService is not null && video is not null)
             _ = _cacheService.SetVideoMetaAsync(video);
 
-        return video;
+        return video!;
     }
 
     public async Task<List<Videos>> PagesByVideosAsync(int index, int size)

@@ -1,4 +1,5 @@
 using DomainInfrastructure;
+using FileDev.Web.API.Background;
 using FileDev.Web.API.Grpc;
 using Notcomd.Token.JWT.Extensions;
 
@@ -6,8 +7,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
+// 凭据外置（S-01）：数据库口令从环境变量 FILEDEV_DB_PASSWORD 读取
 builder.Services.AddNotBlogServices(
-    builder.Configuration.GetValue<string>("DbContextConnect")!,
+    DbConnectionStringResolver.Resolve(
+        builder.Configuration.GetValue<string>("DbContextConnect"),
+        "FILEDEV_DB_PASSWORD"),
     [.. ReflectionHelper.GetAllReferencedAssemblies()]);
 
 builder.Services.AddCacheMemory(builder.Configuration);
@@ -16,12 +20,18 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<INotFileService, NotFileService>();
 builder.Services.AddScoped<FileStorageServiceGRPC>();
+builder.Services.AddScoped<GrpcJwtAuthInterceptor>();
+builder.Services.AddScoped<FileAccessMiddleware>();
+builder.Services.AddHostedService<ChunkCleanupBackgroundService>();
 builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
 builder.Services.AddGrpc(options =>
 {
-    options.MaxReceiveMessageSize = 1024 * 1024 * 1024; // 1GB
-    options.MaxSendMessageSize = 1024 * 1024 * 1024;
+    // S-09：单条 gRPC 消息上限由 1GB 下调至 64MB，超大文件必须走分片上传
+    options.MaxReceiveMessageSize = 64 * 1024 * 1024;
+    options.MaxSendMessageSize = 64 * 1024 * 1024;
     options.EnableDetailedErrors = builder.Environment.IsDevelopment();
+    // S-08：所有 gRPC 方法强制 JWT 认证（拦截器解析调用者 id 写入 context.UserState）
+    options.Interceptors.Add<GrpcJwtAuthInterceptor>();
 });
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
@@ -47,7 +57,9 @@ builder.Services.Configure<NotFileStorageOptions>(
 
 builder.Services.Configure<FormOptions>(options => { options.MultipartBoundaryLengthLimit = 1024 * 1024 * 1024; }
 );
-builder.WebHost.ConfigureKestrel(options => { options.Limits.MaxRequestBodySize = 1024 * 1024 * 1024; });
+// S-09：Kestrel 请求体上限从 1GB 下调到 100MB，超大文件必须走分片上传（分片 ≤ 5MB）；
+// 配合端点级 [RequestSizeLimit] 实现分层限制
+builder.WebHost.ConfigureKestrel(options => { options.Limits.MaxRequestBodySize = 100 * 1024 * 1024; });
 
 
 var app = builder.Build();
@@ -72,9 +84,15 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 
-app.MapGroup("/api/filestorage").MapFileChunkApis();
-app.MapGroup("/api/filestorage").MapStreamUploadApis();
-app.MapGroup("/api/filestorage").MapDedupApis();
+// S-08：文件存储 HTTP API 全部要求 JWT 认证（匿名访问 → 401）
+var fileStorageGroup = app.MapGroup("/api/filestorage").RequireAuthorization();
+fileStorageGroup.MapFileChunkApis();
+fileStorageGroup.MapStreamUploadApis();
+fileStorageGroup.MapDedupApis();
+
+// F-09.2：注册文件组 API（FileStrongApi 内部自带 RequireAuthorization，
+// 端点：/api/filestorage/upload_file、/api/filestorage/create_file_group）
+app.MapGroup("/api").FileStrongApis();
 
 app.MapGrpcService<FileStorageServiceGRPC>();
 

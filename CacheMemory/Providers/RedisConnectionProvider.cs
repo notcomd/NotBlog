@@ -38,17 +38,40 @@ public sealed class RedisConnectionProvider : IRedisConnectionProvider
         return connection.GetConnection();
     }
 
+    /// <summary>
+    /// 异步获取默认 Redis 实例的连接多路复用器。
+    /// 连接建立与重试均在异步路径完成，不会阻塞线程。
+    /// </summary>
+    public async Task<IConnectionMultiplexer> GetConnectionAsync(CancellationToken cancellationToken = default)
+    {
+        return await GetConnectionAsync(null, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// 异步按实例名称获取 Redis 连接（支持多实例）。
+    /// 连接建立与重试均在异步路径完成，不会阻塞线程。
+    /// </summary>
+    /// <param name="instanceName">实例名称，为 null 或 "Default" 时返回默认实例</param>
+    /// <param name="cancellationToken">取消令牌</param>
+    public async Task<IConnectionMultiplexer> GetConnectionAsync(string? instanceName, CancellationToken cancellationToken = default)
+    {
+        EnsureNotDisposed();
+        instanceName = NormalizeInstanceName(instanceName);
+        var connection = GetOrCreateConnection(instanceName);
+        return await connection.ConnectAsync(cancellationToken).ConfigureAwait(false);
+    }
+
     
     public async Task<IDatabase> GetDatabaseAsync(int db = -1)
     {
-        var conn = GetConnection();
+        var conn = await GetConnectionAsync().ConfigureAwait(false);
         return db >= 0 ? conn.GetDatabase(db) : conn.GetDatabase();
     }
 
     
     public async Task<IDatabase> GetDatabaseAsync(string instanceName, int db = -1)
     {
-        var conn = GetConnection(instanceName);
+        var conn = await GetConnectionAsync(instanceName).ConfigureAwait(false);
         return db >= 0 ? conn.GetDatabase(db) : conn.GetDatabase();
     }
 

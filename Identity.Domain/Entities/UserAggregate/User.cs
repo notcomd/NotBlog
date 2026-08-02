@@ -1,4 +1,4 @@
-﻿using Identity.Domain.Events;
+using Identity.Domain.Events;
 using Notcomd.Token.JWT.Security;
 
 namespace Identity.Domain.Entities.UserAggregate;
@@ -36,18 +36,18 @@ public class User : Entity, IAggregateRoot
     /// <summary>
     /// 用户头像
     /// </summary>
-    public Uri ImageCover { get; private set; }
+    public Uri? ImageCover { get; private set; }
 
     /// <summary>
     /// 用户邮箱
     /// </summary>
     [EmailAddress(ErrorMessage = "Error Email Address!")]
-    public string UserEmail { get; private set; }
+    public string UserEmail { get; private set; } = null!;
 
     /// <summary>
     /// 用户密码哈希
     /// </summary>
-    public string PasswordHash { get; private set; }
+    public string PasswordHash { get; private set; } = null!;
 
     /// <summary>
     /// 用户手机号
@@ -62,12 +62,12 @@ public class User : Entity, IAggregateRoot
     /// <summary>
     /// 用户访问失败
     /// </summary>
-    public UserAccessFail UserAccessFail { get; private set; }
+    public UserAccessFail UserAccessFail { get; private set; } = null!;
 
     /// <summary>
     /// 用户安全
     /// </summary>
-    public UserSafety UserSafety { get; private set; }
+    public UserSafety UserSafety { get; private set; } = null!;
 
     /// <summary>
     /// 创建时间
@@ -160,7 +160,7 @@ public class User : Entity, IAggregateRoot
             ImageCover = imageCover,
             UserAccessFail = UserAccessFail.CreateUserAccessFail(userGuid) ??
                              throw new ArgumentNullException(nameof(UserAccessFail)),
-            UserSafety = UserSafety.CreateByUserSafety(userGuid, stamp, salt.ToString()) ??
+            UserSafety = UserSafety.CreateByUserSafety(userGuid, stamp, Convert.ToBase64String(salt)) ??
                              throw new ArgumentNullException(nameof(UserSafety)),
             CreateDatetime = DateTimeOffset.UtcNow
         };
@@ -196,7 +196,7 @@ public class User : Entity, IAggregateRoot
         var saltStr = Convert.ToBase64String(salt);
 
         UserSafety.ResetByPasswordSalt(saltStr);
-        PasswordHash = await HashH256Tool.CreateHash256Async(password, Convert.FromBase64String(UserSafety.PasswordSalt));
+        PasswordHash = await HashH256Tool.CreateHash256Async(password, Convert.FromBase64String(UserSafety.PasswordSalt!));
     }
 
     /// <summary>
@@ -241,25 +241,41 @@ public class User : Entity, IAggregateRoot
     /// </summary>
     /// <param name="password">用户输入的密码</param>
     /// <returns>如果密码正确则返回 true，否则返回 false</returns>
-    public async Task<bool> VerifyByPasswordAsync(string password)
+        public async Task<bool> VerifyByPasswordAsync(string password)
     {
         if (UserSafety is null)
             throw new InvalidOperationException("UserSafety is not loaded. Ensure the navigation property is included in the query.");
 
-        var isValid = await CheckByPasswordAsync(password);
+        var (isValid, needsRehash) = await CheckByPasswordAsync(password);
 
         if (isValid)
         {
+            // S-13：旧迭代（100K）哈希验证通过后，自动用新迭代（600K）重哈希升级
+            if (needsRehash)
+                await RehashPasswordAsync(password);
+
             UserAccessFail.RecordSuccess();
         }
-        else
-        {
-            var justLocked = UserAccessFail.RecordFailure();
-            if (justLocked)
-                AddDomainEvent(new AccountLockedEvent(UserGuid));
-        }
+        // S-13：失败计数不再在此递增（非原子读改写），由 UserService 通过仓储 ExecuteUpdate 原子递增
 
         return isValid;
+    }
+
+    /// <summary>
+    /// 使用新迭代（600K）重哈希密码并轮换盐（S-13 升级路径）
+    /// </summary>
+    public async ValueTask RehashPasswordAsync(string password)
+    {
+        if (UserSafety is null)
+            throw new InvalidOperationException("UserSafety is not loaded.");
+
+        var salt = await HashH256Tool.GenerateSValueTask()
+                   ?? throw new ArgumentNullException("salt is null");
+        var saltStr = Convert.ToBase64String(salt);
+
+        UserSafety.ResetByPasswordSalt(saltStr);
+        PasswordHash = await HashH256Tool.CreateHash256Async(
+            password, Convert.FromBase64String(UserSafety.PasswordSalt!));
     }
 
     public void ChangeByEmail(
@@ -299,12 +315,12 @@ public class User : Entity, IAggregateRoot
     /// </summary>
     /// <param name="password">用户输入的密码</param>
     /// <returns>如果密码正确则返回 true，否则返回 false</returns>
-    private async Task<bool> CheckByPasswordAsync(string password)
+        private async Task<(bool Valid, bool NeedsRehash)> CheckByPasswordAsync(string password)
     {
         var salt = UserSafety.PasswordSalt ??
                    throw new InvalidOperationException("Password salt is not set");
 
-        return await HashH256Tool.VerifyPasswordValueTask(
+        return await HashH256Tool.VerifyPasswordWithUpgradeAsync(
             password,
             PasswordHash,
             Convert.FromBase64String(salt));

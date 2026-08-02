@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,6 +36,9 @@ public class RabbitMqRequestBus : IRequestBus, IAsyncDisposable
         _options = options;
         _scopeFactory = scopeFactory!;
         _logger = logger;
+
+        // S-19：共享连接引用计数——RequestBus 持有一份引用
+        connection.AddRef();
     }
 
     public async ValueTask DisposeAsync()
@@ -46,7 +49,9 @@ public class RabbitMqRequestBus : IRequestBus, IAsyncDisposable
 
         if (_channel != null)
             await _channel.DisposeAsync().ConfigureAwait(false);
-        await _connection.DisposeAsync().ConfigureAwait(false);
+
+        // S-19：引用计数释放——仅当无其他使用方时才真正断开共享连接
+        _connection.ReleaseRef();
     }
 
     public async Task<TResponse> SendAsync<TRequest, TResponse>(TRequest request,
@@ -214,7 +219,7 @@ public class RabbitMqRequestBus : IRequestBus, IAsyncDisposable
                 Error = "请求处理失败"
             }, jsonOptions);
 
-        await _channel!.BasicPublishAsync("", requestProps.ReplyTo, false, replyProps, body)
+        await _channel!.BasicPublishAsync("", requestProps.ReplyTo ?? string.Empty, false, replyProps, body)
             .ConfigureAwait(false);
     }
 
@@ -223,7 +228,7 @@ public class RabbitMqRequestBus : IRequestBus, IAsyncDisposable
         var correlationId = args.BasicProperties.CorrelationId;
         var body = Encoding.UTF8.GetString(args.Body.Span);
 
-        if (_pendingRequests.TryRemove(correlationId, out var tcs))
+        if (_pendingRequests.TryRemove(correlationId ?? string.Empty, out var tcs))
         {
             tcs.SetResult(body);
         }

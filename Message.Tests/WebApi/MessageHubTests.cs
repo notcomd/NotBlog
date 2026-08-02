@@ -12,6 +12,8 @@ using Message.Web.API.Services;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Message.Tests.TestHelpers;
+using StackExchange.Redis;
 using System.Security.Claims;
 using DomainMessage = Message.Domain.Entities.Message;
 
@@ -47,7 +49,9 @@ public class MessageHubTests
         await _harness.Hub.OnConnectedAsync();
 
         _harness.ConnectionManager.Verify(m => m.AddConnectionAsync(UserId, "conn-test"), Times.Once);
-        _harness.ConnectionManager.Verify(m => m.SetUserOnlineAsync(UserId), Times.Once);
+        // Q-05：在线状态经 UserStatusCacheService 写入 Redis（message:online:users 集合）
+        _harness.UserStatusDb.Verify(d => d.SetAddAsync("message:online:users", UserId.ToString(),
+            It.IsAny<CommandFlags>()), Times.Once);
     }
 
     [Test]
@@ -83,7 +87,9 @@ public class MessageHubTests
         await _harness.Hub.OnDisconnectedAsync(null);
 
         _harness.ConnectionManager.Verify(m => m.RemoveConnectionAsync(UserId, "conn-test"), Times.Once);
-        _harness.ConnectionManager.Verify(m => m.SetUserOfflineAsync(UserId), Times.Once);
+        // Q-05：离线状态经 UserStatusCacheService 写入 Redis（从 message:online:users 集合移除）
+        _harness.UserStatusDb.Verify(d => d.SetRemoveAsync("message:online:users", UserId.ToString(),
+            It.IsAny<CommandFlags>()), Times.Once);
     }
 
     // ─────────────────────────── 会话消息 ───────────────────────────
@@ -182,7 +188,8 @@ public class MessageHubTests
     [Test]
     public async Task RecallMessage_应通知会话内所有参与者()
     {
-        var message = DomainMessage.CreateTextMessage(SessionId, OtherUserId, "hi");
+        // 修复 S-05：仅消息发送者可撤回，故消息必须由当前用户（UserId）发送
+        var message = DomainMessage.CreateTextMessage(SessionId, UserId, "hi");
         _harness.MessageRepository.Setup(m => m.GetByIdAsync(message.MessageId)).ReturnsAsync(message);
         _harness.SessionRepository.Setup(m => m.GetByIdAsync(SessionId))
             .ReturnsAsync(ChatSession.CreatePrivateSession(UserId, OtherUserId));
@@ -352,6 +359,7 @@ public class MessageHubTests
         public Mock<IMessageClient> DeliveryProxy { get; }
         public Mock<IMessageClient> GroupProxy { get; }
         public Mock<IMessageClient> CallerProxy { get; }
+        public Mock<IDatabase> UserStatusDb { get; }
         public Mock<HubCallerContext> Context { get; }
         public Dictionary<object, object?> Items { get; } = new();
         public MessageHub Hub { get; }
@@ -361,6 +369,7 @@ public class MessageHubTests
             DeliveryProxy = CreateProxy();
             GroupProxy = CreateProxy();
             CallerProxy = CreateProxy();
+            UserStatusDb = new Mock<IDatabase>();
 
             var clients = new Mock<IHubCallerClients<IMessageClient>>();
             clients.Setup(c => c.Client(It.IsAny<string>())).Returns(DeliveryProxy.Object);
@@ -433,7 +442,11 @@ public class MessageHubTests
                 deliveryService,
                 FileStorageGrpc.Object,
                 CurrentUser.Object,
-                new Mock<ILogger<MessageHub>>().Object)
+                new Mock<ILogger<MessageHub>>().Object,
+                CacheServicesTestFactory.CreateUserStatusCache(UserStatusDb),
+                CacheServicesTestFactory.CreateUnreadCountCache(),
+                CacheServicesTestFactory.CreateSessionCache(),
+                CacheServicesTestFactory.CreateRedisCache())
             {
                 Context = Context.Object,
                 Clients = clients.Object,

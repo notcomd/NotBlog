@@ -423,6 +423,9 @@ public class UserService
 
 ## 5. 分布式锁
 
+> 锁支持**可重入**：同一异步执行流内可对同一把锁重复获取（内部维护重入计数，不会重复执行 SET NX）；
+> 释放时仅递减计数，计数归零才会真正删除 Redis 中的锁键。跨进程/实例之间仍然互斥。
+
 ```csharp
 public class OrderService
 {

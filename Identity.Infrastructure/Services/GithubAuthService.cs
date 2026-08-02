@@ -105,7 +105,10 @@ public class GithubAuthService(
 
     public Task<bool> BindLinkUserAsync()
     {
-        throw new NotImplementedException();
+        // F-07：显式降级——GitHub 账号绑定已由 OAuthService.LinkExternalLoginByCodeAsync / UnlinkExternalLoginFromUserAsync 提供真实链路，
+        // 此遗留接口暂不接入额外绑定逻辑，返回 false 并保留 TODO 以对齐接口契约。
+        // TODO(F-07): 若业务需要经此接口绑定，应委托 OAuthService 的绑定链路。
+        return Task.FromResult(false);
     }
 
     /// <summary>

@@ -41,7 +41,15 @@ public class UpdateDraftCommandHandler(
             if (tweet.AuthorGuid != command.UserId)
                 throw new UnauthorizedAccessException("无权修改此推文");
 
-            tweet.UpdateContent(command.Content);
+            // S-17：内容净化 + 长度校验（上限 500 字符）+ 敏感词拒绝（与发布策略一致）
+            var safeContent = SafeContentSanitizer.Sanitize(command.Content);
+            if (safeContent.Length > 500)
+                throw new ArgumentException("推文内容不能超过500个字符");
+            var (isSensitive, matchedWord) = SensitiveWordFilter.ContainsSensitive(safeContent);
+            if (isSensitive)
+                throw new InvalidOperationException($"推文内容包含敏感内容（{matchedWord}），已拒绝更新");
+
+            tweet.UpdateContent(safeContent);
             await tweetRepository.UpdateAsync(tweet);
             await tweetRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
 

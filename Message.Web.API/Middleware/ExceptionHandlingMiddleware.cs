@@ -22,6 +22,12 @@ public class ExceptionHandlingMiddleware
         }
         catch (Exception ex)
         {
+            // 响应已开始写出时无法替换响应体，只能重新抛出交由宿主处理
+            if (context.Response.HasStarted)
+            {
+                throw;
+            }
+
             await HandleExceptionAsync(context, ex);
         }
     }

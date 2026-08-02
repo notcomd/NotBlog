@@ -11,7 +11,7 @@ public class CreateRoleGroupCommandHandler(
         var roleGroup = new RoleGroup(command.RoleGroupName, command.RoleGroupCode);
 
         await roleGroupRepository.AddOneByRoleGroupAsync(roleGroup);
-        await roleGroupRepository.UnitOfWork.SavaEntitiesAsync(ct);
+        await roleGroupRepository.UnitOfWork.SaveEntitiesAsync(ct);
 
         logger.LogInformation("[CreateRoleGroup] 创建成功: Name={Name}, Code={Code}",
             roleGroup.RoleGroupName, roleGroup.RoleGroupCode);
@@ -40,7 +40,7 @@ public class UpdateRoleGroupCommandHandler(
             roleGroup.UpdateRoleGroupInfo(command.RoleGroupName, command.RoleGroupCode ?? roleGroup.RoleGroupCode);
 
         await roleGroupRepository.UpdateOneByRoleGroupAsync(roleGroup);
-        await roleGroupRepository.UnitOfWork.SavaEntitiesAsync(ct);
+        await roleGroupRepository.UnitOfWork.SaveEntitiesAsync(ct);
 
         logger.LogInformation("[UpdateRoleGroup] 更新成功: Id={Id}", command.RoleGroupGuid);
         return true;
@@ -61,7 +61,7 @@ public class DeleteRoleGroupCommandHandler(
 
         roleGroup.SoftDelete(true);
         await roleGroupRepository.UpdateOneByRoleGroupAsync(roleGroup);
-        await roleGroupRepository.UnitOfWork.SavaEntitiesAsync(ct);
+        await roleGroupRepository.UnitOfWork.SaveEntitiesAsync(ct);
 
         logger.LogInformation("[DeleteRoleGroup] 软删除成功: Id={Id}", command.RoleGroupGuid);
         return true;

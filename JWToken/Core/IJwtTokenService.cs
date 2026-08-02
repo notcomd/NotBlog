@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 
@@ -52,4 +52,9 @@ public interface IJwtTokenService
     /// 吊销 Token（加入黑名单）
     /// </summary>
     Task RevokeTokenAsync(string token, DateTimeOffset? expiresAt = null);
+
+    /// <summary>
+    /// 检查 token 是否已进入黑名单（被吊销或已使用的 RefreshToken）
+    /// </summary>
+    bool IsRevoked(string token);
 }

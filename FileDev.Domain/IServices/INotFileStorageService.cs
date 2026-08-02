@@ -21,6 +21,16 @@ public interface INotFileStorageService
     Task<(byte[] Content, NotFileStorageResponse Response)> GetContentAsync(string fileRelativePath);
 
     /// <summary>
+    /// 流式获取文件内容（避免大文件整读入内存，S-09）
+    /// </summary>
+    Task<(Stream? Content, NotFileStorageResponse Response)> GetContentStreamAsync(string fileRelativePath);
+
+    /// <summary>
+    /// 清理某上传任务的临时分片文件（S-09）
+    /// </summary>
+    Task CleanupChunksAsync(string fileKey);
+
+    /// <summary>
     /// 检查文件是否存在
     /// </summary>
     Task<bool> ExistsAsync(string fileRelativePath);

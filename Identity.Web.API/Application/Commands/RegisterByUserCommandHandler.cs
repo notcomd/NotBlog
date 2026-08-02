@@ -49,7 +49,7 @@ public class RegisterByUserCommandHandler(
             null,
             null);
         await userRepository.AddOneByUserAsync(user);
-        await userRepository.UnitOfWork.SavaChangesAsync(cancellationToken);
+        await userRepository.UnitOfWork.SaveChangesAsync(cancellationToken);
         await eventBus.PublishAsync(new RegisterByUserIntegrationEvent(user.UserGuid));
         logger.LogInformation("[RegisterByUserCommandHandler] 注册用户成功: UserId={UserId}",
             user.UserGuid);

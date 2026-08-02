@@ -5,6 +5,7 @@ using FileDev.Domain.Entities;
 public class StreamUploadCommandHandler(
     INotFileStorageService storageService,
     INotMediator mediator,
+    FileDev.Domain.IRepository.INotFileRepository notFileRepository,
     IOptionsSnapshot<NotFileStorageOptions> configOptions,
     ILogger<StreamUploadCommandHandler> logger)
     : NotMediator.IRequestHandler<StreamUploadCommand, NotFile>
@@ -40,6 +41,11 @@ public class StreamUploadCommandHandler(
 
         if (request.FileSize > options.MaxFileSize)
             throw new ArgumentException($"文件大小超过限制 {options.MaxFileSize / 1024 / 1024}MB");
+
+        // S-09：写入前配额检查
+        var used = await notFileRepository.GetTotalFileSizeByUserIdAsync(request.UserId);
+        if (used + request.FileSize > options.UserStorageQuota)
+            throw new InvalidOperationException("用户存储配额不足");
 
         // 读取流内容
         using var ms = new MemoryStream();

@@ -28,6 +28,5 @@ global using System.ComponentModel.DataAnnotations;
 global using System.Security.Claims;
 global using System.Text.Json;
 global using Identity.Domain.IService;
-global using Microsoft.Extensions.Caching.Distributed;
 global using Microsoft.Extensions.Options;
 global using Notcomd.Token.JWT.Core;

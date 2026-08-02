@@ -43,9 +43,8 @@ app.UseCors();
 app.UseHttpsRedirection();
 
 app.UseExceptionHandling();
-app.UseUserContext();
 app.UseAuthentication();
-
+app.UseUserContext();
 app.UseAuthorization();
 
 app.MapAuditApi();

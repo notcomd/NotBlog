@@ -21,18 +21,21 @@ public static class PermissionApi
 
         // ── 权限 CRUD ──
         route.MapPost(string.Empty, CreatePermissionAsync)
+            .RequireAuthorization("AdminOnly")
             .WithHttpLogging(HttpLoggingFields.All)
             .WithDescription("创建权限")
             .Produces<CreatePermissionResult>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest);
 
         route.MapPut("/{permissionId:guid}", UpdatePermissionAsync)
+            .RequireAuthorization("AdminOnly")
             .WithHttpLogging(HttpLoggingFields.All)
             .WithDescription("更新权限")
             .Produces<bool>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest);
 
         route.MapDelete("/{permissionId:guid}", DeletePermissionAsync)
+            .RequireAuthorization("AdminOnly")
             .WithHttpLogging(HttpLoggingFields.All)
             .WithDescription("删除权限（软删除）")
             .Produces<bool>(StatusCodes.Status200OK)
@@ -48,12 +51,13 @@ public static class PermissionApi
     /// </summary>
     private static async Task<IResult> CreatePermissionAsync(
         [FromServices] INotMediator mediator,
-        [FromBody] CreatePermissionCommand command)
+        [FromBody] CreatePermissionCommand command,
+        HttpContext httpContext)
     {
         try
         {
             var identityCommand = new IdentifiedCommand<CreatePermissionCommand, CreatePermissionResult>(
-                Guid.CreateVersion7(), command);
+                IdentityApis.GetIdempotencyKey(httpContext), command);
             var result = await mediator.SendAsync(identityCommand);
 
             return string.IsNullOrEmpty(result.PermissionCode)
@@ -72,13 +76,14 @@ public static class PermissionApi
     private static async Task<IResult> UpdatePermissionAsync(
         [FromServices] INotMediator mediator,
         [FromRoute] Guid permissionId,
-        [FromBody] UpdatePermissionCommand update)
+        [FromBody] UpdatePermissionCommand update,
+        HttpContext httpContext)
     {
         try
         {
             var command = update with { PermissionId = permissionId };
             var identityCommand = new IdentifiedCommand<UpdatePermissionCommand, bool>(
-                Guid.CreateVersion7(), command);
+                IdentityApis.GetIdempotencyKey(httpContext), command);
             var result = await mediator.SendAsync(identityCommand);
             return Results.Ok(new { success = result });
         }
@@ -93,13 +98,14 @@ public static class PermissionApi
     /// </summary>
     private static async Task<IResult> DeletePermissionAsync(
         [FromServices] INotMediator mediator,
-        [FromRoute] Guid permissionId)
+        [FromRoute] Guid permissionId,
+        HttpContext httpContext)
     {
         try
         {
             var command = new DeletePermissionCommand(permissionId);
             var identityCommand = new IdentifiedCommand<DeletePermissionCommand, bool>(
-                Guid.CreateVersion7(), command);
+                IdentityApis.GetIdempotencyKey(httpContext), command);
             var result = await mediator.SendAsync(identityCommand);
             return Results.Ok(new { success = result });
         }

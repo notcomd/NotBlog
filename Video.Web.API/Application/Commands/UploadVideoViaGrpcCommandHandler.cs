@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using NotMediator;
 using Video.Domain.Entities;
 using Video.Domain.IRepository;
+using Video.Domain.Cache;
 
 namespace Video.Web.API.Application.Commands;
 
@@ -13,6 +14,7 @@ namespace Video.Web.API.Application.Commands;
 /// </summary>
 public class UploadVideoViaGrpcCommandHandler(
     IVideoRepository videoRepository,
+    IVideoCacheService cacheService,
     ILogger<UploadVideoViaGrpcCommandHandler> logger,
     IOptionsSnapshot<GrpcClientOptions> grpcOptions)
     : IRequestHandler<UploadVideoViaGrpcCommand, UploadVideoViaGrpcResult>
@@ -89,13 +91,16 @@ public class UploadVideoViaGrpcCommandHandler(
             video.VideoControlChangeByVideoController(command.VideoControl);
 
             await videoRepository.AddByVideoAsync(video);
-            await videoRepository.UnitOfWork.SavaEntitiesAsync(cancellationToken);
+            await videoRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
 
             // 4. 触发视频发布领域事件
             video.AddDomainEvent(new DomainEvents.VideoPublishedDomainEvent(
                 video.VideoGuid, command.VideoName, coverUri.ToString()));
 
-            await videoRepository.UnitOfWork.SavaEntitiesAsync(cancellationToken);
+            await videoRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
+
+            // P-04：新增视频后失效视频列表缓存，确保新视频立即可见
+            await cacheService.InvalidateVideoListsAsync(cancellationToken);
 
             logger.LogInformation("Video entity created: {VideoGuid} {VideoName}",
                 video.VideoGuid, command.VideoName);

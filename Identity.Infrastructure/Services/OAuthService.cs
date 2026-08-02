@@ -1,6 +1,7 @@
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Text;
 using System.Web;
+using CacheMemory.Core;
 using Identity.Domain.Dto.OAuth;
 using Identity.Domain.Options;
 using Notcomd.Token.JWT.Security;
@@ -11,12 +12,18 @@ public class OAuthService(
     IHttpClientFactory httpClient,
     IUserRepository userRepository,
     IUserRoleRepository userRoleRepository,
+    IUserExternalLoginRepository userExternalLoginRepository,
+    IRedisCacheService redisCacheService,
     IJwtTokenService jwtTokenService,
     IOptionsSnapshot<OAuthOptions> oauthOptions,
     ILogger<OAuthService> logger,
     IOptionsSnapshot<JwtOptions> jwtOptions)
     : IOAuthService
 {
+    private const string OAuthStateKeyPrefix = "oauth:state";
+    private static readonly TimeSpan OAuthStateTtl = TimeSpan.FromMinutes(10);
+    private const int OAuthStateLength = 32;
+
     private readonly JwtOptions _jwtOptions = jwtOptions.Value;
     private readonly OAuthOptions _oauthOptions = oauthOptions.Value;
 
@@ -26,10 +33,18 @@ public class OAuthService(
     /// <param name="provider">提供商（google / github / microsoft）</param>
     /// <param name="redirectUri">回调地址</param>
     /// <returns>授权 URL</returns>
-    /// <exception cref="ArgumentException">不支持的 provider 时抛出</exception>
+    /// <exception cref="ArgumentException">不支持的 provider 或 redirect_uri 不在白名单时抛出</exception>
     public async Task<string> GenerateAuthorizationUrlAsync(string provider, string redirectUri)
     {
-        var state = await JwtRandom.GenerateSecurityStamp();
+        ValidateRedirectUri(redirectUri);
+
+        // S-11：state 防 CSRF —— 生成随机 state 并存入 Redis（TTL 10 分钟），回调时校验并删除
+        var state = JwtRandom.GenerateRandomString(OAuthStateLength);
+        await redisCacheService.StringSetAsync(
+            $"{OAuthStateKeyPrefix}:{state}",
+            provider.ToLowerInvariant(),
+            OAuthStateTtl);
+
         var normalizedProvider = provider.ToLowerInvariant();
 
         return normalizedProvider switch
@@ -43,53 +58,82 @@ public class OAuthService(
 
     /// <summary>
     /// 通过外部登录信息查找已有用户。
-    /// 先将 providerUserId 解析为 Guid 后通过仓库查询。
+    /// 按 provider + providerUserId（字符串）查询外部登录绑定，再映射到本地用户。
     /// </summary>
     /// <param name="provider">提供商</param>
-    /// <param name="providerUserId">提供商侧用户 ID</param>
+    /// <param name="providerUserId">提供商侧用户 ID（可为数字字符串，如 GitHub id）</param>
     /// <returns>用户实体，未找到返回 null</returns>
     public async Task<User?> GetExistingUserByExternalLoginAsync(string provider, string providerUserId)
     {
-        if (!Guid.TryParse(providerUserId, out var userGuid))
+        if (string.IsNullOrWhiteSpace(provider) || string.IsNullOrWhiteSpace(providerUserId))
             return null;
 
-        return await userRepository.FindOneByUserAsync(userGuid);
+        var providerType = ParseProvider(provider);
+        var externalLogin = await userExternalLoginRepository.FindByProviderAsync(providerType, providerUserId);
+        if (externalLogin is null || externalLogin.UserId == Guid.Empty)
+            return null;
+
+        return await userRepository.FindOneByUserAsync(externalLogin.UserId);
     }
 
     /// <summary>
     /// 根据外部用户信息创建或更新用户。
-    /// 若用户已存在则直接返回，否则创建新用户并写入仓库。
+    /// 优先按外部登录绑定（provider + providerUserId）查找，其次按邮箱匹配，
+    /// 均未命中时创建新用户（本地 Guid 与第三方 ID 无关），并落库 + 写入外部登录绑定。
     /// </summary>
     /// <param name="provider">提供商</param>
     /// <param name="externalUserInfo">外部用户信息</param>
     /// <returns>用户实体</returns>
-    /// <exception cref="FormatException">providerUserId 不是合法 Guid 时抛出</exception>
     public async Task<User> CreateOrUpdateUserFromExternalLoginAsync(string provider, ExternalUserInfo externalUserInfo)
     {
-        if (!Guid.TryParse(externalUserInfo.ProviderUserId, out var userGuid))
-            throw new FormatException($"ProviderUserId '{externalUserInfo.ProviderUserId}' 不是有效的 Guid 格式。");
+        var providerType = ParseProvider(provider);
+        if (string.IsNullOrWhiteSpace(externalUserInfo.ProviderUserId))
+            throw new ArgumentException("外部用户 ID 不能为空", nameof(externalUserInfo));
 
-        var userData = await userRepository.FindOneByUserAsync(userGuid);
-        if (userData is not null)
-            return userData;
+        // 1. 按 provider + providerUserId（字符串）查外部登录绑定，避免把数字 ID 当 Guid 解析
+        var existingLogin = await userExternalLoginRepository.FindByProviderAsync(providerType, externalUserInfo.ProviderUserId);
+        if (existingLogin is not null && existingLogin.UserId != Guid.Empty)
+        {
+            var linked = await userRepository.FindOneByUserAsync(existingLogin.UserId);
+            if (linked is not null)
+                return linked;
+        }
 
-        var userRole = await userRoleRepository.FindByUserRoleAsync("USER")
-                       ?? throw new InvalidOperationException("默认角色 'USER' 未在数据库中配置。");
+        // 2. 按邮箱匹配已有用户
+        if (!string.IsNullOrWhiteSpace(externalUserInfo.Email))
+        {
+            var byEmail = await userRepository.FindOneByUserAsync(externalUserInfo.Email);
+            if (byEmail is not null)
+            {
+                await EnsureExternalLoginAsync(providerType, externalUserInfo, byEmail);
+                return byEmail;
+            }
+        }
 
-        userData = await User.CreateByEmailUser(
+        // 3. 创建新用户（本地 Guid 由系统生成，与第三方 ID 无关）
+        var userRole = await userRoleRepository.FindByUserRoleAsync("User")
+                       ?? throw new InvalidOperationException("默认角色 'User' 未在数据库中配置。");
+
+        var newUser = await User.CreateByEmailUser(
             userRoleGuid: userRole.RoleGuid,
             userEmail: externalUserInfo.Email,
             passwordHash: Guid.NewGuid().ToString(),
             imageCover: externalUserInfo.AvatarUrl,
-            authorGuids: [userGuid]);
+            authorGuids: null);
 
-        await userRepository.AddOneByUserAsync(userData);
-        return userData;
+        // S-11：添加后必须落库，否则用户不持久化
+        await userRepository.AddOneByUserAsync(newUser);
+        await userRepository.UnitOfWork.SaveChangesAsync();
+
+        // 4. 写入外部登录绑定并保存
+        await EnsureExternalLoginAsync(providerType, externalUserInfo, newUser);
+
+        return newUser;
     }
 
     /// <summary>
     /// 将外部登录关联到指定用户。
-    /// 当前为占位实现，仅校验用户是否存在。
+    /// 写入 UserExternalLogin 绑定记录（Provider + ProviderKey 唯一）。
     /// </summary>
     /// <param name="userId">用户 ID</param>
     /// <param name="provider">提供商</param>
@@ -102,35 +146,91 @@ public class OAuthService(
         var userData = await userRepository.FindOneByUserAsync(userId)
                        ?? throw new ArgumentException($"User {userId} not found.", nameof(userId));
 
-        // TODO: 实现外部登录关联逻辑（将 provider + providerUserId 写入 ExternalLogins 表）
-        logger.LogInformation("External login placeholder: {Provider} for user {UserId}", provider, userId);
+        await EnsureExternalLoginAsync(ParseProvider(provider), new ExternalUserInfo
+        {
+            ProviderUserId = providerUserId,
+            Email = userData.UserEmail,
+            UserName = userData.UserName ?? userData.UserEmail
+        }, userData);
+
+        logger.LogInformation("External login linked: {Provider} for user {UserId}", provider, userId);
     }
 
     /// <summary>
-    /// 解除外部登录与指定用户的关联。
-    /// 当前为占位实现。
+    /// 解除外部登录与指定用户的关联（F-07：真实删除绑定记录）。
     /// </summary>
     /// <param name="userId">用户 ID</param>
     /// <param name="provider">提供商</param>
     /// <param name="providerUserId">提供商侧用户 ID</param>
-    /// <returns>成功返回 true</returns>
-    public Task UnlinkExternalLoginFromUserAsync(Guid userId, string provider, string providerUserId)
+    /// <exception cref="InvalidOperationException">未找到该用户的绑定记录时抛出</exception>
+    public async Task UnlinkExternalLoginFromUserAsync(Guid userId, string provider, string providerUserId)
     {
-        // TODO: 实现解除外部登录关联逻辑
-        logger.LogInformation("External login unlink placeholder: {Provider} for user {UserId}", provider, userId);
-        return Task.CompletedTask;
+        if (userId == Guid.Empty)
+            throw new ArgumentException("UserId 不能为空", nameof(userId));
+
+        var providerType = ParseProvider(provider);
+        var externalLogin = await userExternalLoginRepository.FindByProviderAsync(providerType, providerUserId);
+        if (externalLogin is null || externalLogin.UserId != userId)
+            throw new InvalidOperationException("未找到该用户对应的外部登录绑定，无法解绑");
+
+        await userExternalLoginRepository.DeleteAsync(externalLogin);
+        await userExternalLoginRepository.UnitOfWork.SaveChangesAsync();
+
+        logger.LogInformation("External login unlinked: {Provider} for user {UserId}", provider, userId);
     }
 
     /// <summary>
-    /// 处理 OAuth 回调：获取外部用户信息、查找或创建本地用户、生成 JWT Token。
+    /// 通过 OAuth 授权码将外部账号绑定到当前用户（F-07）。
+    /// </summary>
+    /// <param name="userId">本地用户 ID（从已认证的 NameIdentifier Claim 获取）</param>
+    /// <param name="provider">提供商（google / github / microsoft）</param>
+    /// <param name="code">OAuth 授权码</param>
+    /// <param name="redirectUri">回调地址（须在白名单内）</param>
+    public async Task LinkExternalLoginByCodeAsync(Guid userId, string provider, string code, string redirectUri)
+    {
+        if (userId == Guid.Empty)
+            throw new ArgumentException("UserId 不能为空", nameof(userId));
+
+        var externalUserInfo = await GetExternalUserInfoAsync(provider.ToLowerInvariant(), code, redirectUri);
+        await LinkExternalLoginToUserAsync(
+            userId, provider, externalUserInfo.ProviderUserId, externalUserInfo.UserName ?? provider);
+    }
+
+    /// <summary>
+    /// 获取用户已绑定的外部登录账号列表（F-07）。
+    /// </summary>
+    public async Task<IReadOnlyList<UserExternalLogin>> GetLinkedAccountsAsync(Guid userId)
+    {
+        return await userExternalLoginRepository.FindByUserIdAsync(userId);
+    }
+
+    /// <summary>
+    /// 处理 OAuth 回调：校验 state 与 redirect_uri、获取外部用户信息、查找或创建本地用户、生成 JWT Token。
     /// </summary>
     /// <param name="provider">提供商</param>
     /// <param name="code">授权码</param>
     /// <param name="redirectUri">回调地址</param>
+    /// <param name="state">OAuth state（CSRF 校验，为空或与 Redis 中不匹配则拒绝）</param>
     /// <returns>登录响应</returns>
-    public async Task<OAuthLoginResponse> HandleCallbackAsync(string provider, string code, string redirectUri)
+    public async Task<OAuthLoginResponse> HandleCallbackAsync(string provider, string code, string redirectUri,
+        string? state = null)
     {
         var normalizedProvider = provider.ToLowerInvariant();
+
+        // S-11：state 防 CSRF —— 校验存在且匹配，校验通过后立即删除（单次使用）
+        if (string.IsNullOrWhiteSpace(state))
+            throw new InvalidOperationException("缺少 OAuth state 参数，请求已被拒绝");
+
+        var stateKey = $"{OAuthStateKeyPrefix}:{state}";
+        var storedProvider = await redisCacheService.StringGetAsync(stateKey);
+        if (storedProvider is null || !string.Equals(storedProvider, normalizedProvider, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("OAuth state 校验失败，请求已被拒绝");
+
+        await redisCacheService.KeyDeleteAsync(stateKey);
+
+        // S-11：回调 redirect_uri 白名单校验
+        ValidateRedirectUri(redirectUri);
+
         var externalUserInfo = await GetExternalUserInfoAsync(normalizedProvider, code, redirectUri);
 
         var existingUser =
@@ -153,7 +253,8 @@ public class OAuthService(
 
         var claims = new List<Claim>
         {
-            new(ClaimTypes.Name, user.UserName),
+            new(ClaimTypes.NameIdentifier, user.UserGuid.ToString()),
+            new(ClaimTypes.Name, user.UserName ?? string.Empty),
             new(ClaimTypes.Email, user.UserEmail),
             new(ClaimTypes.Role, roleName),
             new("UserGuid", user.UserGuid.ToString())
@@ -164,7 +265,7 @@ public class OAuthService(
         return new OAuthLoginResponse(
             token,
             string.Empty,
-            DateTimeOffset.FromUnixTimeSeconds(_jwtOptions.ExpireSeconds),
+            DateTimeOffset.UtcNow.AddSeconds(_jwtOptions.ExpireSeconds),
             new UserInfo(
                 user.UserGuid,
                 user.UserEmail,
@@ -186,7 +287,7 @@ public class OAuthService(
                $"&redirect_uri={Uri.EscapeDataString(redirectUri)}" +
                "&response_type=code" +
                "&scope=email%20profile" +
-               $"&state={state}";
+               $"&state={Uri.EscapeDataString(state)}";
     }
 
     private string GenerateGitHubAuthUrl(string redirectUri, string state)
@@ -201,7 +302,7 @@ public class OAuthService(
                $"&redirect_uri={Uri.EscapeDataString(redirectUri)}" +
                "&response_type=code" +
                "&scope=openid%20profile%20email" +
-               $"&state={state}";
+               $"&state={Uri.EscapeDataString(state)}";
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -440,5 +541,67 @@ public class OAuthService(
             return Array.Empty<RoleAuthority>();
 
         return roles.Select(r => r.RoleAuthority).ToList();
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  Private helpers — S-11 安全校验 / 外部登录绑定
+    // ═══════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// 将 provider 字符串映射为 <see cref="LoginProviderType"/>。
+    /// </summary>
+    private static LoginProviderType ParseProvider(string provider) => provider.ToLowerInvariant() switch
+    {
+        "google" => LoginProviderType.Google,
+        "github" => LoginProviderType.GitHub,
+        "microsoft" => LoginProviderType.Microsoft,
+        "wechat" => LoginProviderType.WeChat,
+        "qq" => LoginProviderType.QQ,
+        _ => throw new ArgumentException($"Unsupported provider: {provider}")
+    };
+
+    /// <summary>
+    /// 校验 redirect_uri 是否在白名单内（S-11）。
+    /// 白名单为空时不校验（向后兼容）；否则要求精确匹配或以 "*" 结尾的前缀匹配。
+    /// </summary>
+    private void ValidateRedirectUri(string redirectUri)
+    {
+        var whitelist = _oauthOptions.AllowedRedirectUris;
+        if (whitelist is null || whitelist.Length == 0)
+            return;
+
+        if (string.IsNullOrWhiteSpace(redirectUri))
+            throw new ArgumentException("redirect_uri 不能为空");
+
+        var allowed = whitelist.Any(entry =>
+        {
+            var item = entry.Trim();
+            if (item.EndsWith('*'))
+                return redirectUri.StartsWith(item[..^1], StringComparison.OrdinalIgnoreCase);
+
+            return string.Equals(redirectUri, item, StringComparison.OrdinalIgnoreCase);
+        });
+
+        if (!allowed)
+            throw new ArgumentException($"redirect_uri '{redirectUri}' 不在允许的白名单中");
+    }
+
+    /// <summary>
+    /// 确保 provider + providerUserId 的外部登录绑定存在（幂等）。
+    /// </summary>
+    private async Task EnsureExternalLoginAsync(LoginProviderType provider, ExternalUserInfo info, User user)
+    {
+        if (string.IsNullOrWhiteSpace(info.ProviderUserId))
+            return;
+
+        var existing = await userExternalLoginRepository.FindByProviderAsync(provider, info.ProviderUserId);
+        if (existing is not null)
+            return;
+
+        var login = UserExternalLogin.Create(provider, info.ProviderUserId, info.UserName ?? info.Email);
+        login.LinkUser(user.UserGuid);
+
+        await userExternalLoginRepository.AddAsync(login);
+        await userExternalLoginRepository.UnitOfWork.SaveEntitiesAsync();
     }
 }

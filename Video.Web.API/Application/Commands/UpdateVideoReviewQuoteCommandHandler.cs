@@ -15,19 +15,9 @@ public class UpdateVideoReviewQuoteCommandHandler(
         logger.LogInformation("Updating review quote {Field} ({Dir}) for review {ReviewGuid}",
             request.Field, request.IsIncrement ? "+" : "-", request.ReviewGuid);
 
-        // 1. 获取视频聚合（优先缓存，写操作无需回填 —— 后续会清缓存）
-        var video = await cacheService.GetVideoMetaAsync(request.VideoGuid, cancellationToken);
-        if (video is null)
-        {
-            video = await videoRepository.FindByVideoAsync(request.VideoGuid);
-            if (video is null)
-            {
-                logger.LogError("Video not found: {VideoGuid}", request.VideoGuid);
-                return false;
-            }
-        }
+        // 写路径必须从仓储加载实体，确保被 DbContext 跟踪后修改可落库
+        var video = await videoRepository.FindByVideoWithDetailsAsync(request.VideoGuid);
 
-        
         var review = video.VideoReviews?.FirstOrDefault(r => r.VideoReviewGuid == request.ReviewGuid);
         if (review is null)
         {
@@ -40,10 +30,14 @@ public class UpdateVideoReviewQuoteCommandHandler(
         ApplyQuoteChange(quote, request.Field, request.IsIncrement);
 
         
-        await videoRepository.UnitOfWork.SavaEntitiesAsync(cancellationToken);
+        await videoRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
 
         
         await cacheService.RemoveVideoMetaAsync(request.VideoGuid, cancellationToken);
+        await cacheService.InvalidateVideoReviewCachesAsync(request.VideoGuid, ct: cancellationToken);
+        await cacheService.RemoveVideoReviewRepliesAsync(request.ReviewGuid, cancellationToken);
+        if (review.RootReview is { } rootReviewId && rootReviewId != Guid.Empty)
+            await cacheService.RemoveVideoReviewRepliesAsync(rootReviewId, cancellationToken);
 
         logger.LogInformation("Review quote updated: {ReviewGuid} {Field} {Dir}",
             request.ReviewGuid, request.Field, request.IsIncrement ? "incremented" : "decremented");

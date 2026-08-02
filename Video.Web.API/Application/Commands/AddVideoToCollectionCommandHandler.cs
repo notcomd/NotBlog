@@ -1,5 +1,6 @@
 using NotMediator;
 using Video.Domain.Cache;
+using Video.Domain.Entities;
 using Video.Domain.IRepository;
 
 namespace Video.Web.API.Application.Commands;
@@ -8,18 +9,26 @@ namespace Video.Web.API.Application.Commands;
 /// 添加视频到收藏夹命令处理器。
 /// </summary>
 public class AddVideoToCollectionCommandHandler(
-    IVideoRepository videoRepository,
     IVideoCollectionRepository collectionRepository,
-    IVideoCacheService cacheService,
     ILogger<AddVideoToCollectionCommandHandler> logger)
     : IRequestHandler<AddVideoToCollectionCommand, CollectionOperationResult>
 {
     public async Task<CollectionOperationResult> Handler(AddVideoToCollectionCommand request,
         CancellationToken cancellationToken)
     {
-        var collection = await collectionRepository.FindByVideoCollectionAsync(request.CollectionGuid);
-        if (collection is null)
+        VideoCollection collection;
+        try
+        {
+            collection = await collectionRepository.FindByVideoCollectionAsync(request.CollectionGuid);
+        }
+        catch
+        {
             return new CollectionOperationResult(false, "Collection not found.");
+        }
+
+        // 归属校验（S-07）：仅收藏夹所属用户可向其收藏夹添加视频，禁止操作他人收藏夹
+        if (collection.AffiliatedUser is null || !collection.AffiliatedUser.Contains(request.UserGuid))
+            return new CollectionOperationResult(false, "无权操作该收藏夹");
 
         if (collection.VideoGuid.Contains(request.VideoGuid))
             return new CollectionOperationResult(true, "Video already in collection."); // 幂等
@@ -45,9 +54,19 @@ public class RemoveVideoFromCollectionCommandHandler(
     public async Task<CollectionOperationResult> Handler(RemoveVideoFromCollectionCommand request,
         CancellationToken cancellationToken)
     {
-        var collection = await collectionRepository.FindByVideoCollectionAsync(request.CollectionGuid);
-        if (collection is null)
+        VideoCollection collection;
+        try
+        {
+            collection = await collectionRepository.FindByVideoCollectionAsync(request.CollectionGuid);
+        }
+        catch
+        {
             return new CollectionOperationResult(false, "Collection not found.");
+        }
+
+        // 归属校验（S-07）：仅收藏夹所属用户可从收藏夹移除视频
+        if (collection.AffiliatedUser is null || !collection.AffiliatedUser.Contains(request.UserGuid))
+            return new CollectionOperationResult(false, "无权操作该收藏夹");
 
         if (!collection.VideoGuid.Contains(request.VideoGuid))
             return new CollectionOperationResult(true, "Video not in collection."); // 幂等

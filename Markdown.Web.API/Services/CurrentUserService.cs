@@ -13,10 +13,14 @@ public class CurrentUserService : ICurrentUserService
 
     public Guid GetUserId()
     {
+        // Identity 签发的 JWT 将用户 id 放入 ClaimTypes.NameIdentifier（序列化为 nameid），
+        // 同时兼容 sub / user_guid 等第三方或历史 claim 名
         var userIdClaim = _httpContextAccessor.HttpContext?.User?
-                              .FindFirst(ClaimTypes.Email)?.Value
+                              .FindFirst(ClaimTypes.NameIdentifier)?.Value
                           ?? _httpContextAccessor.HttpContext?.User?
-                              .FindFirst("sub")?.Value;
+                              .FindFirst("sub")?.Value
+                          ?? _httpContextAccessor.HttpContext?.User?
+                              .FindFirst("user_guid")?.Value;
 
         return Guid.TryParse(userIdClaim, out var userId)
             ? userId

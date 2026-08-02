@@ -17,14 +17,15 @@ public class NotFileStorageOptions
     /// <summary>默认编码</summary>
     public string DefaultEncoding { get; set; } = "utf-8";
 
-    /// <summary>允许的文件扩展名（全类型）</summary>
+    /// <summary>允许的文件扩展名（全类型）。
+    /// S-17：.html/.htm/.svg 可从浏览器直接渲染（存在 XSS 风险），已从白名单移除。</summary>
     public HashSet<string> AllowedExtensions { get; set; } =
     [
         // 图片
-        ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".svg", ".ico",
+        ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".ico",
         // 文档
         ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
-        ".txt", ".md", ".csv", ".json", ".xml", ".html", ".htm",
+        ".txt", ".md", ".csv", ".json", ".xml",
         // 音频
         ".mp3", ".wav", ".ogg", ".flac", ".aac", ".wma", ".m4a",
         // 视频

@@ -14,7 +14,7 @@ public class TweetReport : Entity, IAggregateRoot
     public ReportTargetType TargetType { get; private set; }
     public Guid TargetGuid { get; private set; }
     public Guid ReportedUserGuid { get; private set; }
-    public string ReportReason { get; private set; }
+    public string ReportReason { get; private set; } = null!;
     public ReportCategory Category { get; private set; }
     public IReadOnlyList<string> EvidenceUrls => _evidenceUrls.AsReadOnly();
     public ReportStatus Status { get; private set; }

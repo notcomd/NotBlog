@@ -1,4 +1,4 @@
-namespace Message.Web.API.Dto;
+﻿namespace Message.Web.API.Dto;
 
 public static class MessageMappingExtensions
 {
@@ -14,7 +14,7 @@ public static class MessageMappingExtensions
         MediaUrl = message.MediaUri?.ToString(),
         ThumbnailUrl = message.ThumbnailUri,
         FileName = message.FileName,
-        FileSize = (long?)message.FileSize,
+        FileSize = message.FileSize,
         MimeType = message.MimeType,
         Duration = message.Duration,
         Caption = message.Caption,

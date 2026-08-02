@@ -1,4 +1,4 @@
-using Message.Web.API.Application.Commands.Friends;
+﻿using Message.Web.API.Application.Commands.Friends;
 using Message.Web.API.Application.Queries.Friends;
 
 namespace Message.Web.API.APIs;
@@ -21,7 +21,8 @@ public static class FriendsApi
     public static RouteGroupBuilder MapFriendsApi(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/friends")
-            .WithTags("Friends");
+            .WithTags("Friends")
+            .RequireAuthorization();
 
         // 1. POST /request — 发送好友请求
         group.MapPost("/request", SendFriendRequestAsync)
@@ -138,7 +139,7 @@ public static class FriendsApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse<Guid>.Error($"发送好友请求失败: {ex.Message}"));
+            return Results.Json(ApiResponse<Guid>.Error($"发送好友请求失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -168,7 +169,7 @@ public static class FriendsApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse.Error($"处理好友请求失败: {ex.Message}"));
+            return Results.Json(ApiResponse.Error($"处理好友请求失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -192,7 +193,7 @@ public static class FriendsApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse<IEnumerable<FriendDto>>.Error($"获取好友列表失败: {ex.Message}"));
+            return Results.Json(ApiResponse<IEnumerable<FriendDto>>.Error($"获取好友列表失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -216,7 +217,7 @@ public static class FriendsApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse<IEnumerable<FriendRequestDto>>.Error($"获取好友请求失败: {ex.Message}"));
+            return Results.Json(ApiResponse<IEnumerable<FriendRequestDto>>.Error($"获取好友请求失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -240,7 +241,7 @@ public static class FriendsApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse<IEnumerable<FriendRequestDto>>.Error($"获取已发送好友请求失败: {ex.Message}"));
+            return Results.Json(ApiResponse<IEnumerable<FriendRequestDto>>.Error($"获取已发送好友请求失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -271,7 +272,7 @@ public static class FriendsApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse.Error($"删除好友失败: {ex.Message}"));
+            return Results.Json(ApiResponse.Error($"删除好友失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -301,7 +302,7 @@ public static class FriendsApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse.Error($"屏蔽好友操作失败: {ex.Message}"));
+            return Results.Json(ApiResponse.Error($"屏蔽好友操作失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -330,7 +331,7 @@ public static class FriendsApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse.Error($"更新好友备注失败: {ex.Message}"));
+            return Results.Json(ApiResponse.Error($"更新好友备注失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -360,7 +361,7 @@ public static class FriendsApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse.Error($"星标好友操作失败: {ex.Message}"));
+            return Results.Json(ApiResponse.Error($"星标好友操作失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -390,7 +391,7 @@ public static class FriendsApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse.Error($"静音好友操作失败: {ex.Message}"));
+            return Results.Json(ApiResponse.Error($"静音好友操作失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -414,7 +415,7 @@ public static class FriendsApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse<IEnumerable<FriendDto>>.Error($"获取已屏蔽好友列表失败: {ex.Message}"));
+            return Results.Json(ApiResponse<IEnumerable<FriendDto>>.Error($"获取已屏蔽好友列表失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -438,7 +439,7 @@ public static class FriendsApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse<IEnumerable<FriendDto>>.Error($"获取星标好友列表失败: {ex.Message}"));
+            return Results.Json(ApiResponse<IEnumerable<FriendDto>>.Error($"获取星标好友列表失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -462,7 +463,7 @@ public static class FriendsApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse<int>.Error($"获取好友数量失败: {ex.Message}"));
+            return Results.Json(ApiResponse<int>.Error($"获取好友数量失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -488,7 +489,7 @@ public static class FriendsApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse<IEnumerable<FriendDto>>.Error($"搜索好友失败: {ex.Message}"));
+            return Results.Json(ApiResponse<IEnumerable<FriendDto>>.Error($"搜索好友失败: {ex.Message}"), statusCode: 500);
         }
     }
 

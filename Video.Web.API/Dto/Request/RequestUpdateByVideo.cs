@@ -5,5 +5,6 @@ public record RequestUpdateByVideo(
     Guid AffiliatedUserGuid,
     string VideoName,
     Uri VideoCover,
+    Uri VideoFileUri,
     HashSet<string> Tags,
     string BriefIntroduction);

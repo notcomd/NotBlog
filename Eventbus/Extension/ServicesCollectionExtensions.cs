@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using Notcomd.EventBus.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -214,7 +214,7 @@ public static class ServicesCollectionExtensions
     {
         var options = new OutboxOptions();
         configure?.Invoke(options);
-        services.Configure(configure);
+        services.Configure(configure!);
         services.AddScoped<IOutboxStore, EfCoreOutboxStore<TDbContext>>();
         services.AddHostedService<OutboxPublisher<TDbContext>>();
         return services;

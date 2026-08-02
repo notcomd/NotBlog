@@ -68,7 +68,7 @@ public class UserStartedByPhoneEventHandler : INotificationHandler<UserStartedBy
         {
             defaultRole = Roles.RoleFactory.CreateUserRole();
             await _userRoleRepository.AddByUserRoleAsync(defaultRole);
-            await _userRoleRepository.UnitOfWork.SavaEntitiesAsync(cancellationToken);
+            await _userRoleRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
 
             _logger.LogInformation("[{Time}] 默认 'User' 角色已创建: RoleGuid={RoleGuid}",
                 DateTime.UtcNow, defaultRole.RoleGuid);
@@ -85,7 +85,7 @@ public class UserStartedByPhoneEventHandler : INotificationHandler<UserStartedBy
         {
             user.UserRoleGuid.Add(defaultRole.RoleGuid);
             await _userRepository.UpdateByUserAsync(user);
-            await _userRepository.UnitOfWork.SavaChangesAsync(cancellationToken);
+            await _userRepository.UnitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("[{Time}] 用户 {UserGuid} 已分配到默认角色 '{RoleName}'",
                 DateTime.UtcNow, user.UserGuid, defaultRole.RoleName);

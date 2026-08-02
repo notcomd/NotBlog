@@ -1,13 +1,17 @@
 using System.Reflection;
 using CacheMemory.Extensions;
+using CommonsInitializer;
 using NotBlog.ServiceDefaults;
 using Notcomd.EventBus.Extension;
+using Notcomd.Token.JWT.Extensions;
 using NotMediator;
 using Scalar.AspNetCore;
+using Video.Domain.IServices;
 using Video.Infrastructure;
 using Video.Infrastructure.EntityFramework;
 using Video.Web.API.Apis;
 using Video.Web.API.Application.Commands;
+using Video.Web.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,7 +40,11 @@ builder.Services.AddHttpClient("FileDevProxy", client =>
     client.Timeout = TimeSpan.FromMinutes(30);
 });
 
+// JWT 认证（S-07）：与 Identity 一致，从 JwtOptions 配置节读取，凭据外置
+builder.Services.AddJwtAuthentication(builder.Configuration.GetSection("JwtOptions"));
 builder.Services.AddAuthorization();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
 // NotMediator with pipeline behaviors
 builder.Services.AddNotMediator(typeof(Program).Assembly);
@@ -69,6 +77,9 @@ var app = builder.Build();
 
 app.MapDefaultEndpoints();
 
+// S-16：全局异常脱敏（无内部路径/堆栈泄漏），必须位于管道最前
+app.UseNotBlogExceptionHandler();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -77,6 +88,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// JWT 认证中间件（S-07）
+app.UseAuthentication();
+app.UseAuthorization();
 
 // --- MiniAPI Endpoint Registration ---
 app.MapAddVideoEndpoints();

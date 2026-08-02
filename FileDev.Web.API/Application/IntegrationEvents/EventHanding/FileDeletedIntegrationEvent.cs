@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 namespace FileDev.Web.API.Application.IntegrationEvents.EventHanding;
 
 [EventBusName("File.Deleted")]
-public class FileDeletedIntegrationEventHandler(INotFileService notFileService,
+public class FileDeletedIntegrationEventHandler(
  ILogger<FileDeletedIntegrationEventHandler> logger,
  IEventBus eventBus)
     : JsonIntegrationEventHandler<FileDeletedEventData>

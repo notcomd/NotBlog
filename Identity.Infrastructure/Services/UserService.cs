@@ -1,4 +1,5 @@
-using CacheMemory.Core;
+﻿using CacheMemory.Core;
+using Identity.Domain.Events;
 
 namespace Identity.Infrastructure.Services;
 
@@ -9,7 +10,6 @@ public class UserService(
     IUserRoleRepository userRoleRepository,
     IJwtTokenService jwtTokenServer,
     ICacheMemory<TokenCacheEntry> cacheMemory,
-    IRedisCacheService redisCacheService,
     ILogger<IUserRoleRepository> loggerUserRole)
     : IUserService
 {
@@ -23,8 +23,9 @@ public class UserService(
         string password, string? code)
     {
         var userData = await userRepository.FindOneByUserAsync(email);
+        // S-13：用户不存在与密码错误返回同一结果，避免账号枚举
         if (userData is null)
-            throw new ArgumentNullException($"没有相关{email}用户信息喵！");
+            return null;
 
         return await LogInByCheckPasswordCoreAsync(userData, password);
     }
@@ -79,12 +80,16 @@ public class UserService(
 
     public async Task<User?> GetUserInfoAsync(string email)
     {
-        throw new NotImplementedException();
+        if (string.IsNullOrWhiteSpace(email))
+            return null;
+
+        return await userRepository.FindOneByUserAsync(email);
     }
 
     public async Task<ICollection<User>> FindUserByVagueAsync()
     {
-        throw new NotImplementedException();
+        // 当前无筛选条件，返回全部用户（含 UserSafety / UserAccessFail 导航）
+        return await userRepository.FindAllByUserAsync();
     }
 
     // ── 登录核心 ──
@@ -107,15 +112,24 @@ public class UserService(
             return null;
         }
 
-        // ── 第二步: 验证密码（内部自动处理 RecordSuccess / RecordFailure）──
+        // ── 第二步: 验证密码（成功时自动清零失败计数 / 旧哈希重哈希升级）──
         if (!await userData.VerifyByPasswordAsync(password))
         {
-            await userRepository.UnitOfWork.SavaChangesAsync();
+            // S-13：失败计数原子递增（ExecuteUpdate，并发安全），达到阈值时锁定账号
+            var failCount = await userRepository.IncrementAccessFaildCountAsync(userData.UserGuid);
+            if (failCount > UserAccessFail.MaxFailedAttempts)
+            {
+                await userRepository.LockUserAsync(
+                    userData.UserGuid, DateTimeOffset.UtcNow.Add(UserAccessFail.LockOutDuration));
+                userData.AddDomainEvent(new AccountLockedEvent(userData.UserGuid));
+            }
+
+            await userRepository.UnitOfWork.SaveChangesAsync();
             loggerUser.LogWarning("[{DateTime}] 用户 {UserEmail} 密码错误", DateTime.UtcNow, userData.UserEmail);
             return null;
         }
 
-        await userRepository.UnitOfWork.SavaChangesAsync();
+        await userRepository.UnitOfWork.SaveChangesAsync();
 
         try
         {
@@ -200,8 +214,7 @@ public class UserService(
                                  throw new InvalidOperationException("用户名不能为空")),
             new(ClaimTypes.Email, userData.UserEmail ??
                                   throw new InvalidOperationException("用户邮箱不能为空")),
-            new(ClaimTypes.Role, string.Join(",", roleName)),
-            new("user_guid", userData.UserGuid.ToString())
+            new(ClaimTypes.Role, string.Join(",", roleName))
         };
 
         if (!string.IsNullOrEmpty(userData.PhoneNumber?.PhoneCode))

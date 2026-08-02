@@ -1,4 +1,4 @@
-namespace Identity.Web.API.Application.Behaviors;
+﻿namespace Identity.Web.API.Application.Behaviors;
 
 public class LoggerBehavior<TRequest, TResponse>(ILogger<LoggerBehavior<TRequest, TResponse>> logger)
     : IPipelineBehavior<TRequest, TResponse>
@@ -11,10 +11,11 @@ public class LoggerBehavior<TRequest, TResponse>(ILogger<LoggerBehavior<TRequest
     public async Task<TResponse> Handler(TRequest request, Func<Task<TResponse>> next,
         CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Handling Command {CommandName} {@Command}:", request.GetGenericTypeName(), request);
+        // S-16：不记录命令对象（可能含明文密码/验证码等敏感信息），仅记录命令名与响应类型
+        _logger.LogInformation("Handling Command {CommandName}:", request.GetGenericTypeName());
         var response = await next();
-        _logger.LogInformation("Handled Command {CommandName} with response {@Response}",
-            request.GetGenericTypeName(), response);
+        _logger.LogInformation("Handled Command {CommandName} with response type {ResponseType}",
+            request.GetGenericTypeName(), response?.GetType().Name);
         return response;
     }
 }

@@ -39,7 +39,7 @@ public class DeleteMarkdownCommandHandler(
 
         // 通过聚合根方法执行软删除
         markdown.SoftDelete();
-        await markdownRepository.UnitOfWork.SavaChangesAsync(cancellationToken);
+        await markdownRepository.UnitOfWork.SaveChangesAsync(cancellationToken);
 
         logger.LogInformation("Markdown 文档已软删除：{MarkDownGuid}", request.MarkDownGuid);
         return true;

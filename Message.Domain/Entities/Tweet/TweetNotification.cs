@@ -10,8 +10,8 @@ public class TweetNotification : Entity
 {
     public Guid UserGuid { get; private set; }
     public NotificationType Type { get; private set; }
-    public string Title { get; private set; }
-    public string Content { get; private set; }
+    public string Title { get; private set; } = null!;
+    public string Content { get; private set; } = null!;
     public string? RefType { get; private set; }
     public Guid? RefGuid { get; private set; }
     public bool IsRead { get; private set; }

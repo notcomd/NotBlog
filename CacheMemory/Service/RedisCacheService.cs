@@ -256,15 +256,17 @@ public class RedisCacheService : IRedisCacheService
         {
             var db = await GetDatabaseAsync(ct).ConfigureAwait(false);
             var pairs = entries.Select(e => new KeyValuePair<RedisKey, RedisValue>(e.Key, e.Value)).ToArray();
-            return await db.StringSetAsync(pairs).ConfigureAwait(false);
-            // Note: expiry for batch set requires separate expire calls
+            return await db
+                .StringSetAsync(pairs, When.Always, (Expiration?)expiry ?? Expiration.Default, CommandFlags.None)
+                .ConfigureAwait(false);
         }, ct).ConfigureAwait(false);
 
     public virtual bool StringSetMany(IDictionary<string, string> entries, TimeSpan? expiry = null)
         => _retryPolicy.Execute(() =>
         {
             var pairs = entries.Select(e => new KeyValuePair<RedisKey, RedisValue>(e.Key, e.Value)).ToArray();
-            return GetDatabase().StringSet(pairs);
+            return GetDatabase().StringSet(pairs, When.Always, (Expiration?)expiry ?? Expiration.Default,
+                CommandFlags.None);
         });
 
     // =========================================================================

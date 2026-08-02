@@ -4,8 +4,7 @@ using Identity.Infrastructure.Idempotent;
 namespace Identity.Web.API.Application.Commands;
 
 public sealed class CreateUserExternalLoginCommandHandler(
-    IUserExternalLoginRepository userExternalLoginRepository,
-    IUserRepository userRepository) : IRequestHandler<CreateUserExternalLoginCommand, bool>
+    IUserExternalLoginRepository userExternalLoginRepository) : IRequestHandler<CreateUserExternalLoginCommand, bool>
 {
     public async Task<bool> Handler(CreateUserExternalLoginCommand request, CancellationToken cancellationToken)
     {
@@ -22,11 +21,11 @@ public sealed class CreateUserExternalLoginCommandHandler(
             request.ProviderDisplayName,
             request.ProviderUnionId);
         data.UpdateTokens(
-            request.ProviderAccessToken,
+            request.ProviderAccessToken ?? string.Empty,
             request.ProviderRefreshToken, null);
 
         await userExternalLoginRepository.AddAsync(data);
-        await userExternalLoginRepository.UnitOfWork.SavaEntitiesAsync(cancellationToken);
+        await userExternalLoginRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
         return true;
     }
 }

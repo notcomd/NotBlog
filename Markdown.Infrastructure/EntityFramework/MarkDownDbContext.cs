@@ -12,7 +12,7 @@ public class MarkDownDbContext(DbContextOptions<MarkDownDbContext> options, INot
 {
     private readonly INotMediator _notMediator = notMediator ?? throw new ArgumentNullException(nameof(notMediator));
 
-    private IDbContextTransaction _currentTransaction;
+    private IDbContextTransaction _currentTransaction = null!;
 
     public bool HasActiveTransaction => _currentTransaction != null;
 
@@ -24,7 +24,7 @@ public class MarkDownDbContext(DbContextOptions<MarkDownDbContext> options, INot
     /// <summary>
     ///     保存更改并分发领域事件
     /// </summary>
-    public async Task<int> SavaChangesAsync(CancellationToken cancellationToken = default)
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         // 分发领域事件（顺序发布）
         await _notMediator.DispatchDomainEventsAsync(this, cancellationToken);
@@ -34,7 +34,7 @@ public class MarkDownDbContext(DbContextOptions<MarkDownDbContext> options, INot
     /// <summary>
     ///     保存实体（事务性操作）
     /// </summary>
-    public async Task<bool> SavaEntitiesAsync(CancellationToken cancellationToken = default)
+    public async Task<bool> SaveEntitiesAsync(CancellationToken cancellationToken = default)
     {
         await _notMediator.DispatchDomainEventsAsync(this);
         await base.SaveChangesAsync(cancellationToken);
@@ -47,7 +47,8 @@ public class MarkDownDbContext(DbContextOptions<MarkDownDbContext> options, INot
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfiguration(new MarkDownEntityConfiguration());
         modelBuilder.ApplyConfiguration(new MarkReviewEntityConfiguration());
-        modelBuilder.ApplyConfiguration(new MarkHositoryEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new MarkHistoryEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new ReviewImageEntityConfiguration());
 
         // ClientRequest 幂等性记录表配置
         modelBuilder.Entity<ClientRequest>(entity =>
@@ -60,7 +61,7 @@ public class MarkDownDbContext(DbContextOptions<MarkDownDbContext> options, INot
 
     public async Task<IDbContextTransaction> BeginTransactionAsync()
     {
-        if (_currentTransaction is not null) return null;
+        if (_currentTransaction is not null) return _currentTransaction;
         _currentTransaction = await Database.BeginTransactionAsync();
         return _currentTransaction;
     }
@@ -96,7 +97,7 @@ public class MarkDownDbContext(DbContextOptions<MarkDownDbContext> options, INot
             if (HasActiveTransaction)
             {
                 _currentTransaction.Dispose();
-                _currentTransaction = null;
+                _currentTransaction = null!;
             }
         }
     }
@@ -113,7 +114,7 @@ public class MarkDownDbContext(DbContextOptions<MarkDownDbContext> options, INot
             if (HasActiveTransaction)
             {
                 _currentTransaction.Dispose();
-                _currentTransaction = null;
+                _currentTransaction = null!;
             }
         }
     }

@@ -14,7 +14,7 @@ public class CreateRoleCommandHandler(
         var role = new Roles(command.RoleName, command.RoleCode, command.RoleAuthority, RoleStatus.Normal, command.Attribute);
 
         await userRoleRepository.AddByUserRoleAsync(role);
-        await userRoleRepository.UnitOfWork.SavaEntitiesAsync(ct);
+        await userRoleRepository.UnitOfWork.SaveEntitiesAsync(ct);
 
         logger.LogInformation("[CreateRole] 创建成功: Name={Name}, Code={Code}",
             role.RoleName, role.RoleCode);
@@ -46,7 +46,7 @@ public class UpdateRoleCommandHandler(
         var updated = await userRoleRepository.UpByUserRoleAsync(role);
         if (!updated) throw new InvalidOperationException("角色更新失败");
 
-        await userRoleRepository.UnitOfWork.SavaEntitiesAsync(ct);
+        await userRoleRepository.UnitOfWork.SaveEntitiesAsync(ct);
 
         logger.LogInformation("[UpdateRole] 更新成功: Id={Id}", command.RoleGuid);
         return true;
@@ -67,7 +67,7 @@ public class DeleteRoleCommandHandler(
         role.ResetByRoleStatus(RoleStatus.Deleted);
         role.SoftDelete(true);
         await userRoleRepository.UpByUserRoleAsync(role);
-        await userRoleRepository.UnitOfWork.SavaEntitiesAsync(ct);
+        await userRoleRepository.UnitOfWork.SaveEntitiesAsync(ct);
 
         logger.LogInformation("[DeleteRole] 软删除成功: Id={Id}", command.RoleGuid);
         return true;

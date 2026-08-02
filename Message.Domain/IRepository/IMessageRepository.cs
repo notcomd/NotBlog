@@ -24,5 +24,6 @@ public interface IMessageRepository : IRepository<MessageEntity>
     Task MarkAsReadAsync(Guid messageId, Guid readerId);
     Task MarkAllAsReadAsync(Guid sessionId, Guid userId);
     Task<IEnumerable<MessageEntity>> SearchAsync(Guid sessionId, string searchTerm, int page = 1, int pageSize = 50);
+    Task<int> SearchCountAsync(Guid sessionId, string searchTerm);
     Task<IEnumerable<MessageEntity>> GetForwardedMessagesAsync(Guid originalMessageId);
 }

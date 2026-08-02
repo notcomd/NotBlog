@@ -1,4 +1,4 @@
-﻿﻿using DomainInfrastructure;
+﻿using DomainInfrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using NotMediator;
@@ -14,7 +14,7 @@ public class VideoDbContext(DbContextOptions<VideoDbContext> options, INotMediat
         notMediator ?? throw new ArgumentNullException(nameof(notMediator), "Mediator cannot be null");
 
 
-    private IDbContextTransaction _currentTransaction;
+    private IDbContextTransaction? _currentTransaction;
 
     public DbSet<Videos> Videos { get; set; }
 
@@ -28,13 +28,13 @@ public class VideoDbContext(DbContextOptions<VideoDbContext> options, INotMediat
 
     public bool HasActiveTransaction => _currentTransaction != null;
 
-    public async Task<int> SavaChangesAsync(CancellationToken cancellationToken = default)
+    public new async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         await _notMediator.DispatchDomainEventsAsync(this);
         return await base.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<bool> SavaEntitiesAsync(CancellationToken cancellationToken = default)
+    public async Task<bool> SaveEntitiesAsync(CancellationToken cancellationToken = default)
     {
         await _notMediator.DispatchDomainEventsAsync(this);
         return await base.SaveChangesAsync(cancellationToken) > 0;
@@ -61,7 +61,7 @@ public class VideoDbContext(DbContextOptions<VideoDbContext> options, INotMediat
             throw new InvalidOperationException("The provided transaction does not match the current transaction.");
         try
         {
-            await SaveChangesAsync();
+            await base.SaveChangesAsync();
             await transaction.CommitAsync();
         }
         catch (Exception)
@@ -73,7 +73,7 @@ public class VideoDbContext(DbContextOptions<VideoDbContext> options, INotMediat
         {
             if (HasActiveTransaction)
             {
-                _currentTransaction.Dispose();
+                _currentTransaction!.Dispose();
                 _currentTransaction = null;
             }
         }
@@ -90,7 +90,7 @@ public class VideoDbContext(DbContextOptions<VideoDbContext> options, INotMediat
         {
             if (HasActiveTransaction)
             {
-                _currentTransaction.Dispose();
+                _currentTransaction!.Dispose();
                 _currentTransaction = null;
             }
         }

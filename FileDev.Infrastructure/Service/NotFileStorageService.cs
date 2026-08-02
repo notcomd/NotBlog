@@ -75,18 +75,19 @@ public class NotFileStorageService : INotFileStorageService
                 return new NotFileStorageResponse
                 {
                     Success = false,
-                    ErrorMessage = $"文件已存在且禁止覆盖：{fullPath}",
-                    FullPath = fullPath
+                    // S-16：错误消息不包含绝对路径，仅暴露相对路径
+                    ErrorMessage = $"文件已存在且禁止覆盖：{request.FileRelativePath}",
+                    FullPath = string.Empty
                 };
             }
 
             // 写入文件并校验（如果传入了哈希值）
             await File.WriteAllBytesAsync(fullPath, request.FileContent);
 
-            // 可选：验证文件哈希（如果请求中传入了预期哈希）
+            // 可选：验证文件哈希（如果请求中传入了预期哈希，统一使用 SHA256，见 F-09.5）
             if (!string.IsNullOrEmpty(request.ExpectedHash))
             {
-                bool hashMatch = HashHelper.VerifyFileHash(fullPath, request.ExpectedHash, AlgorithmType.MD5);
+                bool hashMatch = HashHelper.VerifyFileHash(fullPath, request.ExpectedHash, AlgorithmType.SHA256);
                 if (!hashMatch)
                 {
                     File.Delete(fullPath); // 校验失败删除文件
@@ -94,7 +95,7 @@ public class NotFileStorageService : INotFileStorageService
                     {
                         Success = false,
                         ErrorMessage =
-                            $"文件哈希校验失败，预期：{request.ExpectedHash}，实际：{HashHelper.ComputeFileHash(fullPath, AlgorithmType.MD5)}",
+                            $"文件哈希校验失败，预期：{request.ExpectedHash}，实际：{HashHelper.ComputeFileHash(fullPath, AlgorithmType.SHA256)}",
                         FullPath = fullPath
                     };
                 }
@@ -137,8 +138,9 @@ public class NotFileStorageService : INotFileStorageService
             return new NotFileStorageResponse
             {
                 Success = false,
-                ErrorMessage = $"文件不存在：{fullPath}",
-                FullPath = fullPath
+                // S-16：错误消息不包含绝对路径
+                ErrorMessage = $"文件不存在：{fileRelativePath}",
+                FullPath = string.Empty
             };
         }
         catch (Exception ex)
@@ -161,8 +163,9 @@ public class NotFileStorageService : INotFileStorageService
                 return (null, new NotFileStorageResponse
                 {
                     Success = false,
-                    ErrorMessage = $"文件不存在：{fullPath}",
-                    FullPath = fullPath
+                    // S-16：错误消息不包含绝对路径
+                    ErrorMessage = $"文件不存在：{fileRelativePath}",
+                    FullPath = string.Empty
                 })!;
             }
 
@@ -172,7 +175,7 @@ public class NotFileStorageService : INotFileStorageService
                 Success = true,
                 FullPath = fullPath,
                 FileSize = content.Length,
-                ActualHash = HashHelper.ComputeHash(content, AlgorithmType.MD5)
+                ActualHash = HashHelper.ComputeHash(content, AlgorithmType.SHA256)
             });
         }
         catch (Exception ex)
@@ -190,12 +193,73 @@ public class NotFileStorageService : INotFileStorageService
         return File.Exists(await GetSafeFullPathAsync(fileRelativePath));
     }
 
+    /// <summary>
+    /// 流式获取文件内容（S-09：避免大文件整读入内存）
+    /// </summary>
+    public async Task<(Stream? Content, NotFileStorageResponse Response)> GetContentStreamAsync(string fileRelativePath)
+    {
+        try
+        {
+            var fullPath = await GetSafeFullPathAsync(fileRelativePath);
+            if (!File.Exists(fullPath))
+            {
+                return (null, new NotFileStorageResponse
+                {
+                    Success = false,
+                    // S-16：错误消息不包含绝对路径
+                    ErrorMessage = $"文件不存在：{fileRelativePath}",
+                    FullPath = string.Empty
+                })!;
+            }
+
+            var stream = new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.Read,
+                64 * 1024, FileOptions.Asynchronous);
+            return (stream, new NotFileStorageResponse
+            {
+                Success = true,
+                FullPath = fullPath,
+                FileSize = stream.Length
+            });
+        }
+        catch (Exception ex)
+        {
+            return (null, new NotFileStorageResponse
+            {
+                Success = false,
+                ErrorMessage = $"读取文件失败：{ex.Message}"
+            })!;
+        }
+    }
+
+    /// <summary>
+    /// 清理某上传任务的全部临时分片文件（S-09）
+    /// </summary>
+    public Task CleanupChunksAsync(string fileKey)
+    {
+        var safeFileKey = Path.GetInvalidFileNameChars()
+            .Aggregate(fileKey, (current, c) => current.Replace(c.ToString(), "_"));
+        var pattern = $"{safeFileKey}_chunk_*";
+        foreach (var chunkFile in Directory.EnumerateFiles(_tempChunkFullPath, pattern))
+        {
+            try
+            {
+                File.Delete(chunkFile);
+            }
+            catch
+            {
+                // 单个分片删除失败不阻断整体清理，交由过期清理任务兜底
+            }
+        }
+
+        return Task.CompletedTask;
+    }
+
     #endregion
 
     #region 分片上传核心方法
 
     /// <summary>
-    /// 上传单个分片（带MD5校验）
+    /// 上传单个分片（带 SHA256 校验）
     /// </summary>
     /// <param name="fileKey">文件唯一标识（如：docs/2026/bigfile.zip）</param>
     /// <param name="chunkIndex">分片索引（从0开始）</param>
@@ -203,14 +267,14 @@ public class NotFileStorageService : INotFileStorageService
     /// <param name="chunkHash">分片预期哈希值（用于校验）</param>
     /// <returns>分片上传结果</returns>
     public async Task<NotFileStorageResponse> UploadChunkAsync(string fileKey, int chunkIndex, byte[] chunkContent,
-        string chunkHash = null)
+        string? chunkHash = null)
     {
         try
         {
-            // 1. 校验分片哈希（如果传入）
+            // 1. 校验分片哈希（如果传入，统一 SHA256，见 F-09.5）
             if (!string.IsNullOrEmpty(chunkHash))
             {
-                bool isChunkValid = HashHelper.VerifyHash(chunkContent, chunkHash, AlgorithmType.MD5);
+                bool isChunkValid = HashHelper.VerifyHash(chunkContent, chunkHash, AlgorithmType.SHA256);
                 if (!isChunkValid)
                 {
                     return new NotFileStorageResponse
@@ -231,7 +295,7 @@ public class NotFileStorageService : INotFileStorageService
                 Success = true,
                 FullPath = chunkTempPath,
                 FileSize = chunkContent.Length,
-                ActualHash = HashHelper.ComputeHash(chunkContent, AlgorithmType.MD5)
+                ActualHash = HashHelper.ComputeHash(chunkContent, AlgorithmType.SHA256)
             };
         }
         catch (Exception ex)
@@ -253,7 +317,7 @@ public class NotFileStorageService : INotFileStorageService
     /// <param name="overwrite">是否覆盖已存在文件</param>
     /// <returns>合并结果</returns>
     public async Task<NotFileStorageResponse> MergeChunksAsync(string fileKey, int totalChunks,
-        string expectedFileHash = null, bool overwrite = true)
+        string? expectedFileHash = null, bool overwrite = true)
     {
         try
         {
@@ -267,8 +331,9 @@ public class NotFileStorageService : INotFileStorageService
                     return new NotFileStorageResponse
                     {
                         Success = false,
-                        ErrorMessage = $"分片{i}缺失，路径：{chunkPath}",
-                        FullPath = await GetSafeFullPathAsync(fileKey)
+                        // S-16：错误消息不包含绝对路径，仅提示缺失的分片序号
+                        ErrorMessage = $"分片{i}缺失",
+                        FullPath = string.Empty
                     };
                 }
 
@@ -286,8 +351,9 @@ public class NotFileStorageService : INotFileStorageService
                 return new NotFileStorageResponse
                 {
                     Success = false,
-                    ErrorMessage = $"最终文件已存在且禁止覆盖：{finalFilePath}",
-                    FullPath = finalFilePath
+                    // S-16：错误消息不包含绝对路径，仅暴露相对路径 fileKey
+                    ErrorMessage = $"最终文件已存在且禁止覆盖：{fileKey}",
+                    FullPath = string.Empty
                 };
             }
 
@@ -301,11 +367,11 @@ public class NotFileStorageService : INotFileStorageService
                 }
             }
 
-            // 4. 校验最终文件哈希（如果传入）
-            string actualFileHash = HashHelper.ComputeFileHash(finalFilePath, AlgorithmType.MD5);
+            // 4. 校验最终文件哈希（如果传入，统一 SHA256，见 F-09.5）
+            string actualFileHash = HashHelper.ComputeFileHash(finalFilePath, AlgorithmType.SHA256);
             if (!string.IsNullOrEmpty(expectedFileHash))
             {
-                var isFileValid = HashHelper.VerifyFileHash(finalFilePath, expectedFileHash, AlgorithmType.MD5);
+                var isFileValid = HashHelper.VerifyFileHash(finalFilePath, expectedFileHash, AlgorithmType.SHA256);
                 if (!isFileValid)
                 {
                     File.Delete(finalFilePath); // 校验失败删除文件

@@ -9,9 +9,11 @@ public record RemoveGroupMemberCommand(Guid GroupId, Guid UserId) : IRequest<boo
 
 /// <summary>
 /// 移除群组成员命令处理程序。
+/// <para>权限（修复 S-04）：普通成员仅可移除自己（退出群组）；移除他人需群主/管理员。</para>
 /// </summary>
 public class RemoveGroupMemberCommandHandler(
     IGroupRepository groupRepository,
+    ICurrentUserService currentUser,
     ILogger<RemoveGroupMemberCommandHandler> logger) : IRequestHandler<RemoveGroupMemberCommand, bool>
 {
     public async Task<bool> Handler(RemoveGroupMemberCommand command, CancellationToken cancellationToken)
@@ -19,6 +21,11 @@ public class RemoveGroupMemberCommandHandler(
         var group = await groupRepository.GetByIdWithMembersAsync(command.GroupId);
         if (group == null)
             throw new KeyNotFoundException("群组不存在");
+
+        var operatorId = currentUser.GetUserId();
+        var isSelfExit = command.UserId == operatorId;
+        if (!isSelfExit && !group.HasPermission(operatorId, GroupPermission.RemoveMember))
+            throw new UnauthorizedAccessException("仅群主或管理员可移除成员");
 
         group.RemoveMember(command.UserId);
         await groupRepository.UpdateAsync(group);

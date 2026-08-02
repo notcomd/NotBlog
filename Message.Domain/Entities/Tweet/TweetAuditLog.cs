@@ -9,7 +9,7 @@ public class TweetAuditLog:Entity
     public Guid TweetGuid { get; private set; }
     public Guid AuditorGuid { get; private set; }
     public AuditAction Action { get; private set; }
-    public string Reason { get; private set; }
+    public string Reason { get; private set; } = null!;
     public DateTimeOffset AuditTime { get; private set; }
 
     private TweetAuditLog() => AuditGuid = Guid.CreateVersion7();

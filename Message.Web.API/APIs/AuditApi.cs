@@ -1,4 +1,4 @@
-using Message.Web.API.Application.Commands.Audit;
+﻿using Message.Web.API.Application.Commands.Audit;
 using Message.Web.API.Application.Queries.Audit;
 
 namespace Message.Web.API.APIs;
@@ -22,7 +22,8 @@ public static class AuditApi
     public static RouteGroupBuilder MapAuditApi(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/audit")
-            .WithTags("Audit");
+            .WithTags("Audit")
+            .RequireAuthorization();
 
         // GET /tweets/pending — 获取待审核推文列表
         group.MapGet("/tweets/pending", GetPendingTweetsAsync)
@@ -80,11 +81,11 @@ public static class AuditApi
             if (!currentUser.IsAdmin())
                 return Results.Json(ApiResponse.Forbidden("仅管理员可执行审核操作"), statusCode: 403);
 
-            var tweets = await mediator.SendAsync(new GetPendingTweetsQuery(page, pageSize), ct);
+            var paged = await mediator.SendAsync(new GetPendingTweetsQuery(page, pageSize), ct);
 
             var result = new PagedResult<object>
             {
-                Items = [.. tweets.Select(t => new
+                Items = [.. paged.Items.Select(t => new
                 {
                     t.TweetGuid,
                     t.AuthorGuid,
@@ -96,7 +97,7 @@ public static class AuditApi
                     t.CreateTime,
                     t.PublishTime
                 })],
-                TotalCount = tweets.Count(),
+                TotalCount = paged.TotalCount,
                 Page = page,
                 PageSize = pageSize
             };
@@ -105,7 +106,7 @@ public static class AuditApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse<PagedResult<object>>.Error($"获取待审核推文失败: {ex.Message}"));
+            return Results.Json(ApiResponse<PagedResult<object>>.Error($"获取待审核推文失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -135,7 +136,7 @@ public static class AuditApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse.Error($"审核推文通过失败: {ex.Message}"));
+            return Results.Json(ApiResponse.Error($"审核推文通过失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -167,7 +168,7 @@ public static class AuditApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse.Error($"驳回推文失败: {ex.Message}"));
+            return Results.Json(ApiResponse.Error($"驳回推文失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -192,11 +193,11 @@ public static class AuditApi
             if (!currentUser.IsAdmin())
                 return Results.Json(ApiResponse.Forbidden("仅管理员可执行审核操作"), statusCode: 403);
 
-            var reports = await mediator.SendAsync(new GetPendingReportsQuery(page, pageSize), ct);
+            var paged = await mediator.SendAsync(new GetPendingReportsQuery(page, pageSize), ct);
 
             var result = new PagedResult<object>
             {
-                Items = [.. reports.Select(report => new
+                Items = [.. paged.Items.Select(report => new
                 {
                     report.ReportGuid,
                     report.ReporterGuid,
@@ -211,7 +212,7 @@ public static class AuditApi
                     report.ReviewTime,
                     report.CreateTime
                 })],
-                TotalCount = reports.Count(),
+                TotalCount = paged.TotalCount,
                 Page = page,
                 PageSize = pageSize
             };
@@ -220,7 +221,7 @@ public static class AuditApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse<PagedResult<object>>.Error($"获取待处理举报失败: {ex.Message}"));
+            return Results.Json(ApiResponse<PagedResult<object>>.Error($"获取待处理举报失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -256,7 +257,7 @@ public static class AuditApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse.Error($"处理举报失败: {ex.Message}"));
+            return Results.Json(ApiResponse.Error($"处理举报失败: {ex.Message}"), statusCode: 500);
         }
     }
 }

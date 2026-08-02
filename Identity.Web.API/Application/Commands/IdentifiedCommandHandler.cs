@@ -1,4 +1,4 @@
-using Identity.Infrastructure.Idempotent;
+﻿using Identity.Infrastructure.Idempotent;
 
 namespace Identity.Web.API.Application.Commands;
 
@@ -34,18 +34,31 @@ public abstract class IdentifiedCommandHandler<T, R>(
                 ? (loggable.IdProperty, loggable.IdValue)
                 : ("unknown", "?");
 
+            // S-16：不记录命令对象（可能含明文密码/验证码），仅记录命令名与标识
             _logger.LogInformation(
-                "Sending command: {CommandName} - {IdProperty}: {CommandId} ({@Command})",
-                commandName, idProvider, commandId, command);
+                "Sending command: {CommandName} - {IdProperty}: {CommandId}",
+                commandName, idProvider, commandId);
             var response = await _mediator.SendAsync(command, cancellationToken);
-            _logger.LogInformation("Handled Command {CommandName} {@Command} with response {@Response}:",
-                commandName, command, response);
+            _logger.LogInformation("Handled Command {CommandName} with response type {ResponseType}",
+                commandName, response?.GetType().Name);
             return response;
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error handling command  {@Command}: {Error}",
-                request.Command, e.Message);
+            // S-16：不记录命令对象（可能含明文密码/验证码），仅记录异常信息
+            _logger.LogError(e, "Error handling command {CommandName}: {Error}",
+                request.Command.GetGenericTypeName(), e.Message);
+
+            // S-14：命令执行失败时回滚幂等记录，允许客户端使用同一幂等键重试
+            try
+            {
+                await _requestManagement.RemoveRequestAsync(request.Id);
+            }
+            catch (Exception rollbackEx)
+            {
+                _logger.LogWarning(rollbackEx, "回滚幂等记录失败: {IdempotencyKey}", request.Id);
+            }
+
             throw;
         }
     }

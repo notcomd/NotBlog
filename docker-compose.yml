@@ -1,4 +1,4 @@
-﻿﻿services:
+﻿services:
   # ── PostgreSQL 数据库 ──────────────────────────────
   postgres:
     image: postgres:17-alpine
@@ -6,7 +6,7 @@
     restart: unless-stopped
     environment:
       POSTGRES_USER: notblog
-      POSTGRES_PASSWORD: NotBlog@2026!
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is not set}
       POSTGRES_DB: notblog_identity
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
@@ -27,7 +27,7 @@
     restart: unless-stopped
     environment:
       RABBITMQ_DEFAULT_USER: notblog
-      RABBITMQ_DEFAULT_PASS: NotBlog@2026!
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:?RABBITMQ_DEFAULT_PASS is not set}
       RABBITMQ_DEFAULT_VHOST: /
     ports:
       - "5672:5672"       # AMQP 协议端口（应用连接）

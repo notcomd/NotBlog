@@ -69,8 +69,9 @@ public static class AvatarApi
                 imageContent,
                 file.ContentType);
 
+            // S-14：幂等键由客户端显式传入（X-Idempotency-Key），缺失时回退随机键
             var identifiedCommand = new IdentifiedCommand<UploadAvatarCommand, UploadAvatarResult>(
-                Guid.CreateVersion7(), command);
+                IdentityApis.GetIdempotencyKey(context), command);
 
             // ── 发送命令 ──
             var result = await identityService.NotMediator.SendAsync(identifiedCommand);

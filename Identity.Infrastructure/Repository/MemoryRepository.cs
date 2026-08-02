@@ -89,7 +89,7 @@ public class MemoryRepository<TModel>(IDistributedCache redisCache) : IMemoryRep
     {
         var hash = await HashGetAllAsync(key);
         hash[field] = value;
-        await SetObjectAsync(key, hash as TModel);
+        await SetObjectAsync(key, (TModel)(object)hash);
     }
 
     public async Task<string?> HashGetAsync(string key, string field)
@@ -114,7 +114,7 @@ public class MemoryRepository<TModel>(IDistributedCache redisCache) : IMemoryRep
             return false;
         
         hash.Remove(field);
-        await SetObjectAsync(key, hash as TModel);
+        await SetObjectAsync(key, (TModel)(object)hash);
         return true;
     }
 
@@ -170,21 +170,25 @@ public class MemoryRepository<TModel>(IDistributedCache redisCache) : IMemoryRep
 
     public Task<bool> SortedSetAddAsync(string key, string member, double score)
     {
+        // TODO(F-07): 需要基于 IDatabase.SortedSetAddAsync 单独实现
         throw new NotImplementedException("需要使用 IDatabase 接口实现有序集合");
     }
 
     public Task<IEnumerable<string>> SortedSetRangeByRankAsync(string key, long start = 0, long stop = -1)
     {
+        // TODO(F-07): 需要基于 IDatabase.SortedSetRangeByRankAsync 单独实现
         throw new NotImplementedException("需要使用 IDatabase 接口实现有序集合");
     }
 
     public Task<long> PublishAsync(string channel, string message)
     {
+        // TODO(F-07): 需要基于 ISubscriber 接口单独实现
         throw new NotImplementedException("需要使用 ISubscriber 接口实现发布订阅");
     }
 
     public Task FlushAllAsync()
     {
+        // TODO(F-07): 生产环境禁止清空缓存，仅允许在受控维护窗口通过运维工具执行
         throw new NotImplementedException("生产环境禁止使用此方法");
     }
 

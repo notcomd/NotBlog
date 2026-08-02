@@ -16,6 +16,8 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
 
     public async Task<IEnumerable<Tweet>> GetByAuthorAsync(Guid authorGuid, int page = 1, int pageSize = 20)
     {
+        if (pageSize < 1) pageSize = 10;
+        if (pageSize > 100) pageSize = 100;
         var query = DbSet
             .Where(t => t.AuthorGuid == authorGuid)
             .OrderByDescending(t => t.CreateTime);
@@ -25,6 +27,8 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
 
     public async Task<IEnumerable<Tweet>> GetTimelineAsync(IEnumerable<Guid> authorGuids, int page = 1, int pageSize = 20)
     {
+        if (pageSize < 1) pageSize = 10;
+        if (pageSize > 100) pageSize = 100;
         var query = DbSet
             .Where(t => t.TweetStatus == TweetStatus.Approved && authorGuids.Contains(t.AuthorGuid))
             .OrderByDescending(t => t.CreateTime);
@@ -34,6 +38,8 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
 
     public async Task<IEnumerable<Tweet>> GetTrendingAsync(int page = 1, int pageSize = 20)
     {
+        if (pageSize < 1) pageSize = 10;
+        if (pageSize > 100) pageSize = 100;
         var query = DbSet
             .Where(t => t.TweetStatus == TweetStatus.Approved)
             .OrderByDescending(t => t.HotScore)
@@ -44,6 +50,8 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
 
     public async Task<IEnumerable<Tweet>> GetPendingAuditAsync(int page = 1, int pageSize = 20)
     {
+        if (pageSize < 1) pageSize = 10;
+        if (pageSize > 100) pageSize = 100;
         var query = DbSet
             .Where(t => t.TweetStatus == TweetStatus.Pending)
             .OrderBy(t => t.CreateTime);
@@ -53,6 +61,8 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
 
     public async Task<IEnumerable<Tweet>> GetByStatusAsync(TweetStatus status, int page = 1, int pageSize = 20)
     {
+        if (pageSize < 1) pageSize = 10;
+        if (pageSize > 100) pageSize = 100;
         var query = DbSet
             .Where(t => t.TweetStatus == status)
             .OrderByDescending(t => t.CreateTime);
@@ -102,5 +112,15 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
     public async Task<int> GetPendingAuditCountAsync()
     {
         return await DbSet.CountAsync(t => t.TweetStatus == TweetStatus.Pending);
+    }
+
+    public async Task<int> GetTimelineCountAsync(IEnumerable<Guid> authorGuids)
+    {
+        return await DbSet.CountAsync(t => t.TweetStatus == TweetStatus.Approved && authorGuids.Contains(t.AuthorGuid));
+    }
+
+    public async Task<int> GetTrendingCountAsync()
+    {
+        return await DbSet.CountAsync(t => t.TweetStatus == TweetStatus.Approved);
     }
 }

@@ -7,7 +7,7 @@ namespace Video.Domain.ValueObjects;
 public record VideoImage
 {
     /// <summary>原始图片URL（必填）</summary>
-    public Uri ImageUrl { get; }
+    public Uri ImageUrl { get; } = null!;
 
     /// <summary>缩略图URL，用于列表/弹幕等轻量展示场景（可选）</summary>
     public Uri? ThumbnailUrl { get; }

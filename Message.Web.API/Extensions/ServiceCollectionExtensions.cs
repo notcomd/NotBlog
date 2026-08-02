@@ -1,7 +1,9 @@
 using FileDev.Web.API.Grpc;
 using Message.Web.API.Grpc;
+using Message.Web.API.Hubs;
 using Message.Web.API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.SignalR;
 using Notcomd.Token.JWT.Extensions;
 
 namespace Message.Web.API.Extensions;
@@ -37,7 +39,7 @@ public static class ServiceCollectionExtensions
         RegisterAuthentication(services, configuration);
         RegisterFileStorageGrpc(services, configuration);
         RegisterApplicationServices(services);
-        RegisterCors(services);
+        RegisterCors(services, configuration);
 
         return services;
     }
@@ -94,9 +96,11 @@ public static class ServiceCollectionExtensions
             })
             .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
             {
-                // 开发环境 FileDev 使用自签名开发证书，需跳过证书校验
+                // S-16：仅 DEBUG/开发环境允许跳过证书校验；Release 下使用系统默认证书校验
+#if DEBUG
                 ServerCertificateCustomValidationCallback =
                     HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+#endif
             });
 
         services.AddScoped<IFileStorageGrpcClient, FileStorageGrpcClient>();
@@ -111,21 +115,36 @@ public static class ServiceCollectionExtensions
     {
         // 消息实时推送服务（依赖 Scoped 的 IConnectionManager，故注册为 Scoped）
         services.AddScoped<MessageDeliveryService>();
+
+        // F-04：覆盖 SignalR 默认的 DefaultUserIdProvider（仅读 NameIdentifier），
+        // 改为从 JWT Claim sub / user_guid / NameIdentifier 解析用户 ID，避免 Clients.User 推送落空。
+        services.AddSingleton<IUserIdProvider, MessageUserIdProvider>();
     }
 
     /// <summary>
-    /// 跨域策略注册（SignalR 长连接需要宽松的跨域配置）。
+    /// 跨域策略注册（S-15）：白名单来源，禁止 AllowAnyOrigin 与 AllowCredentials 共存。
+    /// SignalR 长连接经 JWT 认证（Authorization header）后同源/白名单即可，无需 AllowCredentials。
     /// </summary>
-    private static void RegisterCors(IServiceCollection services)
+    private static void RegisterCors(IServiceCollection services, IConfiguration configuration)
     {
+        var corsOrigins = configuration.GetSection("CorsSettings:AllowedOrigins")
+            .Get<string[]>() ?? [];
+
         services.AddCors(options =>
         {
             options.AddDefaultPolicy(policy =>
             {
-                policy.AllowAnyHeader()
-                      .AllowAnyMethod()
-                      .AllowCredentials()
-                      .SetIsOriginAllowed(_ => true);
+                if (corsOrigins.Length == 0)
+                {
+                    // 白名单为空：仅允许同源（拒绝一切跨域来源，也不允许携带凭据）
+                    policy.SetIsOriginAllowed(_ => false);
+                }
+                else
+                {
+                    policy.WithOrigins(corsOrigins)
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                }
             });
         });
     }

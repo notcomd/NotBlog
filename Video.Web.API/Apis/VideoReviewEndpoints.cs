@@ -4,6 +4,7 @@ using NotMediator;
 using Video.Domain.Cache;
 using Video.Domain.Entities;
 using Video.Domain.IRepository;
+using Video.Domain.IServices;
 using Video.Domain.Server;
 using Video.Web.API.Dto.Request;
 using Video.Web.API.Dto.Response;
@@ -16,6 +17,18 @@ namespace Video.Web.API.Apis;
 /// </summary>
 public static class VideoReviewEndpoints
 {
+    /// <summary>
+    /// 访问控制（S-07）：私有/定时视频仅作者或被授权者可读取。
+    /// </summary>
+    private static bool IsAccessForbidden(Videos video, ICurrentUserService currentUser)
+    {
+        if (video.VideoControl.AuthorVideo == AuthorVideo.VideoPublic)
+            return false;
+
+        var callerGuid = currentUser.UserGuid;
+        return callerGuid == Guid.Empty || video.Affiliated is null || !video.Affiliated.Contains(callerGuid);
+    }
+
     public static RouteGroupBuilder MapVideoReviewEndpoints(this IEndpointRouteBuilder routes)
     {
         var group = routes.MapGroup("/api/videoreview")
@@ -112,12 +125,27 @@ public static class VideoReviewEndpoints
         Guid videoGuid,
         IVideoService videoService,
         IVideoCacheService? cacheService,
-        ILoggerFactory loggerFactory)
+        ILoggerFactory loggerFactory,
+        ICurrentUserService currentUser)
     {
         var logger = loggerFactory.CreateLogger("VideoReviewEndpoint");
 
         try
         {
+            // 访问控制：私有/定时视频仅作者或被授权者可查看评论
+            var video = await videoService.GetByVideoAsync(videoGuid);
+            if (video is null)
+                return Results.Json(
+                    new IVideoResult<List<VideoReviewResponse>>(VideoResultType.VideoResultNotFound, 404,
+                        "Video not found.", null),
+                    statusCode: 404);
+
+            if (IsAccessForbidden(video, currentUser))
+                return Results.Json(
+                    new IVideoResult<List<VideoReviewResponse>>(VideoResultType.VideoResultUnauthorized, 403,
+                        "Video is private or protected.", null),
+                    statusCode: 403);
+
             List<VideoReview>? reviews = null;
             if (cacheService is not null)
             {
@@ -126,13 +154,6 @@ public static class VideoReviewEndpoints
 
             if (reviews is null)
             {
-                var video = await videoService.GetByVideoAsync(videoGuid);
-                if (video is null)
-                    return Results.Json(
-                        new IVideoResult<List<VideoReviewResponse>>(VideoResultType.VideoResultNotFound, 404,
-                            "Video not found.", null),
-                        statusCode: 404);
-
                 var allReviews = video.VideoReviews?.ToList() ?? [];
                 reviews = allReviews.Where(r => r.RootReview == null).ToList();
 
@@ -169,12 +190,27 @@ public static class VideoReviewEndpoints
         Guid videoGuid,
         IVideoService videoService,
         IVideoCacheService? cacheService,
-        ILoggerFactory loggerFactory)
+        ILoggerFactory loggerFactory,
+        ICurrentUserService currentUser)
     {
         var logger = loggerFactory.CreateLogger("VideoReviewEndpoint");
 
         try
         {
+            // 访问控制：私有/定时视频仅作者或被授权者可查看评论回复
+            var video = await videoService.GetByVideoAsync(videoGuid);
+            if (video is null)
+                return Results.Json(
+                    new IVideoResult<List<VideoReviewResponse>>(VideoResultType.VideoResultNotFound, 404,
+                        "Video not found.", null),
+                    statusCode: 404);
+
+            if (IsAccessForbidden(video, currentUser))
+                return Results.Json(
+                    new IVideoResult<List<VideoReviewResponse>>(VideoResultType.VideoResultUnauthorized, 403,
+                        "Video is private or protected.", null),
+                    statusCode: 403);
+
             List<VideoReview>? replies = null;
             if (cacheService is not null)
             {
@@ -183,13 +219,6 @@ public static class VideoReviewEndpoints
 
             if (replies is null)
             {
-                var video = await videoService.GetByVideoAsync(videoGuid);
-                if (video is null)
-                    return Results.Json(
-                        new IVideoResult<List<VideoReviewResponse>>(VideoResultType.VideoResultNotFound, 404,
-                            "Video not found.", null),
-                        statusCode: 404);
-
                 replies = video.VideoReviews?
                     .Where(r => r.RootReview == reviewGuid)
                     .ToList() ?? [];
@@ -274,7 +303,8 @@ public static class VideoReviewEndpoints
         Guid reviewGuid,
         Guid videoGuid,
         IVideoService videoService,
-        ILoggerFactory loggerFactory)
+        ILoggerFactory loggerFactory,
+        ICurrentUserService currentUser)
     {
         var logger = loggerFactory.CreateLogger("VideoReviewEndpoint");
 
@@ -286,6 +316,12 @@ public static class VideoReviewEndpoints
                     new IVideoResult<object>(VideoResultType.VideoResultNotFound, 404,
                         "Video not found.", null),
                     statusCode: 404);
+
+            if (IsAccessForbidden(video, currentUser))
+                return Results.Json(
+                    new IVideoResult<object>(VideoResultType.VideoResultUnauthorized, 403,
+                        "Video is private or protected.", null),
+                    statusCode: 403);
 
             var review = video.VideoReviews?.FirstOrDefault(r => r.VideoReviewGuid == reviewGuid);
             if (review is null)

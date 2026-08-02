@@ -83,7 +83,7 @@ public class RedisConnectionManager : IConnectionManager
         var userStatusKey = $"{UserStatusPrefix}{userId}";
         var status = new UserStatus
         {
-            Status = "Online",
+            IsOnline = true,
             LastOnlineTime = DateTime.UtcNow
         };
 
@@ -102,7 +102,7 @@ public class RedisConnectionManager : IConnectionManager
         var userStatusKey = $"{UserStatusPrefix}{userId}";
         var status = new UserStatus
         {
-            Status = "Offline",
+            IsOnline = false,
             LastOnlineTime = DateTime.UtcNow
         };
 
@@ -129,7 +129,7 @@ public class RedisConnectionManager : IConnectionManager
 
     private record UserStatus
     {
-        public string Status { get; init; } = string.Empty;
+        public bool IsOnline { get; init; }
         public DateTime LastOnlineTime { get; init; }
     }
 }

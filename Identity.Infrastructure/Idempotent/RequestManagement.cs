@@ -1,4 +1,4 @@
-namespace Identity.Infrastructure.Idempotent;
+﻿namespace Identity.Infrastructure.Idempotent;
 
 public class RequestManagement(IdentityDbContext context) : IRequestManagement
 {
@@ -13,6 +13,19 @@ public class RequestManagement(IdentityDbContext context) : IRequestManagement
     {
         var data = await _context.FindAsync<ClientRequest>(request);
         return data != null;
+    }
+
+    /// <summary>
+    /// 删除幂等请求记录（S-14：命令失败时回滚，允许客户端重试）
+    /// </summary>
+    public async Task RemoveRequestAsync(Guid request)
+    {
+        var data = await _context.FindAsync<ClientRequest>(request);
+        if (data is not null)
+        {
+            _context.ClientRequests.Remove(data);
+            await _context.SaveChangesAsync();
+        }
     }
 
     /// <summary>

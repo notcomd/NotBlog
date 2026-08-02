@@ -94,9 +94,10 @@ public class VideoCollectionRepository(VideoDbContext videoDbContext, ILogger<IV
     }
 
 
-    public async Task UpdateByQuoteAsync(VideoQuote videoQuote)
+    public async Task UpdateByQuoteAsync(Guid videoCollectionGuid, VideoQuote videoQuote)
     {
         await videoDbContext.VideoCollections
+            .Where(en => en.VideoCollectionGuid == videoCollectionGuid)
             .ExecuteUpdateAsync(en1 =>
                 en1.SetProperty(en => en.VideoQuote, videoQuote)
             );

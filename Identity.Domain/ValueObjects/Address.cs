@@ -2,7 +2,7 @@ namespace Identity.Domain.ValueObjects;
 
 public sealed class Address : ValueObject
 {
-    protected Address()
+    private Address()
     {
     }
 
@@ -17,17 +17,17 @@ public sealed class Address : ValueObject
         Detail = detail;
     }
 
-    public string Country { get; init; } // 国家
+    public string Country { get; init; } = null!; // 国家
 
-    public string Province { get; init; } // 省份
+    public string Province { get; init; } = null!; // 省份
 
-    public string City { get; init; } // 城市
+    public string City { get; init; } = null!; // 城市
 
-    public string District { get; init; } // 区县
+    public string District { get; init; } = null!; // 区县
 
-    public string Street { get; init; } // 街道
+    public string Street { get; init; } = null!; // 街道
 
-    public string Detail { get; init; } // 详细地址
+    public string Detail { get; init; } = null!; // 详细地址
 
 
     protected override IEnumerable<object> GetAtomicValues()

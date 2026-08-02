@@ -9,6 +9,12 @@ public class UserExternalLoginRepository(IdentityDbContext dbContext) : IUserExt
         await dbContext.UserExternalLogins.AddAsync(login);
     }
 
+    public Task DeleteAsync(UserExternalLogin login)
+    {
+        dbContext.UserExternalLogins.Remove(login);
+        return Task.CompletedTask;
+    }
+
     public async Task<IReadOnlyList<UserExternalLogin>> FindByUserIdAsync(Guid userId)
     {
         return await dbContext.UserExternalLogins

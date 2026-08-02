@@ -1,4 +1,4 @@
-namespace Identity.Domain.IRepository;
+﻿namespace Identity.Domain.IRepository;
 
 public interface IUserRepository : IRepository<User>
 {
@@ -24,6 +24,11 @@ public interface IUserRepository : IRepository<User>
     ValueTask<User?> FindOneByUserAsync(string email);
 
     /// <summary>
+    /// 获取全部用户（含 UserSafety / UserAccessFail 导航）
+    /// </summary>
+    Task<ICollection<User>> FindAllByUserAsync();
+
+    /// <summary>
     /// 添加用户
     /// </summary>
     /// <param name="user">用户</param>
@@ -35,6 +40,18 @@ public interface IUserRepository : IRepository<User>
     /// <param name="phoneNumber">手机号</param>
     /// <param name="message">登录消息</param>
     ValueTask AddByLoginHistoryAsync(PhoneNumber phoneNumber, string message);
+
+    /// <summary>
+    /// 原子递增登录失败计数（S-13，ExecuteUpdate 并发安全）
+    /// </summary>
+    /// <param name="userGuid">用户ID</param>
+    /// <returns>递增后的最新失败计数</returns>
+    Task<int> IncrementAccessFaildCountAsync(Guid userGuid);
+
+    /// <summary>
+    /// 锁定用户登录失败记录（S-13，原子更新 LockOutEnd）
+    /// </summary>
+    Task LockUserAsync(Guid userGuid, DateTimeOffset lockOutEnd);
 
     /// <summary>
     /// 保存手机号验证码

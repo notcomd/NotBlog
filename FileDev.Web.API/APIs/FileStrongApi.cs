@@ -8,9 +8,12 @@ public static class FileStrongApi
 {
     public static RouteGroupBuilder FileStrongApis(this RouteGroupBuilder routeGroupBuilder)
     {
-        var route = routeGroupBuilder.MapGroup("/filestorage");
+        // S-08：文件组/文件上传端点要求认证
+        var route = routeGroupBuilder.MapGroup("/filestorage").RequireAuthorization();
         route.MapPost("/upload_file", UploadFileAsync)
-            .WithHttpLogging(HttpLoggingFields.All, 1, 1);
+            .WithHttpLogging(HttpLoggingFields.All, 1, 1)
+            // S-09：端点级请求体上限（与 Kestrel 100MB 一致）
+            .WithMetadata(new RequestSizeLimitAttribute(100 * 1024 * 1024));
         route.MapPost("/create_file_group", CreateFileGroupAsync)
             .WithHttpLogging(HttpLoggingFields.All, 1, 1);
         return route;
@@ -34,7 +37,9 @@ public static class FileStrongApi
     [FromServices] FileServicesDi servicesDi, [FromBody] CreateFileGroupRequest request, CancellationToken cancellationToken)
     {
         var userGuid=GetUserId(httpContext);
-       
+        if (userGuid == null)
+            return Results.Json(new { error = "未认证" }, statusCode: 401);
+
         var command = new CreateNotFileGroupCommand()
         {
             UserGuid = userGuid.Value,

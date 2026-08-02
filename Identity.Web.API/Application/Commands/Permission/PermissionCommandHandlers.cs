@@ -20,7 +20,7 @@ public class CreatePermissionCommandHandler(
             command.ApiUrl);
 
         await permissionRepository.AddAsync(permission, ct);
-        await permissionRepository.UnitOfWork.SavaEntitiesAsync(ct);
+        await permissionRepository.UnitOfWork.SaveEntitiesAsync(ct);
 
         logger.LogInformation("[CreatePermission] 创建成功: Code={Code}, Id={Id}",
             permission.PermissionCode, permission.PermissionId);
@@ -52,7 +52,7 @@ public class UpdatePermissionCommandHandler(
             command.ApiUrl ?? string.Empty);
 
         await permissionRepository.UpdateAsync(permission, ct);
-        await permissionRepository.UnitOfWork.SavaEntitiesAsync(ct);
+        await permissionRepository.UnitOfWork.SaveEntitiesAsync(ct);
 
         logger.LogInformation("[UpdatePermission] 更新成功: Id={Id}", command.PermissionId);
         return true;
@@ -71,7 +71,7 @@ public class DeletePermissionCommandHandler(
         if (!deleted)
             throw new InvalidOperationException($"权限 '{command.PermissionId}' 不存在");
 
-        await permissionRepository.UnitOfWork.SavaEntitiesAsync(ct);
+        await permissionRepository.UnitOfWork.SaveEntitiesAsync(ct);
 
         logger.LogInformation("[DeletePermission] 软删除成功: Id={Id}", command.PermissionId);
         return true;

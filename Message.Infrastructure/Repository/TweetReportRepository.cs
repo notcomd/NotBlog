@@ -1,4 +1,4 @@
-using Message.Infrastructure.EntityFramework;
+﻿using Message.Infrastructure.EntityFramework;
 
 namespace Message.Infrastructure.Repository;
 
@@ -76,5 +76,10 @@ public class TweetReportRepository : ITweetReportRepository
     public async Task<int> GetPendingCountAsync()
     {
         return await _dbSet.CountAsync(r => r.Status == ReportStatus.Pending);
+    }
+
+    public async Task<int> CountByReporterAsync(Guid reporterGuid)
+    {
+        return await _dbSet.CountAsync(r => r.ReporterGuid == reporterGuid);
     }
 }

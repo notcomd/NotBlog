@@ -1,4 +1,4 @@
-namespace Identity.Infrastructure.Idempotent;
+﻿namespace Identity.Infrastructure.Idempotent;
 
 /// <summary>
 /// 请求管理接口
@@ -19,4 +19,10 @@ public interface IRequestManagement
     /// <typeparam name="T">命令类型</typeparam>
     /// <returns>是否成功创建</returns>
     Task CreateRequestForCommandAsync<T>(Guid request);
+
+    /// <summary>
+    /// 删除幂等请求记录（S-14：命令执行失败时回滚，允许客户端重试）
+    /// </summary>
+    /// <param name="request">请求 ID</param>
+    Task RemoveRequestAsync(Guid request);
 }

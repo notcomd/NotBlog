@@ -1,5 +1,8 @@
+using CacheMemory.Core;
+using Video.Domain.Cache;
 using Video.Domain.Entities;
 using Video.Domain.IRepository;
+using Video.Domain.IServices;
 using Video.Domain.Server;
 
 namespace Video.Web.API.Apis;
@@ -28,7 +31,9 @@ public static class VideoStreamEndpoints
         IVideoService videoService,
         IVideoRepository videoRepository,
         IHttpClientFactory httpClientFactory,
-        ILoggerFactory loggerFactory)
+        ILoggerFactory loggerFactory,
+        ICurrentUserService currentUser,
+        IRedisCacheService redis)
     {
         var logger = loggerFactory.CreateLogger("VideoStreamEndpoint");
 
@@ -38,6 +43,14 @@ public static class VideoStreamEndpoints
 
         if (!video.VideoControl.VideoDisplay || video.VideoControl.VideoDelete)
             return Results.Json(new { error = "Video is not available" }, statusCode: 403);
+
+        // 访问控制（S-07）：私有/定时视频仅作者或被授权者可访问
+        if (video.VideoControl.AuthorVideo != AuthorVideo.VideoPublic)
+        {
+            var callerGuid = currentUser.UserGuid;
+            if (callerGuid == Guid.Empty || video.Affiliated is null || !video.Affiliated.Contains(callerGuid))
+                return Results.Json(new { error = "Video is private or protected" }, statusCode: 403);
+        }
 
         var fileUri = video.VideoFileUri.ToString();
 
@@ -66,19 +79,24 @@ public static class VideoStreamEndpoints
 
         var responseStream = await response.Content.ReadAsStreamAsync();
 
-        // Increment watch count (fire-and-forget)
-        _ = Task.Run(async () =>
+        // S-18.1/S-18.2：观看计数改为请求内同步执行（移除 Task.Run，避免请求作用域 DbContext
+        // 被释放后抛 ObjectDisposedException），并以「视频+用户+5 分钟窗口」SETNX 去重，
+        // 连续 Range 请求 5 分钟内只计 1 次观看；异常不阻断流响应。
+        try
         {
-            try
+            var dedupKey = VideoCacheKeys.VideoWatchWindow(video.VideoGuid, currentUser.UserGuid);
+            var shouldCount = await redis.StringSetIfNotExistsAsync(
+                dedupKey, "1", VideoCacheKeys.VideoWatchWindowTtl);
+            if (shouldCount)
             {
                 video.VideoQuote.UpWatch();
-                await videoRepository.UpdateByQuoteAsync(video.VideoQuote);
+                await videoRepository.UpdateByQuoteAsync(video.VideoGuid, video.VideoQuote);
             }
-            catch (Exception ex)
-            {
-                logger.LogWarning(ex, "Failed to increment watch count for video {VideoGuid}", videoGuid);
-            }
-        });
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to increment watch count for video {VideoGuid}", videoGuid);
+        }
 
         return Results.File(responseStream, contentType, enableRangeProcessing: true);
     }

@@ -11,23 +11,58 @@ public class DeduplicateFileCommandHandler(
     public async Task<DeduplicateFileResponse> Handler(DeduplicateFileCommand request,
         CancellationToken cancellationToken)
     {
+        if (request.UserId == Guid.Empty)
+            throw new ArgumentException("用户ID不能为空");
+        if (string.IsNullOrWhiteSpace(request.FileMd5))
+            throw new ArgumentException("文件哈希不能为空");
+
+        // F-09.1：秒传命中时优先返回调用者自己的记录，避免重复创建
         var existing = await dbContext.NotFiles
             .Where(f => f.FileMd5 == request.FileMd5 && !f.IsDeleted)
-            .Select(f => new DeduplicateFileResponse
-            {
-                Exists = true,
-                FileId = f.FileId,
-                FileUri = f.FileUri.ToString()
-            })
+            .OrderByDescending(f => f.UserId == request.UserId)
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (existing != null)
+        if (existing == null)
         {
-            logger.LogInformation("[Dedup] 文件已存在（秒传）: Md5={Md5}, FileId={FileId}",
-                request.FileMd5, existing.FileId);
-            return existing;
+            logger.LogDebug("[Dedup] 未命中秒传: Md5={Md5}", request.FileMd5);
+            return new DeduplicateFileResponse { Exists = false };
         }
 
-        return new DeduplicateFileResponse { Exists = false };
+        // 调用者已拥有该文件 → 直接返回
+        if (existing.UserId == request.UserId)
+        {
+            logger.LogInformation("[Dedup] 秒传命中（本人文件）: Md5={Md5}, FileId={FileId}",
+                request.FileMd5, existing.FileId);
+            return new DeduplicateFileResponse
+            {
+                Exists = true,
+                FileId = existing.FileId,
+                FileUri = existing.FileUri.ToString()
+            };
+        }
+
+        // 文件属于其他用户 → 为当前用户复用物理文件并建立归属记录
+        // （共享同一 FileUri，物理文件仅存一份；软删除时仅当最后一个活跃记录被删才清理物理文件）
+        var shared = new NotFile.NotFileBuilder()
+            .WithUserId(request.UserId)
+            .WithFileName(existing.FileName)
+            .WithFileTags(existing.FileTags)
+            .WithFileDescription(existing.FileDescription)
+            .WithFileSize(existing.FileSize)
+            .WithFileUri(existing.FileUri)
+            .WithFileMd5(existing.FileMd5)
+            .WithFileIdentity(existing.FileIdentity)
+            .Build();
+        await dbContext.NotFiles.AddAsync(shared, cancellationToken);
+        await dbContext.SaveEntitiesAsync(cancellationToken);
+
+        logger.LogInformation("[Dedup] 秒传命中（复用物理文件并绑定用户）: Md5={Md5}, FileId={FileId}",
+            request.FileMd5, shared.FileId);
+        return new DeduplicateFileResponse
+        {
+            Exists = true,
+            FileId = shared.FileId,
+            FileUri = shared.FileUri.ToString()
+        };
     }
 }

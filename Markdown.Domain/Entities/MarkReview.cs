@@ -44,7 +44,7 @@ public class MarkReview : Entity
 
     public MarkReviewAuth MarkReviewAuth { get; private set; }
 
-    public MarkDown MarkDown { get; private set; }
+    public MarkDown MarkDown { get; private set; } = null!;
 
     public ICollection<MarkReview> MarkReviews { get; private set; }
 

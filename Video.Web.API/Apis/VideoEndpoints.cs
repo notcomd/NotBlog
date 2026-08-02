@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Video.Domain.Entities;
 using Video.Domain.IRepository;
+using Video.Domain.IServices;
 using Video.Domain.Server;
 using Video.Web.API.Application.Commands;
 using Video.Web.API.Dto.Request;
@@ -41,10 +42,17 @@ public static class VideoEndpoints
             .WithDescription("Update video information")
             .RequireAuthorization();
 
+        // --- DELETE 视频（F-08.1：仅作者可删，调用者由服务端解析） ---
+        group.MapDelete("/{videoGuid:guid}", DeleteVideoAsync)
+            .WithName("DeleteVideo")
+            .WithDescription("Delete a video (author only)")
+            .RequireAuthorization();
+
         // --- POST 视频点赞 ---
         group.MapPost("/{videoGuid:guid}/like", LikeVideoAsync)
             .WithName("LikeVideo")
-            .WithDescription("Like/unlike a video (upvote/down/ballot/share)");
+            .WithDescription("Like/unlike a video (upvote/down/ballot/share)")
+            .RequireAuthorization();
 
         return group;
     }
@@ -98,7 +106,8 @@ public static class VideoEndpoints
     /// </summary>
     private static async Task<IResult> UpdateByVideoAsync(
         [FromBody] RequestUpdateByVideo updateVideo,
-        [FromServices] VideoServiceDI videoServiceDI)
+        [FromServices] VideoServiceDI videoServiceDI,
+        [FromServices] ICurrentUserService currentUser)
     {
         if (updateVideo is null)
         {
@@ -110,18 +119,70 @@ public static class VideoEndpoints
 
         var videoModel = await videoServiceDI.VideoRepository.FindByVideoAsync(updateVideo.VideoGuid);
 
-        if (videoModel.VideoGuid != updateVideo.AffiliatedUserGuid)
+        // 作者校验：调用者必须属于视频的 Affiliated 集合（服务端解析的当前用户，不信任客户端传入的 Guid）
+        var callerGuid = currentUser.UserGuid;
+        if (callerGuid == Guid.Empty || videoModel.Affiliated is null || !videoModel.Affiliated.Contains(callerGuid))
             return Results.Json(
                 new IVideoResult<string>(VideoResultType.VideoResultUnauthorized, 403,
                     "Unauthorized update attempt.", "Warning: do not do this!"),
                 statusCode: 403);
 
+        // 修正参数错赋：VideoFileUri 与 VideoCover 各自独立赋值，不能把封面当视频文件 Uri
         var model = new Videos(videoModel.Affiliated, updateVideo.VideoName, updateVideo.VideoCover,
-            updateVideo.VideoCover,
+            updateVideo.VideoFileUri,
             updateVideo.BriefIntroduction, updateVideo.Tags);
         await videoServiceDI.VideoRepository.UpdateByVideoAsync(model);
 
         return Results.Ok(new IVideoResult<string>(VideoResultType.VideoResultOk, 200, "Update successful.", "UP!"));
+    }
+
+    /// <summary>
+    /// 删除视频（F-08.1：仅作者可删；调用者由服务端 ICurrentUserService 解析，不信任客户端 Guid）
+    /// </summary>
+    private static async Task<IResult> DeleteVideoAsync(
+        Guid videoGuid,
+        [FromServices] VideoServiceDI videoServiceDI,
+        [FromServices] ICurrentUserService currentUser)
+    {
+        var logger = videoServiceDI.Logger;
+
+        try
+        {
+            var callerGuid = currentUser.UserGuid;
+            if (callerGuid == Guid.Empty)
+                return Results.Json(
+                    new IVideoResult<string>(VideoResultType.VideoResultUnauthorized, 401,
+                        "Unauthorized. Please login first.", null),
+                    statusCode: 401);
+
+            var command = new DeleteVideoCommand(videoGuid, callerGuid);
+            var deleted = await videoServiceDI.NotMediator.SendAsync(command);
+
+            if (!deleted)
+                return Results.Json(
+                    new IVideoResult<string>(VideoResultType.VideoResultForbidden, 403,
+                        "You are not authorized to delete this video, or it does not exist.", null),
+                    statusCode: 403);
+
+            logger.LogInformation("Video {VideoGuid} deleted by user {UserGuid}", videoGuid, callerGuid);
+            return Results.NoContent();
+        }
+        catch (AggregateException ex)
+        {
+            // DeleteVideoCommandHandler 通过 FindByVideoWithDetailsAsync 加载视频，
+            // 视频不存在时该仓储方法抛 AggregateException。
+            logger.LogWarning(ex, "Video {VideoGuid} not found for deletion", videoGuid);
+            return Results.Json(
+                new IVideoResult<string>(VideoResultType.VideoResultNotFound, 404, "Video not found.", null),
+                statusCode: 404);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to delete video {VideoGuid}", videoGuid);
+            return Results.Json(
+                new IVideoResult<string>(VideoResultType.VideoResultInternalServerError, 500, ex.Message, null),
+                statusCode: 500);
+        }
     }
 
     /// <summary>
@@ -130,12 +191,21 @@ public static class VideoEndpoints
     private static async Task<IResult> LikeVideoAsync(
         Guid videoGuid,
         [FromBody] VideoLikeRequest request,
-        [FromServices] VideoServiceDI videoServiceDI)
+        [FromServices] VideoServiceDI videoServiceDI,
+        [FromServices] ICurrentUserService currentUser)
     {
         var logger = videoServiceDI.Logger;
 
         try
         {
+            // S-18.2：点赞用户由服务端从 JWT 解析，忽略客户端传入的 UserGuid，防伪造上报
+            var callerGuid = currentUser.UserGuid;
+            if (callerGuid == Guid.Empty)
+                return Results.Json(
+                    new IVideoResult<string>(VideoResultType.VideoResultUnauthorized, 401,
+                        "Unauthorized. Please login first.", null),
+                    statusCode: 401);
+
             var validFields = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
                 { "upvote", "down", "ballot", "share" };
 
@@ -148,7 +218,7 @@ public static class VideoEndpoints
             var command = new LikeVideoCommand(
                 RequestId: Guid.CreateVersion7(),
                 VideoGuid: videoGuid,
-                UserGuid: request.UserGuid,
+                UserGuid: callerGuid,
                 Field: request.Field,
                 IsLike: request.IsLike);
 

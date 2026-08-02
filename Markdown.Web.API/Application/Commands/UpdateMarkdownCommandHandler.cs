@@ -51,7 +51,7 @@ public class UpdateMarkdownCommandHandler(
         }
 
         // 8. 通过 UnitOfWork 保存更改
-        await markdownRepository.UnitOfWork.SavaChangesAsync(cancellationToken);
+        await markdownRepository.UnitOfWork.SaveChangesAsync(cancellationToken);
 
         logger.LogInformation("Markdown 文档已更新：{MarkDownGuid}", request.MarkDownGuid);
         return true;

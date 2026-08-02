@@ -43,11 +43,11 @@ public class Roles : Entity, IAggregateRoot
 
     public HashSet<Guid> UserGuid { get; private set; }
 
-    public string RoleName { get; private set; }
+    public string RoleName { get; private set; } = null!;
 
     public string? Attribute { get; private set; }
 
-    public string RoleCode { get; private set; }
+    public string RoleCode { get; private set; } = null!;
 
     public RoleAuthority RoleAuthority { get; private set; }
 

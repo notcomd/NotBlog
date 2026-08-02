@@ -23,14 +23,12 @@ using FileDev.Domain.IServices;
 /// </summary>
 public class FileAccessMiddleware : IMiddleware
 {
-    private readonly RequestDelegate _next;
     private readonly ILogger<FileAccessMiddleware> _logger;
 
     private readonly INotFileService _notFileService;
 
-    public FileAccessMiddleware(RequestDelegate next, ILogger<FileAccessMiddleware> logger, INotFileService notFileService)
+    public FileAccessMiddleware(ILogger<FileAccessMiddleware> logger, INotFileService notFileService)
     {
-        _next = next;
         _logger = logger;
         _notFileService = notFileService;
     }
@@ -65,7 +63,7 @@ public class FileAccessMiddleware : IMiddleware
                 return;
         }
 
-        await _next(context);
+        await next(context);
     }
 
     // ══════════════════════════════════════════════════

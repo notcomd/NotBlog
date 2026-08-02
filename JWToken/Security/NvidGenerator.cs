@@ -1,4 +1,4 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Notcomd.Token.JWT.Security;
@@ -10,6 +10,10 @@ public static class NvidGenerator
 {
     private const string Base62Chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
+    // 拒绝采样阈值：62 * (256 / 62) = 248。字节值 248~255 被丢弃重取，
+    // 使 [0, 247] 内每个值恰好映射 4 个 Base62 字符，消除 byte(256) % 62 的取模偏差。
+    private const int RejectionThreshold = 62 * (256 / 62);
+
     /// <summary>
     /// 生成 NV 风格 ID（前缀 + 随机字符）
     /// </summary>
@@ -17,12 +21,11 @@ public static class NvidGenerator
     /// <param name="prefix">前缀（如 "NV"）</param>
     public static string GenerateNvStyleId(int length, string prefix)
     {
-        var randomBytes = new byte[length];
-        RandomNumberGenerator.Fill(randomBytes);
+        using var rng = RandomNumberGenerator.Create();
 
         Span<char> result = stackalloc char[length];
         for (var i = 0; i < length; i++)
-            result[i] = Base62Chars[randomBytes[i] % Base62Chars.Length];
+            result[i] = GetRandomBase62Char(rng);
 
         return $"{prefix}{result}";
     }
@@ -32,12 +35,11 @@ public static class NvidGenerator
     /// </summary>
     public static string GenerateNvStyleIdWithUuid(int length)
     {
-        var randomBytes = new byte[length];
-        RandomNumberGenerator.Fill(randomBytes);
+        using var rng = RandomNumberGenerator.Create();
 
         Span<char> result = stackalloc char[length];
         for (var i = 0; i < length; i++)
-            result[i] = Base62Chars[randomBytes[i] % Base62Chars.Length];
+            result[i] = GetRandomBase62Char(rng);
 
         return $"BV{result}";
     }
@@ -51,10 +53,35 @@ public static class NvidGenerator
         var hash = SHA256.HashData(Encoding.UTF8.GetBytes(uuid));
 
         Span<char> result = stackalloc char[10];
+        var sourceIndex = 0;
         for (var i = 0; i < 10; i++)
-            result[i] = Base62Chars[hash[i] % Base62Chars.Length];
+        {
+            int value;
+            do
+            {
+                value = hash[sourceIndex++ % hash.Length];
+            } while (value >= RejectionThreshold);
+
+            result[i] = Base62Chars[value % Base62Chars.Length];
+        }
 
         return $"NV{result}";
+    }
+
+    /// <summary>
+    /// 拒绝采样获取单个 Base62 字符：字节值 >= 248 时重取，保证均匀分布。
+    /// </summary>
+    private static char GetRandomBase62Char(RandomNumberGenerator rng)
+    {
+        Span<byte> buffer = stackalloc byte[1];
+        int value;
+        do
+        {
+            rng.GetBytes(buffer);
+            value = buffer[0];
+        } while (value >= RejectionThreshold);
+
+        return Base62Chars[value % Base62Chars.Length];
     }
 
     /// <summary>

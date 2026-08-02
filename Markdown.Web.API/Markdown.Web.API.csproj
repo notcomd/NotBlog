@@ -26,15 +26,21 @@
         <ProjectReference Include="..\Markdown.Domain\Markdown.Domain.csproj"/>
         <ProjectReference Include="..\Markdown.Infrastructure\Markdown.Infrastructure.csproj" />
         <ProjectReference Include="..\NotBlog.ServiceDefaults\NotBlog.ServiceDefaults.csproj" />
+        <ProjectReference Include="..\JWToken\Token.JWT.csproj"/>
         <ProjectReference Include="..\EventBus\EventBus.csproj"/>
+        <ProjectReference Include="..\CommonsInitializer\CommonsInitializer.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0"/>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.10"/>
         <PackageReference Include="Aspire.RabbitMQ.Client" Version="13.4.6"/>
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.11"/>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.9"/>
+        <PackageReference Include="Microsoft.OpenApi" Version="2.7.5"/>
         <PackageReference Include="NotMediator" Version="1.0.5" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.9">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.2"/>
         <PackageReference Include="Scalar.AspNetCore" Version="2.16.4"/>
     </ItemGroup>

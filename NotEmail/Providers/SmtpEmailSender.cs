@@ -32,6 +32,16 @@ public class SmtpEmailSender : IEmailSender
     public async Task<SendResult> SendAsync(EmailMessage message, CancellationToken cancellationToken = default)
     {
         var opt = _options.Value;
+
+        // FromEmail 缺失时直接返回清晰错误，避免后续 NRE
+        // （OAuth2/密码认证的登录账号与 MimeMessage 发件人均依赖 FromEmail）
+        if (string.IsNullOrWhiteSpace(opt.FromEmail))
+        {
+            var error = "[NotEmail] 未配置发件人邮箱（EmailOptions.FromEmail 为空），邮件发送已中止。";
+            _logger?.LogError("{Error}", error);
+            return SendResult.Fail(error);
+        }
+
         var sw = Stopwatch.StartNew();
         Exception? lastException = null;
 
@@ -42,7 +52,7 @@ public class SmtpEmailSender : IEmailSender
                 using var client = new SmtpClient();
                 client.Timeout = opt.SendTimeoutMs;
 
-                var socketType = opt.UseSsl ? SecureSocketOptions.StartTls : SecureSocketOptions.None;
+                var socketType = ResolveSocketOptions(opt);
                 await client.ConnectAsync(opt.SmtpHost, opt.SmtpPort, socketType, cancellationToken);
 
                 // 认证: OAuth 2.0 优先，否则密码认证
@@ -125,6 +135,25 @@ public class SmtpEmailSender : IEmailSender
         }
 
         return results;
+    }
+
+    /// <summary>
+    /// 按端口自动选择安全模式（支持 UseSsl 配置覆盖）：
+    ///   - UseSsl=false → 不加密（SecureSocketOptions.None）
+    ///   - UseSsl=true（默认）→ 按端口：465 隐式 SSL（SslOnConnect），587/25 显式 TLS（StartTls）
+    /// </summary>
+    private static SecureSocketOptions ResolveSocketOptions(EmailOptions opt)
+    {
+        if (!opt.UseSsl)
+            return SecureSocketOptions.None;
+
+        return opt.SmtpPort switch
+        {
+            465 => SecureSocketOptions.SslOnConnect,
+            587 => SecureSocketOptions.StartTls,
+            25 => SecureSocketOptions.StartTls,
+            _ => SecureSocketOptions.StartTls
+        };
     }
 
     private MimeMessage BuildMimeMessage(EmailMessage message, EmailOptions opt)

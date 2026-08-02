@@ -2,6 +2,7 @@ using Message.Domain.Entities;
 using Message.Domain.Enums;
 using Message.Domain.IRepository;
 using Message.Domain.SeedWork;
+using Message.Tests.TestHelpers;
 using Message.Web.API.Application.Commands.Messages;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -43,7 +44,9 @@ public class SendMessageCommandHandlerTests
         _handler = new SendMessageCommandHandler(
             _messageRepository.Object,
             _sessionRepository.Object,
-            new Mock<ILogger<SendMessageCommandHandler>>().Object);
+            new Mock<ILogger<SendMessageCommandHandler>>().Object,
+            CacheServicesTestFactory.CreateUnreadCountCache(),
+            CacheServicesTestFactory.CreateSessionCache());
     }
 
     /// <summary>构造一个携带全部可选参数的命令，测试时按需覆盖类型字段</summary>
@@ -191,5 +194,48 @@ public class SendMessageCommandHandlerTests
     {
         Assert.ThrowsAsync<NotSupportedException>(async () =>
             await _handler.Handler(BuildCommand(MessageType.MessagePush), CancellationToken.None));
+    }
+
+    [Test]
+    public async Task Handler_私聊会话_应设置消息接收者为对端用户()
+    {
+        var receiverId = Guid.NewGuid();
+        var session = new ChatSession(SessionType.Private, SenderId,
+            new HashSet<Guid> { SenderId, receiverId });
+        _sessionRepository.Setup(r => r.GetByIdAsync(SessionId)).ReturnsAsync(session);
+
+        MessageEntity? saved = null;
+        _messageRepository.Setup(r => r.AddAsync(It.IsAny<MessageEntity>()))
+            .Callback<MessageEntity>(m => saved = m)
+            .ReturnsAsync((MessageEntity m) => m);
+
+        await _handler.Handler(BuildCommand(MessageType.MessageText), CancellationToken.None);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(saved, Is.Not.Null);
+            Assert.That(saved!.ReceiverId, Is.EqualTo(receiverId));
+        });
+    }
+
+    [Test]
+    public async Task Handler_群聊会话_不应设置消息接收者()
+    {
+        var groupSession = new ChatSession(SessionType.Group, SenderId,
+            new HashSet<Guid> { SenderId, Guid.NewGuid() }, "测试群");
+        _sessionRepository.Setup(r => r.GetByIdAsync(SessionId)).ReturnsAsync(groupSession);
+
+        MessageEntity? saved = null;
+        _messageRepository.Setup(r => r.AddAsync(It.IsAny<MessageEntity>()))
+            .Callback<MessageEntity>(m => saved = m)
+            .ReturnsAsync((MessageEntity m) => m);
+
+        await _handler.Handler(BuildCommand(MessageType.MessageText), CancellationToken.None);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(saved, Is.Not.Null);
+            Assert.That(saved!.ReceiverId, Is.Null);
+        });
     }
 }

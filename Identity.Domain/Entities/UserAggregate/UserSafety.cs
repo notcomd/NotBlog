@@ -1,4 +1,4 @@
-﻿namespace Identity.Domain.Entities.UserAggregate;
+namespace Identity.Domain.Entities.UserAggregate;
 
 public class UserSafety : Entity
 {
@@ -12,8 +12,6 @@ public class UserSafety : Entity
 
     public UserSafety(Guid userGuid, string securityStamp, string passwordSalt) : this(userGuid)
     {
-        if (userGuid == null)
-            throw new ArgumentNullException(nameof(userGuid));
         if (securityStamp == null)
             throw new ArgumentNullException(nameof(securityStamp));
         SecurityStamp = securityStamp;
@@ -61,9 +59,6 @@ public class UserSafety : Entity
     public static UserSafety CreateByUserSafety(Guid UserGuid, string? securityStamp, string? passwordSalt,
         BlackOrWhite blackOrWhite = BlackOrWhite.AuthorityWhite, UserStatus userStatus = UserStatus.Normal)
     {
-        if (UserGuid == null)
-            throw new ArgumentNullException(nameof(UserGuid), "User cannot be null");
-
         if (string.IsNullOrEmpty(passwordSalt) && string.IsNullOrEmpty(securityStamp))
             throw new ArgumentException("At least one of passwordSalt or securityStamp must be provided",
                 nameof(passwordSalt));

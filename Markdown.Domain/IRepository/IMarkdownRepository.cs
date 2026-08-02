@@ -97,7 +97,27 @@ public interface IMarkdownRepository : IRepository<MarkDown>
     // ===== 列表查询 =====
 
     /// <summary>
-    ///     获取所有非删除的公开 Markdown 文档（分页）
+    ///     获取所有非删除、已审核通过、公开的 Markdown 文档（分页）
     /// </summary>
     Task<IEnumerable<MarkDown>> FindAllMarkDownsAsync(int skip = 0, int take = 20);
+
+    /// <summary>
+    ///     通过聚合根添加子评论到指定父评论（F-10.4）
+    /// </summary>
+    Task<MarkReview> AddChildReviewAsync(Guid markDownGuid, Guid parentReviewGuid, MarkReview childReview);
+
+    /// <summary>
+    ///     评论点赞 +1（线程安全），返回最新点赞数（F-10.5）
+    /// </summary>
+    Task<long> LikeReviewAsync(Guid reviewGuid);
+
+    /// <summary>
+    ///     取消评论点赞 -1（不低于 0），返回最新点赞数（F-10.5）
+    /// </summary>
+    Task<long> RemoveLikeReviewAsync(Guid reviewGuid);
+
+    /// <summary>
+    ///     评论浏览量 +1（线程安全），返回最新浏览数（F-10.5）
+    /// </summary>
+    Task<long> IncreaseReviewViewAsync(Guid reviewGuid);
 }

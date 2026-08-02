@@ -1,4 +1,4 @@
-using Message.Domain.Entities.Tweet;
+﻿using Message.Domain.Entities.Tweet;
 using Message.Domain.Enums;
 using Message.Domain.SeedWork;
 
@@ -102,4 +102,16 @@ public interface ITweetRepository : IRepository<Tweet>
     /// </summary>
     /// <returns>待审核推文数量</returns>
     Task<int> GetPendingAuditCountAsync();
+    /// <summary>
+    /// 获取时间线推文数量（仅统计已审核通过的推文）
+    /// </summary>
+    /// <param name="authorGuids">作者ID列表</param>
+    /// <returns>时间线推文数量</returns>
+    Task<int> GetTimelineCountAsync(IEnumerable<Guid> authorGuids);
+
+    /// <summary>
+    /// 获取热门推文数量（仅统计已审核通过的推文）
+    /// </summary>
+    /// <returns>热门推文数量</returns>
+    Task<int> GetTrendingCountAsync();
 }

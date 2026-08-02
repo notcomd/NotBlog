@@ -7,7 +7,7 @@ public class MarkHistory : Entity, IAggregateRoot
 {
     private MarkHistory()
     {
-        MarkHositoryGuid = Guid.CreateVersion7();
+        MarkHistoryGuid = Guid.CreateVersion7();
         ReadTime = DateTimeOffset.UtcNow;
         LastReadTime = DateTimeOffset.UtcNow;
         ReadingProgress = 0;
@@ -22,7 +22,7 @@ public class MarkHistory : Entity, IAggregateRoot
         Note = note;
     }
 
-    public Guid MarkHositoryGuid { get; init; }
+    public Guid MarkHistoryGuid { get; init; }
     
     /// <summary>
     ///     用户 GUID

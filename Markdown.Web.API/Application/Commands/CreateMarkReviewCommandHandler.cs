@@ -27,7 +27,7 @@ public class CreateMarkReviewCommandHandler(
 
         // 通过聚合根添加评论
         await markdownRepository.AddReviewAsync(request.MarkDownGuid, review);
-        await markdownRepository.UnitOfWork.SavaChangesAsync(cancellationToken);
+        await markdownRepository.UnitOfWork.SaveChangesAsync(cancellationToken);
 
         // 发布集成事件
         await eventBus.PublishAsync(new MarkReviewCreatedIntegrationEvent(

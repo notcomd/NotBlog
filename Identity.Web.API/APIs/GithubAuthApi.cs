@@ -26,7 +26,8 @@ public static class GithubAuthApi
     private static async Task<IResult> Callback(
         [FromServices] GithubAuthDI githubAuthDi,
         [FromServices] INotMediator mediator,
-        [FromQuery] string code)
+        [FromQuery] string code,
+        HttpContext httpContext)
     {
         if (string.IsNullOrEmpty(code))
             return Results.BadRequest(new { error = "授权码为空" });
@@ -35,7 +36,7 @@ public static class GithubAuthApi
         {
             var command = new RegisterByGitHubCommand(code);
             var identityCommand = new IdentifiedCommand<RegisterByGitHubCommand, RegisterByGitHubResult>(
-                Guid.CreateVersion7(), command);
+                IdentityApis.GetIdempotencyKey(httpContext), command);
 
             var result = await mediator.SendAsync(identityCommand);
 
@@ -66,9 +67,11 @@ public static class GithubAuthApi
         }
     }
 
-    private static async Task<bool> LinkGithubByUserAsync([FromServices] GithubAuthDI githubAuthDi,
+    private static Task<bool> LinkGithubByUserAsync([FromServices] GithubAuthDI githubAuthDi,
         [FromBody] LinkUserRequest request)
     {
-        return true;
+        // F-07：显式降级——GitHub 账号绑定请使用 OAuthApis 的 /oauth/link（真实链路）。
+        // TODO(F-07): 若需要此遗留接口，应委托 OAuthService.LinkExternalLoginByCodeAsync。
+        return Task.FromResult(false);
     }
 }

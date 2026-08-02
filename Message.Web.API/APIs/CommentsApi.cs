@@ -22,7 +22,8 @@ public static class CommentsApi
     public static RouteGroupBuilder MapCommentsApi(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/comments")
-            .WithTags("Comments");
+            .WithTags("Comments")
+            .RequireAuthorization();
 
         // POST / — 发布评论
         group.MapPost("/", AddCommentAsync)
@@ -74,9 +75,17 @@ public static class CommentsApi
 
             return Results.Ok(ApiResponse.Ok("评论发布成功"));
         }
+        catch (ArgumentException ex)
+        {
+            return Results.BadRequest(ApiResponse.Error(ex.Message));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.BadRequest(ApiResponse.Error(ex.Message));
+        }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse.Error($"发布评论失败: {ex.Message}"));
+            return Results.Json(ApiResponse.Error($"发布评论失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -92,6 +101,7 @@ public static class CommentsApi
     private static async Task<IResult> GetTweetCommentsAsync(
         Guid tweetGuid,
         [FromServices] INotMediator mediator,
+        [FromServices] ICommentRepository commentRepository,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         CancellationToken ct = default)
@@ -103,7 +113,8 @@ public static class CommentsApi
             var result = new PagedResult<CommentDto>
             {
                 Items = [.. comments.Select(MapToDto)],
-                TotalCount = comments.Count(),
+                // F-06：TotalCount 为总记录数（独立 CountAsync，而非当前页数量）
+                TotalCount = await commentRepository.GetCountByTweetAsync(tweetGuid),
                 Page = page,
                 PageSize = pageSize
             };
@@ -112,7 +123,7 @@ public static class CommentsApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse<PagedResult<CommentDto>>.Error($"获取推文评论失败: {ex.Message}"));
+            return Results.Json(ApiResponse<PagedResult<CommentDto>>.Error($"获取推文评论失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -128,6 +139,7 @@ public static class CommentsApi
     private static async Task<IResult> GetCommentRepliesAsync(
         Guid commentGuid,
         [FromServices] INotMediator mediator,
+        [FromServices] ICommentRepository commentRepository,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,
         CancellationToken ct = default)
@@ -139,7 +151,8 @@ public static class CommentsApi
             var result = new PagedResult<CommentDto>
             {
                 Items = [.. replies.Select(MapToDto)],
-                TotalCount = replies.Count(),
+                // F-06：TotalCount 为总记录数（独立 CountAsync，而非当前页数量）
+                TotalCount = await commentRepository.GetReplyCountAsync(commentGuid),
                 Page = page,
                 PageSize = pageSize
             };
@@ -148,7 +161,7 @@ public static class CommentsApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse<PagedResult<CommentDto>>.Error($"获取评论回复失败: {ex.Message}"));
+            return Results.Json(ApiResponse<PagedResult<CommentDto>>.Error($"获取评论回复失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -175,7 +188,7 @@ public static class CommentsApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse.Error($"删除评论失败: {ex.Message}"));
+            return Results.Json(ApiResponse.Error($"删除评论失败: {ex.Message}"), statusCode: 500);
         }
     }
 

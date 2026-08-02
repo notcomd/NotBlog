@@ -1,4 +1,4 @@
-using CacheMemory.Core;
+﻿using CacheMemory.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using StackExchange.Redis;
@@ -22,6 +22,7 @@ public sealed class CacheMemoryConnection(
     private readonly RedisInstanceOptions _options = options ?? throw new ArgumentNullException(nameof(options));
     private readonly RetryOptions _retryOptions = retryOptions ?? throw new ArgumentNullException(nameof(retryOptions));
 
+
     private IConnectionMultiplexer? _connection;
     private volatile bool _isDisposed;
 
@@ -31,10 +32,14 @@ public sealed class CacheMemoryConnection(
         if (_isDisposed) return;
         _isDisposed = true;
 
-        if (_connection != null)
-            await _connection.CloseAsync().ConfigureAwait(false);
+        var connection = Interlocked.Exchange(ref _connection, null);
+        if (connection != null)
+        {
+            UnregisterConnectionEvents(connection);
+            await connection.CloseAsync().ConfigureAwait(false);
+            connection.Dispose();
+        }
 
-        _connection?.Dispose();
         _connectionLock.Dispose();
     }
 
@@ -56,7 +61,21 @@ public sealed class CacheMemoryConnection(
         if (_connection is { IsConnected: true })
             return _connection;
 
-        return ConnectWithRetry();
+        _connectionLock.Wait();
+        try
+        {
+            // 双重检查，避免并发下重复建连
+            if (_connection is { IsConnected: true })
+                return _connection;
+
+            var newConnection = ConnectWithRetry();
+            ReplaceConnection(newConnection);
+            return newConnection;
+        }
+        finally
+        {
+            _connectionLock.Release();
+        }
     }
 
     /// <summary>
@@ -77,9 +96,9 @@ public sealed class CacheMemoryConnection(
             if (_connection is { IsConnected: true })
                 return _connection;
 
-            _connection = await ConnectWithRetryAsync(cancellationToken).ConfigureAwait(false);
-            RegisterConnectionEvents(_connection);
-            return _connection;
+            var newConnection = await ConnectWithRetryAsync(cancellationToken).ConfigureAwait(false);
+            ReplaceConnection(newConnection);
+            return newConnection;
         }
         finally
         {
@@ -151,22 +170,65 @@ public sealed class CacheMemoryConnection(
     /// </summary>
     private void RegisterConnectionEvents(IConnectionMultiplexer connection)
     {
-        connection.ConnectionFailed += (_, args) =>
-        {
-            _logger.LogWarning("Redis 连接失败: {FailureType}, {Exception}", args.FailureType, args.Exception?.Message);
-            ConnectionFailed?.Invoke(this, args);
-        };
+        connection.ConnectionFailed += OnConnectionFailed;
+        connection.ConnectionRestored += OnConnectionRestored;
+        connection.InternalError += OnInternalError;
+    }
 
-        connection.ConnectionRestored += (_, args) =>
-        {
-            _logger.LogInformation("Redis 连接已恢复: {FailureType}", args.FailureType);
-            ConnectionRestored?.Invoke(this, args);
-        };
+    /// <summary>
+    /// 注销连接事件订阅，防止旧连接泄漏与重复回调。
+    /// </summary>
+    private void UnregisterConnectionEvents(IConnectionMultiplexer connection)
+    {
+        connection.ConnectionFailed -= OnConnectionFailed;
+        connection.ConnectionRestored -= OnConnectionRestored;
+        connection.InternalError -= OnInternalError;
+    }
 
-        connection.InternalError += (_, args) =>
+    /// <summary>
+    /// 用新连接替换旧连接：先注销并释放旧连接，再注册新连接事件。
+    /// 调用方必须持有 <see cref="_connectionLock"/>。
+    /// </summary>
+    private void ReplaceConnection(IConnectionMultiplexer newConnection)
+    {
+        var oldConnection = _connection;
+        if (oldConnection != null)
         {
-            _logger.LogError(args.Exception, "Redis 内部错误: {Origin}", args.Origin);
-        };
+            UnregisterConnectionEvents(oldConnection);
+            DisposeConnection(oldConnection);
+        }
+
+        _connection = newConnection;
+        RegisterConnectionEvents(newConnection);
+    }
+
+    private void DisposeConnection(IConnectionMultiplexer connection)
+    {
+        try
+        {
+            connection.Dispose();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "释放旧 Redis 连接失败");
+        }
+    }
+
+    private void OnConnectionFailed(object? sender, ConnectionFailedEventArgs args)
+    {
+        _logger.LogWarning("Redis 连接失败: {FailureType}, {Exception}", args.FailureType, args.Exception?.Message);
+        ConnectionFailed?.Invoke(this, args);
+    }
+
+    private void OnConnectionRestored(object? sender, ConnectionFailedEventArgs args)
+    {
+        _logger.LogInformation("Redis 连接已恢复: {FailureType}", args.FailureType);
+        ConnectionRestored?.Invoke(this, args);
+    }
+
+    private void OnInternalError(object? sender, InternalErrorEventArgs args)
+    {
+        _logger.LogError(args.Exception, "Redis 内部错误: {Origin}", args.Origin);
     }
 
     /// <summary>

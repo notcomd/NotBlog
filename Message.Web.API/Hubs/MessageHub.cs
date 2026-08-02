@@ -1,4 +1,6 @@
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Message.Infrastructure.Services;
 using Message.Web.API.Dto.Request;
 using Message.Web.API.Grpc;
 using Message.Web.API.Services;
@@ -19,11 +21,11 @@ namespace Message.Web.API.Hubs;
 ///   支持初始化、单分片上传、状态查询、合并、取消及带进度反馈的断点续传。
 /// </para>
 /// <para>
-/// 认证策略（双通道兼容）：
-/// 1. JWT Bearer（从 <c>sub</c>/<c>NameIdentifier</c> Claim 解析用户）；
-/// 2. X-User-Id 请求头（由 Yarp 网关注入，经 <see cref="ICurrentUserService"/> 回退解析）。
+/// 认证策略（修复 S-02）：<c>[Authorize]</c> 强制 JWT 认证，未认证连接一律拒绝；
+/// 用户身份从 <c>sub</c>/<c>NameIdentifier</c>/<c>user_guid</c> Claim 解析，不再回退信任 X-User-Id 请求头。
 /// </para>
 /// </summary>
+[Authorize]
 public class MessageHub : Hub<IMessageClient>
 {
     private readonly IMessageRepository _messageRepository;
@@ -34,6 +36,10 @@ public class MessageHub : Hub<IMessageClient>
     private readonly IFileStorageGrpcClient _fileStorageGrpcClient;
     private readonly ICurrentUserService _currentUserService;
     private readonly ILogger<MessageHub> _logger;
+    private readonly UserStatusCacheService _userStatusCache;
+    private readonly UnreadCountCacheService _unreadCountCache;
+    private readonly SessionCacheService _sessionCache;
+    private readonly RedisCacheService _redisCache;
 
     public MessageHub(
         IMessageRepository messageRepository,
@@ -43,7 +49,11 @@ public class MessageHub : Hub<IMessageClient>
         MessageDeliveryService deliveryService,
         IFileStorageGrpcClient fileStorageGrpcClient,
         ICurrentUserService currentUserService,
-        ILogger<MessageHub> logger)
+        ILogger<MessageHub> logger,
+        UserStatusCacheService userStatusCache,
+        UnreadCountCacheService unreadCountCache,
+        SessionCacheService sessionCache,
+        RedisCacheService redisCache)
     {
         _messageRepository = messageRepository;
         _sessionRepository = sessionRepository;
@@ -53,6 +63,10 @@ public class MessageHub : Hub<IMessageClient>
         _fileStorageGrpcClient = fileStorageGrpcClient;
         _currentUserService = currentUserService;
         _logger = logger;
+        _userStatusCache = userStatusCache;
+        _unreadCountCache = unreadCountCache;
+        _sessionCache = sessionCache;
+        _redisCache = redisCache;
     }
 
     // ═══════════════════════════════════════════════════════
@@ -71,9 +85,10 @@ public class MessageHub : Hub<IMessageClient>
         {
             var connectionId = Context.ConnectionId;
 
-            // 登记连接并维护在线状态（Redis 连接管理器）
+            // 登记连接（Redis 连接管理器）
             await _connectionManager.AddConnectionAsync(userId, connectionId);
-            await _connectionManager.SetUserOnlineAsync(userId);
+            // Q-05：在线状态统一经 UserStatusCacheService 写入（与 RedisConnectionManager 同一套 Key：message:user:status:{userId} + message:online:users）
+            await _userStatusCache.SetUserOnlineAsync(userId);
 
             _logger.LogInformation("用户连接: UserId={UserId}, ConnectionId={ConnectionId}",
                 userId, connectionId);
@@ -111,10 +126,10 @@ public class MessageHub : Hub<IMessageClient>
 
             await _connectionManager.RemoveConnectionAsync(userId, connectionId);
 
-            // 仅当该用户没有任何剩余连接时才置为离线
+            // 仅当该用户没有任何剩余连接时才置为离线（Q-05：经 UserStatusCacheService，唯一在线状态入口）
             var hasOtherConnections = await _connectionManager.HasOtherConnectionsAsync(userId);
             if (!hasOtherConnections)
-                await _connectionManager.SetUserOfflineAsync(userId);
+                await _userStatusCache.SetUserOfflineAsync(userId);
 
             _logger.LogInformation("用户断开连接: UserId={UserId}, ConnectionId={ConnectionId}", userId, connectionId);
 
@@ -195,6 +210,9 @@ public class MessageHub : Hub<IMessageClient>
             await _unitOfWork.SaveEntitiesAsync(Context.ConnectionAborted);
             await Clients.Caller.MessageRead(messageId, userId);
 
+            // Q-05：已读会改变未读数，写时失效未读计数缓存（读时回源 DB 重建）
+            await _unreadCountCache.InvalidateAsync(userId, Context.ConnectionAborted);
+
             // 通知其他参与者该消息已被读取
             var message = await _messageRepository.GetByIdAsync(messageId);
             if (message is not null)
@@ -232,6 +250,11 @@ public class MessageHub : Hub<IMessageClient>
             await _messageRepository.UpdateAsync(recalled);
             await _unitOfWork.SaveEntitiesAsync(Context.ConnectionAborted);
             await Clients.Caller.MessageRecalled(messageId);
+
+            // Q-05：撤回改变消息状态，失效发送者/接收者的消息详情缓存（带用户维度的 Key）
+            await _redisCache.RemoveAsync(MessageCacheKey(recalled.SenderId, messageId), Context.ConnectionAborted);
+            if (recalled.ReceiverId is { } receiverId)
+                await _redisCache.RemoveAsync(MessageCacheKey(receiverId, messageId), Context.ConnectionAborted);
 
             var message = await _messageRepository.GetByIdAsync(messageId);
             if (message is not null)
@@ -521,9 +544,17 @@ public class MessageHub : Hub<IMessageClient>
     private async Task<MessageEntity> SendTextMessageAsync(Guid sessionId, Guid senderId, string content,
         CancellationToken cancellationToken)
     {
-        await ValidateSessionAndSenderAsync(sessionId, senderId);
+        var session = await ValidateSessionAndSenderAsync(sessionId, senderId);
+
+        // S-17：内容净化 + 长度校验 + 敏感词过滤（拒绝策略，与 REST 通道 SendMessageCommand 保持一致）
+        content = SafeContentSanitizer.Sanitize(content);
+        if (content.Length > 2000)
+            throw new HubException("消息内容不能超过2000个字符");
+        RejectIfSensitive(content, "消息");
 
         var message = MessageEntity.CreateTextMessage(sessionId, senderId, content);
+        ApplyPrivateReceiver(message, session, senderId);
+
         await _messageRepository.AddAsync(message);
 
         await UpdateSessionLastMessageAsync(sessionId, message.MessageId, content);
@@ -535,9 +566,12 @@ public class MessageHub : Hub<IMessageClient>
     private async Task<MessageEntity> SendImageMessageAsync(Guid sessionId, Guid senderId, Uri mediaUri,
         string? caption = null, string? thumbnailUri = null, CancellationToken cancellationToken = default)
     {
-        await ValidateSessionAndSenderAsync(sessionId, senderId);
+        var session = await ValidateSessionAndSenderAsync(sessionId, senderId);
 
+        caption = SanitizeField(caption);
         var message = MessageEntity.CreateImageMessage(sessionId, senderId, mediaUri, caption, thumbnailUri);
+        ApplyPrivateReceiver(message, session, senderId);
+
         await _messageRepository.AddAsync(message);
 
         await UpdateSessionLastMessageAsync(sessionId, message.MessageId, "[图片]");
@@ -550,10 +584,13 @@ public class MessageHub : Hub<IMessageClient>
         double durationSeconds, string? caption = null, string? thumbnailUri = null,
         CancellationToken cancellationToken = default)
     {
-        await ValidateSessionAndSenderAsync(sessionId, senderId);
+        var session = await ValidateSessionAndSenderAsync(sessionId, senderId);
 
+        caption = SanitizeField(caption);
         var message =
             MessageEntity.CreateVideoMessage(sessionId, senderId, mediaUri, durationSeconds, caption, thumbnailUri);
+        ApplyPrivateReceiver(message, session, senderId);
+
         await _messageRepository.AddAsync(message);
 
         await UpdateSessionLastMessageAsync(sessionId, message.MessageId, "[视频]");
@@ -565,9 +602,12 @@ public class MessageHub : Hub<IMessageClient>
     private async Task<MessageEntity> SendAudioMessageAsync(Guid sessionId, Guid senderId, Uri mediaUri,
         double durationSeconds, string? caption = null, CancellationToken cancellationToken = default)
     {
-        await ValidateSessionAndSenderAsync(sessionId, senderId);
+        var session = await ValidateSessionAndSenderAsync(sessionId, senderId);
 
+        caption = SanitizeField(caption);
         var message = MessageEntity.CreateAudioMessage(sessionId, senderId, mediaUri, durationSeconds, caption);
+        ApplyPrivateReceiver(message, session, senderId);
+
         await _messageRepository.AddAsync(message);
 
         await UpdateSessionLastMessageAsync(sessionId, message.MessageId, "[语音]");
@@ -579,9 +619,11 @@ public class MessageHub : Hub<IMessageClient>
     private async Task<MessageEntity> SendFileMessageAsync(Guid sessionId, Guid senderId, Uri mediaUri, string fileName,
         long fileSize, string mimeType, CancellationToken cancellationToken)
     {
-        await ValidateSessionAndSenderAsync(sessionId, senderId);
+        var session = await ValidateSessionAndSenderAsync(sessionId, senderId);
 
         var message = MessageEntity.CreateFileMessage(sessionId, senderId, mediaUri, fileName, fileSize, mimeType);
+        ApplyPrivateReceiver(message, session, senderId);
+
         await _messageRepository.AddAsync(message);
 
         await UpdateSessionLastMessageAsync(sessionId, message.MessageId, $"[文件] {fileName}");
@@ -593,9 +635,12 @@ public class MessageHub : Hub<IMessageClient>
     private async Task<MessageEntity> SendLocationMessageAsync(Guid sessionId, Guid senderId, double latitude,
         double longitude, string locationName, CancellationToken cancellationToken)
     {
-        await ValidateSessionAndSenderAsync(sessionId, senderId);
+        var session = await ValidateSessionAndSenderAsync(sessionId, senderId);
 
+        locationName = SafeContentSanitizer.Sanitize(locationName);
         var message = MessageEntity.CreateLocationMessage(sessionId, senderId, latitude, longitude, locationName);
+        ApplyPrivateReceiver(message, session, senderId);
+
         await _messageRepository.AddAsync(message);
 
         await UpdateSessionLastMessageAsync(sessionId, message.MessageId, $"[位置] {locationName}");
@@ -607,9 +652,13 @@ public class MessageHub : Hub<IMessageClient>
     private async Task<MessageEntity> SendLinkMessageAsync(Guid sessionId, Guid senderId, string linkUrl,
         string? title = null, string? description = null, CancellationToken cancellationToken = default)
     {
-        await ValidateSessionAndSenderAsync(sessionId, senderId);
+        var session = await ValidateSessionAndSenderAsync(sessionId, senderId);
 
+        title = SanitizeField(title);
+        description = SanitizeField(description);
         var message = MessageEntity.CreateLinkMessage(sessionId, senderId, linkUrl, title, description);
+        ApplyPrivateReceiver(message, session, senderId);
+
         await _messageRepository.AddAsync(message);
 
         await UpdateSessionLastMessageAsync(sessionId, message.MessageId, title ?? linkUrl);
@@ -618,12 +667,26 @@ public class MessageHub : Hub<IMessageClient>
         return message;
     }
 
+    /// <summary>S-17：净化可选文本字段（null/空白原样保留，避免引入空字符串语义差异）。</summary>
+    private static string? SanitizeField(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? value : SafeContentSanitizer.Sanitize(value);
+
+    /// <summary>S-17：敏感词拒绝策略，命中时抛出 <see cref="HubException"/>（与 REST 通道语义一致）。</summary>
+    private static void RejectIfSensitive(string content, string fieldName)
+    {
+        var (isSensitive, matchedWord) = SensitiveWordFilter.ContainsSensitive(content);
+        if (isSensitive)
+            throw new HubException($"{fieldName}包含敏感内容（{matchedWord}），已拒绝发送");
+    }
+
     private async Task<MessageEntity> SendExpressionMessageAsync(Guid sessionId, Guid senderId, string expressionCode,
         CancellationToken cancellationToken)
     {
-        await ValidateSessionAndSenderAsync(sessionId, senderId);
+        var session = await ValidateSessionAndSenderAsync(sessionId, senderId);
 
         var message = MessageEntity.CreateExpressionMessage(sessionId, senderId, expressionCode);
+        ApplyPrivateReceiver(message, session, senderId);
+
         await _messageRepository.AddAsync(message);
 
         await UpdateSessionLastMessageAsync(sessionId, message.MessageId, "[表情]");
@@ -632,16 +695,32 @@ public class MessageHub : Hub<IMessageClient>
         return message;
     }
 
-    private async Task ValidateSessionAndSenderAsync(Guid sessionId, Guid senderId)
+    /// <summary>
+    /// F-04：私聊会话设置消息接收者（对端用户），激活离线消息/未读查询（GetUnreadMessagesAsync 依赖 ReceiverId）；群聊保持 null。
+    /// </summary>
+    private static void ApplyPrivateReceiver(MessageEntity message, ChatSession session, Guid senderId)
+    {
+        if (session.SessionType != SessionType.Private)
+            return;
+        var receiver = session.Participants.FirstOrDefault(p => p != senderId);
+        if (receiver != Guid.Empty)
+            message.SetReceiver(receiver);
+    }
+
+    private async Task<ChatSession> ValidateSessionAndSenderAsync(Guid sessionId, Guid senderId)
     {
         var session = await _sessionRepository.GetByIdAsync(sessionId);
         if (session == null)
             throw new InvalidOperationException("会话不存在");
+        return session;
     }
 
     private async Task UpdateSessionLastMessageAsync(Guid sessionId, Guid messageId, string? content)
     {
         await _sessionRepository.UpdateLastMessageAsync(sessionId, messageId, content);
+
+        // Q-05：会话最后消息已变化，失效会话详情缓存
+        await _sessionCache.InvalidateSessionAsync(sessionId, Context.ConnectionAborted);
     }
 
     /// <summary>解析并校验必填 URI 参数，缺失时抛出 <see cref="HubException"/></summary>
@@ -658,23 +737,26 @@ public class MessageHub : Hub<IMessageClient>
     /// <summary>会话对应的 SignalR 群组名</summary>
     private static string SessionGroupName(Guid sessionId) => MessageDeliveryService.SessionGroupName(sessionId);
 
+    /// <summary>消息详情缓存 Key（与 MessagesApi.GetMessageAsync 保持一致，带用户维度防止跨用户缓存命中绕过权限）</summary>
+    private static string MessageCacheKey(Guid userId, Guid messageId) => $"message:msg:{userId}:{messageId}";
+
     /// <summary>用于记录连接是否已加入某会话群组的 Items 键</summary>
     private static string GroupKey(Guid sessionId) => $"joined:{sessionId}";
 
     /// <summary>
-    /// 获取当前连接的用户ID（双通道认证：JWT Claim 优先，X-User-Id 头回退）。
+    /// 获取当前连接的用户ID（JWT 认证后的 Claim：sub / NameIdentifier / user_guid）。
+    /// 兜底读取 <see cref="ICurrentUserService"/>（其数据仅由认证后的 UserContextMiddleware 从 JWT Claim 注入，与上方同源）。
     /// </summary>
     /// <returns>用户ID</returns>
-    /// <exception cref="HubException">两个认证通道均无法解析用户时抛出</exception>
+    /// <exception cref="HubException">无法解析用户时抛出</exception>
     private Guid GetUserId()
     {
-        // 通道1：JWT Bearer（sub / NameIdentifier Claim）
         var userIdClaim = Context.User?.FindFirst("sub")?.Value
-                          ?? Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                          ?? Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                          ?? Context.User?.FindFirst("user_guid")?.Value;
         if (Guid.TryParse(userIdClaim, out var userId))
             return userId;
 
-        // 通道2：X-User-Id 请求头（Yarp 网关注入，经 CurrentUserService 解析）
         try
         {
             return _currentUserService.GetUserId();

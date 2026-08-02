@@ -1,4 +1,4 @@
-using Message.Domain.Entities.MessageContent;
+﻿using Message.Domain.Entities.MessageContent;
 using Message.Domain.Entities.Recall;
 using Message.Domain.Enums;
 using Message.Domain.Events;
@@ -44,7 +44,7 @@ public class Message : Entity, IAggregateRoot
     public string? Content { get; private set; }
     public Uri? MediaUri { get; private set; }
     public string? ThumbnailUri { get; private set; }
-    public double? FileSize { get; private set; }
+    public long? FileSize { get; private set; }
     public double? Duration { get; private set; }
     public string? FileName { get; private set; }
     public string? MimeType { get; private set; }
@@ -120,7 +120,7 @@ public class Message : Entity, IAggregateRoot
     }
 
     public static Message CreateFileMessage(Guid sessionId, Guid senderId, Uri mediaUri, string fileName,
-        double fileSize, string mimeType)
+        long fileSize, string mimeType)
     {
         var fileContent = FileContent.Create(mediaUri, fileName, fileSize, mimeType);
         var message = new Message(sessionId, senderId, MessageType.MessageFile, null)
@@ -212,6 +212,9 @@ public class Message : Entity, IAggregateRoot
     {
         if (IsRecalled)
             throw new InvalidOperationException("消息已撤回");
+        // 修复 S-05：仅消息发送者可撤回，防止越权撤回他人消息
+        if (recalledBy != SenderId)
+            throw new InvalidOperationException("只能撤回自己发送的消息");
         if (!MessageRecall.CanRecall(SentTime))
             throw new InvalidOperationException("超过撤回时限");
 

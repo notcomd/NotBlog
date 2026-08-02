@@ -1,3 +1,5 @@
+using Message.Web.API.Hubs;
+using Microsoft.AspNetCore.SignalR;
 using NotMediator;
 
 namespace Message.Web.API.Application.DomainEventHandlers;
@@ -5,12 +7,12 @@ namespace Message.Web.API.Application.DomainEventHandlers;
 public class MessageSentEventHandler : INotificationHandler<MessageSentEvent>
 {
     private readonly IConnectionManager _connectionManager;
-    private readonly IHubContext<Hub> _hubContext;
+    private readonly IHubContext<MessageHub, IMessageClient> _hubContext;
     private readonly ILogger<MessageSentEventHandler> _logger;
 
     public MessageSentEventHandler(
         IConnectionManager connectionManager,
-        IHubContext<Hub> hubContext,
+        IHubContext<MessageHub, IMessageClient> hubContext,
         ILogger<MessageSentEventHandler> logger)
     {
         _connectionManager = connectionManager;
@@ -20,10 +22,10 @@ public class MessageSentEventHandler : INotificationHandler<MessageSentEvent>
 
     public async Task Handler(MessageSentEvent notification, CancellationToken cancellationToken)
     {
-        _logger.LogDebug("处理消息发送事件: MessageId={MessageId}, SessionId={SessionId}", 
+        _logger.LogDebug("处理消息发送事件: MessageId={MessageId}, SessionId={SessionId}",
             notification.MessageId, notification.SessionId);
 
-        _logger.LogInformation("消息 {MessageId} 已发送到会话 {SessionId}", 
+        _logger.LogInformation("消息 {MessageId} 已发送到会话 {SessionId}",
             notification.MessageId, notification.SessionId);
 
         await Task.CompletedTask;

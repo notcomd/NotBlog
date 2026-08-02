@@ -29,6 +29,9 @@ namespace Identity.Infrastructure.Migrations
             modelBuilder.HasSequence("UserAccessFailseq")
                 .IncrementsBy(10);
 
+            modelBuilder.HasSequence("UserLoginHistoryseq")
+                .IncrementsBy(10);
+
             modelBuilder.HasSequence("UserSafarseq")
                 .IncrementsBy(10);
 
@@ -226,7 +229,7 @@ namespace Identity.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.PrimitiveCollection<HashSet<Guid>>("RoleGuids")
+                    b.PrimitiveCollection<List<Guid>>("RoleGuids")
                         .IsRequired()
                         .HasColumnType("uuid[]")
                         .HasColumnName("role_guids");
@@ -264,7 +267,7 @@ namespace Identity.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.PrimitiveCollection<HashSet<Guid>>("RoleGroupGuids")
+                    b.PrimitiveCollection<List<Guid>>("RoleGroupGuids")
                         .IsRequired()
                         .HasColumnType("uuid[]")
                         .HasColumnName("role_group_guids");
@@ -290,7 +293,7 @@ namespace Identity.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("user_guid");
 
-                    b.PrimitiveCollection<HashSet<Guid>>("AuthorGuids")
+                    b.PrimitiveCollection<List<Guid>>("AuthorGuids")
                         .IsRequired()
                         .HasColumnType("uuid[]");
 
@@ -323,7 +326,7 @@ namespace Identity.Infrastructure.Migrations
                         .HasColumnType("character varying(50)")
                         .HasColumnName("user_name");
 
-                    b.PrimitiveCollection<HashSet<Guid>>("UserRoleGuid")
+                    b.PrimitiveCollection<List<Guid>>("UserRoleGuid")
                         .IsRequired()
                         .HasColumnType("uuid[]")
                         .HasColumnName("user_role_guid");
@@ -359,6 +362,35 @@ namespace Identity.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("UserAccessFail", (string)null);
+                });
+
+            modelBuilder.Entity("Identity.Domain.Entities.UserAggregate.UserLoginHistory", b =>
+                {
+                    b.Property<Guid>("LoginGuid")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreateDataTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Id")
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<int>("Id"), "UserLoginHistoryseq");
+
+                    b.Property<string>("LoginMessage")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<Guid>("UserGuid")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("LoginGuid");
+
+                    b.ToTable("UserLoginHistory", (string)null);
                 });
 
             modelBuilder.Entity("Identity.Domain.Entities.UserAggregate.UserSafety", b =>
@@ -471,6 +503,62 @@ namespace Identity.Infrastructure.Migrations
                     b.ToTable("ClientRequest", (string)null);
                 });
 
+            modelBuilder.Entity("Notcomd.EventBus.Outbox.OutboxMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<string>("CorrelationId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("EventData")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("LastError")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<DateTimeOffset?>("NextRetryAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("ProcessCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<DateTimeOffset?>("SentAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SentAt")
+                        .HasDatabaseName("IX_OutboxMessages_SentAt");
+
+                    b.HasIndex("Status", "CreatedAt")
+                        .HasDatabaseName("IX_OutboxMessages_Status_CreatedAt");
+
+                    b.ToTable("OutboxMessages", (string)null);
+                });
+
             modelBuilder.Entity("RoleGroupPermissions", b =>
                 {
                     b.Property<Guid>("PermissionGuid")
@@ -503,6 +591,26 @@ namespace Identity.Infrastructure.Migrations
 
             modelBuilder.Entity("Identity.Domain.Entities.UserAggregate.User", b =>
                 {
+                    b.OwnsOne("Identity.Domain.ValueObjects.PhoneNumber", "PhoneNumber", b1 =>
+                        {
+                            b1.Property<Guid>("UserGuid")
+                                .HasColumnType("uuid");
+
+                            b1.Property<long>("AddressRegion")
+                                .HasColumnType("bigint");
+
+                            b1.Property<string>("PhoneCode")
+                                .IsRequired()
+                                .HasColumnType("text");
+
+                            b1.HasKey("UserGuid");
+
+                            b1.ToTable("User");
+
+                            b1.WithOwner()
+                                .HasForeignKey("UserGuid");
+                        });
+
                     b.OwnsOne("Identity.Domain.ValueObjects.Address", "UserAddress", b1 =>
                         {
                             b1.Property<Guid>("UserGuid")
@@ -540,26 +648,6 @@ namespace Identity.Infrastructure.Migrations
                                 .HasForeignKey("UserGuid");
                         });
 
-                    b.OwnsOne("Identity.Domain.ValueObjects.PhoneNumber", "PhoneNumber", b1 =>
-                        {
-                            b1.Property<Guid>("UserGuid")
-                                .HasColumnType("uuid");
-
-                            b1.Property<long>("AddressRegion")
-                                .HasColumnType("bigint");
-
-                            b1.Property<string>("PhoneCode")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.HasKey("UserGuid");
-
-                            b1.ToTable("User");
-
-                            b1.WithOwner()
-                                .HasForeignKey("UserGuid");
-                        });
-
                     b.Navigation("PhoneNumber");
 
                     b.Navigation("UserAddress");
@@ -571,6 +659,32 @@ namespace Identity.Infrastructure.Migrations
                         .WithOne("UserAccessFail")
                         .HasForeignKey("Identity.Domain.Entities.UserAggregate.UserAccessFail", "UserGuid")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Identity.Domain.Entities.UserAggregate.UserLoginHistory", b =>
+                {
+                    b.OwnsOne("Identity.Domain.ValueObjects.PhoneNumber", "PhoneNumber", b1 =>
+                        {
+                            b1.Property<Guid>("UserLoginHistoryLoginGuid")
+                                .HasColumnType("uuid");
+
+                            b1.Property<long>("AddressRegion")
+                                .HasColumnType("bigint");
+
+                            b1.Property<string>("PhoneCode")
+                                .IsRequired()
+                                .HasColumnType("text");
+
+                            b1.HasKey("UserLoginHistoryLoginGuid");
+
+                            b1.ToTable("UserLoginHistory");
+
+                            b1.WithOwner()
+                                .HasForeignKey("UserLoginHistoryLoginGuid");
+                        });
+
+                    b.Navigation("PhoneNumber")
                         .IsRequired();
                 });
 

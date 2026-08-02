@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          # 10.0.x：编译目标；8.0.x：Aspire AppHost SDK 的 RuntimeIdentifier.Tool 为 net8.0 目标，需 8.0 运行时
+          dotnet-version: |
+            10.0.x
+            8.0.x
+
+      - name: Restore
+        run: dotnet restore NotBlog.sln
+
+      - name: Build
+        run: dotnet build NotBlog.sln --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test NotBlog.sln --no-build --configuration Release
+
+      - name: Vulnerable dependency scan
+        run: dotnet list NotBlog.sln package --vulnerable --include-transitive

@@ -13,16 +13,19 @@ public static class RoleGroupApi
             .WithHttpLogging(HttpLoggingFields.All);
 
         route.MapPost(string.Empty, CreateRoleGroupAsync)
+            .RequireAuthorization("AdminOnly")
             .WithDescription("创建角色组")
             .Produces<CreateRoleGroupResult>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest);
 
         route.MapPut("/{groupId:guid}", UpdateRoleGroupAsync)
+            .RequireAuthorization("AdminOnly")
             .WithDescription("更新角色组")
             .Produces<bool>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest);
 
         route.MapDelete("/{groupId:guid}", DeleteRoleGroupAsync)
+            .RequireAuthorization("AdminOnly")
             .WithDescription("删除角色组（软删除）")
             .Produces<bool>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest);
@@ -32,12 +35,13 @@ public static class RoleGroupApi
 
     private static async Task<IResult> CreateRoleGroupAsync(
         [FromServices] INotMediator mediator,
-        [FromBody] CreateRoleGroupCommand command)
+        [FromBody] CreateRoleGroupCommand command,
+        HttpContext httpContext)
     {
         try
         {
             var identityCommand = new IdentifiedCommand<CreateRoleGroupCommand, CreateRoleGroupResult>(
-                Guid.CreateVersion7(), command);
+                IdentityApis.GetIdempotencyKey(httpContext), command);
             var result = await mediator.SendAsync(identityCommand);
 
             return string.IsNullOrEmpty(result.RoleGroupName)
@@ -53,13 +57,14 @@ public static class RoleGroupApi
     private static async Task<IResult> UpdateRoleGroupAsync(
         [FromServices] INotMediator mediator,
         [FromRoute] Guid groupId,
-        [FromBody] UpdateRoleGroupCommand update)
+        [FromBody] UpdateRoleGroupCommand update,
+        HttpContext httpContext)
     {
         try
         {
             var command = update with { RoleGroupGuid = groupId };
             var identityCommand = new IdentifiedCommand<UpdateRoleGroupCommand, bool>(
-                Guid.CreateVersion7(), command);
+                IdentityApis.GetIdempotencyKey(httpContext), command);
             var result = await mediator.SendAsync(identityCommand);
             return Results.Ok(new { success = result });
         }
@@ -71,13 +76,14 @@ public static class RoleGroupApi
 
     private static async Task<IResult> DeleteRoleGroupAsync(
         [FromServices] INotMediator mediator,
-        [FromRoute] Guid groupId)
+        [FromRoute] Guid groupId,
+        HttpContext httpContext)
     {
         try
         {
             var command = new DeleteRoleGroupCommand(groupId);
             var identityCommand = new IdentifiedCommand<DeleteRoleGroupCommand, bool>(
-                Guid.CreateVersion7(), command);
+                IdentityApis.GetIdempotencyKey(httpContext), command);
             var result = await mediator.SendAsync(identityCommand);
             return Results.Ok(new { success = result });
         }

@@ -4,7 +4,7 @@ namespace NotBlog_Yarp.Permission;
 
 /// <summary>
 /// 权限路由配置选项
-/// 
+///
 /// 从 appsettings.json 的 "PermissionRoutes" 节绑定。
 /// 使用 IOptions<T> 模式，支持配置校验和 IOptionsSnapshot 热重载。
 /// </summary>
@@ -20,6 +20,16 @@ public class PermissionOptions
 
     /// <summary>HTTP 方法 → 路径模式 → 权限编码的映射列表（可为空数组，未映射的路径默认放行）</summary>
     public RouteMapping[] Mappings { get; init; } = [];
+
+    /// <summary>
+    /// 权限服务失败时的降级策略（F-12）：
+    /// "Open"（默认）= fail-open：权限服务异常/不可用/端点缺失时放行请求并记录日志（可用性优先）；
+    /// "Closed" = fail-closed：权限服务异常时拒绝（403，安全性优先）。
+    /// </summary>
+    public string FailPolicy { get; init; } = "Open";
+
+    /// <summary>是否 fail-open（权限服务失败时放行）</summary>
+    public bool FailOpen => !string.Equals(FailPolicy, "Closed", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>开发用户配置（仅 ConfigPermissionServiceClient 使用）</summary>
     public Dictionary<string, DevUser>? DevUsers { get; init; }

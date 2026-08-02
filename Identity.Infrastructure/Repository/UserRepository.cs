@@ -1,4 +1,4 @@
-namespace Identity.Infrastructure.Repository;
+﻿namespace Identity.Infrastructure.Repository;
 
 public class UserRepository(IdentityDbContext userDbContext, IDistributedCache distributedCache)
     : IUserRepository
@@ -28,13 +28,6 @@ public class UserRepository(IdentityDbContext userDbContext, IDistributedCache d
             .SingleOrDefaultAsync();
     }
 
-    public async ValueTask AddOneByUserAsync(User user)
-    {
-        if (user is null)
-            throw new ArgumentNullException(nameof(user));
-        await userDbContext.Users.AddAsync(user);
-    }
-
     public async ValueTask<User?> FindOneByUserAsync(string email)
     {
         if (string.IsNullOrWhiteSpace(email))
@@ -48,15 +41,58 @@ public class UserRepository(IdentityDbContext userDbContext, IDistributedCache d
             .FirstOrDefaultAsync();
     }
 
+    public async Task<ICollection<User>> FindAllByUserAsync()
+    {
+        return await userDbContext.Users
+            .Include(u => u.UserSafety)
+            .Include(u => u.UserAccessFail)
+            .AsSplitQuery()
+            .ToListAsync();
+    }
+
+    public async ValueTask AddOneByUserAsync(User user)
+    {
+        if (user is null)
+            throw new ArgumentNullException(nameof(user));
+        await userDbContext.Users.AddAsync(user);
+    }
+
     public async ValueTask AddByLoginHistoryAsync(PhoneNumber phoneNumber, string message)
     {
         var find = await FindOneByUserAsync(phoneNumber);
         if (find is not null)
         {
-            var userid = find.UserGuid;
+            // F-07：落库登录历史
+            var history = new UserLoginHistory(find.UserGuid, phoneNumber, message, find.UserEmail);
+            await userDbContext.UserLoginHistories.AddAsync(history);
+            await userDbContext.SaveChangesAsync();
         }
     }
 
+    /// <summary>
+    /// 原子递增登录失败计数（S-13）：ExecuteUpdate 在数据库端完成 +1，避免并发读改写竞态
+    /// </summary>
+    public async Task<int> IncrementAccessFaildCountAsync(Guid userGuid)
+    {
+        await userDbContext.Set<UserAccessFail>()
+            .Where(x => x.UserGuid == userGuid)
+            .ExecuteUpdateAsync(s => s.SetProperty(x => x.AccessFaildCount, x => x.AccessFaildCount + 1));
+
+        return await userDbContext.Set<UserAccessFail>()
+            .Where(x => x.UserGuid == userGuid)
+            .Select(x => x.AccessFaildCount)
+            .SingleOrDefaultAsync();
+    }
+
+    /// <summary>
+    /// 锁定用户登录失败记录（S-13）：原子更新 LockOutEnd
+    /// </summary>
+    public async Task LockUserAsync(Guid userGuid, DateTimeOffset lockOutEnd)
+    {
+        await userDbContext.Set<UserAccessFail>()
+            .Where(x => x.UserGuid == userGuid)
+            .ExecuteUpdateAsync(s => s.SetProperty(x => x.LockOutEnd, lockOutEnd));
+    }
 
     public async ValueTask SaveByPhoneNumberAsync(PhoneNumber phoneNumber, string code)
     {
@@ -78,7 +114,6 @@ public class UserRepository(IdentityDbContext userDbContext, IDistributedCache d
             {
                 AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
             });
-        // return ValueTask.CompletedTask;
     }
 
     public Task UpdateByUserAsync(User user)
@@ -93,11 +128,13 @@ public class UserRepository(IdentityDbContext userDbContext, IDistributedCache d
         return Task.CompletedTask;
     }
 
-    public ValueTask<string> RetirievePhoneCodeAsync(PhoneNumber phoneNumber)
+    public async ValueTask<string> RetirievePhoneCodeAsync(PhoneNumber phoneNumber)
     {
-        throw new NotImplementedException();
+        var key = $"PhoneCode{phoneNumber.PhoneCode}_{phoneNumber.AddressRegion}";
+        var code = await distributedCache.GetStringAsync(key);
+        await distributedCache.RemoveAsync(key);
+        return code ?? string.Empty;
     }
-
 
     public async ValueTask<string> FindPhoneNumberAsync(PhoneNumber phoneNumber)
     {

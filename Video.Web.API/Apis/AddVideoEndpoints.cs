@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Video.Domain.Entities;
+using Video.Domain.IServices;
 using Video.Web.API.Application.Commands;
 using Video.Web.API.Dto.Request;
 using Video.Domain.ValueObjects;
@@ -23,6 +24,7 @@ public static class AddVideoEndpoints
             .Produces<IVideoResult<string>>(200)
             .ProducesProblem(400)
             .ProducesProblem(500)
+            .RequireAuthorization()
             .WithMetadata(new RequestSizeLimitAttribute(500_000_000)); // 500MB max
 
         return group;
@@ -32,7 +34,8 @@ public static class AddVideoEndpoints
         [FromForm] RequestAddVideo request,
         IFormFile videoFile,
         [FromForm] IFormFile? coverImage,
-        [FromServices] VideoServiceDI videoServiceDI)
+        [FromServices] VideoServiceDI videoServiceDI,
+        [FromServices] ICurrentUserService currentUser)
     {
         var logger = videoServiceDI.Logger;
 
@@ -43,6 +46,31 @@ public static class AddVideoEndpoints
                     new IVideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
                         "Video file is required.", null),
                     statusCode: 400);
+
+            // F-08.2：上传类型白名单校验（.mp4/.webm/.mkv/.mov/.avi/.flv），非允许类型直接拒绝
+            var allowedExtensions = new[] { ".mp4", ".webm", ".mkv", ".mov", ".avi", ".flv" };
+            var fileExtension = Path.GetExtension(videoFile.FileName).ToLowerInvariant();
+            if (!allowedExtensions.Contains(fileExtension))
+                return Results.Json(
+                    new IVideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
+                        $"Unsupported video format '{fileExtension}'. Allowed: mp4, webm, mkv, mov, avi, flv.", null),
+                    statusCode: 400);
+
+            // F-08.2：上传大小校验（≤500MB），超限返回 413
+            const long maxVideoSize = 500L * 1024 * 1024;
+            if (videoFile.Length > maxVideoSize)
+                return Results.Json(
+                    new IVideoResult<string>(VideoResultType.VideoResultBadRequest, 413,
+                        "Video file exceeds the 500MB limit.", null),
+                    statusCode: 413);
+
+            // 上传身份由服务端解析当前用户，禁止信任客户端传入的 AffiliatedAuthorizes
+            var userId = currentUser.UserGuid;
+            if (userId == Guid.Empty)
+                return Results.Json(
+                    new IVideoResult<string>(VideoResultType.VideoResultUnauthorized, 401,
+                        "Unauthorized. Please login first.", null),
+                    statusCode: 401);
 
             // 读取视频文件内容
             byte[] videoFileContent;
@@ -66,7 +94,6 @@ public static class AddVideoEndpoints
             }
 
             // 构建通过 gRPC 上传的命令（带幂等性 RequestId）
-            var userId = request.AffiliatedAuthorizes.FirstOrDefault();
             var command = new UploadVideoViaGrpcCommand(
                 RequestId: Guid.CreateVersion7(),
                 UserId: userId,

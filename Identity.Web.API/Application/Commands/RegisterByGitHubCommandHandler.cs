@@ -60,7 +60,7 @@ public class RegisterByGitHubCommandHandler(
                 isNewUser = true;
                 externalLogin.UpdateTokens(githubUser.AccessToken, null, null);
                 LinkExternalLoginToUser(externalLogin, user);
-                await userExternalLoginRepository.UnitOfWork.SavaEntitiesAsync(cancellationToken);
+                await userExternalLoginRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
             }
         }
         else
@@ -74,7 +74,7 @@ public class RegisterByGitHubCommandHandler(
             LinkExternalLoginToUser(externalLogin, user);
 
             await userExternalLoginRepository.AddAsync(externalLogin);
-            await userExternalLoginRepository.UnitOfWork.SavaEntitiesAsync(cancellationToken);
+            await userExternalLoginRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
         }
 
         if (isNewUser)
@@ -116,7 +116,7 @@ public class RegisterByGitHubCommandHandler(
         {
             userRole = Roles.RoleFactory.CreateUserRole();
             await userRoleRepository.AddByUserRoleAsync(userRole);
-            await userRoleRepository.UnitOfWork.SavaEntitiesAsync();
+            await userRoleRepository.UnitOfWork.SaveEntitiesAsync();
         }
 
         var email = !string.IsNullOrEmpty(githubUser.Email)
@@ -127,7 +127,7 @@ public class RegisterByGitHubCommandHandler(
             userRole.RoleGuid, email, GenerateRandomPassword(), null, null);
 
         await userRepository.AddOneByUserAsync(user);
-        await userRepository.UnitOfWork.SavaChangesAsync();
+        await userRepository.UnitOfWork.SaveChangesAsync();
 
         logger.LogInformation("[RegisterByGitHub] 创建新用户: UserId={UserId}, Email={Email}",
             user.UserGuid, email);
@@ -155,7 +155,6 @@ public class RegisterByGitHubCommandHandler(
             new(ClaimTypes.Name, user.UserName ?? user.UserEmail),
             new(ClaimTypes.Email, user.UserEmail),
             new(ClaimTypes.Role, string.Join(",", roleNames)),
-            new("user_guid", user.UserGuid.ToString()),
             new("login_provider", "github")
         };
 

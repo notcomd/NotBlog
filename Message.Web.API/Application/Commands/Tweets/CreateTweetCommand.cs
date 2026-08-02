@@ -33,12 +33,23 @@ public class CreateTweetCommandHandler(
 
             var linkMetadata = CreateLinkMetadata(command.LinkUrl);
             var parsedVisibility = ParseVisibility(command.Visibility.ToString());
-            var tweet = Tweet.Create(command.UserId, command.Content, null, linkMetadata, null, parsedVisibility);
 
-            // 敏感词过滤（仅记录日志）
+            // S-17：内容净化 + 长度校验（上限 500 字符，超长拒绝）
+            var safeContent = SafeContentSanitizer.Sanitize(command.Content);
+            if (safeContent.Length > 500)
+                throw new ArgumentException("推文内容不能超过500个字符");
+
+            // S-17：敏感词过滤（拒绝策略，命中即拒绝发布）
+            var (isSensitive, matchedWord) = SensitiveWordFilter.ContainsSensitive(safeContent);
+            if (isSensitive)
+                throw new InvalidOperationException($"推文内容包含敏感内容（{matchedWord}），已拒绝发布");
+
+            var tweet = Tweet.Create(command.UserId, safeContent, null, linkMetadata, null, parsedVisibility);
+
+            // 兼容既有 ISensitiveWordFilter 注入：保留日志补充（真实决策已由上方静态过滤器完成）
             try
             {
-                var filterResult = await sensitiveWordFilter.FilterAsync(command.Content);
+                var filterResult = await sensitiveWordFilter.FilterAsync(safeContent);
                 if (!filterResult.Passed)
                 {
                     logger.LogWarning("推文包含敏感词，命中词: {MatchedWords}",

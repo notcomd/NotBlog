@@ -1,4 +1,4 @@
-using Message.Web.API.Application.Commands.Files;
+﻿using Message.Web.API.Application.Commands.Files;
 using Message.Web.API.Application.Queries.Files;
 
 namespace Message.Web.API.APIs;
@@ -24,7 +24,8 @@ public static class FilesApi
     public static RouteGroupBuilder MapFilesApi(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/files")
-            .WithTags("Files");
+            .WithTags("Files")
+            .RequireAuthorization();
 
         // 1. POST / — 上传文件
         group.MapPost("/", UploadFileAsync)
@@ -156,7 +157,7 @@ public static class FilesApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse<Guid>.Error($"文件上传失败: {ex.Message}"));
+            return Results.Json(ApiResponse<Guid>.Error($"文件上传失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -182,7 +183,7 @@ public static class FilesApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse<FileAttachmentDto>.Error($"获取文件失败: {ex.Message}"));
+            return Results.Json(ApiResponse<FileAttachmentDto>.Error($"获取文件失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -211,7 +212,7 @@ public static class FilesApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse.Error($"下载文件失败: {ex.Message}"));
+            return Results.Json(ApiResponse.Error($"下载文件失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -241,7 +242,7 @@ public static class FilesApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse<FileAttachmentDto>.Error($"预览文件失败: {ex.Message}"));
+            return Results.Json(ApiResponse<FileAttachmentDto>.Error($"预览文件失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -264,7 +265,7 @@ public static class FilesApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse.Error($"删除文件失败: {ex.Message}"));
+            return Results.Json(ApiResponse.Error($"删除文件失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -287,7 +288,7 @@ public static class FilesApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse<IEnumerable<FileAttachmentDto>>.Error($"获取消息附件失败: {ex.Message}"));
+            return Results.Json(ApiResponse<IEnumerable<FileAttachmentDto>>.Error($"获取消息附件失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -310,7 +311,7 @@ public static class FilesApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse<bool>.Error($"检查文件是否存在失败: {ex.Message}"));
+            return Results.Json(ApiResponse<bool>.Error($"检查文件是否存在失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -333,7 +334,7 @@ public static class FilesApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse<int>.Error($"获取下载次数失败: {ex.Message}"));
+            return Results.Json(ApiResponse<int>.Error($"获取下载次数失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -359,7 +360,7 @@ public static class FilesApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse<string>.Error($"获取文件大小失败: {ex.Message}"));
+            return Results.Json(ApiResponse<string>.Error($"获取文件大小失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -394,7 +395,7 @@ public static class FilesApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse<FileTypeInfo>.Error($"获取文件类型失败: {ex.Message}"));
+            return Results.Json(ApiResponse<FileTypeInfo>.Error($"获取文件类型失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -433,11 +434,11 @@ public static class FilesApi
 
             return result.Success
                 ? Results.Ok(ApiResponse<ChunkUploadInitResult>.Ok(result, "分片上传初始化成功"))
-                : Results.Ok(ApiResponse<ChunkUploadInitResult>.Error(result.ErrorMessage ?? "初始化分片上传失败"));
+                : Results.BadRequest(ApiResponse<ChunkUploadInitResult>.Error(result.ErrorMessage ?? "初始化分片上传失败"));
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse<ChunkUploadInitResult>.Error($"初始化分片上传失败: {ex.Message}"));
+            return Results.Json(ApiResponse<ChunkUploadInitResult>.Error($"初始化分片上传失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -466,11 +467,11 @@ public static class FilesApi
 
             return result.Success
                 ? Results.Ok(ApiResponse<ChunkUploadResult>.Ok(result, "分片上传成功"))
-                : Results.Ok(ApiResponse<ChunkUploadResult>.Error(result.ErrorMessage ?? "上传分片失败"));
+                : Results.BadRequest(ApiResponse<ChunkUploadResult>.Error(result.ErrorMessage ?? "上传分片失败"));
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse<ChunkUploadResult>.Error($"上传分片失败: {ex.Message}"));
+            return Results.Json(ApiResponse<ChunkUploadResult>.Error($"上传分片失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -493,11 +494,11 @@ public static class FilesApi
 
             return result.Success
                 ? Results.Ok(ApiResponse<ChunkStatusResult>.Ok(result, "状态查询成功"))
-                : Results.Ok(ApiResponse<ChunkStatusResult>.Error(result.ErrorMessage ?? "查询分片状态失败"));
+                : Results.BadRequest(ApiResponse<ChunkStatusResult>.Error(result.ErrorMessage ?? "查询分片状态失败"));
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse<ChunkStatusResult>.Error($"查询分片状态失败: {ex.Message}"));
+            return Results.Json(ApiResponse<ChunkStatusResult>.Error($"查询分片状态失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -529,11 +530,11 @@ public static class FilesApi
 
             return result.Success
                 ? Results.Ok(ApiResponse<MergeChunksResult>.Ok(result, "分片合并成功"))
-                : Results.Ok(ApiResponse<MergeChunksResult>.Error(result.ErrorMessage ?? "合并分片失败"));
+                : Results.BadRequest(ApiResponse<MergeChunksResult>.Error(result.ErrorMessage ?? "合并分片失败"));
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse<MergeChunksResult>.Error($"合并分片失败: {ex.Message}"));
+            return Results.Json(ApiResponse<MergeChunksResult>.Error($"合并分片失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -556,11 +557,11 @@ public static class FilesApi
 
             return result.Success
                 ? Results.Ok(ApiResponse<CancelChunkUploadResult>.Ok(result, "分片上传已取消"))
-                : Results.Ok(ApiResponse<CancelChunkUploadResult>.Error(result.ErrorMessage ?? "取消分片上传失败"));
+                : Results.BadRequest(ApiResponse<CancelChunkUploadResult>.Error(result.ErrorMessage ?? "取消分片上传失败"));
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse<CancelChunkUploadResult>.Error($"取消分片上传失败: {ex.Message}"));
+            return Results.Json(ApiResponse<CancelChunkUploadResult>.Error($"取消分片上传失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -589,11 +590,11 @@ public static class FilesApi
 
             return result.Success
                 ? Results.Ok(ApiResponse<ChunkStatusResult>.Ok(result, "断点续传完成"))
-                : Results.Ok(ApiResponse<ChunkStatusResult>.Error(result.ErrorMessage ?? "断点续传失败"));
+                : Results.BadRequest(ApiResponse<ChunkStatusResult>.Error(result.ErrorMessage ?? "断点续传失败"));
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse<ChunkStatusResult>.Error($"断点续传失败: {ex.Message}"));
+            return Results.Json(ApiResponse<ChunkStatusResult>.Error($"断点续传失败: {ex.Message}"), statusCode: 500);
         }
     }
 

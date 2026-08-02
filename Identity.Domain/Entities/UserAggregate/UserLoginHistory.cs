@@ -1,4 +1,4 @@
-﻿namespace Identity.Domain.Entities.UserAggregate;
+namespace Identity.Domain.Entities.UserAggregate;
 
 public class UserLoginHistory : Entity
 {
@@ -32,7 +32,7 @@ public class UserLoginHistory : Entity
     /// <summary>
     /// 手机号
     /// </summary>
-    public PhoneNumber PhoneNumber { get; init; }
+    public PhoneNumber PhoneNumber { get; init; } = null!;
 
     /// <summary>
     /// 邮箱

@@ -1,4 +1,4 @@
-﻿using MailKit;
+using MailKit;
 using MailKit.Net.Imap;
 using MailKit.Search;
 using MailKit.Security;
@@ -220,7 +220,7 @@ public class ImapEmailReceiver : IEmailReceiver, IAsyncDisposable
                 .Select(a =>
                 {
                     using var ms = new MemoryStream();
-                    (a as MimePart)?.Content.DecodeTo(ms);
+                    (a as MimePart)?.Content?.DecodeTo(ms);
                     return new EmailAttachment(
                         a.ContentDisposition?.FileName ?? a.ContentType.Name ?? "attachment",
                         ms.ToArray(),

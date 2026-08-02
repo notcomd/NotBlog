@@ -1,4 +1,4 @@
-using Message.Web.API.Application.Commands.Tweets;
+﻿using Message.Web.API.Application.Commands.Tweets;
 using Message.Web.API.Application.Queries.Tweets;
 
 namespace Message.Web.API.APIs;
@@ -21,7 +21,8 @@ public static class TweetsApi
     public static RouteGroupBuilder MapTweetsApi(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/tweets")
-            .WithTags("Tweets");
+            .WithTags("Tweets")
+            .RequireAuthorization();
 
         // POST / — 创建推文
         group.MapPost("/", CreateTweetAsync)
@@ -161,7 +162,7 @@ public static class TweetsApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse<Guid>.Error($"创建推文失败: {ex.Message}"));
+            return Results.Json(ApiResponse<Guid>.Error($"创建推文失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -195,7 +196,7 @@ public static class TweetsApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse<Guid>.Error($"保存草稿失败: {ex.Message}"));
+            return Results.Json(ApiResponse<Guid>.Error($"保存草稿失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -229,7 +230,7 @@ public static class TweetsApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse<TweetDto>.Error($"获取推文详情失败: {ex.Message}"));
+            return Results.Json(ApiResponse<TweetDto>.Error($"获取推文详情失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -251,12 +252,12 @@ public static class TweetsApi
     {
         try
         {
-            var tweets = await mediator.SendAsync(new GetUserTweetsQuery(userGuid, page, pageSize), ct);
+            var paged = await mediator.SendAsync(new GetUserTweetsQuery(userGuid, page, pageSize), ct);
 
             var result = new PagedResult<TweetDto>
             {
-                Items = tweets.Select(t => MapToDto(t)).ToList(),
-                TotalCount = tweets.Count(),
+                Items = paged.Items.Select(t => MapToDto(t)).ToList(),
+                TotalCount = paged.TotalCount,
                 Page = page,
                 PageSize = pageSize
             };
@@ -265,7 +266,7 @@ public static class TweetsApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse<PagedResult<TweetDto>>.Error($"获取用户推文列表失败: {ex.Message}"));
+            return Results.Json(ApiResponse<PagedResult<TweetDto>>.Error($"获取用户推文列表失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -288,12 +289,12 @@ public static class TweetsApi
         try
         {
             var userId = currentUser.GetUserId();
-            var tweets = await mediator.SendAsync(new GetTimelineQuery(userId, page, pageSize), ct);
+            var paged = await mediator.SendAsync(new GetTimelineQuery(userId, page, pageSize), ct);
 
             var result = new PagedResult<TweetDto>
             {
-                Items = tweets.Select(t => MapToDto(t)).ToList(),
-                TotalCount = tweets.Count(),
+                Items = paged.Items.Select(t => MapToDto(t)).ToList(),
+                TotalCount = paged.TotalCount,
                 Page = page,
                 PageSize = pageSize
             };
@@ -302,7 +303,7 @@ public static class TweetsApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse<PagedResult<TweetDto>>.Error($"获取时间线失败: {ex.Message}"));
+            return Results.Json(ApiResponse<PagedResult<TweetDto>>.Error($"获取时间线失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -322,12 +323,12 @@ public static class TweetsApi
     {
         try
         {
-            var tweets = await mediator.SendAsync(new GetTrendingQuery(page, pageSize), ct);
+            var paged = await mediator.SendAsync(new GetTrendingQuery(page, pageSize), ct);
 
             var result = new PagedResult<TweetDto>
             {
-                Items = tweets.Select(t => MapToDto(t)).ToList(),
-                TotalCount = tweets.Count(),
+                Items = paged.Items.Select(t => MapToDto(t)).ToList(),
+                TotalCount = paged.TotalCount,
                 Page = page,
                 PageSize = pageSize
             };
@@ -336,7 +337,7 @@ public static class TweetsApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse<PagedResult<TweetDto>>.Error($"获取趋势推文失败: {ex.Message}"));
+            return Results.Json(ApiResponse<PagedResult<TweetDto>>.Error($"获取趋势推文失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -371,9 +372,17 @@ public static class TweetsApi
 
             return Results.Ok(ApiResponse.Ok("草稿更新成功"));
         }
+        catch (ArgumentException ex)
+        {
+            return Results.BadRequest(ApiResponse.Error(ex.Message));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.BadRequest(ApiResponse.Error(ex.Message));
+        }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse.Error($"更新草稿失败: {ex.Message}"));
+            return Results.Json(ApiResponse.Error($"更新草稿失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -399,7 +408,7 @@ public static class TweetsApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse.Error($"删除推文失败: {ex.Message}"));
+            return Results.Json(ApiResponse.Error($"删除推文失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -425,7 +434,7 @@ public static class TweetsApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse.Error($"置顶推文失败: {ex.Message}"));
+            return Results.Json(ApiResponse.Error($"置顶推文失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -451,7 +460,7 @@ public static class TweetsApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse.Error($"取消置顶失败: {ex.Message}"));
+            return Results.Json(ApiResponse.Error($"取消置顶失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -477,7 +486,7 @@ public static class TweetsApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse.Error($"点赞推文失败: {ex.Message}"));
+            return Results.Json(ApiResponse.Error($"点赞推文失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -503,7 +512,7 @@ public static class TweetsApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse.Error($"取消点赞失败: {ex.Message}"));
+            return Results.Json(ApiResponse.Error($"取消点赞失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -529,7 +538,7 @@ public static class TweetsApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse.Error($"收藏推文失败: {ex.Message}"));
+            return Results.Json(ApiResponse.Error($"收藏推文失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -555,7 +564,7 @@ public static class TweetsApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse.Error($"取消收藏失败: {ex.Message}"));
+            return Results.Json(ApiResponse.Error($"取消收藏失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -581,7 +590,7 @@ public static class TweetsApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse.Error($"分享推文失败: {ex.Message}"));
+            return Results.Json(ApiResponse.Error($"分享推文失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -607,7 +616,7 @@ public static class TweetsApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse.Error($"投币失败: {ex.Message}"));
+            return Results.Json(ApiResponse.Error($"投币失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -633,7 +642,7 @@ public static class TweetsApi
         }
         catch (Exception ex)
         {
-            return Results.Ok(ApiResponse.Error($"记录查看失败: {ex.Message}"));
+            return Results.Json(ApiResponse.Error($"记录查看失败: {ex.Message}"), statusCode: 500);
         }
     }
 

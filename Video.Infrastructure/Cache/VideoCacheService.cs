@@ -236,12 +236,12 @@ public class VideoCacheService : IVideoCacheService
     /// </summary>
     /// <param name="videoGuid">视频GUID</param>
     /// <param name="ct">取消令牌</param>
-    public async Task InvalidateVideoAsync(Guid videoGuid, CancellationToken ct = default)
+    public async Task InvalidateVideoAsync(Guid videoGuid, IEnumerable<Guid>? reviewGuids = null, CancellationToken ct = default)
     {
         await RemoveVideoMetaAsync(videoGuid, ct);
         await _redis.KeyDeleteAsync(VideoCacheKeys.VideoQuote(videoGuid), ct);
         await InvalidateVideoListsAsync(ct);
-        await InvalidateVideoReviewCachesAsync(videoGuid, ct);
+        await InvalidateVideoReviewCachesAsync(videoGuid, reviewGuids, ct);
         _logger.LogInformation("Invalidated all caches for video: {VideoGuid}", videoGuid);
     }
 
@@ -375,11 +375,31 @@ public class VideoCacheService : IVideoCacheService
     /// <summary>
     /// 无效视频的所有评论缓存
     /// </summary>
-    public async Task InvalidateVideoReviewCachesAsync(Guid videoGuid, CancellationToken ct = default)
+    public async Task InvalidateVideoReviewCachesAsync(Guid videoGuid, IEnumerable<Guid>? reviewGuids = null, CancellationToken ct = default)
     {
         var reviewsKey = VideoCacheKeys.VideoReviews(videoGuid);
         await _redis.KeyDeleteAsync(reviewsKey, ct);
+
+        if (reviewGuids is not null)
+        {
+            foreach (var reviewGuid in reviewGuids)
+            {
+                await _redis.KeyDeleteAsync(VideoCacheKeys.VideoReviewReplies(reviewGuid), ct);
+                await _redis.KeyDeleteAsync(VideoCacheKeys.ReviewQuote(reviewGuid), ct);
+            }
+        }
+
         _logger.LogDebug("Invalidated review caches for video: {VideoGuid}", videoGuid);
+    }
+
+    /// <summary>
+    /// 删除评论回复缓存
+    /// </summary>
+    public async Task RemoveVideoReviewRepliesAsync(Guid reviewGuid, CancellationToken ct = default)
+    {
+        var key = VideoCacheKeys.VideoReviewReplies(reviewGuid);
+        await _redis.KeyDeleteAsync(key, ct);
+        _logger.LogDebug("Removed review replies cache: {Key}", key);
     }
 
 }

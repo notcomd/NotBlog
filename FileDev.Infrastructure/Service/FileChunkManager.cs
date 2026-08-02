@@ -1,4 +1,4 @@
-using CacheMemory.Core;
+﻿using CacheMemory.Core;
 using FileDev.Domain.Entities;
 using FileDev.Domain.IRepository;
 using FileDev.Domain.IServices;
@@ -46,7 +46,7 @@ public class FileChunkManager : IFileChunkManager
 
         // DB 双写
         await _repository.InsertAsync(record, ct).ConfigureAwait(false);
-        await _repository.UnitOfWork.SavaChangesAsync(ct).ConfigureAwait(false);
+        await _repository.UnitOfWork.SaveChangesAsync(ct).ConfigureAwait(false);
 
         // Redis 双写：初始化空的已上传分片集合，设置过期时间
         try
@@ -83,7 +83,7 @@ public class FileChunkManager : IFileChunkManager
         {
             record.MarkChunkUploaded(chunkIndex);
             await _repository.UpdateAsync(record, ct).ConfigureAwait(false);
-            await _repository.UnitOfWork.SavaChangesAsync(ct).ConfigureAwait(false);
+            await _repository.UnitOfWork.SaveChangesAsync(ct).ConfigureAwait(false);
         }
     }
 
@@ -149,7 +149,7 @@ public class FileChunkManager : IFileChunkManager
         {
             record.MarkMerged();
             await _repository.UpdateAsync(record, ct).ConfigureAwait(false);
-            await _repository.UnitOfWork.SavaChangesAsync(ct).ConfigureAwait(false);
+            await _repository.UnitOfWork.SaveChangesAsync(ct).ConfigureAwait(false);
         }
 
         // 清理 Redis
@@ -172,7 +172,7 @@ public class FileChunkManager : IFileChunkManager
         {
             record.MarkCancelled();
             await _repository.UpdateAsync(record, ct).ConfigureAwait(false);
-            await _repository.UnitOfWork.SavaChangesAsync(ct).ConfigureAwait(false);
+            await _repository.UnitOfWork.SaveChangesAsync(ct).ConfigureAwait(false);
         }
 
         // 清理 Redis

@@ -53,6 +53,13 @@ public static class VideoCacheKeys
     /// <summary>Pattern to invalidate all caches for a specific video.</summary>
     public static string VideoAllPattern(Guid videoGuid) => $"{Prefix}:*:{videoGuid}";
 
+    // ── Video Watch Dedup Window (S-18) ──
+    /// <summary>观看计数去重窗口 Key（SETNX）。Key format: video:watch-window:{videoGuid}:{userGuid}</summary>
+    public static string VideoWatchWindow(Guid videoGuid, Guid userGuid) => $"{Prefix}:watch-window:{videoGuid}:{userGuid}";
+
+    /// <summary>观看计数去重窗口时长（5 分钟），窗口内同一用户对同一视频只计 1 次观看。</summary>
+    public static readonly TimeSpan VideoWatchWindowTtl = TimeSpan.FromMinutes(5);
+
     // ── Video Reviews (Comments) ──
     /// <summary>Redis String (JSON): cached review list for a video. Key format: video:reviews:{videoGuid}</summary>
     public static string VideoReviews(Guid videoGuid) => $"{Prefix}:reviews:{videoGuid}";

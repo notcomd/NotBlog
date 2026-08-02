@@ -1,4 +1,4 @@
-﻿
+
 using Notcomd.Token.JWT.Security;
 using Notcomd.Token.JWT.Core;
 namespace FileDev.Infrastructure.Service;
@@ -90,8 +90,8 @@ public class FileStorageService(
     public async Task<NotFileStorageResponse> UploadChunkAsync(string fileKey, int chunkIndex, byte[] chunkContent,
         bool autoVerify = true)
     {
-        // 自动计算分片哈希并校验
-        string chunkHash = (autoVerify ? HashHelper.ComputeHash(chunkContent,AlgorithmType.MD5) : null) ??
+        // 自动计算分片哈希并校验（统一 SHA256，见 F-09.5）
+        string chunkHash = (autoVerify ? HashHelper.ComputeHash(chunkContent, AlgorithmType.SHA256) : null) ??
                            throw new InvalidOperationException();
         return await storageProvider.UploadChunkAsync(fileKey, chunkIndex, chunkContent, chunkHash);
     }
@@ -100,12 +100,12 @@ public class FileStorageService(
     /// 合并分片（自动校验整体文件哈希）
     /// </summary>
     public async Task<NotFileStorageResponse> MergeChunksAsync(string fileKey, int totalChunks,
-        byte[] originalFileContent = null,
+        byte[]? originalFileContent = null,
         bool overwrite = true)
     {
-        // 如果传入原文件内容，自动计算整体哈希并校验
+        // 如果传入原文件内容，自动计算整体哈希并校验（统一 SHA256，见 F-09.5）
         var expectedFileHash = originalFileContent != null
-            ? HashHelper.ComputeHash(originalFileContent,AlgorithmType.MD5)
+            ? HashHelper.ComputeHash(originalFileContent, AlgorithmType.SHA256)
             : null;
         return await storageProvider.MergeChunksAsync(fileKey, totalChunks, expectedFileHash ?? string.Empty,
             overwrite);

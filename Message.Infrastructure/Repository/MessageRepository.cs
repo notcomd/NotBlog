@@ -19,32 +19,41 @@ public class MessageRepository(MessageDbContext context) :  IMessageRepository
 
     public async Task<IEnumerable<MessageEntity>> GetBySessionIdAsync(Guid sessionId, int page = 1, int pageSize = 50)
     {
+        if (pageSize < 1) pageSize = 10;
+        if (pageSize > 100) pageSize = 100;
+
         var query = DbSet
             .Include(m => m.Attachments)
             .Where(m => m.SessionId == sessionId && !m.IsRecalled)
             .OrderByDescending(m => m.SentTime);
 
-        return await query.ToListAsync();
+        return await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
     }
 
     public async Task<IEnumerable<MessageEntity>> GetBySenderIdAsync(Guid senderId, int page = 1, int pageSize = 50)
     {
+        if (pageSize < 1) pageSize = 10;
+        if (pageSize > 100) pageSize = 100;
+
         var query = DbSet
             .Include(m => m.Attachments)
             .Where(m => m.SenderId == senderId)
             .OrderByDescending(m => m.SentTime);
 
-        return await query.ToListAsync();
+        return await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
     }
 
     public async Task<IEnumerable<MessageEntity>> GetByReceiverIdAsync(Guid receiverId, int page = 1, int pageSize = 50)
     {
+        if (pageSize < 1) pageSize = 10;
+        if (pageSize > 100) pageSize = 100;
+
         var query = DbSet
             .Include(m => m.Attachments)
             .Where(m => m.ReceiverId == receiverId)
             .OrderByDescending(m => m.SentTime);
 
-        return await query.ToListAsync();
+        return await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
     }
 
     public async Task<IEnumerable<MessageEntity>> GetUnreadMessagesAsync(Guid userId)
@@ -152,13 +161,27 @@ public class MessageRepository(MessageDbContext context) :  IMessageRepository
 
     public async Task<IEnumerable<MessageEntity>> SearchAsync(Guid sessionId, string searchTerm, int page, int pageSize)
     {
+        if (pageSize < 1) pageSize = 10;
+        if (pageSize > 100) pageSize = 100;
+
         var query = DbSet
             .Include(m => m.Attachments)
             .Where(m => m.SessionId == sessionId &&
                         !m.IsRecalled &&
                         (m.Content != null && m.Content.Contains(searchTerm)));
 
-        return await query.OrderByDescending(m => m.SentTime).ToListAsync();
+        return await query.OrderByDescending(m => m.SentTime)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+    }
+
+    /// <summary>统计会话内搜索匹配的消息总数（供分页 TotalCount 使用，P-05）。</summary>
+    public async Task<int> SearchCountAsync(Guid sessionId, string searchTerm)
+    {
+        return await DbSet.CountAsync(m => m.SessionId == sessionId &&
+                                           !m.IsRecalled &&
+                                           (m.Content != null && m.Content.Contains(searchTerm)));
     }
 
     public async Task<IEnumerable<MessageEntity>> GetForwardedMessagesAsync(Guid originalMessageId)

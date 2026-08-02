@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.Options;
 using NotBlog_Yarp.Permission;
 
 namespace NotBlog_Yarp.Middlewares;
@@ -21,6 +22,7 @@ public class PermissionFilterMiddleware
     private readonly RequestDelegate _next;
     private readonly PermissionRouteMap _routeMap;
     private readonly ILogger<PermissionFilterMiddleware> _logger;
+    private readonly IOptions<PermissionOptions> _permissionOptions;
 
     /// <summary>HttpContext.Items 中存储 DataScope 的键</summary>
     public const string DataScopeItemKey = "NotBlog.DataScope";
@@ -28,11 +30,13 @@ public class PermissionFilterMiddleware
     public PermissionFilterMiddleware(
         RequestDelegate next,
         PermissionRouteMap routeMap,
-        ILogger<PermissionFilterMiddleware> logger)
+        ILogger<PermissionFilterMiddleware> logger,
+        IOptions<PermissionOptions> permissionOptions)
     {
         _next = next ?? throw new ArgumentNullException(nameof(next));
         _routeMap = routeMap ?? throw new ArgumentNullException(nameof(routeMap));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _permissionOptions = permissionOptions ?? throw new ArgumentNullException(nameof(permissionOptions));
     }
 
     public async Task InvokeAsync(
@@ -84,7 +88,19 @@ public class PermissionFilterMiddleware
             catch (Exception ex)
             {
                 _logger.LogError(ex,
-                    "[PermissionFilter] 权限服务调用异常 UserId={UserId} Code={Code}", userId, permissionCode);
+                    "[PermissionFilter] 权限服务调用异常 UserId={UserId} Code={Code}（FailPolicy={Policy}）",
+                    userId, permissionCode, _permissionOptions.Value.FailPolicy);
+
+                // F-12：FailPolicy=Open 时降级放行（记录日志并继续），Closed 时拒绝 403
+                if (_permissionOptions.Value.FailOpen)
+                {
+                    _logger.LogWarning(
+                        "[PermissionFilter] 权限服务异常，按 FailPolicy=Open 放行 Path={Path}",
+                        path);
+                    await _next(context);
+                    return;
+                }
+
                 await WriteForbiddenAsync(context);
                 return;
             }

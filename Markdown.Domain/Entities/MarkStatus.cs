@@ -3,7 +3,7 @@ namespace Markdown.Domain.Entities;
 public enum MarkStatus
 {
     /// <summary>
-    ///  推送中 
+    ///  推送中
     /// </summary>
     MarkPushing,
     /// <summary>
@@ -62,4 +62,20 @@ public enum MarkStatus
     /// 推送等待取消超时
     /// </summary>
     MarkPushWaitingCancelTimeout,
+    /// <summary>
+    ///  草稿（作者创建后的初始状态，对外不可见）
+    /// </summary>
+    MarkDraft,
+    /// <summary>
+    ///  待审核（已提交审核，对外不可见）
+    /// </summary>
+    MarkPendingReview,
+    /// <summary>
+    ///  审核通过（对外可见）
+    /// </summary>
+    MarkApproved,
+    /// <summary>
+    ///  审核驳回
+    /// </summary>
+    MarkRejected,
 }

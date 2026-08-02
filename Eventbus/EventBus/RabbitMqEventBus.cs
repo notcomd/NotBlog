@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using Notcomd.EventBus.Core;
@@ -76,6 +77,9 @@ public sealed class RabbitMqEventBus : IEventBus, IHostedService, IAsyncDisposab
         }
 
         _publishPipeline = CreateResiliencePipeline(_options);
+
+        // S-19：共享连接引用计数——EventBus 持有一份引用
+        connection.AddRef();
     }
 
     // ══════════════════════════════════════════════════
@@ -84,7 +88,8 @@ public sealed class RabbitMqEventBus : IEventBus, IHostedService, IAsyncDisposab
 
     public async Task PublishAsync(IntegrationEvent @event)
     {
-        var routingKey = @event.GetType().Name;
+        // S-19：routingKey 与订阅绑定一致——优先取 EventBusNameAttribute，与 Handler 注册逻辑对齐
+        var routingKey = GetEventName(@event.GetType());
 
         if (_logger.IsEnabled(LogLevel.Trace))
         {
@@ -114,7 +119,7 @@ public sealed class RabbitMqEventBus : IEventBus, IHostedService, IAsyncDisposab
 
             static void InjectTraceContext(IBasicProperties props, string key, string value)
             {
-                props.Headers ??= new Dictionary<string, object>();
+                props.Headers ??= new Dictionary<string, object?>();
                 props.Headers[key] = value;
             }
 
@@ -155,12 +160,23 @@ public sealed class RabbitMqEventBus : IEventBus, IHostedService, IAsyncDisposab
 
     private async Task<IChannel> GetPublishChannelAsync()
     {
-        if (_publishChannel is not null && _exchangeDeclared == 1)
+        // S-19：断线重建——channel 或连接失效时重新创建并重新声明 Exchange
+        if (!_connection.IsConnected)
+            await _connection.TryConnectAsync().ConfigureAwait(false);
+
+        if (_publishChannel is { IsOpen: true } && _exchangeDeclared == 1)
             return _publishChannel;
 
         await _publishChannelLock.WaitAsync().ConfigureAwait(false);
         try
         {
+            if (_publishChannel is { IsOpen: false })
+            {
+                await _publishChannel.DisposeAsync().ConfigureAwait(false);
+                _publishChannel = null;
+                Interlocked.Exchange(ref _exchangeDeclared, 0);
+            }
+
             if (_publishChannel is null)
             {
                 _publishChannel = await _connection.CreateChannelAsync().ConfigureAwait(false);
@@ -187,88 +203,125 @@ public sealed class RabbitMqEventBus : IEventBus, IHostedService, IAsyncDisposab
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        _ = StartConsumerAsync(cancellationToken);
+        // S-19：启动失败循环重试——连接就绪前后台循环尝试，不再只 log 一次
+        _ = Task.Run(async () =>
+        {
+            var attempt = 0;
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    await StartConsumerAsync(cancellationToken).ConfigureAwait(false);
+                    attempt = 0;
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    attempt++;
+                    var delay = TimeSpan.FromSeconds(Math.Min(30, Math.Pow(2, Math.Min(attempt, 5))));
+                    _logger.LogWarning(ex,
+                        "[Evenbus] 启动消费者失败（第 {Attempt} 次），{Delay} 秒后重试",
+                        attempt, delay.TotalSeconds);
+                    try
+                    {
+                        await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
+                }
+            }
+        }, CancellationToken.None);
         return Task.CompletedTask;
     }
 
     private async Task StartConsumerAsync(CancellationToken cancellationToken)
     {
-        try
+        _logger.LogInformation("[Evenbus] 正在启动 RabbitMQ 消费者...");
+
+        if (!_connection.IsConnected)
+            await _connection.TryConnectAsync(cancellationToken).ConfigureAwait(false);
+
+        if (!_connection.IsConnected)
+            throw new InvalidOperationException("RabbitMQ 连接失败");
+
+        _logger.LogInformation("[Evenbus] 创建消费者通道");
+
+        _consumerChannel = await _connection.CreateChannelAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        _consumerChannel.CallbackExceptionAsync += (_, ea) =>
         {
-            _logger.LogInformation("[Evenbus] 正在启动 RabbitMQ 消费者...");
+            _logger.LogWarning(ea.Exception, "[Evenbus] 消费者通道回调异常");
+            return Task.CompletedTask;
+        };
 
-            if (!_connection.IsConnected)
-                await _connection.TryConnectAsync(cancellationToken).ConfigureAwait(false);
+        var exchangeTypeStr = GetExchangeTypeString(_options.ExchangeType);
 
-            if (!_connection.IsConnected)
-            {
-                _logger.LogError("[Evenbus] RabbitMQ 连接失败，消费者未启动");
-                return;
-            }
+        await _consumerChannel.ExchangeDeclareAsync(ExchangeName, exchangeTypeStr, durable: true,
+            cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            _logger.LogInformation("[Evenbus] 创建消费者通道");
+        // 声明死信队列
+        var dlqName = $"{_queueName}{_options.DeadLetterQueueSuffix}";
+        await _consumerChannel.QueueDeclareAsync(dlqName, durable: true, exclusive: false,
+            autoDelete: false, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            _consumerChannel = await _connection.CreateChannelAsync(cancellationToken)
+        var queueArgs = new Dictionary<string, object?>
+        {
+            ["x-dead-letter-exchange"] = "",
+            ["x-dead-letter-routing-key"] = dlqName
+        };
+
+        await _consumerChannel.QueueDeclareAsync(_queueName, durable: true, exclusive: false,
+            autoDelete: false, arguments: queueArgs, cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+
+        // 设置 QoS（预取数量）
+        if (_options.PrefetchCount > 0)
+        {
+            await _consumerChannel.BasicQosAsync(0, _options.PrefetchCount, false)
                 .ConfigureAwait(false);
+        }
 
-            _consumerChannel.CallbackExceptionAsync += (_, ea) =>
-            {
-                _logger.LogWarning(ea.Exception, "[Evenbus] 消费者通道回调异常");
-                return Task.CompletedTask;
-            };
-
-            var exchangeTypeStr = GetExchangeTypeString(_options.ExchangeType);
-
-            await _consumerChannel.ExchangeDeclareAsync(ExchangeName, exchangeTypeStr, durable: true,
+        // 绑定所有已注册的事件
+        foreach (var (eventName, _) in _subscriptionInfo.EventTypes)
+        {
+            await _consumerChannel.QueueBindAsync(_queueName, ExchangeName, eventName,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            // 声明死信队列
-            var dlqName = $"{_queueName}{_options.DeadLetterQueueSuffix}";
-            await _consumerChannel.QueueDeclareAsync(dlqName, durable: true, exclusive: false,
-                autoDelete: false, cancellationToken: cancellationToken).ConfigureAwait(false);
-
-            var queueArgs = new Dictionary<string, object>
-            {
-                ["x-dead-letter-exchange"] = "",
-                ["x-dead-letter-routing-key"] = dlqName
-            };
-
-            await _consumerChannel.QueueDeclareAsync(_queueName, durable: true, exclusive: false,
-                autoDelete: false, arguments: queueArgs, cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
-
-            // 设置 QoS（预取数量）
-            if (_options.PrefetchCount > 0)
-            {
-                await _consumerChannel.BasicQosAsync(0, _options.PrefetchCount, false)
-                    .ConfigureAwait(false);
-            }
-
-            // 绑定所有已注册的事件
-            foreach (var (eventName, _) in _subscriptionInfo.EventTypes)
-            {
-                await _consumerChannel.QueueBindAsync(_queueName, ExchangeName, eventName,
-                    cancellationToken: cancellationToken).ConfigureAwait(false);
-
-                _logger.LogDebug("[Evenbus] 队列绑定: Queue={Queue}, Event={Event}",
-                    _queueName, eventName);
-            }
-
-            // 启动消费
-            var consumer = new AsyncEventingBasicConsumer(_consumerChannel);
-            consumer.ReceivedAsync += OnMessageReceived;
-
-            await _consumerChannel.BasicConsumeAsync(_queueName, autoAck: false, consumer)
-                .ConfigureAwait(false);
-
-            _logger.LogInformation(
-                "[Evenbus] 消费者已启动，队列: {Queue}, 事件数: {EventCount}, 预取: {Prefetch}, 并发: {Concurrency}",
-                _queueName, _subscriptionInfo.EventTypes.Count, _options.PrefetchCount, _options.MaxConcurrency);
+            _logger.LogDebug("[Evenbus] 队列绑定: Queue={Queue}, Event={Event}",
+                _queueName, eventName);
         }
-        catch (Exception ex)
+
+        // 启动消费
+        var consumer = new AsyncEventingBasicConsumer(_consumerChannel);
+        consumer.ReceivedAsync += OnMessageReceived;
+
+        await _consumerChannel.BasicConsumeAsync(_queueName, autoAck: false, consumer)
+            .ConfigureAwait(false);
+
+        // S-19：断线重建——连接关闭时销毁消费者通道，触发外层重试循环重新建立
+        _consumerChannel.ChannelShutdownAsync += (_, _) =>
         {
-            _logger.LogError(ex, "[Evenbus] 启动 RabbitMQ 消费者失败");
-        }
+            try
+            {
+                _consumerChannel?.DisposeAsync().AsTask().GetAwaiter().GetResult();
+            }
+            catch
+            {
+                // 通道可能已释放，忽略
+            }
+            _consumerChannel = null;
+            return Task.CompletedTask;
+        };
+
+        _logger.LogInformation(
+            "[Evenbus] 消费者已启动，队列: {Queue}, 事件数: {EventCount}, 预取: {Prefetch}, 并发: {Concurrency}",
+            _queueName, _subscriptionInfo.EventTypes.Count, _options.PrefetchCount, _options.MaxConcurrency);
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
@@ -295,7 +348,8 @@ public sealed class RabbitMqEventBus : IEventBus, IHostedService, IAsyncDisposab
         _publishChannelLock.Dispose();
         _concurrencyLimiter?.Dispose();
 
-        await _connection.DisposeAsync().ConfigureAwait(false);
+        // S-19：引用计数释放——仅当无其他使用方时才真正断开共享连接
+        _connection.ReleaseRef();
 
         _logger.LogDebug("[Evenbus] 已释放资源");
     }
@@ -328,7 +382,7 @@ public sealed class RabbitMqEventBus : IEventBus, IHostedService, IAsyncDisposab
             if (props.Headers != null && props.Headers.TryGetValue(key, out var value))
             {
                 var bytes = value as byte[];
-                return [Encoding.UTF8.GetString(bytes)];
+                return [Encoding.UTF8.GetString(bytes ?? [])];
             }
             return [];
         }
@@ -480,6 +534,16 @@ public sealed class RabbitMqEventBus : IEventBus, IHostedService, IAsyncDisposab
         ExchangeType.Topic => "topic",
         _ => "direct"
     };
+
+    /// <summary>
+    /// S-19：事件路由名——优先取 EventBusNameAttribute，与 Handler 注册（ServicesCollectionExtensions）一致；
+    /// 无特性时回退为类型名。
+    /// </summary>
+    public static string GetEventName(Type eventType)
+    {
+        var attr = eventType.GetCustomAttribute<EventBusNameAttribute>();
+        return attr?.EventName ?? eventType.Name;
+    }
 
     private static void SetActivityTags(Activity? activity, string routingKey, string operation)
     {

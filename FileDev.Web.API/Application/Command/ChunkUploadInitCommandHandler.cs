@@ -2,6 +2,7 @@ namespace FileDev.Web.API.Application.Command;
 
 public class ChunkUploadInitCommandHandler(
     IFileChunkManager chunkManager,
+    FileDev.Domain.IRepository.INotFileRepository notFileRepository,
     IOptionsSnapshot<NotFileStorageOptions> configOptions,
     ILogger<ChunkUploadInitCommandHandler> logger)
     : NotMediator.IRequestHandler<ChunkUploadInitCommand, FileChunkRecord>
@@ -21,6 +22,11 @@ public class ChunkUploadInitCommandHandler(
             throw new ArgumentException("分片大小必须大于0");
         if (request.TotalSize > _config.MaxFileSize)
             throw new ArgumentException($"文件大小超过限制 {_config.MaxFileSize / 1024 / 1024}MB");
+
+        // S-09：写入前配额检查
+        var used = await notFileRepository.GetTotalFileSizeByUserIdAsync(request.UserId);
+        if (used + request.TotalSize > _config.UserStorageQuota)
+            throw new InvalidOperationException("用户存储配额不足");
 
         var ext = Path.GetExtension(request.FileName).ToLowerInvariant();
         logger.LogDebug("[ChunkInit] 文件名校验: FileName={FileName}, Ext={Ext}, WhitelistCount={Count}",
@@ -43,11 +49,8 @@ public class ChunkUploadInitCommandHandler(
             logger.LogDebug("[ChunkInit] 白名单为空，跳过扩展名校验: FileName={FileName}", request.FileName);
         }
 
-        var safeName = request.FileName.Replace(" ", "_")
-            .Replace("\\", "_").Replace("/", "_");
-
-        var fileKey =
-            $"{request.UserId:N}_{DateTimeOffset.UtcNow:yyyyMMddHHmmss}_{safeName}";
+        // fileKey 统一为 {userId:N}/{guid:N}{ext}，合并后物理路径与下载 URI（/files/{fileKey}）一一对应
+        var fileKey = $"{request.UserId:N}/{Guid.CreateVersion7():N}{ext}";
 
         var totalChunks = (int)Math.Ceiling((double)request.TotalSize / request.ChunkSize);
 

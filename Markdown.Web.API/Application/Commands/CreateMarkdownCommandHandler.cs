@@ -35,7 +35,7 @@ public class CreateMarkdownCommandHandler(
 
         // 通过 UnitOfWork 写入
         await dbContext.Markdowns.AddAsync(markdownEntity, cancellationToken);
-        await dbContext.SavaChangesAsync(cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
 
         // 发布集成事件
         await eventBus.PublishAsync(new MarkdownCreatedEventData

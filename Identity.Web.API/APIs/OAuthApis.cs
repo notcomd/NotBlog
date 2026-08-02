@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Identity.Domain.Dto.OAuth;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,7 +27,21 @@ public static class OAuthApis
             .RequireAuthorization()
             .WithName("GetLinkedAccounts");
 
+        // F-07：账号解绑真实链路（需认证）
+        oauth.MapDelete("/unlink", UnlinkExternalLogin)
+            .RequireAuthorization()
+            .WithName("UnlinkExternalLogin");
+
         return routeBuilder;
+    }
+
+    /// <summary>
+    /// S-13：统一 userId Claim 为 NameIdentifier（不再信任 user_id / user_guid 残留 Claim）
+    /// </summary>
+    private static Guid? TryGetAuthenticatedUserId(HttpContext httpContext)
+    {
+        var claim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier);
+        return claim is not null && Guid.TryParse(claim.Value, out var userId) ? userId : null;
     }
 
     private static IResult GetAvailableProviders()
@@ -98,26 +113,15 @@ public static class OAuthApis
         IOAuthService oauthService,
         HttpContext httpContext)
     {
-        var userIdClaim = httpContext.User.FindFirst(c => c.Type == "user_id");
-        if (userIdClaim is null)
+        var userId = TryGetAuthenticatedUserId(httpContext);
+        if (userId is null)
             return Results.Unauthorized();
-
-        var userId = Guid.Parse(userIdClaim.Value);
 
         try
         {
-            var response = await oauthService.HandleCallbackAsync(
-                request.Provider,
-                request.Code,
-                request.RedirectUri
-            );
-
-            await oauthService.LinkExternalLoginToUserAsync(
-                userId,
-                request.Provider,
-                response.UserInfo.UserId.ToString(),
-                request.Provider
-            );
+            // F-07：真实绑定链路——用授权码换取外部用户信息并写入 UserExternalLogin 绑定记录
+            await oauthService.LinkExternalLoginByCodeAsync(
+                userId.Value, request.Provider, request.Code, request.RedirectUri);
 
             return Results.Ok(new { message = "External account linked successfully" });
         }
@@ -135,17 +139,49 @@ public static class OAuthApis
         IOAuthService oauthService,
         HttpContext httpContext)
     {
-        var userIdClaim = httpContext.User.FindFirst(c => c.Type == "user_id");
-        if (userIdClaim is null)
+        var userId = TryGetAuthenticatedUserId(httpContext);
+        if (userId is null)
             return Results.Unauthorized();
 
-        var userId = Guid.Parse(userIdClaim.Value);
-        var user = await oauthService.GetExistingUserByExternalLoginAsync("", userId.ToString());
+        // F-07：返回当前用户真实的绑定列表
+        var linked = await oauthService.GetLinkedAccountsAsync(userId.Value);
+        var result = linked.Select(x => new
+        {
+            provider = x.Provider.ToString(),
+            providerUserId = x.ProviderKey,
+            displayName = x.ProviderDisplayName,
+            linkedAt = x.CreatedAt
+        });
 
-        if (user is null)
-            return Results.NotFound();
-        var linked = user.AuthorGuids.Contains(user.UserGuid);
+        return Results.Ok(result);
+    }
 
-        return Results.Ok(linked);
+    private static async Task<IResult> UnlinkExternalLogin(
+        [FromQuery] string provider,
+        [FromQuery] string providerUserId,
+        IOAuthService oauthService,
+        HttpContext httpContext)
+    {
+        var userId = TryGetAuthenticatedUserId(httpContext);
+        if (userId is null)
+            return Results.Unauthorized();
+
+        try
+        {
+            // F-07：真实解绑链路——校验归属后删除 UserExternalLogin 绑定记录
+            await oauthService.UnlinkExternalLoginFromUserAsync(userId.Value, provider, providerUserId);
+            return Results.Ok(new { message = "External account unlinked successfully" });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.NotFound(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem(
+                title: "Failed to Unlink Account",
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError);
+        }
     }
 }

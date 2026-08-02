@@ -52,7 +52,7 @@ public class Group : Entity, IAggregateRoot
     /// <summary>
     ///   群名称
     /// </summary>
-    public string GroupName { get; private set; }
+    public string GroupName { get; private set; } = null!;
 
     /// <summary>
     ///   群描述
@@ -370,6 +370,7 @@ public class Group : Entity, IAggregateRoot
             GroupPermission.InviteMember => AllowMemberInvite || member.Role != GroupMemberRole.Member,
             GroupPermission.EditGroupInfo => AllowMemberEditInfo || member.Role != GroupMemberRole.Member,
             GroupPermission.RemoveMember => member.Role != GroupMemberRole.Member,
+            GroupPermission.MuteMember => member.Role == GroupMemberRole.Admin || member.Role == GroupMemberRole.Owner,
             GroupPermission.BanMember => member.Role == GroupMemberRole.Admin || member.Role == GroupMemberRole.Owner,
             GroupPermission.TransferOwnership => member.Role == GroupMemberRole.Owner,
             _ => false

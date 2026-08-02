@@ -11,11 +11,12 @@ public static class FileChunkApis
     {
         var router = routeGroupBuilder.MapGroup("/chunk");
 
+        // S-09：移除 DisableRequestSizeLimit，改用端点级请求体上限
         router.MapPost("/init", InitChunkUploadAsync)
-            .WithMetadata(new DisableRequestSizeLimitAttribute());
+            .WithMetadata(new RequestSizeLimitAttribute(1024 * 1024)); // init 仅含 JSON 元数据
 
         router.MapPost("/upload", UploadChunkAsync)
-            .WithMetadata(new DisableRequestSizeLimitAttribute());
+            .WithMetadata(new RequestSizeLimitAttribute(11 * 1024 * 1024)); // 分片 ≤5MB + 表单开销
 
         router.MapGet("/status/{fileKey}", GetChunkStatusAsync)
             .WithMetadata(new IgnoreAntiforgeryTokenAttribute());
@@ -36,6 +37,9 @@ public static class FileChunkApis
         try
         {
             var userId = GetUserId(context);
+            if (userId == null)
+                return Results.Json(new { error = "未认证" }, statusCode: 401);
+
             var ext = Path.GetExtension(request.FileName).ToLowerInvariant();
             var fileType = ResolveFileType(ext);
 
@@ -68,6 +72,7 @@ public static class FileChunkApis
     private static async Task<IResult> UploadChunkAsync(
         HttpContext context,
         [FromServices] INotMediator mediator,
+        [FromServices] IOptionsSnapshot<NotFileStorageOptions> storageOptions,
         [FromForm] string fileKey,
         [FromForm] int chunkIndex,
         IFormFile chunkContent,
@@ -75,12 +80,21 @@ public static class FileChunkApis
     {
         try
         {
+            var userId = GetUserId(context);
+            if (userId == null)
+                return Results.Json(new { error = "未认证" }, statusCode: 401);
+
+            // S-09：读取前先校验分片声明大小，避免超大分片读入内存
+            if (chunkContent.Length > storageOptions.Value.ChunkFileSize * 2)
+                return Results.Json(new { error = "分片数据超出大小限制" }, statusCode: 400);
+
             using var ms = new MemoryStream();
             await chunkContent.CopyToAsync(ms, ct);
             var content = ms.ToArray();
 
             var cmd = new UploadChunkCommand
             {
+                UserId = userId.Value,
                 FileKey = fileKey,
                 ChunkIndex = chunkIndex,
                 ChunkContent = content
@@ -103,7 +117,11 @@ public static class FileChunkApis
     {
         try
         {
-            var query = new ChunkStatusQuery { FileKey = fileKey };
+            var userId = GetUserId(context);
+            if (userId == null)
+                return Results.Json(new { error = "未认证" }, statusCode: 401);
+
+            var query = new ChunkStatusQuery { FileKey = fileKey, UserId = userId.Value };
             var result = await mediator.SendAsync(query, ct);
             return Results.Json(new
             {
@@ -159,7 +177,11 @@ public static class FileChunkApis
         string fileKey,
         CancellationToken ct)
     {
-        var cmd = new CancelChunksCommand { FileKey = fileKey };
+        var userId = GetUserId(context);
+        if (userId == null)
+            return Results.Json(new { error = "未认证" }, statusCode: 401);
+
+        var cmd = new CancelChunksCommand { FileKey = fileKey, UserId = userId.Value };
         await mediator.SendAsync(cmd, ct);
         return Results.Json(new { cancelled = true, fileKey });
     }

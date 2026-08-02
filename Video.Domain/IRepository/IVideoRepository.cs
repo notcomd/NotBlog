@@ -48,6 +48,13 @@ public interface IVideoRepository:IRepository<Videos>
     public Task<Videos> FindByVideoName(string name);
 
     /// <summary>
+    /// 按主键加载完整视频（含评论、弹幕集合），供写路径使用，确保实体被 DbContext 跟踪。
+    /// </summary>
+    /// <param name="videoGuid">视频GUID</param>
+    /// <returns></returns>
+    public Task<Videos> FindByVideoWithDetailsAsync(Guid videoGuid);
+
+    /// <summary>
     /// 查找视频
     /// </summary>
     /// <param name="videoName">视频名称</param>
@@ -67,28 +74,37 @@ public interface IVideoRepository:IRepository<Videos>
     public Task AddByVideoRangeAsync(List<Videos> addVideos);
 
     /// <summary>
-    /// 更新视频
+    /// 更新视频互动计数（按视频主键过滤，防止全表覆盖）
     /// </summary>
+    /// <param name="videoGuid">视频GUID</param>
     /// <param name="videoQuote">视频报价</param>
-    public Task UpdateByQuoteAsync(VideoQuote videoQuote);
+    public Task UpdateByQuoteAsync(Guid videoGuid, VideoQuote videoQuote);
 
     /// <summary>
-    /// 更新视频
+    /// 更新视频控制（按视频主键过滤）
     /// </summary>
-    /// <param name="videoCollection">视频控制</param>
-    public Task UpdateByControlAsync(VideoControl videoCollection);
+    /// <param name="videoGuid">视频GUID</param>
+    /// <param name="videoControl">视频控制</param>
+    public Task UpdateByControlAsync(Guid videoGuid, VideoControl videoControl);
 
     /// <summary>
-    /// 更新视频
+    /// 更新时间空间（按视频主键过滤）
     /// </summary>
+    /// <param name="videoGuid">视频GUID</param>
     /// <param name="timeSpace">时间空间</param>
-    public Task UpdateByTimeSpaceAsync(TimeSpace timeSpace);
+    public Task UpdateByTimeSpaceAsync(Guid videoGuid, TimeSpace timeSpace);
 
     public Task UpdateByVideoAsync(Videos videos);
 
-    public Task DeleteByVideoControlAsync(VideoControl videoControl);
+    /// <summary>
+    /// 软删除单个视频（按视频主键过滤）
+    /// </summary>
+    public Task DeleteByVideoControlAsync(Guid videoGuid, VideoControl videoControl);
 
-    public Task DeleteByVideoControlRangeAsync(List<VideoControl> videoControl);
+    /// <summary>
+    /// 软删除多个视频（按各自视频主键过滤）
+    /// </summary>
+    public Task DeleteByVideoControlRangeAsync(List<Videos> videosList);
 
     public Task InDeleteByVideoAsync(Videos videoControl);
 

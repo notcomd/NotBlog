@@ -14,17 +14,8 @@ public class UpdateVideoQuoteCommandHandler(
         logger.LogInformation("Updating video quote {Field} for video {VideoGuid}",
             request.Field, request.VideoGuid);
 
-        
-        var video = await cacheService.GetVideoMetaAsync(request.VideoGuid, cancellationToken);
-        if (video is null)
-        {
-            video = await videoRepository.FindByVideoAsync(request.VideoGuid);
-            if (video is null)
-            {
-                logger.LogError("Video not found: {VideoGuid}", request.VideoGuid);
-                return false;
-            }
-        }
+        // 写路径必须从仓储加载实体，确保被 DbContext 跟踪后修改可落库
+        var video = await videoRepository.FindByVideoWithDetailsAsync(request.VideoGuid);
 
        
         var quote = video.VideoQuote;
@@ -59,8 +50,9 @@ public class UpdateVideoQuoteCommandHandler(
 
 
         
-        await videoRepository.UnitOfWork.SavaEntitiesAsync(cancellationToken);
+        await videoRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
         await cacheService.RemoveVideoMetaAsync(request.VideoGuid, cancellationToken);
+        await cacheService.InvalidateVideoListsAsync(cancellationToken);
 
         logger.LogInformation("Video quote updated: {VideoGuid} {Field} incremented",
             request.VideoGuid, request.Field);

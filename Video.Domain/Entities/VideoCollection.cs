@@ -1,4 +1,4 @@
-﻿using Notcomd.Token.JWT.Security;
+using Notcomd.Token.JWT.Security;
 using Video.Domain.SeedWork;
 using Video.Domain.ValueObjects;
 
@@ -16,9 +16,9 @@ public class VideoCollection : Entity, IAggregateRoot
     
     public List<Guid> AffiliatedUser { get; }
 
-    public string VideoCollectionName { get; private set; }
+    public string VideoCollectionName { get; private set; } = null!;
 
-    public string VideoCollectionBriefIntroduction { get; private set; }
+    public string VideoCollectionBriefIntroduction { get; private set; } = null!;
 
     public List<Guid> VideoGuid { get; }
 
@@ -33,6 +33,7 @@ public class VideoCollection : Entity, IAggregateRoot
         AffiliatedUser = new();
         TimeSpace = new(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
         VideoControl = VideoControl.VideoControlBuilder();
+        VideoQuote = VideoQuote.VideoQuoteBuilder();
     }
 
 

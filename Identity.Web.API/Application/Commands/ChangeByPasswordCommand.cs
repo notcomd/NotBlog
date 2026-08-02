@@ -1,7 +1,7 @@
 namespace Identity.Web.API.Application.Commands;
 
-public record ChangeByPasswordCommand(string Email, string NewPasswordHash) : IRequest<bool>, ILoggableCommand
+public record ChangeByPasswordCommand(Guid UserId, string NewPassword) : IRequest<bool>, ILoggableCommand
 {
-    public string IdProperty => nameof(Email);
-    public string IdValue => Email;
+    public string IdProperty => nameof(UserId);
+    public string IdValue => UserId.ToString();
 }

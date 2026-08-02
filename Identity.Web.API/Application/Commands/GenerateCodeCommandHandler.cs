@@ -1,4 +1,4 @@
-using CacheMemory.Core;
+﻿using CacheMemory.Core;
 using Identity.Domain.ICache;
 using Identity.Infrastructure.Idempotent;
 
@@ -18,9 +18,7 @@ public class GenerateCodeCommandHandler(
 
             await identityCacheService.SetStringAsync($"Login_{request.Email}", code, cancellationToken);
 
-
-            logger.LogInformation("[{Time}] 创建验证码: {Code}", DateTime.UtcNow, code);
-
+            // S-16：验证码不得写入日志
             await emailCodeSend.SendEmailCodeAsync(request.Email,  "登录验证码", code);
 
             logger.LogInformation("[{Time}] 验证码已发送至: {Email}", DateTime.UtcNow, request.Email);

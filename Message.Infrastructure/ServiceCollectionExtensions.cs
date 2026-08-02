@@ -14,16 +14,8 @@ public static class ServiceCollectionExtensions
         IConfiguration configuration,
         string connectionStringName = "DefaultConnection")
     {
-        var connectionString = configuration.GetConnectionString(connectionStringName);
-
-        services.AddDbContext<MessageDbContext>(options =>
-        {
-            options.UseSqlServer(connectionString, sqlOptions =>
-            {
-                sqlOptions.MigrationsAssembly(typeof(MessageDbContext).Assembly.FullName);
-                sqlOptions.EnableRetryOnFailure(maxRetryCount: 3);
-            });
-        });
+        // F-04: DB registration is unified at host (Program.cs AddNpgsql<MessageDbContext>).
+        // Do not re-register DbContext here; the old UseSqlServer registration overrode the host Npgsql one.
 
         RegisterRepositories(services);
         RegisterServices(services);

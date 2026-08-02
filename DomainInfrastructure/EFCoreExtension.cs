@@ -1,4 +1,4 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
 using DomainCommons;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,7 +27,7 @@ public static class EFCoreExtension
 
             var parameter = Expression.Parameter(entityType.ClrType, "p");
             var filter = Expression.Lambda(
-                Expression.Not(Expression.Property(parameter, isDeletedProperty.PropertyInfo)),
+                Expression.Not(Expression.Property(parameter, isDeletedProperty.PropertyInfo!)),
                 parameter);
             entityType.SetQueryFilter(filter);
         }

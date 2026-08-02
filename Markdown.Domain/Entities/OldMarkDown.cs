@@ -30,12 +30,12 @@ public class OldMarkDown : Entity
     /// <summary>
     ///     历史版本文档内容
     /// </summary>
-    public string OldMarkDownContent { get; private set; }
+    public string OldMarkDownContent { get; private set; } = null!;
 
     /// <summary>
     ///     历史版本文档哈希值（用于版本比对）
     /// </summary>
-    public string OldMarkDownHash { get; private set; }
+    public string OldMarkDownHash { get; private set; } = null!;
 
     /// <summary>
     ///     是否已删除（软删除标记）

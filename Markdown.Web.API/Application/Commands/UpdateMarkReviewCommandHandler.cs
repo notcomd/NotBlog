@@ -30,7 +30,7 @@ public class UpdateMarkReviewCommandHandler(
 
         // 更新评论内容
         await markdownRepository.UpdateReviewAsync(request.ReviewGuid, request.Content);
-        await markdownRepository.UnitOfWork.SavaChangesAsync(cancellationToken);
+        await markdownRepository.UnitOfWork.SaveChangesAsync(cancellationToken);
 
         logger.LogInformation("评论已更新：{ReviewGuid}", request.ReviewGuid);
         return true;

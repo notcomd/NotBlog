@@ -15,20 +15,26 @@ public class CommentRepository(MessageDbContext context) : ICommentRepository
 
     public async Task<IEnumerable<Comment>> GetByTweetAsync(Guid tweetGuid, int page = 1, int pageSize = 20)
     {
+        if (pageSize < 1) pageSize = 10;
+        if (pageSize > 100) pageSize = 100;
+
         var query = DbSet
             .Where(c => c.TweetGuid == tweetGuid && !c.IsDeleted && c.ParentGuid == null)
             .OrderBy(c => c.CreateTime);
 
-        return await query.ToListAsync();
+        return await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
     }
 
     public async Task<IEnumerable<Comment>> GetRepliesAsync(Guid parentGuid, int page = 1, int pageSize = 10)
     {
+        if (pageSize < 1) pageSize = 10;
+        if (pageSize > 100) pageSize = 100;
+
         var query = DbSet
             .Where(c => c.ParentGuid == parentGuid && !c.IsDeleted)
             .OrderBy(c => c.CreateTime);
 
-        return await query.ToListAsync();
+        return await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
     }
 
     public async Task<Comment> AddAsync(Comment comment)

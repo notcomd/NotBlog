@@ -20,7 +20,8 @@ public static class GroupsApi
     /// <summary>映射群组相关端点组</summary>
     public static RouteGroupBuilder MapGroupsApi(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/groups");
+        var group = app.MapGroup("/api/groups")
+            .RequireAuthorization();
 
         // 1. POST / — 创建群组
         group.MapPost("/", CreateGroupAsync)
@@ -534,6 +535,7 @@ public static class GroupsApi
     /// <returns>分页搜索结果</returns>
     private static async Task<IResult> SearchGroupsAsync(
         [FromServices] INotMediator mediator,
+        [FromServices] IGroupRepository groupRepository,
         [FromQuery] string searchTerm,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
@@ -545,7 +547,8 @@ public static class GroupsApi
             var result = new PagedResult<GroupDto>
             {
                 Items = groups.Select(MapToDto).ToList(),
-                TotalCount = groups.Count(),
+                // F-06：TotalCount 为总记录数（独立 CountAsync，而非当前页数量）
+                TotalCount = await groupRepository.SearchCountAsync(searchTerm),
                 Page = page,
                 PageSize = pageSize
             };

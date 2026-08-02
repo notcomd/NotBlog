@@ -1,3 +1,4 @@
+using Message.Infrastructure.Services;
 using Message.Web.API.Application.Commands.Messages;
 using Message.Web.API.Application.Queries.Messages;
 using MessageEntity = Message.Domain.Entities.Message;
@@ -22,7 +23,8 @@ public static class MessagesApi
     /// <summary>映射消息相关端点组</summary>
     public static RouteGroupBuilder MapMessagesApi(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/messages");
+        var group = app.MapGroup("/api/messages")
+            .RequireAuthorization();
 
         // 1. POST / — 发送消息
         group.MapPost("/", SendMessageAsync)
@@ -123,24 +125,38 @@ public static class MessagesApi
     }
 
     /// <summary>
-    /// 获取消息详情（查询侧）。
+    /// 获取消息详情（查询侧，Q-05：经 RedisCacheService 缓存，TTL 30min）。
+    /// 缓存 Key 带用户维度：仅缓存本人有权查看的消息，且命中时无跨用户缓存绕过权限的风险（S-05）。
     /// </summary>
     /// <param name="id">消息ID（路由参数）</param>
     /// <param name="mediator">中介者（命令/查询分发）</param>
+    /// <param name="currentUser">当前用户服务</param>
+    /// <param name="redisCache">通用 Redis 缓存服务</param>
     /// <param name="ct">取消令牌</param>
     /// <returns>消息 DTO</returns>
     private static async Task<IResult> GetMessageAsync(
         Guid id,
         [FromServices] INotMediator mediator,
+        [FromServices] ICurrentUserService currentUser,
+        [FromServices] RedisCacheService redisCache,
         CancellationToken ct)
     {
         try
         {
+            var userId = currentUser.GetUserId();
+            var cacheKey = MessageCacheKey(userId, id);
+
+            var cached = await redisCache.GetAsync<MessageDto>(cacheKey, ct);
+            if (cached != null)
+                return Results.Ok(ApiResponse<MessageDto>.Ok(cached));
+
             var message = await mediator.SendAsync(new GetMessageQuery(id), ct);
             if (message == null)
                 return Results.NotFound(ApiResponse<MessageDto>.NotFound("消息不存在"));
 
-            return Results.Ok(ApiResponse<MessageDto>.Ok(MapToDto(message)));
+            var dto = MapToDto(message);
+            await redisCache.SetAsync(cacheKey, dto, TimeSpan.FromMinutes(30), ct);
+            return Results.Ok(ApiResponse<MessageDto>.Ok(dto));
         }
         catch (Exception ex)
         {
@@ -332,4 +348,7 @@ public static class MessagesApi
 
     /// <summary>消息实体 → DTO 映射</summary>
     private static MessageDto MapToDto(MessageEntity message) => message.MapToDto();
+
+    /// <summary>消息详情缓存 Key（带用户维度，与 MessageHub 撤回失效保持一致）</summary>
+    private static string MessageCacheKey(Guid userId, Guid messageId) => $"message:msg:{userId}:{messageId}";
 }

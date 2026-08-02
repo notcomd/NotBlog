@@ -54,7 +54,10 @@ public interface IVideoCollectionRepository : IRepository<VideoCollection>
 
     public Task UpdateRangeByVideoCollectionAsync(List<VideoCollection> updateVideoCollections);
 
-    public Task UpdateByQuoteAsync(VideoQuote videoQuote);
+    /// <summary>
+    /// 更新收藏夹互动计数（按收藏夹主键过滤，防止全表覆盖）
+    /// </summary>
+    public Task UpdateByQuoteAsync(Guid videoCollectionGuid, VideoQuote videoQuote);
 
     // ── Standard Delete Operations ──
 

@@ -58,6 +58,11 @@ public class MarkDown : Entity, IAggregateRoot
 
     public bool IsDelete { get; private set; }
 
+    /// <summary>
+    ///     审核状态（草稿/待审核/通过/驳回），默认草稿
+    /// </summary>
+    public MarkStatus Status { get; private set; } = MarkStatus.MarkDraft;
+
     public DateTimeOffset CreateAt { get; init; }
 
     public DateTimeOffset UpdateAt { get; private set; }
@@ -165,6 +170,47 @@ public class MarkDown : Entity, IAggregateRoot
     /// <param name="markMd5">要比较的 MD5 哈希值</param>
     /// <returns>如果匹配返回 true</returns>
     public bool IsMarkDownEques(string markMd5) => MarkDownHash == markMd5;
+
+    /// <summary>
+    ///     提交审核：草稿/驳回 -> 待审核
+    /// </summary>
+    public void SubmitForReview()
+    {
+        if (Status is not (MarkStatus.MarkDraft or MarkStatus.MarkRejected))
+            throw new InvalidOperationException($"当前状态 {Status} 无法提交审核，仅草稿或驳回状态可提交");
+
+        Status = MarkStatus.MarkPendingReview;
+        UpdateAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>
+    ///     审核通过：待审核 -> 通过
+    /// </summary>
+    public void Approve()
+    {
+        if (Status != MarkStatus.MarkPendingReview)
+            throw new InvalidOperationException($"当前状态 {Status} 无法通过审核，仅待审核状态可通过");
+
+        Status = MarkStatus.MarkApproved;
+        UpdateAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>
+    ///     审核驳回：待审核 -> 驳回
+    /// </summary>
+    public void Reject()
+    {
+        if (Status != MarkStatus.MarkPendingReview)
+            throw new InvalidOperationException($"当前状态 {Status} 无法驳回，仅待审核状态可驳回");
+
+        Status = MarkStatus.MarkRejected;
+        UpdateAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>
+    ///     是否已通过审核（对外可见）
+    /// </summary>
+    public bool IsApproved => Status == MarkStatus.MarkApproved;
 
     /// <summary>
     ///     软删除文档

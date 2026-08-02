@@ -1,4 +1,4 @@
-using MessageEntity = Message.Domain.Entities.Message;
+﻿using MessageEntity = Message.Domain.Entities.Message;
 
 namespace Message.Web.API.Application.Commands.Messages;
 
@@ -32,10 +32,16 @@ public class ForwardMessageCommandHandler(
         if (originalMessage == null)
             throw new KeyNotFoundException("原消息不存在");
 
-        await ValidateSessionAndSenderAsync(command.TargetSessionId, command.ForwardedBy);
+        // 修复 S-05：调用者必须在源消息所在会话中（防越权转发他人会话消息）
+        var sourceSession = await sessionRepository.GetByIdAsync(originalMessage.SessionId);
+        if (sourceSession == null || !sourceSession.IsParticipant(command.ForwardedBy))
+            throw new UnauthorizedAccessException("您不是源会话的参与者");
+
+        var targetSession = await ValidateSessionAndSenderAsync(command.TargetSessionId, command.ForwardedBy);
 
         var forwardedMessage = CreateForwardedMessage(originalMessage, command.TargetSessionId, command.ForwardedBy);
         forwardedMessage.MarkAsForwarded(command.MessageId);
+        ApplyPrivateReceiver(forwardedMessage, targetSession, command.ForwardedBy);
 
         await messageRepository.AddAsync(forwardedMessage);
         await messageRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
@@ -45,11 +51,27 @@ public class ForwardMessageCommandHandler(
         return forwardedMessage.MessageId;
     }
 
-    private async Task ValidateSessionAndSenderAsync(Guid sessionId, Guid senderId)
+    /// <summary>
+    /// F-04：私聊目标会话设置消息接收者（对端用户），激活离线消息/未读查询；群聊保持 null。
+    /// </summary>
+    private static void ApplyPrivateReceiver(MessageEntity message, ChatSession session, Guid senderId)
+    {
+        if (session.SessionType != SessionType.Private)
+            return;
+        var receiver = session.Participants.FirstOrDefault(p => p != senderId);
+        if (receiver != Guid.Empty)
+            message.SetReceiver(receiver);
+    }
+
+    private async Task<ChatSession> ValidateSessionAndSenderAsync(Guid sessionId, Guid senderId)
     {
         var session = await sessionRepository.GetByIdAsync(sessionId);
         if (session == null)
             throw new InvalidOperationException("会话不存在");
+        // 修复 S-05：调用者必须是目标会话参与者
+        if (!session.IsParticipant(senderId))
+            throw new UnauthorizedAccessException("您不是目标会话的参与者");
+        return session;
     }
 
     /// <summary>
@@ -73,7 +95,7 @@ public class ForwardMessageCommandHandler(
             MessageType.MessageAudio => MessageEntity.CreateAudioMessage(targetSessionId, forwardedBy,
                 original.MediaUri!, original.Duration ?? 0, original.Caption),
             MessageType.MessageFile => MessageEntity.CreateFileMessage(targetSessionId, forwardedBy, original.MediaUri!,
-                original.FileName ?? "", (long)(original.FileSize ?? 0), original.MimeType ?? ""),
+                original.FileName ?? "", original.FileSize ?? 0, original.MimeType ?? ""),
             MessageType.MessageLocation => MessageEntity.CreateLocationMessage(targetSessionId, forwardedBy,
                 original.Latitude ?? 0, original.Longitude ?? 0, original.LocationName ?? ""),
             MessageType.MessageLink => MessageEntity.CreateLinkMessage(targetSessionId, forwardedBy,

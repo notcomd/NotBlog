@@ -1,3 +1,5 @@
+using Message.Infrastructure.Services;
+
 namespace Message.Web.API.Application.Commands.Messages;
 
 /// <summary>
@@ -13,7 +15,8 @@ public record RecallMessageCommand(Guid MessageId, Guid UserId, RecallReason Rea
 /// </summary>
 public class RecallMessageCommandHandler(
     IMessageRepository messageRepository,
-    ILogger<RecallMessageCommandHandler> logger) : IRequestHandler<RecallMessageCommand, bool>
+    ILogger<RecallMessageCommandHandler> logger,
+    RedisCacheService redisCache) : IRequestHandler<RecallMessageCommand, bool>
 {
     public async Task<bool> Handler(RecallMessageCommand command, CancellationToken cancellationToken)
     {
@@ -25,7 +28,15 @@ public class RecallMessageCommandHandler(
         await messageRepository.UpdateAsync(message);
         await messageRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
 
+        // Q-05：撤回改变消息状态，失效发送者/接收者的消息详情缓存（Key 带用户维度，与 MessagesApi.GetMessageAsync 一致）
+        await redisCache.RemoveAsync(MessageCacheKey(message.SenderId, command.MessageId), cancellationToken);
+        if (message.ReceiverId is { } receiverId)
+            await redisCache.RemoveAsync(MessageCacheKey(receiverId, command.MessageId), cancellationToken);
+
         logger.LogInformation("消息 {MessageId} 已撤回，原因={Reason}", command.MessageId, command.Reason);
         return true;
     }
+
+    /// <summary>消息详情缓存 Key（带用户维度，与 MessagesApi.GetMessageAsync 保持一致）</summary>
+    private static string MessageCacheKey(Guid userId, Guid messageId) => $"message:msg:{userId}:{messageId}";
 }

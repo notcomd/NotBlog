@@ -1,3 +1,5 @@
+using Message.Web.API.Hubs;
+using Microsoft.AspNetCore.SignalR;
 using NotMediator;
 
 namespace Message.Web.API.Application.DomainEventHandlers;
@@ -5,12 +7,12 @@ namespace Message.Web.API.Application.DomainEventHandlers;
 public class MessageReadEventHandler : INotificationHandler<MessageReadEvent>
 {
     private readonly IConnectionManager _connectionManager;
-    private readonly IHubContext<Hub> _hubContext;
+    private readonly IHubContext<MessageHub, IMessageClient> _hubContext;
     private readonly ILogger<MessageReadEventHandler> _logger;
 
     public MessageReadEventHandler(
         IConnectionManager connectionManager,
-        IHubContext<Hub> hubContext,
+        IHubContext<MessageHub, IMessageClient> hubContext,
         ILogger<MessageReadEventHandler> logger)
     {
         _connectionManager = connectionManager;

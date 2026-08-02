@@ -115,5 +115,5 @@ public class VideoHistoryRepository(VideoDbContext dbContext) : IVideoHistoryRep
 
     // Explicit IRepository methods for backward compatibility
     public async Task AddByVideoHistoryAsync(VideoHistory history) => await AddAsync(history);
-    public async Task UpdateByVideoHistoryAsync(VideoHistory history) { UpdateAsync(history); }
+    public async Task UpdateByVideoHistoryAsync(VideoHistory history) => await UpdateAsync(history);
 }

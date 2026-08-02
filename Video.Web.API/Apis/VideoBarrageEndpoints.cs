@@ -1,5 +1,7 @@
+using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Video.Domain.Entities;
+using Video.Domain.IServices;
 using Video.Domain.ValueObjects;
 using Video.Web.API.Application.Commands;
 using Video.Web.API.Dto.Request;
@@ -20,7 +22,8 @@ public static class VideoBarrageEndpoints
 
         group.MapPost("/", AddBarrageAsync)
             .WithName("AddBarrage")
-            .WithDescription("Publish a danmaku (barrage) on a video — supports text, image, and mixed");
+            .WithDescription("Publish a danmaku (barrage) on a video — supports text, image, and mixed")
+            .RequireAuthorization();
 
         group.MapGet("/{videoGuid:guid}", GetBarragesAsync)
             .WithName("GetBarrages")
@@ -31,12 +34,21 @@ public static class VideoBarrageEndpoints
 
     private static async Task<IResult> AddBarrageAsync(
        [FromForm] RequestAddBarrage request,
-        [FromServices] VideoServiceDI videoServiceDI)
+        [FromServices] VideoServiceDI videoServiceDI,
+        [FromServices] ICurrentUserService currentUser)
     {
         var logger = videoServiceDI.Logger;
 
         try
         {
+            // S-18.2：弹幕归属用户由服务端从 JWT 解析，忽略客户端传入的 UserGuid，防伪造上报
+            var callerGuid = currentUser.UserGuid;
+            if (callerGuid == Guid.Empty)
+                return Results.Json(
+                    new IVideoResult<string>(VideoResultType.VideoResultUnauthorized, 401,
+                        "Unauthorized. Please login first.", null),
+                    statusCode: 401);
+
             var hasText = !string.IsNullOrWhiteSpace(request.VideoBarrageBody);
             var hasImages = request.VideoImages is { Count: > 0 };
 
@@ -44,6 +56,13 @@ public static class VideoBarrageEndpoints
                 return Results.Json(
                     new IVideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
                         "弹幕必须包含文本或图片内容", null),
+                    statusCode: 400);
+
+            // S-17：弹幕文本长度上限（100 字符），防止超大弹幕拖垮渲染
+            if (hasText && request.VideoBarrageBody!.Length > 100)
+                return Results.Json(
+                    new IVideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
+                        "弹幕文本长度不能超过 100 个字符", null),
                     statusCode: 400);
 
             var video = await videoServiceDI.VideoService.GetByVideoAsync(request.VideoGuid);
@@ -57,17 +76,20 @@ public static class VideoBarrageEndpoints
                     img.Width, img.Height, img.Format, img.FileSize, img.ThumbnailUrl))
                 .ToList();
 
+            // S-17：弹幕文本 HTML 净化（转义 & < > " '），防止存储 XSS 载荷后由前端渲染执行
+            var sanitizedBody = hasText ? WebUtility.HtmlEncode(request.VideoBarrageBody) : request.VideoBarrageBody;
+
             var command = new AddVideoBarrageCommand(
                 RequestId: Guid.CreateVersion7(),
                 VideoGuid: request.VideoGuid,
-                UserGuid: request.UserGuid,
-                Body: request.VideoBarrageBody,
+                UserGuid: callerGuid,
+                Body: sanitizedBody,
                 VideoImages: domainImages);
 
             var barrageGuid = await videoServiceDI.NotMediator.SendAsync(command);
 
             logger.LogInformation("Barrage added to video {VideoGuid} by user {UserGuid}",
-                request.VideoGuid, request.UserGuid);
+                request.VideoGuid, callerGuid);
 
             return Results.Ok(new IVideoResult<string>(VideoResultType.VideoResultOk, 200,
                 "Barrage published successfully.", barrageGuid.ToString()));

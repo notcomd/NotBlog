@@ -1,4 +1,4 @@
-﻿﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Notcomd.EventBus.Outbox;
@@ -10,6 +10,9 @@ public class EfCoreOutboxStore<TDbContext> : IOutboxStore where TDbContext : DbC
 {
     private readonly TDbContext _dbContext;
     private readonly ILogger<EfCoreOutboxStore<TDbContext>>? _logger;
+
+    // S-19：防并发扫描——同一进程内禁止两个扫描周期同时取消息
+    private static readonly SemaphoreSlim ScanLock = new(1, 1);
 
     public EfCoreOutboxStore(TDbContext dbContext, ILogger<EfCoreOutboxStore<TDbContext>>? logger = null)
     {
@@ -25,12 +28,23 @@ public class EfCoreOutboxStore<TDbContext> : IOutboxStore where TDbContext : DbC
     public async Task<List<OutboxMessage>> GetPendingBatchAsync(int batchSize,
         CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Set<OutboxMessage>()
-            .Where(m => m.Status == OutboxStatus.Pending)
-            .OrderBy(m => m.CreatedAt)
-            .Take(batchSize)
-            .ToListAsync(cancellationToken)
-            .ConfigureAwait(false);
+        await ScanLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            // S-19：取 Pending 消息 + 已到重试时间的 Failed 消息（指数退避）
+            var now = DateTimeOffset.UtcNow;
+            return await _dbContext.Set<OutboxMessage>()
+                .Where(m => m.Status == OutboxStatus.Pending
+                            || (m.Status == OutboxStatus.Failed && m.NextRetryAt <= now))
+                .OrderBy(m => m.CreatedAt)
+                .Take(batchSize)
+                .ToListAsync(cancellationToken)
+                .ConfigureAwait(false);
+        }
+        finally
+        {
+            ScanLock.Release();
+        }
     }
 
     public async Task MarkAsSentAsync(Guid messageId, CancellationToken cancellationToken = default)

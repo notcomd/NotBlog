@@ -16,6 +16,8 @@ public interface IGroupRepository : IRepository<Group>
     Task<IEnumerable<Group>> GetPublicGroupsAsync();
     Task<IEnumerable<Group>> GetByMemberIdAndRoleAsync(Guid memberId, GroupMemberRole role);
     Task<IEnumerable<Group>> SearchAsync(string searchTerm, int page, int pageSize);
+    /// <summary>搜索群组总数（F-06 分页 TotalCount）</summary>
+    Task<int> SearchCountAsync(string searchTerm);
     Task<Group> AddAsync(Group group);
     Task<Group> UpdateAsync(Group group);
     Task DeleteAsync(Guid groupId);

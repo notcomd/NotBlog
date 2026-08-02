@@ -28,6 +28,10 @@ public class GetTweetDetailQueryHandler(
     {
         var tweet = await tweetRepository.GetByIdAsync(query.TweetGuid);
 
+        // S-17：可见性过滤 —— Private 仅作者可见；Followers 无关注关系实现退化为仅作者可见；非作者视为不存在
+        if (tweet != null && !TweetVisibilityPolicy.IsVisibleTo(tweet, query.CurrentUserId))
+            return new TweetDetailResult(null, false, false, false);
+
         if (tweet != null && tweet.TweetStatus == TweetStatus.Approved)
         {
             tweet.IncrementViewCount();

@@ -12,7 +12,7 @@ public class FileGroupAddFileCommandHandler(
             return false;
 
         fileGroup.AddFile(command.FileId);
-        await notFileGroupRepository.UnitOfWork.SavaEntitiesAsync(cancellationToken);
+        await notFileGroupRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
         return true;
     }
 }

@@ -17,13 +17,13 @@ public class Videos : Entity, IAggregateRoot
 
     public string VideoName { get; private set; } = null!;
 
-    public string BriefIntroduction { get; private set; }
+    public string BriefIntroduction { get; private set; } = null!;
 
     public HashSet<string> VideoTags { get; private set; }
 
     public Uri VideoFileUri { get; private set; } = null!;
 
-    public string VideoNvid { get; init; }
+    public string VideoNvid { get; init; } = null!;
 
     public bool IsDeleted { get; private set; }
 

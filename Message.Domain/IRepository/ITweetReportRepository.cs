@@ -1,4 +1,4 @@
-using Message.Domain.Entities.Tweet;
+﻿using Message.Domain.Entities.Tweet;
 using Message.Domain.Enums;
 using Message.Domain.SeedWork;
 using NotMediator;
@@ -17,4 +17,10 @@ public interface ITweetReportRepository : IRepository<TweetReport>
     Task<TweetReport> UpdateAsync(TweetReport report);
     Task<bool> ExistsAsync(Guid reportGuid);
     Task<int> GetPendingCountAsync();
+    /// <summary>
+    /// 获取指定举报人提交的举报数量
+    /// </summary>
+    /// <param name="reporterGuid">举报人ID</param>
+    /// <returns>举报数量</returns>
+    Task<int> CountByReporterAsync(Guid reporterGuid);
 }

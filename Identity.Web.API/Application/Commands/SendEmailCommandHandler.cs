@@ -1,4 +1,4 @@
-using Identity.Infrastructure.Idempotent;
+﻿using Identity.Infrastructure.Idempotent;
 
 namespace Identity.Web.API.Application.Commands;
 
@@ -7,19 +7,18 @@ public class SendEmailCommandHandler(IEmailCodeSend emailSender,ILogger<SendEmai
 {
     public async Task<bool> Handler(SendEmailCommand request, CancellationToken cancellationToken)
     {
-        logger.LogInformation($"发送邮件请求，收件人：{request.ToEmail}，主题：{request.Subject}，内容：{request.Body}");
+        // S-16：邮件正文不入日志（可能含验证码/敏感信息），仅记录收件人与主题
+        logger.LogInformation("发送邮件请求，收件人：{ToEmail}，主题：{Subject}", request.ToEmail, request.Subject);
 
-       // var emailMessage = new EmailMessage(request.ToEmail, request.Subject, request.Body, isHtml: false);
-
-        var result = await emailSender.SendEmailCodeAsync(request.ToEmail, 
+        var result = await emailSender.SendEmailCodeAsync(request.ToEmail,
         request.Subject, request.Body);
 
         if (!result)
         {
-            logger.LogError($"发送邮件失败，收件人：{request.ToEmail}，主题：{request.Subject}，内容：{request.Body}");
+            logger.LogError("发送邮件失败，收件人：{ToEmail}，主题：{Subject}", request.ToEmail, request.Subject);
             throw new Exception("发送邮件失败");
         }
-        logger.LogInformation($"发送邮件成功，收件人：{request.ToEmail}，主题：{request.Subject}，内容：{request.Body}");
+        logger.LogInformation("发送邮件成功，收件人：{ToEmail}，主题：{Subject}", request.ToEmail, request.Subject);
         return result;
     }
 }

@@ -1,10 +1,10 @@
-using Message.Domain.SeedWork;
+﻿using Message.Domain.SeedWork;
 
 namespace Message.Domain.Entities.MessageContent;
 
 public class FileContent : ValueObject
 {
-    private FileContent(Uri fileUri, string fileName, double fileSize, string mimeType)
+    private FileContent(Uri fileUri, string fileName, long fileSize, string mimeType)
     {
         FileUri = fileUri ?? throw new ArgumentNullException(nameof(fileUri));
 
@@ -24,10 +24,10 @@ public class FileContent : ValueObject
 
     public Uri FileUri { get; }
     public string FileName { get; }
-    public double FileSize { get; }
+    public long FileSize { get; }
     public string MimeType { get; }
 
-    public static FileContent Create(Uri fileUri, string fileName, double fileSize, string mimeType)
+    public static FileContent Create(Uri fileUri, string fileName, long fileSize, string mimeType)
         => new(fileUri, fileName, fileSize, mimeType);
 
     protected override IEnumerable<object> GetAtomicValues()

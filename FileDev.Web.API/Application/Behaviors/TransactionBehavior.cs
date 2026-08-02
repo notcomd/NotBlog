@@ -53,7 +53,7 @@ public class TransactionBehavior<TRequest, TResponse>(
                     transactionId = transaction.TransactionId;
                 }
             });
-            return response;
+            return response!;
         }
         catch (Exception e)
         {

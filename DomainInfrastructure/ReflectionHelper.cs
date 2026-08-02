@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 
@@ -67,35 +67,6 @@ public static class ReflectionHelper
             }
         }
 
-        // 扫描基目录中的 DLL 文件，发现可能因延迟加载而未在引用链中的程序集
-        var dllFiles = Directory.EnumerateFiles(AppContext.BaseDirectory, "*.dll",
-            new EnumerationOptions { RecurseSubdirectories = true });
-
-        foreach (var dllPath in dllFiles)
-        {
-            if (!IsManagedAssembly(dllPath)) continue;
-
-            try
-            {
-                var asmName = AssemblyName.GetAssemblyName(dllPath);
-                if (resultAssemblies.Any(a => AssemblyName.ReferenceMatchesDefinition(a.GetName(), asmName)))
-                    continue;
-
-                if (skipSystemAssemblies && IsSystemAssemblyByPath(dllPath))
-                    continue;
-
-                var asm = TryLoadAssembly(dllPath);
-                if (asm == null) continue;
-                if (!IsValidAssembly(asm)) continue;
-
-                resultAssemblies.Add(asm);
-            }
-            catch
-            {
-                // 忽略无法加载的程序集
-            }
-        }
-
         return resultAssemblies;
     }
 
@@ -112,60 +83,6 @@ public static class ReflectionHelper
 
         var productAttr = asm.GetCustomAttribute<AssemblyProductAttribute>();
         return productAttr?.Product?.Contains("Microsoft") == true;
-    }
-
-    private static bool IsSystemAssemblyByPath(string path)
-    {
-        try
-        {
-            var name = AssemblyName.GetAssemblyName(path);
-            var asm = Assembly.Load(name);
-            return IsSystemAssembly(asm);
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
-    /// <summary>
-    /// 判断文件是否为托管（.NET）程序集
-    /// </summary>
-    private static bool IsManagedAssembly(string filePath)
-    {
-        try
-        {
-            using var fs = File.OpenRead(filePath);
-            using var peReader = new PEReader(fs);
-            return peReader.HasMetadata && peReader.GetMetadataReader().IsAssembly;
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
-    /// <summary>
-    /// 尝试加载程序集，先尝试按名称加载，失败则按文件路径加载
-    /// </summary>
-    private static Assembly? TryLoadAssembly(string path)
-    {
-        try
-        {
-            var name = AssemblyName.GetAssemblyName(path);
-            return Assembly.Load(name);
-        }
-        catch
-        {
-            try
-            {
-                return Assembly.LoadFile(path);
-            }
-            catch
-            {
-                return null;
-            }
-        }
     }
 
     /// <summary>

@@ -18,7 +18,7 @@ public class TransactionBehavior<TRequest, TResponse>(
     public async Task<TResponse> Handler(TRequest request, Func<Task<TResponse>> next,
         CancellationToken cancellationToken)
     {
-        var response = default(TResponse);
+        var response = default(TResponse)!;
         var typeName = request.GetGenericTypeName();
         try
         {

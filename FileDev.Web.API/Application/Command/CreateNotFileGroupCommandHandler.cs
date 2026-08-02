@@ -29,7 +29,7 @@ public class CreateNotFileGroupCommandHandler(
             .Build();
 
         await notFileGroupRepository.InsertNotFileGroupAsync(data);
-        await notFileGroupRepository.UnitOfWork.SavaEntitiesAsync(cancellationToken);
+        await notFileGroupRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
 
         return true;
     }

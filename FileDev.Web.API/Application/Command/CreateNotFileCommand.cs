@@ -47,6 +47,6 @@ public class CreateNotFileCommand(Guid userGuid,
 
     private string GetDebuggerDisplay()
     {
-        return ToString();
+        return ToString() ?? string.Empty;
     }
 }

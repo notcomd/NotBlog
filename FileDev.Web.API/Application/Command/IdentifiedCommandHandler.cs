@@ -51,23 +51,21 @@ public abstract class IdentifiedCommandHandler<T, R>(
 
 
                 _logger.LogInformation(
-                    "Sending command: {CommandName} - {IdProperty}: {CommandId} ({@Command})",
+                    "Sending command: {CommandName} - {IdProperty}: {CommandId}",
                     commandName,
                     idProvider,
-                    commandId,
-                    command);
+                    commandId);
 
                 var response = await _mediator.SendAsync(command, cancellationToken);
 
-                _logger.LogInformation("Handled Command {CommandName} {@Command} with response {@Response}:",
-                    commandName, command, response);
+                _logger.LogInformation("Handled Command {CommandName}", commandName);
 
                 return response;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error handling command  {@Command}: {Error}",
-                    request.Command, ex.Message);
+                _logger.LogError(ex, "Error handling command {CommandName}: {Error}",
+                    request.Command.GetGenericTypeName(), ex.Message);
                 throw;
             }
         }

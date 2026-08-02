@@ -8,8 +8,11 @@
 /// </summary>
 public class UserAccessFail : Entity
 {
-    private const int MaxFailedAttempts = 5;
-    private static readonly TimeSpan LockOutDuration = TimeSpan.FromMinutes(15);
+    /// <summary>最大连续失败次数（超过则锁定）</summary>
+    public const int MaxFailedAttempts = 5;
+
+    /// <summary>锁定持续时间</summary>
+    public static readonly TimeSpan LockOutDuration = TimeSpan.FromMinutes(15);
 
     protected UserAccessFail()
     {

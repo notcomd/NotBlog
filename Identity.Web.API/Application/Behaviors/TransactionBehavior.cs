@@ -36,8 +36,9 @@ public class TransactionBehavior<TRequest, TResponse>(
                            new("TransactionId", transaction.TransactionId)
                        }))
                 {
-                    _logger.LogInformation("Begin transaction {TransactionId} for {CommandName} ({@Command})",
-                        transaction.TransactionId, typeName, request);
+                    // S-16：不记录命令对象（可能含敏感信息），仅记录事务与命令名
+                    _logger.LogInformation("Begin transaction {TransactionId} for {CommandName}",
+                        transaction.TransactionId, typeName);
 
                     response = await next();
 
@@ -47,12 +48,11 @@ public class TransactionBehavior<TRequest, TResponse>(
                     await _notFileDbContext.CommitTransactionAsync(transaction);
                 }
             });
-            return response;
+            return response!;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error in transaction {TransactionId} for {CommandName} ({@Command})",
-                ex, typeName, request);
+            _logger.LogError(ex, "Error in transaction for {CommandName}", typeName);
             throw;
         }
     }

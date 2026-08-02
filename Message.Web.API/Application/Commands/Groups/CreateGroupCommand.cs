@@ -18,13 +18,19 @@ public record CreateGroupCommand(
 
 /// <summary>
 /// 创建群组命令处理程序。
+/// <para>权限（修复 S-04）：群主（创建者）必须是当前登录用户，禁止伪造他人为群主。</para>
 /// </summary>
 public class CreateGroupCommandHandler(
     IGroupRepository groupRepository,
+    ICurrentUserService currentUser,
     ILogger<CreateGroupCommandHandler> logger) : IRequestHandler<CreateGroupCommand, Guid>
 {
     public async Task<Guid> Handler(CreateGroupCommand command, CancellationToken cancellationToken)
     {
+        var operatorId = currentUser.GetUserId();
+        if (command.UserId != operatorId)
+            throw new UnauthorizedAccessException("不能以他人身份创建群组");
+
         var group = new Group(command.UserId, command.GroupName, command.MaxMembers, command.IsPublic);
         await groupRepository.AddAsync(group);
         await groupRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);

@@ -1,8 +1,8 @@
-﻿namespace Identity.Domain.SeedWork;
+namespace Identity.Domain.SeedWork;
 
 public interface IUnitOfWork : IDisposable
 {
-    Task<int> SavaChangesAsync(CancellationToken cancellationToken = default);
+    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 
-    Task<bool> SavaEntitiesAsync(CancellationToken cancellationToken = default);
+    Task<bool> SaveEntitiesAsync(CancellationToken cancellationToken = default);
 }

@@ -4,14 +4,12 @@ using FileDev.Domain.IRepository;
 
 public class CreateNotFileCommandHandler(INotFileStorageService storageProvider,
                                          IOptionsSnapshot<NotFileStorageOptions> configOptions,
-                                         INotFileRepository notFileRepository,
-                                         ILogger<CreateNotFileCommandHandler> logger)
+                                         INotFileRepository notFileRepository)
     : NotMediator.IRequestHandler<CreateNotFileCommand, bool>
 {
     private readonly NotFileStorageOptions _config =
         configOptions.Value ?? throw new ArgumentNullException(nameof(configOptions));
 
-    private readonly ILogger<CreateNotFileCommandHandler> _logger = logger;
     private readonly INotFileRepository _notFileRepository =
         notFileRepository ?? throw new ArgumentNullException(nameof(notFileRepository));
 
@@ -48,15 +46,9 @@ public class CreateNotFileCommandHandler(INotFileStorageService storageProvider,
 
         await _notFileRepository.InsertFileAsync(notfile);
 
-        // TransactionBehavior 会在 SavaEntitiesAsync 时触发领域事件分发，
+        // TransactionBehavior 会在 SaveEntitiesAsync 时触发领域事件分发，
         // UploadNotFileEventHandler 自动将文件关联到根组
         return true;
-    }
-
-    public override bool Equals(object? obj)
-    {
-        return obj is CreateNotFileCommandHandler handler &&
-               EqualityComparer<ILogger<CreateNotFileCommandHandler>?>.Default.Equals(_logger, handler._logger);
     }
 
     public class CreateNotFileIdentifiedCommandHandler(

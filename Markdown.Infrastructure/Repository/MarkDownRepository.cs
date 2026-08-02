@@ -473,7 +473,7 @@ public class MarkDownRepository(
         {
             var markdowns = await markDownDbContext.Markdowns
                 .AsNoTracking()
-                .Where(x => !x.IsDelete && x.MarkDownAuth == MarkDownAuth.PublicMark)
+                .Where(x => !x.IsDelete && x.MarkDownAuth == MarkDownAuth.PublicMark && x.Status == MarkStatus.MarkApproved)
                 .OrderByDescending(x => x.CreateAt)
                 .Skip(skip)
                 .Take(take)
@@ -487,5 +487,112 @@ public class MarkDownRepository(
             logger.LogError(ex, "获取公开文档列表失败");
             throw;
         }
+    }
+
+    // ==================== 子评论（F-10.4）与计数（F-10.5） ====================
+
+    /// <summary>
+    ///     通过聚合根添加子评论到指定父评论
+    /// </summary>
+    public async Task<MarkReview> AddChildReviewAsync(Guid markDownGuid, Guid parentReviewGuid, MarkReview childReview)
+    {
+        ArgumentNullException.ThrowIfNull(childReview);
+
+        try
+        {
+            var markDown = await markDownDbContext.Markdowns
+                .Include(m => m.MarkReviews)
+                .FirstOrDefaultAsync(m => m.MarkDownGuid == markDownGuid)
+                ?? throw new KeyNotFoundException($"MarkDown 文档不存在：{markDownGuid}");
+
+            if (markDown.IsDelete)
+                throw new InvalidOperationException("已删除的文档无法添加评论");
+
+            if (markDown.FindReview(parentReviewGuid) is null)
+                throw new KeyNotFoundException($"父评论不存在：{parentReviewGuid}");
+
+            markDown.AddChildReview(parentReviewGuid, childReview);
+            logger.LogInformation("已为文档 {MarkDownGuid} 的父评论 {ParentGuid} 添加子评论 {ChildGuid}",
+                markDownGuid, parentReviewGuid, childReview.MarkReviewGuid);
+            return childReview;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "添加子评论失败：{MarkDownGuid}", markDownGuid);
+            throw;
+        }
+    }
+
+    /// <summary>
+    ///     评论点赞 +1（线程安全），返回最新点赞数
+    /// </summary>
+    public async Task<long> LikeReviewAsync(Guid reviewGuid)
+    {
+        try
+        {
+            var review = await LoadTrackedReviewAsync(reviewGuid);
+            var count = review.MarkQuote.AddLove();
+            logger.LogInformation("评论 {ReviewGuid} 点赞数更新为 {Count}", reviewGuid, count);
+            return count;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "评论点赞失败：{ReviewGuid}", reviewGuid);
+            throw;
+        }
+    }
+
+    /// <summary>
+    ///     取消评论点赞 -1（不低于 0），返回最新点赞数
+    /// </summary>
+    public async Task<long> RemoveLikeReviewAsync(Guid reviewGuid)
+    {
+        try
+        {
+            var review = await LoadTrackedReviewAsync(reviewGuid);
+            var count = review.MarkQuote.RemoveLove();
+            logger.LogInformation("评论 {ReviewGuid} 取消点赞后点赞数为 {Count}", reviewGuid, count);
+            return count;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "评论取消点赞失败：{ReviewGuid}", reviewGuid);
+            throw;
+        }
+    }
+
+    /// <summary>
+    ///     评论浏览量 +1（线程安全），返回最新浏览数
+    /// </summary>
+    public async Task<long> IncreaseReviewViewAsync(Guid reviewGuid)
+    {
+        try
+        {
+            var review = await LoadTrackedReviewAsync(reviewGuid);
+            var count = review.MarkQuote.AddView();
+            logger.LogInformation("评论 {ReviewGuid} 浏览数更新为 {Count}", reviewGuid, count);
+            return count;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "评论浏览计数失败：{ReviewGuid}", reviewGuid);
+            throw;
+        }
+    }
+
+    /// <summary>
+    ///     加载追踪态评论（用于计数更新），校验存在性与删除状态
+    /// </summary>
+    private async Task<MarkReview> LoadTrackedReviewAsync(Guid reviewGuid)
+    {
+        var review = await markDownDbContext.Markdowns
+            .SelectMany(m => m.MarkReviews)
+            .FirstOrDefaultAsync(r => r.MarkReviewGuid == reviewGuid)
+            ?? throw new KeyNotFoundException($"评论不存在：{reviewGuid}");
+
+        if (review.IsDelete)
+            throw new InvalidOperationException("已删除的评论无法操作");
+
+        return review;
     }
 }

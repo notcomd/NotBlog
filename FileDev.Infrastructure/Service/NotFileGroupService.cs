@@ -3,7 +3,7 @@ using FileDev.Domain.IRepository;
 using Microsoft.Extensions.Logging;
 namespace FileDev.Infrastructure.Service;
 
-public class NotFileGroupService(INotFileGroupRepository notFileGroupRepository, ILogger<NotFileGroupService> logger)
+public class NotFileGroupService(INotFileGroupRepository notFileGroupRepository)
     : INotFileGroupService
 {
     public async Task<IEnumerable<NotFileGroup>> GetNotFileGroupsByUserIdAsync(Guid userId)

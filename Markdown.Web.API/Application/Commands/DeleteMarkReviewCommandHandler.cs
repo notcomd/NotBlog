@@ -32,7 +32,7 @@ public class DeleteMarkReviewCommandHandler(
 
         // 通过聚合根删除评论
         await markdownRepository.DeleteReviewAsync(request.ReviewGuid);
-        await markdownRepository.UnitOfWork.SavaChangesAsync(cancellationToken);
+        await markdownRepository.UnitOfWork.SaveChangesAsync(cancellationToken);
 
         // 发布集成事件
         await eventBus.PublishAsync(new MarkReviewDeletedIntegrationEvent(

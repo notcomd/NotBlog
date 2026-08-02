@@ -1,4 +1,4 @@
-﻿namespace Identity.Domain.Entities.RoleAggregate;
+namespace Identity.Domain.Entities.RoleAggregate;
 
 public class Permission : Entity
 {
@@ -41,17 +41,17 @@ public class Permission : Entity
     /// <summary>
     /// 权限编码
     /// </summary>
-    public string PermissionCode { private set; get; }
+    public string PermissionCode { private set; get; } = null!;
 
     /// <summary>
     /// 权限名称
     /// </summary>
-    public string PermissionName { private set; get; }
+    public string PermissionName { private set; get; } = null!;
 
     /// <summary>
     /// 权限类型
     /// </summary>
-    public string PermissionType { private set; get; }
+    public string PermissionType { private set; get; } = null!;
 
     /// <summary>
     /// 菜单路径

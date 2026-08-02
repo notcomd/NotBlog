@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Video.Domain.Entities;
 using Video.Domain.IRepository;
+using Video.Domain.IServices;
 using Video.Web.API.Application.Commands;
 
 namespace Video.Web.API.Apis;
@@ -15,15 +16,17 @@ public static class VideoWatchStatsEndpoints
         var group = routes.MapGroup("/api/videowatch")
             .WithTags("VideoWatchStats");
 
-        // POST 开始/更新观看进度
+        // POST 开始/更新观看进度（S-18：仅登录用户，UserGuid 由服务端解析，不信任客户端）
         group.MapPost("/{videoGuid:guid}/progress", RecordWatchProgressAsync)
             .WithName("RecordWatchProgress")
-            .WithDescription("Record or update video watch progress for a user");
+            .WithDescription("Record or update video watch progress for a user")
+            .RequireAuthorization();
 
-        // POST 结束观看
+        // POST 结束观看（S-18：仅登录用户，UserGuid 由服务端解析，不信任客户端）
         group.MapPost("/{videoGuid:guid}/end", EndWatchAsync)
             .WithName("EndWatch")
-            .WithDescription("Mark video watching as ended");
+            .WithDescription("Mark video watching as ended")
+            .RequireAuthorization();
 
         // GET 视频观看统计
         group.MapGet("/{videoGuid:guid}/stats", GetWatchStatsAsync)
@@ -39,12 +42,21 @@ public static class VideoWatchStatsEndpoints
     private static async Task<IResult> RecordWatchProgressAsync(
         Guid videoGuid,
         [FromBody] WatchProgressRequest request,
-        [FromServices] VideoServiceDI videoServiceDI)
+        [FromServices] VideoServiceDI videoServiceDI,
+        [FromServices] ICurrentUserService currentUser)
     {
         var logger = videoServiceDI.Logger;
 
         try
         {
+            // S-18.2：观看历史归属的用户由服务端从 JWT 解析，忽略客户端传入的 UserGuid，防伪造上报
+            var callerGuid = currentUser.UserGuid;
+            if (callerGuid == Guid.Empty)
+                return Results.Json(
+                    new IVideoResult<string>(VideoResultType.VideoResultUnauthorized, 401,
+                        "Unauthorized. Please login first.", null),
+                    statusCode: 401);
+
             if (request.Progress is < 0 or > 1)
                 return Results.Json(
                     new IVideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
@@ -54,7 +66,7 @@ public static class VideoWatchStatsEndpoints
             var command = new RecordVideoWatchCommand(
                 RequestId: Guid.CreateVersion7(),
                 VideoGuid: videoGuid,
-                UserGuid: request.UserGuid,
+                UserGuid: callerGuid,
                 Progress: request.Progress,
                 LastPositionSeconds: request.LastPositionSeconds);
 
@@ -84,16 +96,25 @@ public static class VideoWatchStatsEndpoints
     private static async Task<IResult> EndWatchAsync(
         Guid videoGuid,
         [FromBody] EndWatchRequest request,
-        [FromServices] VideoServiceDI videoServiceDI)
+        [FromServices] VideoServiceDI videoServiceDI,
+        [FromServices] ICurrentUserService currentUser)
     {
         var logger = videoServiceDI.Logger;
 
         try
         {
+            // S-18.2：用户由服务端从 JWT 解析，忽略客户端传入的 UserGuid
+            var callerGuid = currentUser.UserGuid;
+            if (callerGuid == Guid.Empty)
+                return Results.Json(
+                    new IVideoResult<string>(VideoResultType.VideoResultUnauthorized, 401,
+                        "Unauthorized. Please login first.", null),
+                    statusCode: 401);
+
             var command = new EndVideoWatchCommand(
                 RequestId: Guid.CreateVersion7(),
                 VideoGuid: videoGuid,
-                UserGuid: request.UserGuid);
+                UserGuid: callerGuid);
 
             var result = await videoServiceDI.NotMediator.SendAsync(command);
 
@@ -120,7 +141,8 @@ public static class VideoWatchStatsEndpoints
     /// </summary>
     private static async Task<IResult> GetWatchStatsAsync(
         Guid videoGuid,
-        [FromServices] VideoServiceDI videoServiceDI)
+        [FromServices] VideoServiceDI videoServiceDI,
+        [FromServices] ICurrentUserService currentUser)
     {
         var logger = videoServiceDI.Logger;
 
@@ -131,6 +153,17 @@ public static class VideoWatchStatsEndpoints
                 return Results.Json(
                     new IVideoResult<string>(VideoResultType.VideoResultNotFound, 404, "Video not found.", null),
                     statusCode: 404);
+
+            // 访问控制（S-07）：私有/定时视频仅作者或被授权者可查看统计
+            if (video.VideoControl.AuthorVideo != AuthorVideo.VideoPublic)
+            {
+                var callerGuid = currentUser.UserGuid;
+                if (callerGuid == Guid.Empty || video.Affiliated is null || !video.Affiliated.Contains(callerGuid))
+                    return Results.Json(
+                        new IVideoResult<string>(VideoResultType.VideoResultUnauthorized, 403,
+                            "Video is private or protected.", null),
+                        statusCode: 403);
+            }
 
             var stats = new
             {

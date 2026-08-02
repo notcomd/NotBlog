@@ -5,13 +5,21 @@ using NotBlog_Yarp.Middlewares;
 using NotBlog_Yarp.Permission;
 using NotBlog_Yarp.Transforms;
 using System.Text;
+using NotBlog.ServiceDefaults;
 using Yarp.ReverseProxy.Transforms.Builder;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
+
 // ========== 1. JWT 认证配置 ==========
 var jwtSection = builder.Configuration.GetSection("JwtSettings");
-var secretKey = jwtSection["SecretKey"]!;
+// 凭据外置（S-01）：签名密钥从配置或共享环境变量 JWT_PRIVATE_KEY 读取，缺失时报清晰错误。
+var secretKey = jwtSection["SecretKey"]
+    ?? Environment.GetEnvironmentVariable("JWT_PRIVATE_KEY");
+if (string.IsNullOrWhiteSpace(secretKey))
+    throw new InvalidOperationException(
+        "JWT 签名密钥未配置：请在环境变量 JWT_PRIVATE_KEY（或配置 JwtSettings:SecretKey）中设置。");
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -59,10 +67,13 @@ var identityBaseUrl = builder.Configuration["IdentityService:BaseUrl"];
 if (!string.IsNullOrWhiteSpace(identityBaseUrl))
 {
     // 生产模式：HTTP 调用 Identity 服务
+    // 弹性（F-12）：AddServiceDefaults 已通过 ConfigureHttpClientDefaults 为所有 HttpClient
+    // 注册 AddStandardResilienceHandler（重试/熔断/attempt+total 超时），此处不重复注册；
+    // 放开总超时，避免短 Timeout 掐断标准弹性重试（attempt 超时由处理器内部兜底）。
     builder.Services.AddHttpClient<IPermissionServiceClient, HttpPermissionServiceClient>(client =>
     {
         client.BaseAddress = new Uri(identityBaseUrl);
-        client.Timeout = TimeSpan.FromSeconds(5);
+        client.Timeout = Timeout.InfiniteTimeSpan;
     });
 
     // 注册映射加载器：启动后从 Identity 拉取权威映射，替换本地配置
@@ -76,7 +87,8 @@ else
 
 // ========== 5. YARP 反向代理 + 自定义 Header 注入 Transform ==========
 builder.Services.AddReverseProxy()
-    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
+    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
+    .AddServiceDiscoveryDestinationResolver();
 
 // ========== 6. 注册自定义 Transform Provider ==========
 builder.Services.AddSingleton<ITransformProvider, UserContextTransformProvider>();

@@ -45,8 +45,8 @@ public interface IVideoCacheService
     /// <summary>Invalidate all video list caches (e.g., after a new video is created).</summary>
     Task InvalidateVideoListsAsync(CancellationToken ct = default);
 
-    /// <summary>Invalidate all caches related to a specific video.</summary>
-    Task InvalidateVideoAsync(Guid videoGuid, CancellationToken ct = default);
+    /// <summary>Invalidate all caches related to a specific video (meta, quote, lists, review caches).</summary>
+    Task InvalidateVideoAsync(Guid videoGuid, IEnumerable<Guid>? reviewGuids = null, CancellationToken ct = default);
 
     // ── Video Reviews (Comments) ──
 
@@ -71,6 +71,9 @@ public interface IVideoCacheService
     /// <summary>Cache review quote data.</summary>
     Task SetReviewQuoteAsync(Guid reviewGuid, VideoQuote quote, CancellationToken ct = default);
 
-    /// <summary>Invalidate all review caches for a video (after a new review is added).</summary>
-    Task InvalidateVideoReviewCachesAsync(Guid videoGuid, CancellationToken ct = default);
+    /// <summary>Invalidate all review caches for a video (review list; plus per-review reply/quote keys when reviewGuids provided).</summary>
+    Task InvalidateVideoReviewCachesAsync(Guid videoGuid, IEnumerable<Guid>? reviewGuids = null, CancellationToken ct = default);
+
+    /// <summary>Remove cached review replies for a review.</summary>
+    Task RemoveVideoReviewRepliesAsync(Guid reviewGuid, CancellationToken ct = default);
 }

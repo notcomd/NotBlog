@@ -7,7 +7,7 @@ public class NotFileDbContext(DbContextOptions<NotFileDbContext> options, INotMe
                                                  throw new ArgumentNullException(nameof(mediator),
                                                      "Mediator cannot be null");
 
-    private IDbContextTransaction _currentTransaction;
+    private IDbContextTransaction? _currentTransaction;
 
 
     public DbSet<NotFile> NotFiles { get; set; }
@@ -20,27 +20,26 @@ public class NotFileDbContext(DbContextOptions<NotFileDbContext> options, INotMe
 
     public bool HasActiveTransaction => _currentTransaction is not null;
 
-    public async Task<int> SavaChangesAsync(CancellationToken cancellationToken = default)
+    public new async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         //if (_notMediator is null) throw new ArgumentNullException(nameof(_notMediator), "Mediator cannot be null");
         await _notMediator.DispatchDomainEventsAsync(this);
-        _ = await base.SaveChangesAsync(cancellationToken);
-        return 0;
+        return await base.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<bool> SavaEntitiesAsync(CancellationToken cancellationToken = default)
+    public async Task<bool> SaveEntitiesAsync(CancellationToken cancellationToken = default)
     {
         await _notMediator.DispatchDomainEventsAsync(this);
         _ = await base.SaveChangesAsync(cancellationToken);
         return true;
     }
 
-    public IDbContextTransaction GetCurrentTransaction() => _currentTransaction;
+    public IDbContextTransaction? GetCurrentTransaction() => _currentTransaction;
 
 
     public async Task<IDbContextTransaction> BeginTransactionAsync()
     {
-        if (_currentTransaction != null) return null;
+        if (_currentTransaction != null) return _currentTransaction;
         _currentTransaction = await Database.BeginTransactionAsync();
         return _currentTransaction;
     }
@@ -64,7 +63,7 @@ public class NotFileDbContext(DbContextOptions<NotFileDbContext> options, INotMe
         {
             if (HasActiveTransaction)
             {
-                _currentTransaction.Dispose();
+                _currentTransaction!.Dispose();
                 _currentTransaction = null;
             }
         }
@@ -81,7 +80,7 @@ public class NotFileDbContext(DbContextOptions<NotFileDbContext> options, INotMe
         {
             if (HasActiveTransaction)
             {
-                _currentTransaction.Dispose();
+                _currentTransaction!.Dispose();
                 _currentTransaction = null;
             }
         }

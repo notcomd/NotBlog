@@ -1,4 +1,4 @@
-﻿﻿using System.Diagnostics;
+﻿using System.Diagnostics;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
@@ -16,9 +16,39 @@ public class RabbitMqConnection : IAsyncDisposable
     private IConnection? _connection;
     private bool _disposed;
 
+    // S-19：共享连接引用计数。RabbitMqEventBus 与 RabbitMqRequestBus 共用同一连接实例，
+    // 任一使用方 Dispose 不应销毁其他使用方的连接，仅在引用计数归零时才真正断开。
+    private int _refCount;
+    private readonly SemaphoreSlim _reconnectLock = new(1, 1);
+
     public RabbitMqConnection(IConnectionFactory connectionFactory)
     {
         _connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));
+    }
+
+    /// <summary>增加一个使用方引用（连接恢复后不会因他人 Dispose 而失效）</summary>
+    public void AddRef()
+    {
+        lock (_syncRoot)
+        {
+            _refCount++;
+        }
+    }
+
+    /// <summary>释放一个使用方引用；引用归零时才真正断开连接</summary>
+    public void ReleaseRef()
+    {
+        bool shouldDispose;
+        lock (_syncRoot)
+        {
+            _refCount = Math.Max(0, _refCount - 1);
+            shouldDispose = _refCount == 0;
+        }
+
+        if (shouldDispose)
+        {
+            _ = DisposeAsync();
+        }
     }
 
     public bool IsConnected => _connection != null && _connection.IsOpen && !_disposed;
@@ -52,16 +82,34 @@ public class RabbitMqConnection : IAsyncDisposable
             if (IsConnected) return true;
         }
 
+        await _reconnectLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
+            // 双重检查：等待锁期间可能已被其他调用方恢复
+            lock (_syncRoot)
+            {
+                if (IsConnected) return true;
+            }
+
             var connection = await _connectionFactory
                 .CreateConnectionAsync(cancellationToken)
                 .ConfigureAwait(false);
 
             lock (_syncRoot)
             {
-                if (_disposed) return false;
+                if (_disposed)
+                {
+                    _ = connection.DisposeAsync();
+                    return false;
+                }
+
+                // 替换旧连接（断线重建）；旧连接由 RabbitMQ.Client 内部清理
+                var old = _connection;
                 _connection = connection;
+                if (old is not null)
+                {
+                    _ = old.DisposeAsync();
+                }
             }
 
             connection.ConnectionShutdownAsync += OnConnectionShutdown;
@@ -73,6 +121,10 @@ public class RabbitMqConnection : IAsyncDisposable
         {
             Debug.WriteLine($"[Evenbus] RabbitMQ 连接失败: {ex.Message}");
             return false;
+        }
+        finally
+        {
+            _reconnectLock.Release();
         }
     }
 

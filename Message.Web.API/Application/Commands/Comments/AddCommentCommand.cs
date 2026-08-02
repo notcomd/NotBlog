@@ -48,7 +48,14 @@ public class AddCommentCommandHandler(
                     throw new InvalidOperationException("评论嵌套层级不能超过2层");
             }
 
-            var comment = Comment.Create(command.TweetGuid, command.UserId, command.Content,
+            // S-17：内容净化 + 空值校验 + 长度校验（上限 500 字符，实体层 Comment.Create 亦有兜底校验）
+            var safeContent = SafeContentSanitizer.Sanitize(command.Content);
+            if (string.IsNullOrWhiteSpace(safeContent))
+                throw new ArgumentException("评论内容不能为空");
+            if (safeContent.Length > 500)
+                throw new ArgumentException("评论内容不能超过500个字符");
+
+            var comment = Comment.Create(command.TweetGuid, command.UserId, safeContent,
                 command.ParentGuid, command.ReplyToGuid);
             await commentRepository.AddAsync(comment);
 

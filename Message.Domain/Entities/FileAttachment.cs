@@ -64,12 +64,12 @@ public class FileAttachment : Entity
     /// <summary>
     /// 文件名
     /// </summary>
-    public string FileName { get; private set; }
+    public string FileName { get; private set; } = null!;
 
     /// <summary>
     /// 文件类型
     /// </summary>
-    public string FileType { get; private set; }
+    public string FileType { get; private set; } = null!;
 
     /// <summary>
     /// 文件大小
@@ -79,7 +79,7 @@ public class FileAttachment : Entity
     /// <summary>
     /// 文件URI
     /// </summary>
-    public Uri FileUri { get; private set; }
+    public Uri FileUri { get; private set; } = null!;
 
     /// <summary>
     /// 缩略图URI

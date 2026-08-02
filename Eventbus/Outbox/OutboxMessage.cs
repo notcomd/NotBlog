@@ -1,4 +1,4 @@
-﻿﻿using System.Text.Json;
+﻿using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -47,17 +47,33 @@ public class OutboxMessage
     /// <summary>发送时间</summary>
     public DateTimeOffset? SentAt { get; private set; }
 
+    /// <summary>下次重试时间（失败后指数退避，S-19）</summary>
+    public DateTimeOffset? NextRetryAt { get; private set; }
+
     internal void MarkSent()
     {
         Status = OutboxStatus.Sent;
         SentAt = DateTimeOffset.UtcNow;
+        NextRetryAt = null;
     }
 
-    internal void IncrementFailure(string error)
+    /// <summary>
+    /// 记录发送失败：进入 Failed 状态，并按指数退避计算下次重试时间。
+    /// 退避公式：baseDelayMs * 2^(ProcessCount-1)，封顶 1 小时。
+    /// </summary>
+    internal void IncrementFailure(string error, int baseDelayMs = 5000)
     {
         ProcessCount++;
         LastError = error;
         Status = OutboxStatus.Failed;
+        var backoffMs = Math.Min(baseDelayMs * Math.Pow(2, ProcessCount - 1), 3600_000);
+        NextRetryAt = DateTimeOffset.UtcNow.AddMilliseconds(backoffMs);
+    }
+
+    internal void ResetPending()
+    {
+        Status = OutboxStatus.Pending;
+        NextRetryAt = null;
     }
 }
 
@@ -96,6 +112,7 @@ public class OutboxMessageTypeConfiguration : IEntityTypeConfiguration<OutboxMes
         builder.Property(m => m.LastError).HasMaxLength(1000);
         builder.Property(m => m.Status).HasConversion<string>().HasMaxLength(20);
         builder.Property(m => m.SentAt);
+        builder.Property(m => m.NextRetryAt);
 
         // 索引：按状态+创建时间查询待发消息
         builder.HasIndex(m => new { m.Status, m.CreatedAt })

@@ -9,9 +9,11 @@ public record TransferOwnershipCommand(Guid GroupId, Guid NewOwnerId) : IRequest
 
 /// <summary>
 /// 转让群主命令处理程序。
+/// <para>权限（修复 S-04）：仅群主（Owner）可转让群主。</para>
 /// </summary>
 public class TransferOwnershipCommandHandler(
     IGroupRepository groupRepository,
+    ICurrentUserService currentUser,
     ILogger<TransferOwnershipCommandHandler> logger) : IRequestHandler<TransferOwnershipCommand, bool>
 {
     public async Task<bool> Handler(TransferOwnershipCommand command, CancellationToken cancellationToken)
@@ -19,6 +21,10 @@ public class TransferOwnershipCommandHandler(
         var group = await groupRepository.GetByIdWithMembersAsync(command.GroupId);
         if (group == null)
             throw new KeyNotFoundException("群组不存在");
+
+        var operatorId = currentUser.GetUserId();
+        if (!group.HasPermission(operatorId, GroupPermission.TransferOwnership))
+            throw new UnauthorizedAccessException("仅群主可转让群主");
 
         group.TransferOwnership(command.NewOwnerId);
         await groupRepository.UpdateAsync(group);
