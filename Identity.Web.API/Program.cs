@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Identity.Web.API;
+using Commons.EntityFramework;
 
 var builder = WebApplication.CreateBuilder(args);
 

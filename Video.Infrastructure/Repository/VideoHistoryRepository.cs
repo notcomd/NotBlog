@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Video.Domain.Entities;
 using Video.Domain.IRepository;
-using Video.Domain.SeedWork;
+using Commons.SeedWork;
 using Video.Infrastructure.EntityFramework;
 
 namespace Video.Infrastructure.Repository;

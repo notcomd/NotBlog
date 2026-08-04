@@ -1,6 +1,6 @@
 namespace Identity.Domain.Entities.UserAggregate;
 
-public class UserSafety : Entity
+public class UserSafety : Entity<int>
 {
     private UserSafety(Guid userGuid)
     {

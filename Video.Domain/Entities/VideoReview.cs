@@ -1,4 +1,4 @@
-using Video.Domain.SeedWork;
+using Commons.SeedWork;
 using Video.Domain.ValueObjects;
 
 namespace Video.Domain.Entities;
@@ -12,7 +12,7 @@ namespace Video.Domain.Entities;
 /// - ContentType 字符串字段用于数据库持久化和快速查询
 /// - 工厂方法覆盖所有内容类型，扩展新类型只需修改 ReviewContent
 /// </summary>
-public class VideoReview : Entity
+public class VideoReview : Entity<int>
 {
     public Guid VideoReviewGuid { get; init; }
 

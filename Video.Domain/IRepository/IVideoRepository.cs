@@ -1,9 +1,9 @@
 using Video.Domain.Entities;
 using Video.Domain.ValueObjects;
-using Video.Domain.SeedWork;
+using Commons.SeedWork;
 namespace Video.Domain.IRepository;
 
-public interface IVideoRepository:IRepository<Videos>
+public interface IVideoRepository:IRepository<Videos, IUnitOfWork>
 {
     /// <summary>
     /// 查找所有视频

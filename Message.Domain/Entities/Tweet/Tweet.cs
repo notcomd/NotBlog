@@ -1,11 +1,11 @@
 using Message.Domain.Enums;
 using Message.Domain.Events;
-using Message.Domain.SeedWork;
+using Commons.SeedWork;
 using Message.Domain.ValueObjects.Tweet;
 
 namespace Message.Domain.Entities.Tweet;
 
-public class Tweet : Entity, IAggregateRoot
+public class Tweet : Entity<Guid>, IAggregateRoot
 {
     private readonly List<TweetMedia> _media = [];
     private readonly HashSet<string> _hashtags = [];

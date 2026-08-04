@@ -1,13 +1,13 @@
 using Message.Domain.Enums;
 using Message.Domain.Events;
-using Message.Domain.SeedWork;
+using Commons.SeedWork;
 
 namespace Message.Domain.Entities.Group;
 
 /// <summary>
 ///   群聊
 /// </summary>
-public class Group : Entity, IAggregateRoot
+public class Group : Entity<Guid>, IAggregateRoot
 {
     /// <summary>
     ///   群成员

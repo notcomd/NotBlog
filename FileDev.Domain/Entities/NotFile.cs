@@ -1,6 +1,6 @@
 namespace FileDev.Domain.Entities;
 
-public class NotFile : Entity, IAggregateRoot
+public class NotFile : Entity<int>, IAggregateRoot
 {
     public Guid FileId { get; init; }
 

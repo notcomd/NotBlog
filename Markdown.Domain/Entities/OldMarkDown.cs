@@ -4,7 +4,7 @@ namespace Markdown.Domain.Entities;
 ///     MarkDown 历史版本记录（旧文档）
 ///     用于保存每次更新前的文档快照，支持版本回溯和审计
 /// </summary>
-public class OldMarkDown : Entity
+public class OldMarkDown : Entity<int>
 {
     
      /// <summary>

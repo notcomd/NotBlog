@@ -1,4 +1,4 @@
-﻿namespace Identity.Domain.Entities.UserAggregate;
+namespace Identity.Domain.Entities.UserAggregate;
 
 /// <summary>
 /// 用户登录失败追踪与锁定策略
@@ -6,7 +6,7 @@
 /// 策略: 连续失败 5 次后锁定 15 分钟；登录成功后自动清零。
 /// 锁定过期后下次尝试自动解除。
 /// </summary>
-public class UserAccessFail : Entity
+public class UserAccessFail : Entity<int>
 {
     /// <summary>最大连续失败次数（超过则锁定）</summary>
     public const int MaxFailedAttempts = 5;

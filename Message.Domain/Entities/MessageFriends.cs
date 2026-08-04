@@ -1,13 +1,13 @@
 using Message.Domain.Enums;
 using Message.Domain.Events;
-using Message.Domain.SeedWork;
+using Commons.SeedWork;
 
 namespace Message.Domain.Entities;
 
 /// <summary>
 ///  好友关系
 /// </summary>
-public class MessageFriends : Entity, IAggregateRoot
+public class MessageFriends : Entity<Guid>, IAggregateRoot
 {
     public MessageFriends(Guid userId, Guid friendId)
     {

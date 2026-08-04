@@ -1,5 +1,5 @@
 using Notcomd.Token.JWT.Security;
-using Video.Domain.SeedWork;
+using Commons.SeedWork;
 using Video.Domain.ValueObjects;
 
 namespace Video.Domain.Entities;
@@ -7,7 +7,7 @@ namespace Video.Domain.Entities;
 /// <summary>
 /// 视频收藏
 /// </summary>
-public class VideoCollection : Entity, IAggregateRoot
+public class VideoCollection : Entity<int>, IAggregateRoot
 {
 
     public Guid VideoCollectionGuid { get; init; } = Guid.CreateVersion7();

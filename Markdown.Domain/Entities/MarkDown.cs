@@ -3,7 +3,7 @@ namespace Markdown.Domain.Entities;
 /// <summary>
 ///     文档
 /// </summary>
-public class MarkDown : Entity, IAggregateRoot
+public class MarkDown : Entity<int>, IAggregateRoot
 {
     private MarkDown()
     {

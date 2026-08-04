@@ -1,12 +1,12 @@
 using Message.Domain.Enums;
-using Message.Domain.SeedWork;
+using Commons.SeedWork;
 
 namespace Message.Domain.Entities.Forward;
 
 /// <summary>
 /// 消息转发实体
 /// </summary>
-public class MessageForward : Entity
+public class MessageForward : Entity<Guid>
 {
     public MessageForward(Guid originalMessageId, Guid forwardedMessageId, Guid forwardedBy,
         Guid targetSessionId, ForwardType forwardType, Guid? parentForwardId = null, string? comment = null) : this()

@@ -1,6 +1,6 @@
 namespace Identity.Domain.Entities.UserAggregate;
 
-public class UserLoginHistory : Entity
+public class UserLoginHistory : Entity<int>
 {
     private UserLoginHistory()
     {

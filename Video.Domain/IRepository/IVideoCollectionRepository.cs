@@ -1,10 +1,10 @@
 using Video.Domain.Entities;
-using Video.Domain.SeedWork;
+using Commons.SeedWork;
 using Video.Domain.ValueObjects;
 
 namespace Video.Domain.IRepository;
 
-public interface IVideoCollectionRepository : IRepository<VideoCollection>
+public interface IVideoCollectionRepository : IRepository<VideoCollection, IUnitOfWork>
 {
     /// <summary>
     /// </summary>

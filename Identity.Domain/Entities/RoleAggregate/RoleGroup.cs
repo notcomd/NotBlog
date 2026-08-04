@@ -1,6 +1,6 @@
 namespace Identity.Domain.Entities.RoleAggregate;
 
-public class RoleGroup : Entity, IAggregateRoot
+public class RoleGroup : Entity<int>, IAggregateRoot
 {
     public RoleGroup(string roleGroupName, string roleGroupCode) : this()
     {

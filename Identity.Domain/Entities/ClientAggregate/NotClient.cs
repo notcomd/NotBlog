@@ -8,7 +8,7 @@ namespace Identity.Domain.Entities.ClientAggregate;
 /// 
 /// 用于外部服务在本认证中心登记 OAuth 客户端时存储的核心数据模型。
 /// </summary>
-public class NotClient : Entity, IAggregateRoot
+public class NotClient : Entity<int>, IAggregateRoot
 {
     // ── 构造函数 ──
 

@@ -1,6 +1,6 @@
 using Message.Domain.Entities;
 using Message.Domain.IRepository;
-using Message.Domain.SeedWork;
+using Commons.SeedWork;
 using Message.Web.API.Application.Commands.Friends;
 using Microsoft.Extensions.Logging;
 using Moq;

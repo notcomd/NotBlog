@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
@@ -39,7 +39,7 @@
         <ProjectReference Include="..\CacheMemory\CacheMemory.csproj"/>
         <ProjectReference Include="..\Eventbus\EventBus.csproj"/>
         <ProjectReference Include="..\JWToken\Token.JWT.csproj"/>
-        <ProjectReference Include="..\CommonsInitializer\CommonsInitializer.csproj"/>
+        <ProjectReference Include="..\Commons\Commons.csproj"/>
     </ItemGroup>
 
     <ItemGroup>

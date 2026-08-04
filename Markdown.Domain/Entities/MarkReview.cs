@@ -1,6 +1,6 @@
 namespace Markdown.Domain.Entities;
 
-public class MarkReview : Entity
+public class MarkReview : Entity<int>
 {
     private MarkReview()
     {

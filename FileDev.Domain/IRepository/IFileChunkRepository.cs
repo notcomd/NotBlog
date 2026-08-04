@@ -1,6 +1,6 @@
 namespace FileDev.Domain.IRepository;
 
-public interface IFileChunkRepository : IRepository<FileChunkRecord>
+public interface IFileChunkRepository : IRepository<FileChunkRecord, IUnitOfWork>
 {
     /// <summary>根据文件标识获取分片上传记录</summary>
     Task<FileChunkRecord?> GetByFileKeyAsync(string fileKey, CancellationToken ct = default);

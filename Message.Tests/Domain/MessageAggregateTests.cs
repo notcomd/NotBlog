@@ -1,7 +1,7 @@
 using Message.Domain.Entities;
 using Message.Domain.Enums;
 using Message.Domain.Events;
-using Message.Domain.SeedWork;
+using Commons.SeedWork;
 using DomainMessage = Message.Domain.Entities.Message;
 
 namespace Message.Tests.Domain;

@@ -1,6 +1,6 @@
 namespace Identity.Domain.Entities.RoleAggregate;
 
-public class Permission : Entity
+public class Permission : Entity<int>
 {
     protected Permission()
     {

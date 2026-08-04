@@ -1,13 +1,13 @@
-﻿using Message.Domain.Entities.Tweet;
+using Message.Domain.Entities.Tweet;
 using Message.Domain.Enums;
-using Message.Domain.SeedWork;
+using Commons.SeedWork;
 using NotMediator;
 
 namespace Message.Domain.IRepository;
 /// <summary>
 /// 微博举报仓储接口
 /// </summary>
-public interface ITweetReportRepository : IRepository<TweetReport>
+public interface ITweetReportRepository : IRepository<TweetReport, IUnitOfWork>
 {
     Task<TweetReport?> GetByIdAsync(Guid reportGuid);
     Task<IEnumerable<TweetReport>> GetByReporterAsync(Guid reporterGuid, int page = 1, int pageSize = 20);

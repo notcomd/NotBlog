@@ -1,12 +1,12 @@
 using Message.Domain.Enums;
-using Message.Domain.SeedWork;
+using Commons.SeedWork;
 
 namespace Message.Domain.Entities.Group;
 
 /// <summary>
 ///  群成员
 /// </summary>
-public class GroupMember : Entity
+public class GroupMember : Entity<Guid>
 {
     public GroupMember(Guid groupId, Guid userId, GroupMemberRole role) : this()
     {

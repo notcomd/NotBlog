@@ -1,8 +1,8 @@
-﻿using Identity.Domain.Entities.UserExternalLoginAggregate;
+using Identity.Domain.Entities.UserExternalLoginAggregate;
 
 namespace Identity.Domain.IRepository;
 
-public interface IUserExternalLoginRepository : IRepository<UserExternalLogin>
+public interface IUserExternalLoginRepository : IRepository<UserExternalLogin, IUnitOfWork>
 {
     /// <summary>
     /// 添加外部登录记录

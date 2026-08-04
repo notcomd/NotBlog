@@ -1,11 +1,11 @@
 using Message.Domain.Enums;
 using Message.Domain.Events;
-using Message.Domain.SeedWork;
+using Commons.SeedWork;
 using NotMediator;
 
 namespace Message.Domain.Entities.Tweet;
 
-public class TweetReport : Entity, IAggregateRoot
+public class TweetReport : Entity<Guid>, IAggregateRoot
 {
 
 

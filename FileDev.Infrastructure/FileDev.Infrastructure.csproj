@@ -15,7 +15,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\CacheMemory\CacheMemory.csproj"/>
-        <ProjectReference Include="..\CommonsInitializer\CommonsInitializer.csproj" />
+        <ProjectReference Include="..\Commons\Commons.csproj"/>
         <ProjectReference Include="..\FileDev.Domain\FileDev.Domain.csproj"/>
         <ProjectReference Include="..\JWToken\Token.JWT.csproj"/>
     </ItemGroup>

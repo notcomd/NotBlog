@@ -4,9 +4,9 @@ global using System.Reflection;
 
 global using CacheMemory.Extensions;
 
-global using CommonsInitializer;
+global using Commons.Web;
 
-global using DomainInfrastructure;
+global using Commons.Extensions;
 
 global using Identity.Domain.Dto.Request;
 global using Identity.Domain.Entities.RoleAggregate;

@@ -1,12 +1,12 @@
 using Message.Domain.Enums;
-using Message.Domain.SeedWork;
+using Commons.SeedWork;
 
 namespace Message.Domain.Entities.Recall;
 
 /// <summary>
 ///  消息撤回
 /// </summary>
-public class MessageRecall : Entity
+public class MessageRecall : Entity<Guid>
 {
     public MessageRecall(Guid messageId, Guid recalledBy, RecallReason reason, string? originalContent,
         int timeLimitMinutes = 2)

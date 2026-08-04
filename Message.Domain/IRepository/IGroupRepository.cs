@@ -1,10 +1,10 @@
 using Message.Domain.Entities.Group;
 using Message.Domain.Enums;
-using Message.Domain.SeedWork;
+using Commons.SeedWork;
 
 namespace Message.Domain.IRepository;
 
-public interface IGroupRepository : IRepository<Group>
+public interface IGroupRepository : IRepository<Group, IUnitOfWork>
 {
     Task<Group?> GetByIdAsync(Guid groupId);
     /// <summary>

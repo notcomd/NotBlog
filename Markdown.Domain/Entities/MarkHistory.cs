@@ -3,7 +3,7 @@ namespace Markdown.Domain.Entities;
 /// <summary>
 ///     MarkDown 阅读历史记录
 /// </summary>
-public class MarkHistory : Entity, IAggregateRoot
+public class MarkHistory : Entity<int>, IAggregateRoot
 {
     private MarkHistory()
     {

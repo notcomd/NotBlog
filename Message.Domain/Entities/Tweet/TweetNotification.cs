@@ -1,12 +1,12 @@
 using Message.Domain.Enums;
-using Message.Domain.SeedWork;
+using Commons.SeedWork;
 
 namespace Message.Domain.Entities.Tweet;
 
 /// <summary>
 /// 推文通知
 /// </summary>
-public class TweetNotification : Entity
+public class TweetNotification : Entity<Guid>
 {
     public Guid UserGuid { get; private set; }
     public NotificationType Type { get; private set; }

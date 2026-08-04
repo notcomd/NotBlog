@@ -1,6 +1,6 @@
-﻿namespace Identity.Domain.IRepository;
+namespace Identity.Domain.IRepository;
 
-public interface IRoleGroupRepository : IRepository<RoleGroup>
+public interface IRoleGroupRepository : IRepository<RoleGroup, IUnitOfWork>
 {
     /// <summary>
     /// 根据角色ID获取角色组

@@ -1,13 +1,13 @@
 global using CacheMemory.Core;
 global using FileDev.Domain.Entities;
-global using FileDev.Domain.SeedWork;
+global using Commons.SeedWork;
 global using FileDev.Infrastructure.EntityConfig;
 global using FileDev.Infrastructure.Idempotent;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.EntityFrameworkCore.Storage;
 global using NotMediator;
 global using System.Text;
-global using DomainInfrastructure;
+global using Commons.Extensions;
 global using FileDev.Domain.Dto.Request;
 global using FileDev.Domain.Dto.Response;
 global using FileDev.Domain.IServices;

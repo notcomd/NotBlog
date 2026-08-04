@@ -1,4 +1,4 @@
-using Message.Domain.SeedWork;
+using Commons.SeedWork;
 
 namespace Message.Domain.Entities;
 
@@ -10,7 +10,7 @@ namespace Message.Domain.Entities;
 ///  其生命周期始终隶属于所属消息，独立仓储仅用于查询投影场景。
 ///  </para>
 /// </summary>
-public class FileAttachment : Entity
+public class FileAttachment : Entity<Guid>
 {
     /// <summary>
     /// 创建文件附件

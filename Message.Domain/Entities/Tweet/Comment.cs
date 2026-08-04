@@ -1,9 +1,9 @@
 using Message.Domain.Events;
-using Message.Domain.SeedWork;
+using Commons.SeedWork;
 
 namespace Message.Domain.Entities.Tweet;
 
-public class Comment : Entity, IAggregateRoot
+public class Comment : Entity<Guid>, IAggregateRoot
 {
     public Guid CommentGuid { get; init; }
     public Guid TweetGuid { get; private set; }

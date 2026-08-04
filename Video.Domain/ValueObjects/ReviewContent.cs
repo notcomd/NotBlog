@@ -1,4 +1,4 @@
-using Video.Domain.SeedWork;
+using Commons.SeedWork;
 
 namespace Video.Domain.ValueObjects;
 

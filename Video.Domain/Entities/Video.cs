@@ -1,4 +1,4 @@
-using Video.Domain.SeedWork;
+using Commons.SeedWork;
 using Video.Domain.ValueObjects;
 using Video.Domain.Events;
 
@@ -7,7 +7,7 @@ namespace Video.Domain.Entities;
 /// <summary>
 /// 视频实体
 /// </summary>
-public class Videos : Entity, IAggregateRoot
+public class Videos : Entity<int>, IAggregateRoot
 {
     public Guid VideoGuid { get; init; }
 

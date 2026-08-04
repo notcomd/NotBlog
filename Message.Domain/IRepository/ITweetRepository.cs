@@ -1,10 +1,10 @@
-﻿using Message.Domain.Entities.Tweet;
+using Message.Domain.Entities.Tweet;
 using Message.Domain.Enums;
-using Message.Domain.SeedWork;
+using Commons.SeedWork;
 
 namespace Message.Domain.IRepository;
 
-public interface ITweetRepository : IRepository<Tweet>
+public interface ITweetRepository : IRepository<Tweet, IUnitOfWork>
 {
     /// <summary>
     /// 获取推文详情

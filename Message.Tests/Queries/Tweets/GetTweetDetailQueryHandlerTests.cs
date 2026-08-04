@@ -1,7 +1,7 @@
 using Message.Domain.Entities.Tweet;
 using Message.Domain.Enums;
 using Message.Domain.IRepository;
-using Message.Domain.SeedWork;
+using Commons.SeedWork;
 using Message.Web.API.Application.Queries.Tweets;
 using Moq;
 

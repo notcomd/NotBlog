@@ -28,7 +28,7 @@
         <ProjectReference Include="..\NotBlog.ServiceDefaults\NotBlog.ServiceDefaults.csproj" />
         <ProjectReference Include="..\JWToken\Token.JWT.csproj"/>
         <ProjectReference Include="..\EventBus\EventBus.csproj"/>
-        <ProjectReference Include="..\CommonsInitializer\CommonsInitializer.csproj"/>
+        <ProjectReference Include="..\Commons\Commons.csproj"/>
     </ItemGroup>
 
     <ItemGroup>

@@ -1,13 +1,13 @@
 using Message.Domain.Enums;
 using Message.Domain.Events;
-using Message.Domain.SeedWork;
+using Commons.SeedWork;
 
 namespace Message.Domain.Entities;
 
 /// <summary>
 /// 会话
 /// </summary>
-public class ChatSession : Entity, IAggregateRoot
+public class ChatSession : Entity<Guid>, IAggregateRoot
 {
     private readonly Dictionary<Guid, DateTime> _lastReadTime = new();
 

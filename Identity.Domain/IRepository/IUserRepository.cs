@@ -1,6 +1,6 @@
-﻿namespace Identity.Domain.IRepository;
+namespace Identity.Domain.IRepository;
 
-public interface IUserRepository : IRepository<User>
+public interface IUserRepository : IRepository<User, IUnitOfWork>
 {
     /// <summary>
     /// 根据用户ID获取用户

@@ -1,5 +1,5 @@
 using Message.Domain.Entities.Tweet;
-using Message.Domain.SeedWork;
+using Commons.SeedWork;
 
 namespace Message.Domain.IRepository;
 /// <summary>

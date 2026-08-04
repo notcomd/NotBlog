@@ -1,11 +1,11 @@
-global using DomainInfrastructure;
+global using Commons.Extensions;
 global using Message.Domain.Entities;
 global using Message.Domain.Entities.Group;
 global using Message.Domain.Entities.Tweet;
 global using Message.Domain.Enums;
 global using Message.Domain.IRepository;
 global using Message.Domain.IServices;
-global using Message.Domain.SeedWork;
+global using Commons.SeedWork;
 global using Message.Domain.ValueObjects.Tweet;
 global using Microsoft.AspNetCore.SignalR;
 global using Microsoft.EntityFrameworkCore;

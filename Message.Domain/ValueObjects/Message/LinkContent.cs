@@ -1,4 +1,4 @@
-using Message.Domain.SeedWork;
+using Commons.SeedWork;
 
 namespace Message.Domain.ValueObjects.Message;
 

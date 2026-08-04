@@ -1,8 +1,7 @@
 using FileDev.Domain.Entities;
-using FileDev.Domain.SeedWork;
 namespace FileDev.Domain.IRepository;
 
-public interface INotFileGroupRepository: IRepository<NotFileGroup>
+public interface INotFileGroupRepository: IRepository<NotFileGroup, IUnitOfWork>
 {
     
     /// <summary>

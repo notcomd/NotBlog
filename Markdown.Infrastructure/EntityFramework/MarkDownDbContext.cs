@@ -1,5 +1,5 @@
-using DomainInfrastructure;
-using Markdown.Domain.SeedWork;
+using Commons.Extensions;
+using Commons.SeedWork;
 using Markdown.Infrastructure.Configuration;
 using Markdown.Infrastructure.Idempotent;
 using Microsoft.EntityFrameworkCore.Storage;

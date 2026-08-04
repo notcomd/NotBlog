@@ -35,7 +35,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\CacheMemory\CacheMemory.csproj" />
-        <ProjectReference Include="..\CommonsInitializer\CommonsInitializer.csproj" />
+        <ProjectReference Include="..\Commons\Commons.csproj" />
         <ProjectReference Include="..\EventBus\EventBus.csproj" />
         <ProjectReference Include="..\NotBlog.ServiceDefaults\NotBlog.ServiceDefaults.csproj" />
         <ProjectReference Include="..\NotEmail\NotEmail.csproj" />

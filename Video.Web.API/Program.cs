@@ -1,6 +1,6 @@
 using System.Reflection;
 using CacheMemory.Extensions;
-using CommonsInitializer;
+using Commons.Web;
 using NotBlog.ServiceDefaults;
 using Notcomd.EventBus.Extension;
 using Notcomd.Token.JWT.Extensions;

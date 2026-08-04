@@ -1,9 +1,9 @@
-﻿using DomainInfrastructure;
+using Commons.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using NotMediator;
 using Video.Domain.Entities;
-using Video.Domain.SeedWork;
+using Commons.SeedWork;
 
 namespace Video.Infrastructure.EntityFramework;
 

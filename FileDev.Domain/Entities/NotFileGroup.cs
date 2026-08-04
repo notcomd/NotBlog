@@ -4,7 +4,7 @@ namespace FileDev.Domain.Entities;
 /// 文件组聚合根 — 支持树形嵌套，同级名称唯一。
 /// ParentGroupId == null 表示根节点。
 /// </summary>
-public class NotFileGroup : Entity, IAggregateRoot
+public class NotFileGroup : Entity<int>, IAggregateRoot
 {
     public Guid NotFileGroupId { get; init; }
 

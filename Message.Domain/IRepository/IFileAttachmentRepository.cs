@@ -1,5 +1,5 @@
 using Message.Domain.Entities;
-using Message.Domain.SeedWork;
+using Commons.SeedWork;
 
 namespace Message.Domain.IRepository;
 /// <summary>

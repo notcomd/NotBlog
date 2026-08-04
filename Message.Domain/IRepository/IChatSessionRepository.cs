@@ -1,10 +1,10 @@
 using Message.Domain.Entities;
 using Message.Domain.Enums;
-using Message.Domain.SeedWork;
+using Commons.SeedWork;
 
 namespace Message.Domain.IRepository;
 
-public interface IChatSessionRepository : IRepository<ChatSession>
+public interface IChatSessionRepository : IRepository<ChatSession, IUnitOfWork>
 {
     Task<ChatSession?> GetByIdAsync(Guid sessionId);
     Task<ChatSession?> GetPrivateSessionAsync(Guid userId1, Guid userId2);

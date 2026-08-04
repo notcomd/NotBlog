@@ -1,7 +1,6 @@
 using FileDev.Domain.Entities;
 using FileDev.Domain.Exception;
 using FileDev.Domain.IRepository;
-using FileDev.Domain.SeedWork;
 using FileDev.Infrastructure.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 

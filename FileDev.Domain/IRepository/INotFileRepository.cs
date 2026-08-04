@@ -1,8 +1,7 @@
 using FileDev.Domain.Entities;
-using FileDev.Domain.SeedWork;
 namespace FileDev.Domain.IRepository;
 
-public interface INotFileRepository:IRepository<NotFile>
+public interface INotFileRepository:IRepository<NotFile, IUnitOfWork>
 {
     Task<NotFile?> GetFileByIdAsync(Guid fileId);
 

@@ -2,7 +2,7 @@ using Message.Domain.Entities.Group;
 using Message.Domain.Enums;
 using Message.Domain.IRepository;
 using Message.Domain.IServices;
-using Message.Domain.SeedWork;
+using Commons.SeedWork;
 using Message.Web.API.Application.Commands.Groups;
 using Microsoft.Extensions.Logging;
 using Moq;

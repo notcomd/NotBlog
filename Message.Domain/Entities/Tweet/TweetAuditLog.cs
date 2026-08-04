@@ -1,9 +1,9 @@
 using Message.Domain.Enums;
-using Message.Domain.SeedWork;
+using Commons.SeedWork;
 
 namespace Message.Domain.Entities.Tweet;
 
-public class TweetAuditLog:Entity
+public class TweetAuditLog:Entity<Guid>
 {
     public Guid AuditGuid { get; init; }
     public Guid TweetGuid { get; private set; }

@@ -2,11 +2,11 @@
 using Message.Domain.ValueObjects.Message;
 using Message.Domain.Enums;
 using Message.Domain.Events;
-using Message.Domain.SeedWork;
+using Commons.SeedWork;
 
 namespace Message.Domain.Entities;
 
-public class Message : Entity, IAggregateRoot
+public class Message : Entity<Guid>, IAggregateRoot
 {
     private readonly List<FileAttachment> _attachments = new();
 

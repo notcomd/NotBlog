@@ -3,7 +3,7 @@ namespace FileDev.Domain.Entities;
 /// <summary>
 /// 分片上传任务记录实体，用于跟踪大文件分片上传的完整生命周期并支持断点续传。
 /// </summary>
-public class FileChunkRecord : Entity, IAggregateRoot
+public class FileChunkRecord : Entity<int>, IAggregateRoot
 {
     private FileChunkRecord()
     {

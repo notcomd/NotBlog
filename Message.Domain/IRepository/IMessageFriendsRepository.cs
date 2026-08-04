@@ -1,10 +1,10 @@
 using Message.Domain.Entities;
 using Message.Domain.Enums;
-using Message.Domain.SeedWork;
+using Commons.SeedWork;
 
 namespace Message.Domain.IRepository;
 
-public interface IMessageFriendsRepository  : IRepository<MessageFriends>
+public interface IMessageFriendsRepository  : IRepository<MessageFriends, IUnitOfWork>
 {
     Task<MessageFriends?> GetByIdAsync(Guid friendshipId);
     Task<MessageFriends?> GetByUserAndFriendAsync(Guid userId, Guid friendId);

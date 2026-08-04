@@ -8,7 +8,7 @@ namespace Identity.Domain.Entities.UserExternalLoginAggregate;
 /// 
 /// 支持的提供商: Google, Microsoft, GitHub, 微信, QQ
 /// </summary>
-public class UserExternalLogin : Entity, IAggregateRoot
+public class UserExternalLogin : Entity<int>, IAggregateRoot
 {
     /// <summary>EF Core 无参构造函数</summary>
     protected UserExternalLogin()

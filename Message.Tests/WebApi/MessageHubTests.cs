@@ -1,7 +1,7 @@
 using Message.Domain.Entities;
 using Message.Domain.Enums;
 using Message.Domain.IRepository;
-using Message.Domain.SeedWork;
+using Commons.SeedWork;
 using Message.Domain.IServices;
 using Message.Infrastructure.Services;
 using Message.Web.API.Dto;

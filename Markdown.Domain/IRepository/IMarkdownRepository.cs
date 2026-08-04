@@ -4,7 +4,7 @@ namespace Markdown.Domain.IRepository;
 /// <summary>
 ///     MarkDown 聚合根仓储接口（唯一对外暴露的仓储，所有聚合内实体的操作必须通过此接口）
 /// </summary>
-public interface IMarkdownRepository : IRepository<MarkDown>
+public interface IMarkdownRepository : IRepository<MarkDown, IUnitOfWork>
 {
     /// <summary>
     ///     获取追踪状态的 MarkDown 实体（用于更新操作）

@@ -1,11 +1,11 @@
-using Message.Domain.SeedWork;
+using Commons.SeedWork;
 
 namespace Message.Domain.Entities.Tweet;
 
 /// <summary>
 /// 推文媒体
 /// </summary>
-public class TweetMedia : Entity
+public class TweetMedia : Entity<Guid>
 {
     private TweetMedia()
     {

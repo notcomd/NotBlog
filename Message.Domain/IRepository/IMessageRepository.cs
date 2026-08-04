@@ -1,10 +1,10 @@
 using Message.Domain.Enums;
-using Message.Domain.SeedWork;
+using Commons.SeedWork;
 using MessageEntity = Message.Domain.Entities.Message;
 
 namespace Message.Domain.IRepository;
 
-public interface IMessageRepository : IRepository<MessageEntity>
+public interface IMessageRepository : IRepository<MessageEntity, IUnitOfWork>
 {
     Task<MessageEntity?> GetByIdAsync(Guid messageId);
     Task<IEnumerable<MessageEntity>> GetBySessionIdAsync(Guid sessionId, int page = 1, int pageSize = 50);

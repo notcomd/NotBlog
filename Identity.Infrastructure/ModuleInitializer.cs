@@ -1,4 +1,4 @@
-using DomainCommons;
+using Commons.Core;
 using Identity.Infrastructure.Idempotent;
 using Identity.Infrastructure.Services;
 using Identity.Domain.IService;

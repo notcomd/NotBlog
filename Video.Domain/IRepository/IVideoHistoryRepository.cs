@@ -1,5 +1,5 @@
 using Video.Domain.Entities;
-using Video.Domain.SeedWork;
+using Commons.SeedWork;
 
 namespace Video.Domain.IRepository;
 
@@ -7,7 +7,7 @@ namespace Video.Domain.IRepository;
 /// 视频观看历史仓储接口 — 支持分页查询、批量删除和统计分析。
 /// 针对海量历史数据场景进行了查询优化设计。
 /// </summary>
-public interface IVideoHistoryRepository : IRepository<VideoHistory>
+public interface IVideoHistoryRepository : IRepository<VideoHistory, IUnitOfWork>
 {
     // ── 单个查询 ──
 

@@ -3,7 +3,7 @@ using Notcomd.Token.JWT.Security;
 
 namespace Identity.Domain.Entities.UserAggregate;
 
-public class User : Entity, IAggregateRoot
+public class User : Entity<int>, IAggregateRoot
 {
     protected User()
     {

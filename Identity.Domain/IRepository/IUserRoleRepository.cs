@@ -1,6 +1,6 @@
-﻿namespace Identity.Domain.IRepository;
+namespace Identity.Domain.IRepository;
 
-public interface IUserRoleRepository : IRepository<Roles>
+public interface IUserRoleRepository : IRepository<Roles, IUnitOfWork>
 {
     ValueTask AddByUserRoleAsync(Roles userRole);
 
