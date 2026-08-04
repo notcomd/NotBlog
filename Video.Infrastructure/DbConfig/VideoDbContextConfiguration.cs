@@ -9,7 +9,7 @@ public class VideoDbContextConfiguration : IEntityTypeConfiguration<Videos>
     public void Configure(EntityTypeBuilder<Videos> builder)
     {
         builder.ToTable("Video");
-        builder.Ignore(e => e.DomainEventbus);
+        builder.Ignore(e => e.DomainEvents);
 
         builder.Property(en => en.Id).UseHiLo("VideoGuid");
         builder.HasKey(e => e.VideoGuid);

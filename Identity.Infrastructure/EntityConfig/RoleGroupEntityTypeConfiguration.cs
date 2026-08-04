@@ -10,7 +10,7 @@ public class RoleGroupEntityTypeConfiguration : IEntityTypeConfiguration<RoleGro
 
         builder.Property(g => g.RoleGroupGuid).HasDefaultValueSql("gen_random_uuid()");
 
-        builder.Ignore(g => g.DomainEventbus);
+        builder.Ignore(g => g.DomainEvents);
 
         // Guid 列表引用 Roles（通过 ID 引用，不再持有对象引用，避免双向循环依赖）
         builder.Property(g => g.RoleGuids)

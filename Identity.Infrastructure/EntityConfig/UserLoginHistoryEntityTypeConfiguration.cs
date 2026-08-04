@@ -1,4 +1,4 @@
-﻿using Identity.Domain.Entities.UserAggregate;
+using Identity.Domain.Entities.UserAggregate;
 
 namespace Identity.Infrastructure.EntityConfig;
 
@@ -11,7 +11,7 @@ public class UserLoginHistoryEntityTypeConfiguration : IEntityTypeConfiguration<
     {
         builder.ToTable("UserLoginHistory");
 
-        builder.Ignore(b => b.DomainEventbus);
+        builder.Ignore(b => b.DomainEvents);
 
         builder.Property(o => o.Id).UseHiLo("UserLoginHistoryseq");
 

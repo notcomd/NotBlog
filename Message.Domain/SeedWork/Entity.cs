@@ -1,8 +1,9 @@
+using DomainCommons;
 using NotMediator;
 
 namespace Message.Domain.SeedWork;
 
-public abstract class Entity
+public abstract class Entity : IHasDomainEvents
 {
     private List<INotifications>? _domainEvents;
     private Guid _id;

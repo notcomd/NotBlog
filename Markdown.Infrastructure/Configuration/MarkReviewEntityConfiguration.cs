@@ -4,7 +4,7 @@ public class MarkReviewEntityConfiguration : IEntityTypeConfiguration<MarkReview
 {
     public void Configure(EntityTypeBuilder<MarkReview> builder)
     {
-        builder.Ignore(en => en.DomainEventbus);
+        builder.Ignore(en => en.DomainEvents);
         builder.ToTable("MarkReview");
         builder.Property(x => x.Id).UseHiLo("MarkReviewGuid");
         builder.HasKey(x => x.Id);

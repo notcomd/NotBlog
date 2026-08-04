@@ -6,7 +6,7 @@ public class UserEntityTypeConfiguration : IEntityTypeConfiguration<User>
     {
         builder.ToTable("User");
 
-        builder.Ignore(b => b.DomainEventbus);
+        builder.Ignore(b => b.DomainEvents);
 
         builder.Property(o => o.Id).UseHiLo("Userseq");
 

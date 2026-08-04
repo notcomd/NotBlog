@@ -4,7 +4,7 @@ public class MarkHistoryEntityConfiguration: IEntityTypeConfiguration<MarkHistor
 {
     public void Configure(EntityTypeBuilder<MarkHistory> builder)
     {
-        builder.Ignore(en => en.DomainEventbus);
+        builder.Ignore(en => en.DomainEvents);
 
         builder.ToTable("MarkHistory");
         

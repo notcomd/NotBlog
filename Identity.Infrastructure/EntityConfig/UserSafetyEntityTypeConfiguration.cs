@@ -1,4 +1,4 @@
-﻿namespace Identity.Infrastructure.EntityConfig;
+namespace Identity.Infrastructure.EntityConfig;
 
 public class UserSafetyEntityTypeConfiguration : IEntityTypeConfiguration<UserSafety>
 {
@@ -6,8 +6,8 @@ public class UserSafetyEntityTypeConfiguration : IEntityTypeConfiguration<UserSa
     {
         builder.ToTable("UserSafety");
 
-        builder.Ignore(b => b.DomainEventbus);
-        // builder.Property(o => o.DomainEventbus);        
+        builder.Ignore(b => b.DomainEvents);
+        // builder.Property(o => o.DomainEvents);
 
         builder.Property(x => x.Id).UseHiLo("UserSafarseq");
 

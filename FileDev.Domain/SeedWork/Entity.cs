@@ -1,11 +1,12 @@
+using DomainCommons;
 using NotMediator;
 
 namespace FileDev.Domain.SeedWork;
 
-public abstract class Entity
+public abstract class Entity : IHasDomainEvents
 {
 
-    private List<INotifications>? _domainEventBus;
+    private List<INotifications>? _domainEvents;
 
     private int _id;
 
@@ -17,24 +18,24 @@ public abstract class Entity
         protected set => _id = value;
     }
 
-    public IReadOnlyCollection<INotifications> DomainEventBus =>
-        _domainEventBus?.AsReadOnly() ?? new List<INotifications>().AsReadOnly();
+    public IReadOnlyCollection<INotifications> DomainEvents =>
+        _domainEvents?.AsReadOnly() ?? new List<INotifications>().AsReadOnly();
 
     public void AddDomainEvent(INotifications notification)
     {
-        _domainEventBus = _domainEventBus ?? [];
-        _domainEventBus.Add(notification);
+        _domainEvents = _domainEvents ?? [];
+        _domainEvents.Add(notification);
     }
 
     public void RemoveDomainEvent(INotifications notification)
     {
-        if (_domainEventBus is null) return;
-        _domainEventBus.Remove(notification);
+        if (_domainEvents is null) return;
+        _domainEvents.Remove(notification);
     }
 
     public void ClearDomainEvents()
     {
-        _domainEventBus?.Clear();
+        _domainEvents?.Clear();
     }
 
     public bool IsTransient()

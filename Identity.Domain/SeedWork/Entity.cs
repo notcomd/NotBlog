@@ -1,8 +1,10 @@
+using DomainCommons;
+
 namespace Identity.Domain.SeedWork;
 
-public abstract class Entity
+public abstract class Entity : IHasDomainEvents
 {
-    private List<INotifications>? _domainEventbus;
+    private List<INotifications>? _domainEvents;
 
     private int _id;
     private int? _requestedHashCode;
@@ -13,24 +15,24 @@ public abstract class Entity
         protected set => _id = value;
     }
 
-    public IReadOnlyCollection<INotifications> DomainEventbus =>
-        _domainEventbus?.AsReadOnly() ?? new List<INotifications>().AsReadOnly();
+    public IReadOnlyCollection<INotifications> DomainEvents =>
+        _domainEvents?.AsReadOnly() ?? new List<INotifications>().AsReadOnly();
 
     public void AddDomainEvent(INotifications notification)
     {
-        _domainEventbus = _domainEventbus ?? new List<INotifications>();
-        _domainEventbus.Add(notification);
+        _domainEvents = _domainEvents ?? new List<INotifications>();
+        _domainEvents.Add(notification);
     }
 
     public void RemoveDomainEvent(INotifications notification)
     {
-        if (_domainEventbus is null) return;
-        _domainEventbus.Remove(notification);
+        if (_domainEvents is null) return;
+        _domainEvents.Remove(notification);
     }
 
     public void ClearDomainEvents()
     {
-        _domainEventbus?.Clear();
+        _domainEvents?.Clear();
     }
 
     public bool IsTransient()

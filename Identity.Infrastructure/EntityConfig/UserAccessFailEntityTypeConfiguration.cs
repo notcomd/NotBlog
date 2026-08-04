@@ -1,4 +1,4 @@
-﻿namespace Identity.Infrastructure.EntityConfig;
+namespace Identity.Infrastructure.EntityConfig;
 
 public class UserAccessFailEntityTypeConfiguration : IEntityTypeConfiguration<UserAccessFail>
 {
@@ -6,7 +6,7 @@ public class UserAccessFailEntityTypeConfiguration : IEntityTypeConfiguration<Us
     {
         builder.ToTable("UserAccessFail");
 
-        builder.Ignore(b => b.DomainEventbus);
+        builder.Ignore(b => b.DomainEvents);
 
         builder.Property(o => o.Id).UseHiLo("UserAccessFailseq");
     }

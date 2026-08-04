@@ -13,7 +13,7 @@ public class VideoReviewDbContextConfiguration : IEntityTypeConfiguration<VideoR
         builder.HasIndex(en => en.VideoGuid);
         builder.HasIndex(en => en.UserGuid);
         builder.HasIndex(en => en.RootReview);
-        builder.Ignore(en => en.DomainEventbus);
+        builder.Ignore(en => en.DomainEvents);
         builder.Ignore(en => en.VideoImages);       // delegated via Content.MediaItems
         builder.Ignore(en => en.VideoReviewBody);   // delegated via Content.Body
         builder.Property(en => en.Id).UseHiLo("Reviewq");

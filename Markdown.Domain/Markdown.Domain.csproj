@@ -14,5 +14,8 @@
     <ItemGroup>
       <PackageReference Include="NotMediator" Version="1.0.5" />
     </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\DomainCommons\DomainCommons.csproj"/>
+    </ItemGroup>
 
 </Project>

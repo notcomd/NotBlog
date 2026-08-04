@@ -1,4 +1,4 @@
-﻿namespace Identity.Infrastructure.EntityConfig;
+namespace Identity.Infrastructure.EntityConfig;
 
 public class UserExternalLoginEntityTypeConfiguration : IEntityTypeConfiguration<UserExternalLogin>
 {
@@ -54,6 +54,6 @@ public class UserExternalLoginEntityTypeConfiguration : IEntityTypeConfiguration
 
         // 忽略基类的 Int Id（使用 LoginId 作为主键）
         builder.Ignore(e => e.Id);
-        builder.Ignore(e => e.DomainEventbus);
+        builder.Ignore(e => e.DomainEvents);
     }
 }

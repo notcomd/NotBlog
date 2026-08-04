@@ -8,7 +8,7 @@ public class FileChunkRecordEntityConfig : IEntityTypeConfiguration<FileChunkRec
 {
     public void Configure(EntityTypeBuilder<FileChunkRecord> builder)
     {
-        builder.Ignore(e => e.DomainEventBus);
+        builder.Ignore(e => e.DomainEvents);
 
         builder.ToTable("FileChunkRecord");
 

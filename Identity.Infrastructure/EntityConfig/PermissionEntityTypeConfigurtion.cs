@@ -1,9 +1,9 @@
-﻿public class PermissionEntityTypeConfigurtion : IEntityTypeConfiguration<Permission>
+public class PermissionEntityTypeConfigurtion : IEntityTypeConfiguration<Permission>
 {
     public void Configure(EntityTypeBuilder<Permission> builder)
     {
         builder.ToTable("Permissions");
-        builder.Ignore(b => b.DomainEventbus);
+        builder.Ignore(b => b.DomainEvents);
 
         builder.HasKey(x => x.PermissionId);
 

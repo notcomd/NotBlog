@@ -8,7 +8,7 @@ public class NotFileGroupEntityConfiguration : IEntityTypeConfiguration<NotFileG
 {
     public void Configure(EntityTypeBuilder<NotFileGroup> builder)
     {
-        builder.Ignore(en => en.DomainEventBus);
+        builder.Ignore(en => en.DomainEvents);
         builder.ToTable("NotFileGroup");
         builder.Property(x => x.Id).UseHiLo("NotFileGroupseq");
         builder.HasKey(x => x.Id);
