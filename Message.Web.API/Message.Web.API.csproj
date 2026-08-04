@@ -28,7 +28,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\JWToken\Token.JWT.csproj"/>
+      <ProjectReference Include="..\JWToken\JWToken.csproj"/>
       <ProjectReference Include="..\Message.Infrastructure\Message.Infrastructure.csproj"/>
       <ProjectReference Include="..\NotBlog.ServiceDefaults\NotBlog.ServiceDefaults.csproj"/>
     </ItemGroup>

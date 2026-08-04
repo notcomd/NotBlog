@@ -26,7 +26,7 @@
         <ProjectReference Include="..\Markdown.Domain\Markdown.Domain.csproj"/>
         <ProjectReference Include="..\Markdown.Infrastructure\Markdown.Infrastructure.csproj" />
         <ProjectReference Include="..\NotBlog.ServiceDefaults\NotBlog.ServiceDefaults.csproj" />
-        <ProjectReference Include="..\JWToken\Token.JWT.csproj"/>
+        <ProjectReference Include="..\JWToken\JWToken.csproj"/>
         <ProjectReference Include="..\EventBus\EventBus.csproj"/>
         <ProjectReference Include="..\Commons\Commons.csproj"/>
     </ItemGroup>

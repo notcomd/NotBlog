@@ -17,7 +17,7 @@
         <ProjectReference Include="..\Commons\Commons.csproj"/>
         <ProjectReference Include="..\NotEmail\NotEmail.csproj"/>
         <ProjectReference Include="..\Identity.Domain\Identity.Domain.csproj"/>
-        <ProjectReference Include="..\JWToken\Token.JWT.csproj"/>
+        <ProjectReference Include="..\JWToken\JWToken.csproj"/>
         <ProjectReference Include="..\Eventbus\EventBus.csproj"/>
     </ItemGroup>
 
