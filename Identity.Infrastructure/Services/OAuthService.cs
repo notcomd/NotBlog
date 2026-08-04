@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Headers;
+using System.Net.Http.Headers;
+using System.Security.Cryptography;
 using System.Text;
 using System.Web;
 using CacheMemory.Core;
@@ -17,12 +18,21 @@ public class OAuthService(
     IJwtTokenService jwtTokenService,
     IOptionsSnapshot<OAuthOptions> oauthOptions,
     ILogger<OAuthService> logger,
-    IOptionsSnapshot<JwtOptions> jwtOptions)
+    IOptionsSnapshot<JwtOptions> jwtOptions,
+    ICacheMemory<TokenCacheEntry> cacheMemory)
     : IOAuthService
 {
     private const string OAuthStateKeyPrefix = "oauth:state";
     private static readonly TimeSpan OAuthStateTtl = TimeSpan.FromMinutes(10);
     private const int OAuthStateLength = 32;
+
+    /// <summary>OAuth 回调结果幂等缓存前缀（key=state，重复回调返回首次成功结果）</summary>
+    private const string OAuthResultKeyPrefix = "oauth:result";
+    private static readonly TimeSpan OAuthResultTtl = TimeSpan.FromMinutes(10);
+
+    /// <summary>token 缓存 key 前缀（与 UserService/RegisterByGitHubCommandHandler 一致，供刷新/登出使用）</summary>
+    private const string AccessTokenKeyPrefix = "auth:token";
+    private const string RefreshTokenKeyPrefix = "auth:refresh";
 
     private readonly JwtOptions _jwtOptions = jwtOptions.Value;
     private readonly OAuthOptions _oauthOptions = oauthOptions.Value;
@@ -51,7 +61,7 @@ public class OAuthService(
         {
             "google" => GenerateGoogleAuthUrl(redirectUri, state),
             "github" => GenerateGitHubAuthUrl(redirectUri, state),
-            "microsoft" => GenerateMicrosoftAuthUrl(redirectUri, state),
+            "microsoft" => await GenerateMicrosoftAuthUrl(redirectUri, state),
             _ => throw new ArgumentException($"Unsupported provider: {provider}")
         };
     }
@@ -206,16 +216,27 @@ public class OAuthService(
 
     /// <summary>
     /// 处理 OAuth 回调：校验 state 与 redirect_uri、获取外部用户信息、查找或创建本地用户、生成 JWT Token。
+    /// 三项行为与原 RegisterByGitHubCommand 链路对齐：
+    ///   1. 幂等性：以 state 为 key 缓存首次成功结果，重复回调（相同 state）直接返回缓存
+    ///   2. RefreshToken：使用 BuildTokenAsync 获取完整 TokenResult，并缓存 access/refresh token
+    ///   3. IsNewUser：返回是否新建用户，供 API 层发布 RegisterByUserIntegrationEvent
     /// </summary>
-    /// <param name="provider">提供商</param>
-    /// <param name="code">授权码</param>
-    /// <param name="redirectUri">回调地址</param>
-    /// <param name="state">OAuth state（CSRF 校验，为空或与 Redis 中不匹配则拒绝）</param>
-    /// <returns>登录响应</returns>
     public async Task<OAuthLoginResponse> HandleCallbackAsync(string provider, string code, string redirectUri,
         string? state = null)
     {
         var normalizedProvider = provider.ToLowerInvariant();
+
+        // ── 幂等：先查回调结果缓存（key=state），命中直接返回首次成功结果 ──
+        if (!string.IsNullOrWhiteSpace(state))
+        {
+            var resultKey = $"{OAuthResultKeyPrefix}:{state}";
+            var cached = await redisCacheService.StringGetAsync(resultKey);
+            if (cached is not null)
+            {
+                logger.LogInformation("OAuth 回调幂等命中，返回首次成功结果：{Provider}", provider);
+                return JsonSerializer.Deserialize<OAuthLoginResponse>(cached)!;
+            }
+        }
 
         // S-11：state 防 CSRF —— 校验存在且匹配，校验通过后立即删除（单次使用）
         if (string.IsNullOrWhiteSpace(state))
@@ -231,12 +252,13 @@ public class OAuthService(
         // S-11：回调 redirect_uri 白名单校验
         ValidateRedirectUri(redirectUri);
 
-        var externalUserInfo = await GetExternalUserInfoAsync(normalizedProvider, code, redirectUri);
+        var externalUserInfo = await GetExternalUserInfoAsync(normalizedProvider, code, redirectUri, state);
 
         var existingUser =
             await GetExistingUserByExternalLoginAsync(normalizedProvider, externalUserInfo.ProviderUserId);
 
         User user;
+        var isNewUser = false;
         if (existingUser is not null)
         {
             user = existingUser;
@@ -245,6 +267,7 @@ public class OAuthService(
         else
         {
             user = await CreateOrUpdateUserFromExternalLoginAsync(normalizedProvider, externalUserInfo);
+            isNewUser = true;
             logger.LogInformation("New user created with {Provider}", provider);
         }
 
@@ -260,20 +283,75 @@ public class OAuthService(
             new("UserGuid", user.UserGuid.ToString())
         };
 
-        var token = jwtTokenService.BuilderTokenAsync(claims, _jwtOptions);
+        // 使用 BuildTokenAsync 获取完整 TokenResult（含 RefreshToken），与原命令链路一致
+        var tokenResult = await jwtTokenService.BuildTokenAsync(claims, _jwtOptions);
 
-        return new OAuthLoginResponse(
-            token,
-            string.Empty,
-            DateTimeOffset.UtcNow.AddSeconds(_jwtOptions.ExpireSeconds),
+        // 缓存 access/refresh token，供刷新/登出使用（与 UserService.CacheTokensAsync 一致）
+        await CacheTokensAsync(user.UserGuid, tokenResult);
+
+        var response = new OAuthLoginResponse(
+            tokenResult.AccessToken,
+            tokenResult.RefreshToken ?? string.Empty,
+            tokenResult.ExpiresAt,
             new UserInfo(
                 user.UserGuid,
                 user.UserEmail,
                 user.UserName,
                 user.ImageCover,
                 user.UserRoleGuid.ToArray()
-            )
+            ),
+            isNewUser
         );
+
+        // 幂等：缓存回调结果，重复回调（相同 state）返回首次成功结果
+        if (!string.IsNullOrWhiteSpace(state))
+        {
+            await redisCacheService.StringSetAsync(
+                $"{OAuthResultKeyPrefix}:{state}",
+                JsonSerializer.Serialize(response),
+                OAuthResultTtl);
+        }
+
+        return response;
+    }
+
+    /// <summary>
+    /// 缓存 access/refresh token（与 UserService.CacheTokensAsync / RegisterByGitHubCommandHandler.GenerateTokenAsync 一致）
+    /// </summary>
+    private async Task CacheTokensAsync(Guid userGuid, TokenResult tokenResult)
+    {
+        var accessKey = $"{AccessTokenKeyPrefix}:{userGuid}";
+        var accessTtl = _jwtOptions.ExpireSeconds > 0
+            ? TimeSpan.FromSeconds(_jwtOptions.ExpireSeconds)
+            : TimeSpan.FromHours(1);
+
+        await cacheMemory.SetAsync(accessKey, new TokenCacheEntry
+        {
+            Token = tokenResult.AccessToken,
+            UserGuid = userGuid,
+            CreatedAt = DateTimeOffset.UtcNow,
+            ExpiresAt = tokenResult.ExpiresAt,
+            TokenType = tokenResult.TokenType,
+            LinkedAccessToken = tokenResult.RefreshToken
+        }, accessTtl);
+
+        if (!string.IsNullOrEmpty(tokenResult.RefreshToken))
+        {
+            var refreshKey = $"{RefreshTokenKeyPrefix}:{userGuid}";
+            var refreshTtl = _jwtOptions.RefreshTokenExpireSeconds > 0
+                ? TimeSpan.FromSeconds(_jwtOptions.RefreshTokenExpireSeconds)
+                : TimeSpan.FromDays(7);
+
+            await cacheMemory.SetAsync(refreshKey, new TokenCacheEntry
+            {
+                Token = tokenResult.RefreshToken,
+                UserGuid = userGuid,
+                CreatedAt = DateTimeOffset.UtcNow,
+                ExpiresAt = DateTimeOffset.UtcNow.AddSeconds(_jwtOptions.RefreshTokenExpireSeconds),
+                TokenType = "refresh",
+                LinkedAccessToken = tokenResult.AccessToken
+            }, refreshTtl);
+        }
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -292,17 +370,51 @@ public class OAuthService(
 
     private string GenerateGitHubAuthUrl(string redirectUri, string state)
     {
-        return string.Empty;
+        var clientId = _oauthOptions.GitHubOptions.ClientId;
+        var query = $"client_id={Uri.EscapeDataString(clientId)}" +
+                    $"&redirect_uri={Uri.EscapeDataString(redirectUri)}" +
+                    $"&state={Uri.EscapeDataString(state)}" +
+                    "&scope=read:user%20user:email";
+        return $"https://github.com/login/oauth/authorize?{query}";
     }
 
-    private string GenerateMicrosoftAuthUrl(string redirectUri, string state)
+    /// <summary>
+    /// 生成 Microsoft 授权链接。
+    /// 公共客户端（未配置 ClientSecret）自动启用 PKCE（S256），code_verifier 与 state 关联存入 Redis，
+    /// 回调换 token 时校验并消费。
+    /// </summary>
+    private async Task<string> GenerateMicrosoftAuthUrl(string redirectUri, string state)
     {
-        return "https://login.microsoftonline.com/common/oauth2/v2.0/authorize" +
-               $"?client_id={_oauthOptions.MicrosoftOptions.ClientId}" +
-               $"&redirect_uri={Uri.EscapeDataString(redirectUri)}" +
-               "&response_type=code" +
-               "&scope=openid%20profile%20email" +
-               $"&state={Uri.EscapeDataString(state)}";
+        var options = _oauthOptions.MicrosoftOptions;
+        if (!options.Enable)
+            throw new InvalidOperationException("Microsoft OAuth 未启用，请在 OAuthOptions:MicrosoftOptions:Enabled 中配置。");
+
+        if (string.IsNullOrWhiteSpace(options.ClientId))
+            throw new InvalidOperationException("Microsoft OAuth 未配置 ClientId。");
+
+        var query = new Dictionary<string, string>
+        {
+            { "client_id", options.ClientId },
+            { "redirect_uri", redirectUri },
+            { "response_type", "code" },
+            { "scope", "openid profile email" },
+            { "state", state },
+            { "prompt", "select_account" }
+        };
+
+        // 未配置 ClientSecret → 公共客户端，必须使用 PKCE
+        if (string.IsNullOrWhiteSpace(options.ClientSecret))
+        {
+            var (verifier, challenge) = GeneratePkcePair();
+            await redisCacheService.StringSetAsync(
+                $"{OAuthStateKeyPrefix}:verifier:{state}", verifier, OAuthStateTtl);
+            query["code_challenge"] = challenge;
+            query["code_challenge_method"] = "S256";
+        }
+
+        return "https://login.microsoftonline.com/common/oauth2/v2.0/authorize?" +
+               string.Join("&", query.Select(kv =>
+                   $"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value)}"));
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -312,13 +424,14 @@ public class OAuthService(
     /// <summary>
     /// 根据 provider 路由到对应的 OAuth 用户信息获取方法
     /// </summary>
-    private async Task<ExternalUserInfo> GetExternalUserInfoAsync(string provider, string code, string redirectUri)
+    private async Task<ExternalUserInfo> GetExternalUserInfoAsync(string provider, string code, string redirectUri,
+        string? state = null)
     {
         return provider switch
         {
             "google" => await GetGoogleUserInfoAsync(code, redirectUri),
             "github" => await GetGitHubUserInfoAsync(code, redirectUri),
-            "microsoft" => await GetMicrosoftUserInfoAsync(code, redirectUri),
+            "microsoft" => await GetMicrosoftUserInfoAsync(code, redirectUri, state),
             _ => throw new ArgumentException($"Unsupported provider: {provider}")
         };
     }
@@ -464,48 +577,123 @@ public class OAuthService(
 
     /// <summary>
     /// 获取 Microsoft 用户信息（通过 Microsoft Graph API）。
+    /// 公共客户端（无 ClientSecret）使用授权时生成的 PKCE code_verifier 换 token。
     /// </summary>
-    private async Task<ExternalUserInfo> GetMicrosoftUserInfoAsync(string code, string redirectUri)
+    private async Task<ExternalUserInfo> GetMicrosoftUserInfoAsync(string code, string redirectUri, string? state)
     {
         var options = _oauthOptions.MicrosoftOptions;
         var client = httpClient.CreateClient();
 
-        // Step 1: 用 code 换取 access_token
-        var tokenRequestBody = $"client_id={options.ClientId}" +
-                               $"&client_secret={options.ClientSecret}" +
-                               $"&code={code}" +
-                               $"&redirect_uri={Uri.EscapeDataString(redirectUri)}" +
-                               "&grant_type=authorization_code";
-
-        using var tokenResponse = await client.PostAsync(
-            "https://login.microsoftonline.com/common/oauth2/v2.0/token",
-            new StringContent(tokenRequestBody, Encoding.UTF8, "application/x-www-form-urlencoded"));
-        tokenResponse.EnsureSuccessStatusCode();
-
-        var tokenJson = await tokenResponse.Content.ReadAsStringAsync();
-        var tokenData = JsonSerializer.Deserialize<JsonElement>(tokenJson);
-        var accessToken = tokenData.GetProperty("access_token").GetString()!;
-
-        // Step 2: 获取用户信息
-        using var userRequest = new HttpRequestMessage(HttpMethod.Get, "https://graph.microsoft.com/v1.0/me");
-        userRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-        using var userInfoResponse = await client.SendAsync(userRequest);
-        userInfoResponse.EnsureSuccessStatusCode();
-
-        var userInfoJson = await userInfoResponse.Content.ReadAsStringAsync();
-        var userData = JsonSerializer.Deserialize<JsonElement>(userInfoJson);
-
-        return new ExternalUserInfo
+        try
         {
-            ProviderUserId = userData.GetProperty("id").GetString()!,
-            Email = userData.GetProperty("mail").GetString()!,
-            UserName = userData.GetProperty("displayName").GetString(),
-            AvatarUrl = userData.TryGetProperty("avatar_url", out var avatarUrl)
-                ? new Uri(avatarUrl.GetString()!)
-                : null
-        };
+            // Step 1: 用 code 换取 access_token
+            var tokenRequest = new Dictionary<string, string>
+            {
+                { "client_id", options.ClientId },
+                { "code", code },
+                { "redirect_uri", redirectUri },
+                { "grant_type", "authorization_code" },
+                { "scope", "openid profile email" }
+            };
+
+            // 机密客户端带 client_secret；公共客户端必须携带 PKCE code_verifier（关联 state，单次消费）
+            if (!string.IsNullOrWhiteSpace(options.ClientSecret))
+            {
+                tokenRequest["client_secret"] = options.ClientSecret;
+            }
+            else
+            {
+                if (string.IsNullOrWhiteSpace(state))
+                    throw new InvalidOperationException("缺少 OAuth state 参数，无法完成 PKCE 换码");
+
+                var verifierKey = $"{OAuthStateKeyPrefix}:verifier:{state}";
+                var verifier = await redisCacheService.StringGetAsync(verifierKey);
+                if (string.IsNullOrEmpty(verifier))
+                    throw new InvalidOperationException("PKCE code_verifier 缺失或已过期，请重新发起授权");
+                tokenRequest["code_verifier"] = verifier;
+                await redisCacheService.KeyDeleteAsync(verifierKey);
+            }
+
+            using var tokenResponse = await client.PostAsync(
+                "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+                new FormUrlEncodedContent(tokenRequest));
+            if (!tokenResponse.IsSuccessStatusCode)
+            {
+                var errorBody = await tokenResponse.Content.ReadAsStringAsync();
+                logger.LogWarning("Microsoft token 交换失败：{StatusCode} {Body}",
+                    (int)tokenResponse.StatusCode, errorBody);
+                tokenResponse.EnsureSuccessStatusCode();
+            }
+
+            var tokenJson = await tokenResponse.Content.ReadAsStringAsync();
+            var tokenData = JsonSerializer.Deserialize<JsonElement>(tokenJson);
+            var accessToken = tokenData.GetProperty("access_token").GetString()!;
+
+            // Step 2: 获取用户信息
+            using var userRequest = new HttpRequestMessage(HttpMethod.Get, "https://graph.microsoft.com/v1.0/me");
+            userRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+            using var userInfoResponse = await client.SendAsync(userRequest);
+            if (!userInfoResponse.IsSuccessStatusCode)
+            {
+                var errorBody = await userInfoResponse.Content.ReadAsStringAsync();
+                logger.LogWarning("Microsoft Graph /me 请求失败：{StatusCode} {Body}",
+                    (int)userInfoResponse.StatusCode, errorBody);
+                userInfoResponse.EnsureSuccessStatusCode();
+            }
+
+            var userInfoJson = await userInfoResponse.Content.ReadAsStringAsync();
+            var userData = JsonSerializer.Deserialize<JsonElement>(userInfoJson);
+
+            // 个人账号（MSA）无 mail 属性，回退 userPrincipalName（如 notcomd@outlook.com）
+            var email = GetGraphString(userData, "mail")
+                        ?? GetGraphString(userData, "userPrincipalName")
+                        ?? throw new InvalidOperationException("Microsoft 用户信息缺少邮箱地址");
+
+            return new ExternalUserInfo
+            {
+                ProviderUserId = userData.GetProperty("id").GetString()!,
+                Email = email,
+                UserName = GetGraphString(userData, "displayName"),
+                // Graph /me 默认响应不含头像；如需可另行调用 /me/photo/$value
+                AvatarUrl = null
+            };
+        }
+        catch (Exception ex) when (ex is not InvalidOperationException)
+        {
+            logger.LogError(ex, "获取 Microsoft 用户信息失败");
+            throw;
+        }
     }
+
+    /// <summary>
+    /// 读取 JsonElement 中的字符串属性，缺失或为空返回 null。
+    /// </summary>
+    private static string? GetGraphString(JsonElement element, string propertyName)
+    {
+        return element.TryGetProperty(propertyName, out var value) &&
+               value.ValueKind == JsonValueKind.String &&
+               !string.IsNullOrEmpty(value.GetString())
+            ? value.GetString()
+            : null;
+    }
+
+    /// <summary>
+    /// 生成 PKCE（RFC 7636 S256）对：verifier 为 32 字节随机数，challenge 为 verifier 的 SHA-256。
+    /// </summary>
+    private static (string Verifier, string Challenge) GeneratePkcePair()
+    {
+        var verifierBytes = RandomNumberGenerator.GetBytes(32);
+        var verifier = Base64UrlEncode(verifierBytes);
+        var challengeBytes = SHA256.HashData(Encoding.ASCII.GetBytes(verifier));
+        return (verifier, Base64UrlEncode(challengeBytes));
+    }
+
+    /// <summary>
+    /// URL 安全 Base64 编码（去填充、+ → -、/ → _）。
+    /// </summary>
+    private static string Base64UrlEncode(byte[] bytes)
+        => Convert.ToBase64String(bytes).TrimEnd('=').Replace('+', '-').Replace('/', '_');
 
     // ═══════════════════════════════════════════════════════════
     //  Private helpers — 角色处理

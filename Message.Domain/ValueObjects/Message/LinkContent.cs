@@ -1,7 +1,11 @@
 using Message.Domain.SeedWork;
 
-namespace Message.Domain.Entities.MessageContent;
+namespace Message.Domain.ValueObjects.Message;
 
+/// <summary>
+/// 链接消息内容值对象。
+/// 不可变，封装链接 URL 与可选标题/描述。
+/// </summary>
 public class LinkContent : ValueObject
 {
     private LinkContent(Uri url, string? title = null, string? description = null)

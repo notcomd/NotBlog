@@ -1,20 +1,22 @@
 namespace FileDev.Domain.Entities;
 
+/// <summary>
+/// 文件查询结果 DTO，由 NotFile 实体投影而来，创建后不可变。
+/// </summary>
 public class FileResult
 {
-    public Guid FileId { get; set; }
-    public Guid UserId { get; set; }
-    public string FileName { get; set; } = string.Empty;
-    public HashSet<string> FileTags { get; set; } = new();
-    public string FileDescription { get; set; } = string.Empty;
-    //public FileType FileType { get; set; }
-    public double FileSize { get; set; }
-    public Uri FileUri { get; set; } = null!;
-    public FileIdentity FileIdentity { get; set; }
-    public DateTimeOffset UploadTime { get; set; }
-    public DateTimeOffset UpdateTime { get; set; }
-    public bool IsDeleted { get; set; }
-    public DateTimeOffset? DeleteTime { get; set; }
+    public Guid FileId { get; init; }
+    public Guid UserId { get; init; }
+    public string FileName { get; init; } = string.Empty;
+    public HashSet<string> FileTags { get; init; } = new();
+    public string FileDescription { get; init; } = string.Empty;
+    public long FileSize { get; init; }
+    public Uri FileUri { get; init; } = null!;
+    public FileIdentity FileIdentity { get; init; }
+    public DateTimeOffset UploadTime { get; init; }
+    public DateTimeOffset UpdateTime { get; init; }
+    public bool IsDeleted { get; init; }
+    public DateTimeOffset? DeleteTime { get; init; }
 
     public static FileResult FromEntity(NotFile file)
     {
@@ -25,7 +27,6 @@ public class FileResult
             FileName = file.FileName,
             FileTags = new HashSet<string>(file.FileTags),
             FileDescription = file.FileDescription,
-            //FileType = file.FileType,
             FileSize = file.FileSize,
             FileUri = file.FileUri,
             FileIdentity = file.FileIdentity,
@@ -40,7 +41,8 @@ public class FileResult
     {
         string[] sizes = { "B", "KB", "MB", "GB", "TB" };
         var order = 0;
-        var size = FileSize;
+        // 使用 double 避免整数除法丢失精度
+        var size = (double)FileSize;
 
         while (size >= 1024 && order < sizes.Length - 1)
         {

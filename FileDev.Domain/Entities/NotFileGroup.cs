@@ -26,6 +26,8 @@ public class NotFileGroup : Entity, IAggregateRoot
 
     public bool IsDeleted { get; private set; }
 
+    public DateTimeOffset? DeleteTime { get; private set; }
+
     public FileIdentity FileIdentity { get; private set; }
 
 
@@ -38,12 +40,12 @@ public class NotFileGroup : Entity, IAggregateRoot
 
 
 
-    public NotFileGroup()
+    private NotFileGroup()
     {
         NotFileGroupId = Guid.CreateVersion7();
         UploadTime = DateTimeOffset.UtcNow;
         UpdateTime = DateTimeOffset.UtcNow;
-        FileIdentity = FileIdentity.FilePublic;
+        FileIdentity = FileIdentity.FilePrivate;
     }
 
     /// <summary>
@@ -67,7 +69,7 @@ public class NotFileGroup : Entity, IAggregateRoot
         NotFileGroup? parent,
         HashSet<string>? fileGroupTags = null,
         string? fileGroupDescription = null,
-        FileIdentity fileIdentity = FileIdentity.FilePublic,
+        FileIdentity fileIdentity = FileIdentity.FilePrivate,
         Func<Guid?, string, bool>? isNameUniqueAtSameLevel = null)
         : this()
     {
@@ -136,11 +138,20 @@ public class NotFileGroup : Entity, IAggregateRoot
 
     /// <summary>
     /// 判断当前节点是否为 <paramref name="target"/> 的祖先。
+    /// 从目标节点沿父链（ParentGroupId）向上遍历，若能在到达根节点前遇到当前节点，
+    /// 则说明当前节点是目标节点的祖先（使用访问集合防止环形引用导致死循环）。
     /// </summary>
     private bool IsAncestorOf(NotFileGroup target)
     {
-        // 需要遍历 target 的所有后代 — 这里只做本地检查，深度遍历由调用方保证
-        return false; // 真正的检查需在仓储层完成
+        var visited = new HashSet<NotFileGroup>(ReferenceEqualityComparer.Instance);
+        var current = target;
+        while (current != null && visited.Add(current))
+        {
+            if (ReferenceEquals(current, this))
+                return true;
+            current = current.Parent;
+        }
+        return false;
     }
 
     /// <summary>
@@ -162,36 +173,59 @@ public class NotFileGroup : Entity, IAggregateRoot
 
     public void AddFile(Guid fileId)
     {
+        if (fileId == Guid.Empty)
+            throw new ArgumentException("文件ID不能为空", nameof(fileId));
         FileIds.Add(fileId);
         UpdateTime = DateTimeOffset.UtcNow;
     }
 
     public void RemoveFile(Guid fileId)
     {
+        if (fileId == Guid.Empty)
+            throw new ArgumentException("文件ID不能为空", nameof(fileId));
         FileIds.Remove(fileId);
         UpdateTime = DateTimeOffset.UtcNow;
     }
 
     public void AddTag(string tag)
     {
+        if (string.IsNullOrWhiteSpace(tag))
+            throw new ArgumentException("标签不能为 null 或空白", nameof(tag));
+
         FileGroupTags.Add(tag);
         UpdateTime = DateTimeOffset.UtcNow;
     }
 
+    /// <summary>
+    /// 软删除当前文件组，标记删除时间并触发领域事件。
+    /// </summary>
+    /// <exception cref="InvalidOperationException">文件组已被删除</exception>
     public void SoftDelete()
     {
+        if (IsDeleted)
+            throw new InvalidOperationException("文件组已经被删除");
+
         IsDeleted = true;
+        DeleteTime = DateTimeOffset.UtcNow;
         UpdateTime = DateTimeOffset.UtcNow;
+        AddDomainEvent(new DeleteFileGroupEvent(NotFileGroupId, UserId));
     }
 
+    /// <summary>
+    /// 恢复已软删除的文件组。
+    /// </summary>
+    /// <exception cref="InvalidOperationException">文件组未被删除</exception>
     public void Restore()
     {
+        if (!IsDeleted)
+            throw new InvalidOperationException("文件组没有被删除");
         IsDeleted = false;
+        DeleteTime = null;
         UpdateTime = DateTimeOffset.UtcNow;
     }
 
     /// <summary>
-    /// 删除当前组及其所有子组（递归标记软删除）。
+    /// 删除当前组及其所有子组（递归标记软删除），并为每个子组触发领域事件。
     /// </summary>
     public void SoftDeleteTree()
     {
@@ -207,9 +241,10 @@ public class NotFileGroup : Entity, IAggregateRoot
         private Guid _userId;
         private string _fileGroupName = string.Empty;
         private Guid? _parentGroupId;
+        private NotFileGroup? _parent;
         private HashSet<string> _fileGroupTags = [];
         private string? _fileGroupDescription;
-        private FileIdentity _fileIdentity = FileIdentity.FilePublic;
+        private FileIdentity _fileIdentity = FileIdentity.FilePrivate;
         private Func<Guid?, string, bool>? _isNameUniqueAtSameLevel;
 
         public NotFileGroupBuilder WithUserId(Guid userId) { _userId = userId; return this; }
@@ -217,6 +252,11 @@ public class NotFileGroup : Entity, IAggregateRoot
         public NotFileGroupBuilder WithFileGroupName(string name) { _fileGroupName = name; return this; }
 
         public NotFileGroupBuilder WithParentGroupId(Guid? parentId) { _parentGroupId = parentId; return this; }
+
+        /// <summary>
+        /// 注入父文件组实体，构建时通过 SetParent 走完整业务校验。
+        /// </summary>
+        public NotFileGroupBuilder WithParent(NotFileGroup? parent) { _parent = parent; return this; }
 
         public NotFileGroupBuilder WithFileGroupTags(IEnumerable<string>? tags)
         {
@@ -247,18 +287,29 @@ public class NotFileGroup : Entity, IAggregateRoot
 
         public NotFileGroup Build()
         {
+            // 验证必需字段
+            if (_userId == Guid.Empty)
+                throw new InvalidOperationException("UserId 必须提供且不能为空。");
+            if (string.IsNullOrWhiteSpace(_fileGroupName))
+                throw new InvalidOperationException("FileGroupName 必须提供且不能为空。");
+
             var group = new NotFileGroup(
                 _userId,
                 _fileGroupName,
-                parent: null, // Builder 模式下 parent 对象由调用方注入
+                _parent, // 注入父级实体时走构造函数内 SetParent 的完整业务校验
                 _fileGroupTags,
                 _fileGroupDescription,
                 _fileIdentity,
                 _isNameUniqueAtSameLevel);
 
-            // Builder 不通过 SetParent 设置父级，直接赋值以避免重名校验冲突
-            if (_parentGroupId.HasValue)
+            // 兼容仅传入父级 ID（未注入父级实体）的场景：
+            // 显式执行与 SetParent 相同的自引用校验，保证两条路径校验一致
+            if (_parent is null && _parentGroupId.HasValue)
+            {
+                if (_parentGroupId == group.NotFileGroupId)
+                    throw new InvalidOperationException("文件组不能成为自身的父组");
                 group.ParentGroupId = _parentGroupId;
+            }
 
             return group;
         }

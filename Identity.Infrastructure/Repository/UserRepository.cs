@@ -1,8 +1,11 @@
-﻿namespace Identity.Infrastructure.Repository;
+namespace Identity.Infrastructure.Repository;
 
 public class UserRepository(IdentityDbContext userDbContext, IDistributedCache distributedCache)
     : IUserRepository
 {
+    /// <summary>手机验证码缓存 key 前缀（统一所有手机验证码方法的 key 格式）</summary>
+    private const string PhoneCodeKeyPrefix = "PhoneCode";
+
     public IUnitOfWork UnitOfWork => userDbContext;
 
     public async ValueTask<User?> FindOneByUserAsync(Guid guid)
@@ -96,7 +99,7 @@ public class UserRepository(IdentityDbContext userDbContext, IDistributedCache d
 
     public async ValueTask SaveByPhoneNumberAsync(PhoneNumber phoneNumber, string code)
     {
-        var key = $"PhoneCode{phoneNumber.PhoneCode}_{phoneNumber.AddressRegion}";
+        var key = $"{PhoneCodeKeyPrefix}{phoneNumber.PhoneCode}_{phoneNumber.AddressRegion}";
         await distributedCache.SetStringAsync(key, code,
             new DistributedCacheEntryOptions
             {
@@ -106,9 +109,8 @@ public class UserRepository(IdentityDbContext userDbContext, IDistributedCache d
 
     public async ValueTask SaveByEmailNumberAsync(string email, string code)
     {
-        var data = await userDbContext.Users.SingleOrDefaultAsync(en => en.UserEmail == email);
-        if (data is null) return;
-        var key = $"emailAddress:{data.UserEmail}_{code}";
+        // 参数即邮箱，无需查库（修复此前为拿 UserEmail 而发起的冗余数据库查询）
+        var key = $"emailAddress:{email}_{code}";
         await distributedCache.SetStringAsync(key, code,
             new DistributedCacheEntryOptions
             {
@@ -130,7 +132,7 @@ public class UserRepository(IdentityDbContext userDbContext, IDistributedCache d
 
     public async ValueTask<string> RetirievePhoneCodeAsync(PhoneNumber phoneNumber)
     {
-        var key = $"PhoneCode{phoneNumber.PhoneCode}_{phoneNumber.AddressRegion}";
+        var key = $"{PhoneCodeKeyPrefix}{phoneNumber.PhoneCode}_{phoneNumber.AddressRegion}";
         var code = await distributedCache.GetStringAsync(key);
         await distributedCache.RemoveAsync(key);
         return code ?? string.Empty;
@@ -138,7 +140,8 @@ public class UserRepository(IdentityDbContext userDbContext, IDistributedCache d
 
     public async ValueTask<string> FindPhoneNumberAsync(PhoneNumber phoneNumber)
     {
-        var key = $"phoneCode{phoneNumber.PhoneCode},phoneAddressRegion{phoneNumber.AddressRegion}";
+        // 修复：此前 key 格式与 Save/Retirieve 不一致（大小写+分隔符都不同），导致永远取不到
+        var key = $"{PhoneCodeKeyPrefix}{phoneNumber.PhoneCode}_{phoneNumber.AddressRegion}";
         var code = await distributedCache.GetStringAsync(key);
         await distributedCache.RemoveAsync(key);
         return code ?? string.Empty;

@@ -8,8 +8,8 @@ public class NotFileStorageOptions
     /// <summary>分块文件大小（默认5MB）</summary>
     public long ChunkFileSize { get; set; } = 5 * 1024 * 1024;
 
-    /// <summary>最大文件大小（默认10GB）</summary>
-    public long MaxFileSize { get; set; } = 10L * 1024 * 1024 * 1024;
+    /// <summary>最大文件大小（默认100MB，与 Kestrel 请求体大小限制保持一致）</summary>
+    public long MaxFileSize { get; set; } = 100 * 1024 * 1024;
 
     /// <summary>临时文件存储路径</summary>
     public string TempPath { get; set; } = "temp_chunks";

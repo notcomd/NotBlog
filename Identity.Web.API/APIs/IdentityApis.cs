@@ -62,10 +62,6 @@ public static class IdentityApis
             return Results.BadRequest("用户已存在");
         }
 
-        if (!string.IsNullOrWhiteSpace(registerRequest.VerificationCode))
-        {
-        }
-
         var command = new RegisterByUserCommand(registerRequest.UserPassword, registerRequest.VerificationCode,
             registerRequest.UserEmail);
 
@@ -174,13 +170,14 @@ public static class IdentityApis
             if (!await userdata.VerifyByPasswordAsync(changeByPasswordRequestRequest.Password))
                 return Results.BadRequest("邮箱或密码错误");
         }
-        // TODO(F-07): 邮箱验证码路径——验证码核对链路待接入（GenerateCode 已可发送验证码，此处暂只支持旧密码）
+        // 邮箱验证码路径：交由 ChangeByPasswordCommandHandler 校验（修复此前 hasCode 路径绕过校验的漏洞）
 
         if (string.Equals(changeByPasswordRequestRequest.Password, changeByPasswordRequestRequest.NewPassword))
             return Results.BadRequest("新密码不能与旧密码相同");
 
         var command = new ChangeByPasswordCommand(userId,
-            changeByPasswordRequestRequest.NewPassword);
+            changeByPasswordRequestRequest.NewPassword,
+            hasCode ? changeByPasswordRequestRequest.Code : null);
 
         var identityCommand =
             new IdentifiedCommand<ChangeByPasswordCommand, bool>(GetIdempotencyKey(httpContext), command);

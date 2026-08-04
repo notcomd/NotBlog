@@ -1,7 +1,6 @@
 using FileDev.Domain.Events;
+using FileDev.Domain.IRepository;
 using FileDev.Domain.IServices;
-using FileDev.Infrastructure.EntityFramework;
-using Microsoft.EntityFrameworkCore;
 
 namespace FileDev.Web.API.Application.DomainEventHandlers;
 
@@ -11,26 +10,21 @@ namespace FileDev.Web.API.Application.DomainEventHandlers;
 /// 因此仅当不存在其他活跃记录引用该物理文件时才执行物理删除。
 /// </summary>
 public class FileDeleteEventHandler(
-    NotFileDbContext dbContext,
+    INotFileRepository notFileRepository,
     INotFileStorageService storageService,
     ILogger<FileDeleteEventHandler> logger) : INotificationHandler<DeleteFileEvent>
 {
     public async Task Handler(DeleteFileEvent notification, CancellationToken cancellationToken)
     {
-        var file = await dbContext.NotFiles
-            .FirstOrDefaultAsync(f => f.FileId == notification.FileId, cancellationToken);
+        var file = await notFileRepository.GetFileByIdAsync(notification.FileId);
         if (file is null)
         {
             logger.LogWarning("[FileDelete] 未找到文件记录: FileId={FileId}", notification.FileId);
             return;
         }
 
-        // 检查是否还有其他活跃记录共享同一物理文件（秒传复用场景）
-        var otherUris = await dbContext.NotFiles
-            .Where(f => f.FileId != file.FileId && !f.IsDeleted)
-            .Select(f => f.FileUri)
-            .ToListAsync(cancellationToken);
-        var otherActiveRefs = otherUris.Count(uri => uri == file.FileUri);
+        // 检查是否还有其他活跃记录共享同一物理文件（秒传复用场景），数据库端 Count 统计避免全表加载
+        var otherActiveRefs = await notFileRepository.CountActiveRefsByFileUriAsync(file.FileUri, file.FileId);
 
         if (otherActiveRefs > 0)
         {
@@ -41,9 +35,8 @@ public class FileDeleteEventHandler(
         }
 
         // FileUri 形如 /files/{userId}/{guid}{ext}，去掉 /files/ 前缀即为存储相对路径
-        var relativePath = file.FileUri.ToString();
-        if (relativePath.StartsWith("/files/", StringComparison.Ordinal))
-            relativePath = relativePath["/files/".Length..];
+        // Major：路径还原统一收敛至 FileApiHelpers.FileUriToRelativePath
+        var relativePath = FileApiHelpers.FileUriToRelativePath(file.FileUri);
 
         var result = await storageService.DeleteAsync(relativePath);
         if (result.Success)

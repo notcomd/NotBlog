@@ -24,17 +24,55 @@ public class MarkdownListQueryHandler(
         if (request.UserGuid.HasValue)
             query = query.Where(m => m.MarkUserGuid == request.UserGuid.Value);
 
-        var markdowns = await query
-            .OrderByDescending(m => m.CreateAt)
-            .ToListAsync(cancellationToken);
+        var skip = Math.Max(0, request.Skip);
+        var take = Math.Clamp(request.Take, 1, 100);
 
-        // 标签过滤：Tagboard 为 JSON 文本列，无法在服务端翻译，取回后内存过滤
-        if (!string.IsNullOrWhiteSpace(request.Tag))
-            markdowns = markdowns.Where(m => m.MarkDownTagboard.Contains(request.Tag)).ToList();
+        List<MarkDown> markdowns;
+        if (string.IsNullOrWhiteSpace(request.Tag))
+        {
+            // 无标签过滤：分页直接下推 SQL，避免全表加载进内存
+            markdowns = await query
+                .OrderByDescending(m => m.CreateAt)
+                .Skip(skip)
+                .Take(take)
+                .ToListAsync(cancellationToken);
+        }
+        else
+        {
+            // Tagboard 为 JSON 转换列（text），服务端无法翻译 Contains：
+            // 先取回候选行的轻量投影（不含 Content 大字段）做标签过滤与分页，
+            // 再回查完整实体，避免全量加载 1MB 级正文。
+            var all = await query
+                .Select(m => new { m.MarkDownGuid, m.MarkDownTagboard, m.CreateAt })
+                .OrderByDescending(x => x.CreateAt)
+                .ToListAsync(cancellationToken);
+
+            var matchedGuids = all
+                .Where(x => x.MarkDownTagboard.Contains(request.Tag))
+                .Select(x => x.MarkDownGuid)
+                .Skip(skip)
+                .Take(take)
+                .ToList();
+
+            if (matchedGuids.Count == 0)
+            {
+                markdowns = [];
+            }
+            else
+            {
+                var fetched = await query
+                    .Where(m => matchedGuids.Contains(m.MarkDownGuid))
+                    .ToListAsync(cancellationToken);
+                var orderIndex = matchedGuids
+                    .Select((g, i) => (g, i))
+                    .ToDictionary(x => x.g, x => x.i);
+                markdowns = fetched
+                    .OrderBy(m => orderIndex[m.MarkDownGuid])
+                    .ToList();
+            }
+        }
 
         var result = markdowns
-            .Skip(Math.Max(0, request.Skip))
-            .Take(Math.Clamp(request.Take, 1, 100))
             .Select(m => new MarkdownSummaryResponse
             {
                 MarkDownGuid = m.MarkDownGuid,

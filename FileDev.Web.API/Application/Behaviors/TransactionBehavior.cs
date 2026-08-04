@@ -40,8 +40,10 @@ public class TransactionBehavior<TRequest, TResponse>(
                            new("TransactionId", transaction.TransactionId)
                        }))
                 {
-                    _logger.LogInformation("Begin transaction {TransactionId} for {CommandName} ({@Command})",
-                        transaction.TransactionId, typeName, request);
+                    // Major：原代码使用 {@Command} 序列化整个请求对象，会把分片内容/流式上传内容
+                    // 等敏感大对象写入日志。仅记录类型名（不序列化请求体）。
+                    _logger.LogInformation("Begin transaction {TransactionId} for {CommandName}",
+                        transaction.TransactionId, typeName);
 
                     response = await next();
 
@@ -57,8 +59,8 @@ public class TransactionBehavior<TRequest, TResponse>(
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error in transaction {TransactionId} for {CommandName} ({@Command})",
-                e, typeName, request);
+            // Major：异常日志同样不序列化请求体（{@Command}），仅记录类型名
+            _logger.LogError(e, "Error in transaction for {CommandName}", typeName);
             throw;
         }
     }

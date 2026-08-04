@@ -49,8 +49,8 @@ public class ChunkUploadInitCommandHandler(
             logger.LogDebug("[ChunkInit] 白名单为空，跳过扩展名校验: FileName={FileName}", request.FileName);
         }
 
-        // fileKey 统一为 {userId:N}/{guid:N}{ext}，合并后物理路径与下载 URI（/files/{fileKey}）一一对应
-        var fileKey = $"{request.UserId:N}/{Guid.CreateVersion7():N}{ext}";
+        // Major：路径拼接统一收敛至 FileApiHelpers.BuildFileKey
+        var fileKey = FileApiHelpers.BuildFileKey(request.UserId, ext);
 
         var totalChunks = (int)Math.Ceiling((double)request.TotalSize / request.ChunkSize);
 

@@ -1,4 +1,4 @@
-﻿using CacheMemory.Core;
+using CacheMemory.Core;
 using Identity.Domain.ICache;
 using Identity.Infrastructure.Idempotent;
 
@@ -16,7 +16,9 @@ public class GenerateCodeCommandHandler(
         {
             var code = await JwtRandom.CreateRandomStringValueTask();
 
-            await identityCacheService.SetStringAsync($"Login_{request.Email}", code, cancellationToken);
+            // 验证码 5 分钟后过期，避免永久驻留 Redis 被暴力破解
+            await identityCacheService.SetStringAsync($"Login_{request.Email}", code,
+                TimeSpan.FromMinutes(5), cancellationToken);
 
             // S-16：验证码不得写入日志
             await emailCodeSend.SendEmailCodeAsync(request.Email,  "登录验证码", code);

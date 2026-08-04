@@ -1,8 +1,11 @@
-﻿using CacheMemory.Core;
+using System.Collections.Concurrent;
+using CacheMemory.Core;
 using FileDev.Domain.Entities;
 using FileDev.Domain.IRepository;
 using FileDev.Domain.IServices;
+using FileDev.Domain.Options;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace FileDev.Infrastructure.Service;
 
@@ -17,19 +20,39 @@ public class FileChunkManager : IFileChunkManager
 
     private readonly IFileChunkRepository _repository;
     private readonly IRedisCacheService _redis;
+    private readonly INotFileStorageService _storageService;
+    private readonly NotFileStorageOptions _config;
     private readonly ILogger<FileChunkManager> _logger;
+
+    /// <summary>
+    /// 按 fileKey 分组的进程内信号量，用于序列化同一文件分片上传的 DB 读改写操作，
+    /// 防止并发分片上传导致 DB 中 UploadedChunks 列表的丢失更新（lost update）。
+    /// 跨进程场景由 Redis Set 保证正确性，DB 为降级备份。
+    /// </summary>
+    private static readonly ConcurrentDictionary<string, SemaphoreSlim> _fileLocks = new();
 
     public FileChunkManager(
         IFileChunkRepository repository,
         IRedisCacheService redis,
+        INotFileStorageService storageService,
+        IOptionsSnapshot<NotFileStorageOptions> configOptions,
         ILogger<FileChunkManager> logger)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _redis = redis ?? throw new ArgumentNullException(nameof(redis));
+        _storageService = storageService ?? throw new ArgumentNullException(nameof(storageService));
+        _config = configOptions.Value;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     private static string ChunkSetKey(string fileKey) => $"{ChunkSetKeyPrefix}{fileKey}";
+
+    /// <summary>分片进度键的过期时间（与分片上传生命周期匹配，默认24小时）</summary>
+    private TimeSpan ChunkKeyExpiry => TimeSpan.FromHours(_config.ChunkExpirationHours);
+
+    /// <summary>获取（或创建）指定 fileKey 的信号量</summary>
+    private static SemaphoreSlim GetLock(string fileKey) =>
+        _fileLocks.GetOrAdd(fileKey, _ => new SemaphoreSlim(1, 1));
 
     // ── 初始化 ──
 
@@ -52,6 +75,8 @@ public class FileChunkManager : IFileChunkManager
         try
         {
             await _redis.KeyDeleteAsync(ChunkSetKey(fileKey), ct).ConfigureAwait(false);
+            // 为分片进度键设置过期时间，避免占位键永久保留导致 Redis 内存增长
+            await _redis.KeyExpireAsync(ChunkSetKey(fileKey), ChunkKeyExpiry, ct).ConfigureAwait(false);
             _logger.LogInformation("[ChunkInit] DB+Redis 双写成功: FileKey={FileKey}", fileKey);
         }
         catch (Exception ex)
@@ -66,10 +91,12 @@ public class FileChunkManager : IFileChunkManager
 
     public async Task MarkChunkUploadedAsync(string fileKey, int chunkIndex, CancellationToken ct = default)
     {
-        // Redis 优先写入
+        // Redis 优先写入（Set 天然去重，无需额外检查）
         try
         {
             await _redis.SetAddAsync(ChunkSetKey(fileKey), chunkIndex.ToString(), ct).ConfigureAwait(false);
+            // 分片写入时刷新过期时间（续期），与上传生命周期匹配
+            await _redis.KeyExpireAsync(ChunkSetKey(fileKey), ChunkKeyExpiry, ct).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -77,13 +104,26 @@ public class FileChunkManager : IFileChunkManager
                 fileKey, chunkIndex);
         }
 
-        // DB 双写
-        var record = await _repository.GetByFileKeyAsync(fileKey, ct).ConfigureAwait(false);
-        if (record != null)
+        // DB 双写：使用信号量序列化同一 fileKey 的读改写，防止丢失更新
+        var semaphore = GetLock(fileKey);
+        await semaphore.WaitAsync(ct).ConfigureAwait(false);
+        try
         {
-            record.MarkChunkUploaded(chunkIndex);
-            await _repository.UpdateAsync(record, ct).ConfigureAwait(false);
-            await _repository.UnitOfWork.SaveChangesAsync(ct).ConfigureAwait(false);
+            var record = await _repository.GetByFileKeyAsync(fileKey, ct).ConfigureAwait(false);
+            if (record != null)
+            {
+                // 去重：避免同一分片重复上传时在 DB 列表中产生重复条目
+                if (!record.UploadedChunks.Contains(chunkIndex))
+                {
+                    record.MarkChunkUploaded(chunkIndex);
+                    await _repository.UpdateAsync(record, ct).ConfigureAwait(false);
+                    await _repository.UnitOfWork.SaveChangesAsync(ct).ConfigureAwait(false);
+                }
+            }
+        }
+        finally
+        {
+            semaphore.Release();
         }
     }
 
@@ -96,7 +136,13 @@ public class FileChunkManager : IFileChunkManager
         {
             var members = await _redis.SetMembersAsync(ChunkSetKey(fileKey), ct).ConfigureAwait(false);
             if (members.Any())
-                return members.Select(int.Parse).ToList<int>();
+            {
+                // 使用 TryParse 防止 Redis 中存在非数字成员时抛出异常
+                return members
+                    .Where(m => int.TryParse(m, out _))
+                    .Select(int.Parse)
+                    .ToList();
+            }
         }
         catch (Exception ex)
         {
@@ -110,22 +156,29 @@ public class FileChunkManager : IFileChunkManager
 
     public async Task<FileChunkRecord?> GetUploadStatusAsync(string fileKey, CancellationToken ct = default)
     {
+        // 使用 AsNoTracking 读取（仓储层已配置），避免修改被跟踪实体导致意外保存
         var record = await _repository.GetByFileKeyAsync(fileKey, ct).ConfigureAwait(false);
         if (record == null) return null;
 
-        // 尝试从 Redis 同步最新状态到内存对象
+        // 尝试从 Redis 同步最新状态到内存对象（按 chunkIndex 去重合并，避免重复统计）
         try
         {
             var redisChunks = await _redis.SetMembersAsync(ChunkSetKey(fileKey), ct).ConfigureAwait(false);
             if (redisChunks.Any())
             {
-                foreach (var c in redisChunks.Select(int.Parse))
-                    record.UploadedChunks.Add(c);
+                var merged = new HashSet<int>(record.UploadedChunks);
+                foreach (var c in redisChunks)
+                {
+                    if (int.TryParse(c, out var idx))
+                        merged.Add(idx);
+                }
+                record.UploadedChunks.Clear();
+                record.UploadedChunks.AddRange(merged);
             }
         }
-        catch
+        catch (Exception ex)
         {
-            // Redis 不可用，使用 DB 中的值即可
+            _logger.LogWarning(ex, "[ChunkStatus] Redis 同步失败，使用 DB 值: FileKey={FileKey}", fileKey);
         }
 
         return record;
@@ -139,7 +192,8 @@ public class FileChunkManager : IFileChunkManager
         if (record == null) return false;
 
         var uploaded = await GetUploadedChunksAsync(fileKey, ct).ConfigureAwait(false);
-        return uploaded.Count >= record.TotalChunks;
+        // 使用 Distinct().Count() 防止 DB 中可能存在的重复分片索引导致误判
+        return uploaded.Distinct().Count() >= record.TotalChunks;
     }
 
     public async Task MarkMergedAsync(string fileKey, CancellationToken ct = default)
@@ -147,6 +201,28 @@ public class FileChunkManager : IFileChunkManager
         var record = await _repository.GetByFileKeyAsync(fileKey, ct).ConfigureAwait(false);
         if (record != null)
         {
+            // 在调用 MarkMerged() 前从 Redis 同步最新分片状态到 DB 记录，
+            // 防止 DB 中 UploadedChunks 因并发丢失更新导致 AreAllChunksUploaded() 误判失败
+            try
+            {
+                var redisChunks = await _redis.SetMembersAsync(ChunkSetKey(fileKey), ct).ConfigureAwait(false);
+                if (redisChunks.Any())
+                {
+                    var merged = new HashSet<int>(record.UploadedChunks);
+                    foreach (var c in redisChunks)
+                    {
+                        if (int.TryParse(c, out var idx))
+                            merged.Add(idx);
+                    }
+                    record.UploadedChunks.Clear();
+                    record.UploadedChunks.AddRange(merged);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "[ChunkMerge] Redis 同步失败: FileKey={FileKey}", fileKey);
+            }
+
             record.MarkMerged();
             await _repository.UpdateAsync(record, ct).ConfigureAwait(false);
             await _repository.UnitOfWork.SaveChangesAsync(ct).ConfigureAwait(false);
@@ -160,6 +236,16 @@ public class FileChunkManager : IFileChunkManager
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "[ChunkMerge] Redis 清理失败: FileKey={FileKey}", fileKey);
+        }
+
+        // 清理临时分片文件（合并完成后 MergeChunksAsync 已删除分片，此处为兜底）
+        try
+        {
+            await _storageService.CleanupChunksAsync(fileKey).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "[ChunkMerge] 临时分片文件清理失败: FileKey={FileKey}", fileKey);
         }
 
         _logger.LogInformation("[ChunkMerge] 分片合并完成: FileKey={FileKey}", fileKey);
@@ -183,6 +269,16 @@ public class FileChunkManager : IFileChunkManager
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "[ChunkCancel] Redis 清理失败: FileKey={FileKey}", fileKey);
+        }
+
+        // 清理临时分片文件（接口契约要求"清理所有关联数据：Redis + 临时文件"）
+        try
+        {
+            await _storageService.CleanupChunksAsync(fileKey).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "[ChunkCancel] 临时分片文件清理失败: FileKey={FileKey}", fileKey);
         }
 
         _logger.LogInformation("[ChunkCancel] 分片上传已取消: FileKey={FileKey}", fileKey);

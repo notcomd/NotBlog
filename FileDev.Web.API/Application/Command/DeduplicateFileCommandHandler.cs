@@ -1,10 +1,9 @@
-namespace FileDev.Web.API.Application.Command;
+﻿namespace FileDev.Web.API.Application.Command;
 
-using FileDev.Infrastructure.EntityFramework;
-using Microsoft.EntityFrameworkCore;
+using FileDev.Domain.IRepository;
 
 public class DeduplicateFileCommandHandler(
-    NotFileDbContext dbContext,
+    INotFileRepository notFileRepository,
     ILogger<DeduplicateFileCommandHandler> logger)
     : NotMediator.IRequestHandler<DeduplicateFileCommand, DeduplicateFileResponse>
 {
@@ -15,12 +14,13 @@ public class DeduplicateFileCommandHandler(
             throw new ArgumentException("用户ID不能为空");
         if (string.IsNullOrWhiteSpace(request.FileMd5))
             throw new ArgumentException("文件哈希不能为空");
+        if (request.FileSize < 0)
+            throw new ArgumentOutOfRangeException(nameof(request.FileSize), "文件大小不能为负数");
 
-        // F-09.1：秒传命中时优先返回调用者自己的记录，避免重复创建
-        var existing = await dbContext.NotFiles
-            .Where(f => f.FileMd5 == request.FileMd5 && !f.IsDeleted)
-            .OrderByDescending(f => f.UserId == request.UserId)
-            .FirstOrDefaultAsync(cancellationToken);
+        // F-09.1：秒传命中时优先返回调用者自己的记录，避免重复创建；
+        // 查询条件同时匹配 MD5 与文件大小（MD5 相同但大小不同不应误命中秒传）
+        var existing = await notFileRepository.GetDeduplicateFileAsync(
+            request.FileMd5, request.FileSize, request.UserId);
 
         if (existing == null)
         {
@@ -53,8 +53,8 @@ public class DeduplicateFileCommandHandler(
             .WithFileMd5(existing.FileMd5)
             .WithFileIdentity(existing.FileIdentity)
             .Build();
-        await dbContext.NotFiles.AddAsync(shared, cancellationToken);
-        await dbContext.SaveEntitiesAsync(cancellationToken);
+        await notFileRepository.InsertFileAsync(shared);
+        await notFileRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
 
         logger.LogInformation("[Dedup] 秒传命中（复用物理文件并绑定用户）: Md5={Md5}, FileId={FileId}",
             request.FileMd5, shared.FileId);

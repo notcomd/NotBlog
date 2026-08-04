@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Grpc.Core;
 using Grpc.Core.Interceptors;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Notcomd.Token.JWT.Core;
 
@@ -21,11 +22,15 @@ public class GrpcJwtAuthInterceptor : Interceptor
 
     private readonly IJwtTokenService _jwtTokenService;
     private readonly IOptionsSnapshot<JwtOptions> _jwtOptions;
+    private readonly ILogger<GrpcJwtAuthInterceptor> _logger;
 
-    public GrpcJwtAuthInterceptor(IJwtTokenService jwtTokenService, IOptionsSnapshot<JwtOptions> jwtOptions)
+    public GrpcJwtAuthInterceptor(IJwtTokenService jwtTokenService,
+                                  IOptionsSnapshot<JwtOptions> jwtOptions,
+                                  ILogger<GrpcJwtAuthInterceptor> logger)
     {
         _jwtTokenService = jwtTokenService;
         _jwtOptions = jwtOptions;
+        _logger = logger;
     }
 
     public override Task<TResponse> UnaryServerHandler<TRequest, TResponse>(
@@ -50,7 +55,12 @@ public class GrpcJwtAuthInterceptor : Interceptor
 
         var callerId = ResolveCallerId(authHeader);
         if (callerId is null)
+        {
+            // Major：原代码无认证失败日志，难以排查越权/异常调用。记录 method 与 peer，不记录 token
+            _logger.LogWarning("gRPC 认证失败: Method={Method}, Peer={Peer}",
+                context.Method, context.Peer);
             throw new RpcException(new Status(StatusCode.Unauthenticated, "未认证或令牌无效"));
+        }
 
         context.UserState[CallerUserIdStateKey] = callerId.Value;
     }

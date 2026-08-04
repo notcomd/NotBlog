@@ -1,7 +1,11 @@
-﻿using Message.Domain.SeedWork;
+using Message.Domain.SeedWork;
 
-namespace Message.Domain.Entities.MessageContent;
+namespace Message.Domain.ValueObjects.Message;
 
+/// <summary>
+/// 文件消息内容值对象。
+/// 不可变，封装文件 URI 与名称/大小/MIME 约束。
+/// </summary>
 public class FileContent : ValueObject
 {
     private FileContent(Uri fileUri, string fileName, long fileSize, string mimeType)

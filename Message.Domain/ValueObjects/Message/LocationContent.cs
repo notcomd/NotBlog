@@ -1,7 +1,11 @@
 using Message.Domain.SeedWork;
 
-namespace Message.Domain.Entities.MessageContent;
+namespace Message.Domain.ValueObjects.Message;
 
+/// <summary>
+/// 位置消息内容值对象。
+/// 不可变，封装经纬度与位置名称，经纬度范围在构造时校验。
+/// </summary>
 public class LocationContent : ValueObject
 {
     private LocationContent(double latitude, double longitude, string locationName)

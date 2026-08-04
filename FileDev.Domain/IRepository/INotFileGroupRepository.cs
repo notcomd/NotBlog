@@ -65,13 +65,14 @@ public interface INotFileGroupRepository: IRepository<NotFileGroup>
     Task DeleteNotFileGroupAsync(Guid notFileGroupId);
 
     /// <summary>
-    /// 检查指定父级下是否存在同名文件组（排除自身，用于更新场景）。
+    /// 检查指定用户、指定父级下是否存在同名文件组（排除自身，用于更新场景）。
     /// </summary>
+    /// <param name="userId">所属用户 ID</param>
     /// <param name="parentGroupId">父组 ID，null 表示根级</param>
     /// <param name="name">文件组名称</param>
     /// <param name="excludeId">需要排除的自身 ID（可选，创建时传 null）</param>
     /// <returns>true = 同名已存在</returns>
-    Task<bool> ExistsByNameAtSameLevelAsync(Guid? parentGroupId, string name, Guid? excludeId = null);
+    Task<bool> ExistsByNameAtSameLevelAsync(Guid userId, Guid? parentGroupId, string name, Guid? excludeId = null);
 
     /// <summary>
     /// 获取指定父组下的所有子组。

@@ -10,82 +10,56 @@ public static class FileStrongApi
     {
         // S-08：文件组/文件上传端点要求认证
         var route = routeGroupBuilder.MapGroup("/filestorage").RequireAuthorization();
-        route.MapPost("/upload_file", UploadFileAsync)
-            .WithHttpLogging(HttpLoggingFields.All, 1, 1)
-            // S-09：端点级请求体上限（与 Kestrel 100MB 一致）
-            .WithMetadata(new RequestSizeLimitAttribute(100 * 1024 * 1024));
+        // #30：移除无客户端调用的占位端点 /upload_file（原实现仅返回 { ok=true }，未真正上传）
+        // Major：HttpLoggingFields.All 会记录完整请求体（含文件内容/敏感字段），改用 RequestPath + RequestQuery + Response
         route.MapPost("/create_file_group", CreateFileGroupAsync)
-            .WithHttpLogging(HttpLoggingFields.All, 1, 1);
+            .WithHttpLogging(HttpLoggingFields.RequestPath | HttpLoggingFields.RequestQuery
+                             | HttpLoggingFields.ResponseStatusCode | HttpLoggingFields.ResponseHeaders, 1, 1);
         return route;
     }
 
-
-    private static Task<IResult> UploadFileAsync(HttpContext httpContext, [FromServices] FileServicesDi servicesDi, [FromForm] FileStream stream,
+    private static async Task<IResult> CreateFileGroupAsync(
+        HttpContext httpContext,
+        [FromServices] FileServicesDi servicesDi,
+        [FromServices] ILoggerFactory loggerFactory,
+        [FromBody] CreateFileGroupRequest request,
         CancellationToken cancellationToken)
     {
-        var userGuid=GetUserId(httpContext);
-      
-        var ext=Path.GetExtension(stream.Name).ToLowerInvariant();
-        var fileType = ResolveFileType(ext);
-
-
-        return Task.FromResult(Results.Json(new { ok = true }));
-    }
-
-
-    private static async Task<IResult> CreateFileGroupAsync(HttpContext httpContext, 
-    [FromServices] FileServicesDi servicesDi, [FromBody] CreateFileGroupRequest request, CancellationToken cancellationToken)
-    {
-        var userGuid=GetUserId(httpContext);
+        var logger = loggerFactory.CreateLogger("FileStrongApi");
+        var userGuid = FileApiHelpers.GetUserId(httpContext);
         if (userGuid == null)
-            return Results.Json(new { error = "未认证" }, statusCode: 401);
+            // #27：统一响应形状 { ok, error }
+            return Results.Json(new { ok = false, error = "未认证" }, statusCode: 401);
 
-        var command = new CreateNotFileGroupCommand()
+        try
         {
-            UserGuid = userGuid.Value,
-            FileGroupName = request.Name,
-            FileGroupDescription = request.Description,
-            FileGroupTags = request.GroupTags,
-            FileIdentity = request.FileIdentity,
-            ParentGroupId = request.ParentGroupId,
-        };
-        
-        var identityCreateCommand=new IdentifiedCommand<CreateNotFileGroupCommand,bool>(Guid.CreateVersion7(),command);
+            // Major：参数合法性校验前置
+            if (request == null)
+                return Results.Json(new { ok = false, error = "请求体不能为空" }, statusCode: 400);
+            if (string.IsNullOrWhiteSpace(request.Name))
+                return Results.Json(new { ok = false, error = "文件组名称不能为空" }, statusCode: 400);
 
-        await servicesDi.NotMediator.SendAsync(identityCreateCommand, cancellationToken);
+            var command = new CreateNotFileGroupCommand()
+            {
+                UserGuid = userGuid.Value,
+                FileGroupName = request.Name,
+                FileGroupDescription = request.Description,
+                FileGroupTags = request.GroupTags,
+                FileIdentity = request.FileIdentity,
+                ParentGroupId = request.ParentGroupId,
+            };
 
-        return Results.Json(new { ok = true });
+            var identityCreateCommand = new IdentifiedCommand<CreateNotFileGroupCommand, bool>(Guid.CreateVersion7(), command);
+
+            await servicesDi.NotMediator.SendAsync(identityCreateCommand, cancellationToken);
+
+            return Results.Json(new { ok = true });
+        }
+        catch (Exception ex)
+        {
+            // #11：完整异常仅记录服务端日志，客户端返回安全通用消息
+            logger.LogError(ex, "创建文件组失败: UserId={UserId}, Name={Name}", userGuid.Value, request?.Name);
+            return Results.Json(new { ok = false, error = "请求处理失败" }, statusCode: 500);
+        }
     }
-
-
-    /// <summary>
-    /// 获取用户ID
-    /// </summary>
-    /// <param name="context">HTTP上下文</param>
-    /// <returns>用户ID</returns>
-    private static Guid? GetUserId(HttpContext context)
-    {
-        var claim = context.User.Claims.FirstOrDefault(x => x.Type == "id")
-            ?? context.User.Claims.FirstOrDefault(x =>
-                x.Type == System.Security.Claims.ClaimTypes.NameIdentifier);
-
-        if (claim == null || !Guid.TryParse(claim.Value, out var userId))
-            return null;
-        return userId;
-    }
-
-    /// <summary>
-    /// 解析文件类型
-    /// </summary>
-    /// <param name="ext">文件扩展名</param>
-    /// <returns>文件类型</returns>
-    private static FileType ResolveFileType(string ext) => ext switch
-    {
-        ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".webp" or ".svg" or ".ico" => FileType.FileImage,
-        ".mp4" or ".avi" or ".mkv" or ".mov" or ".wmv" or ".flv" or ".webm" => FileType.FileVideo,
-        ".mp3" or ".wav" or ".ogg" or ".flac" or ".aac" or ".wma" or ".m4a" => FileType.FileAudio,
-        ".zip" or ".rar" or ".7z" or ".tar" or ".gz" or ".bz2" => FileType.CompressFiles,
-        _ => FileType.FileFile
-    };
-
 }

@@ -25,8 +25,14 @@ public class CreateNotFileCommandHandler(INotFileStorageService storageProvider,
             throw new ArgumentException("文件名不能为空", nameof(request));
 
         var ext = Path.GetExtension(request.FileName).ToLowerInvariant();
-        if (!_config.AllowedExtensions.Contains(ext))
-            throw new ArgumentException($"不支持的文件类型: {ext}");
+        // Major：原代码 _config.AllowedExtensions.Contains(ext) 当白名单为空集合时
+        // 会拒绝所有扩展名（包括合法的），与 ChunkUploadInitCommandHandler 行为不一致；
+        // 改为白名单非空时才校验
+        if (_config.AllowedExtensions is { Count: > 0 })
+        {
+            if (!_config.AllowedExtensions.Contains(ext))
+                throw new ArgumentException($"不支持的文件类型: {ext}");
+        }
 
         if (request.FileSize > _config.MaxFileSize)
             throw new ArgumentException(
@@ -49,14 +55,5 @@ public class CreateNotFileCommandHandler(INotFileStorageService storageProvider,
         // TransactionBehavior 会在 SaveEntitiesAsync 时触发领域事件分发，
         // UploadNotFileEventHandler 自动将文件关联到根组
         return true;
-    }
-
-    public class CreateNotFileIdentifiedCommandHandler(
-        INotMediator mediator,
-        IRequestManagement requestManagement,
-        ILogger<IdentifiedCommandHandler<CreateNotFileCommand, bool>> logger)
-        : IdentifiedCommandHandler<CreateNotFileCommand, bool>(mediator, requestManagement, logger)
-    {
-        protected override bool CreateResultForDuplicateRequest() => true;
     }
 }

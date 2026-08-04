@@ -1,7 +1,11 @@
 using Message.Domain.SeedWork;
 
-namespace Message.Domain.Entities.Tweet;
+namespace Message.Domain.ValueObjects.Tweet;
 
+/// <summary>
+/// 链接元数据值对象（推文附带链接的预览信息）。
+/// 不可变，作为 <see cref="Entities.Tweet.Tweet"/> 聚合的一部分被序列化存储。
+/// </summary>
 public class LinkMetadata : ValueObject
 {
     private LinkMetadata()

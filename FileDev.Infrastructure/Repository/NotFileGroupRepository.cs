@@ -28,7 +28,8 @@ public class NotFileGroupRepository(NotFileDbContext notFileDbContext) : INotFil
             throw new NotFileException("notFileGroupId is null");
         var data = await _notFileDbContext
             .NotFileGroups
-            .FirstOrDefaultAsync(x => x.NotFileGroupId.Equals(notFileGroupId));
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.NotFileGroupId.Equals(notFileGroupId) && !x.IsDeleted);
 
         return data ?? throw new NotFileException("NotFileGroup is null");
     }
@@ -37,6 +38,8 @@ public class NotFileGroupRepository(NotFileDbContext notFileDbContext) : INotFil
     {
         var data = await _notFileDbContext
             .NotFileGroups
+            .AsNoTracking()
+            .Where(x => !x.IsDeleted)
             .ToListAsync();
         return data.AsEnumerable();
     }
@@ -46,7 +49,8 @@ public class NotFileGroupRepository(NotFileDbContext notFileDbContext) : INotFil
         if (userId == Guid.Empty)
             throw new NotFileException("userId is null");
         var data = await _notFileDbContext.NotFileGroups
-            .Where(x => x.UserId == userId)
+            .AsNoTracking()
+            .Where(x => x.UserId == userId && !x.IsDeleted)
             .ToListAsync();
         return data.AsEnumerable();
     }
@@ -54,28 +58,26 @@ public class NotFileGroupRepository(NotFileDbContext notFileDbContext) : INotFil
     public async Task<IEnumerable<NotFileGroup>> GetPublicNotFileGroupsAsync()
     {
         return await _notFileDbContext.NotFileGroups
-            .Where(x => x.FileIdentity == FileIdentity.FilePublic)
+            .AsNoTracking()
+            .Where(x => x.FileIdentity == FileIdentity.FilePublic && !x.IsDeleted)
             .ToListAsync();
     }
-
-    // public async Task<IEnumerable<NotFileGroup>> GetNotFileGroupsByTypeAsync(FileType fileType)
-    // {
-        
-    //     return await _notFileDbContext.NotFileGroups
-    //         .Where(x => x.FileType == fileType)
-    //         .ToListAsync();
-    // }
 
     public async Task<NotFileGroup?> GetNotFileGroupByNameAsync(string fileGroupName)
     {
         return await _notFileDbContext.NotFileGroups
-            .FirstOrDefaultAsync(x => x.FileGroupName == fileGroupName);
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.FileGroupName == fileGroupName && !x.IsDeleted);
     }
 
-    public async Task<NotFileGroup?> UpdateNotFileGroupAsync(NotFileGroup notFileGroup)
+    /// <summary>
+    /// 更新文件组：调用 EF Core 的 Update 将实体标记为 Modified，由 SaveChangesAsync 持久化。
+    /// 修复：原实现仅查询返回，未执行任何更新操作（空操作 bug）。
+    /// </summary>
+    public Task<NotFileGroup?> UpdateNotFileGroupAsync(NotFileGroup notFileGroup)
     {
-        return await _notFileDbContext.NotFileGroups
-            .FirstOrDefaultAsync(x => x.NotFileGroupId == notFileGroup.NotFileGroupId);
+        _notFileDbContext.NotFileGroups.Update(notFileGroup);
+        return Task.FromResult<NotFileGroup?>(notFileGroup);
     }
 
     public async Task DeleteNotFileGroupAsync(Guid notFileGroupId)
@@ -89,10 +91,12 @@ public class NotFileGroupRepository(NotFileDbContext notFileDbContext) : INotFil
 
     // ---- 树形结构查询 ----
 
-    public async Task<bool> ExistsByNameAtSameLevelAsync(Guid? parentGroupId, string name, Guid? excludeId = null)
+    public async Task<bool> ExistsByNameAtSameLevelAsync(Guid userId, Guid? parentGroupId, string name, Guid? excludeId = null)
     {
         var query = _notFileDbContext.NotFileGroups
+            .AsNoTracking()
             .Where(x => x.IsDeleted == false)
+            .Where(x => x.UserId == userId)
             .Where(x => x.ParentGroupId == parentGroupId)
             .Where(x => x.FileGroupName == name);
 
@@ -105,12 +109,14 @@ public class NotFileGroupRepository(NotFileDbContext notFileDbContext) : INotFil
     public async Task<IEnumerable<NotFileGroup>> GetChildrenAsync(Guid parentGroupId)
     {
         return await _notFileDbContext.NotFileGroups
+            .AsNoTracking()
             .Where(x => x.ParentGroupId == parentGroupId && x.IsDeleted == false)
             .ToListAsync();
     }
 
     public async Task<IEnumerable<NotFileGroup>> GetRootGroupsByUserIdAsync(Guid userId)
     {
+        // 注意：不加 AsNoTracking — UploadNotFileEventHandler 会修改返回的实体并通过 ChangeTracker 持久化
         return await _notFileDbContext.NotFileGroups
             .Where(x => x.UserId == userId && x.ParentGroupId == null && x.IsDeleted == false)
             .ToListAsync();

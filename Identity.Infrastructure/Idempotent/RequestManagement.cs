@@ -1,4 +1,4 @@
-﻿namespace Identity.Infrastructure.Idempotent;
+namespace Identity.Infrastructure.Idempotent;
 
 public class RequestManagement(IdentityDbContext context) : IRequestManagement
 {
@@ -29,23 +29,29 @@ public class RequestManagement(IdentityDbContext context) : IRequestManagement
     }
 
     /// <summary>
-    /// 创建为命令创建请求
+    /// 为命令创建幂等请求记录（并发安全）。
+    /// 直接尝试插入，依赖 ClientRequestId 唯一约束：并发相同 request 同时插入时，仅一个成功，
+    /// 其余捕获 DbUpdateException 返回 false（视为重复）。移除了原先"先查后插"的 TOCTOU 竞态。
     /// </summary>
-    /// <param name="request">请求 ID</param>
-    /// <typeparam name="T">命令类型</typeparam>
-    /// <returns>是否成功创建</returns>
-    public async Task CreateRequestForCommandAsync<T>(Guid request)
+    /// <returns>true=新建成功；false=已存在（重复请求）</returns>
+    public async Task<bool> CreateRequestForCommandAsync<T>(Guid request)
     {
-        var @bool = await ExecuteAsync(request);
-        var request1 = @bool
-            ? throw new Exception("Request already exists")
-            : new ClientRequest
-            {
-                ClientRequestId = request,
-                ClientRequestName = typeof(T).Name,
-                CreatedDate = DateTimeOffset.UtcNow
-            };
-        await _context.AddAsync(request1);
-        await _context.SaveChangesAsync();
+        var request1 = new ClientRequest
+        {
+            ClientRequestId = request,
+            ClientRequestName = typeof(T).Name,
+            CreatedDate = DateTimeOffset.UtcNow
+        };
+        try
+        {
+            await _context.AddAsync(request1);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        catch (DbUpdateException)
+        {
+            // 并发下另一个相同 request 已抢先插入（主键冲突），视为重复请求
+            return false;
+        }
     }
 }

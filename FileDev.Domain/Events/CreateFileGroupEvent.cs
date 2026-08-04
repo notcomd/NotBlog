@@ -4,7 +4,7 @@ namespace FileDev.Domain.Events;
 public class CreateFileGroupEvent(Guid fileId, Guid userId, string fileGroupName,
 HashSet<string>? fileGroupTags = null,
     string? fileGroupDescription = null,
-     FileIdentity fileIdentity = FileIdentity.FilePublic) : INotifications
+     FileIdentity fileIdentity = FileIdentity.FilePrivate) : INotifications
 {
 
     public Guid FileId { get; } = fileId;
@@ -12,8 +12,6 @@ HashSet<string>? fileGroupTags = null,
     public Guid UserId { get; } = userId;
 
     public string FileGroupName { get; } = fileGroupName;
-
-    public string FileName { get; } = fileGroupName;
 
     public string? FileDescription { get; } = fileGroupDescription;
 

@@ -13,9 +13,10 @@ public class CreateMarkReviewRequest
     public string Content { get; set; } = null!;
 
     /// <summary>
-    /// 评论配图列表（可选）
+    /// 评论配图 URL 列表（可选，最多 9 张）
     /// </summary>
-    public List<ReviewImage>? ReviewImages { get; set; }
+    [MaxLength(9, ErrorMessage = "评论配图最多 9 张")]
+    public List<string>? ReviewImages { get; set; }
 
     /// <summary>
     /// 评论权限类型（可选，默认为 ReviewAuthPublic）

@@ -84,7 +84,7 @@ public class MarkDown : Entity, IAggregateRoot
     }
 
     /// <summary>
-    ///     从聚合中移除评论及其所有子评论（聚合根统一入口）
+    ///     从聚合中移除评论及其所有后代评论（递归，聚合根统一入口）
     /// </summary>
     /// <param name="reviewGuid">要移除的评论 GUID</param>
     public void RemoveReview(Guid reviewGuid)
@@ -93,14 +93,24 @@ public class MarkDown : Entity, IAggregateRoot
         if (review is null)
             throw new InvalidOperationException($"评论 {reviewGuid} 不存在于当前文档聚合中");
 
-        // 递归移除子评论
-        var childReviews = MarkReviews
-            .Where(r => r.MarkAggregateRootGuid == reviewGuid)
-            .ToList();
+        // 广度优先收集所有后代评论（子、孙…），确保整棵评论子树一并移除
+        var descendants = new List<MarkReview>();
+        var queue = new Queue<MarkReview>();
+        queue.Enqueue(review);
 
-        foreach (var child in childReviews)
+        while (queue.Count > 0)
         {
-            MarkReviews.Remove(child);
+            var current = queue.Dequeue();
+            foreach (var child in MarkReviews.Where(r => r.MarkAggregateRootGuid == current.MarkReviewGuid))
+            {
+                descendants.Add(child);
+                queue.Enqueue(child);
+            }
+        }
+
+        foreach (var descendant in descendants)
+        {
+            MarkReviews.Remove(descendant);
         }
 
         MarkReviews.Remove(review);
@@ -352,12 +362,13 @@ public class MarkDown : Entity, IAggregateRoot
     /// <returns>新创建的 OldMarkDown 实例</returns>
     public OldMarkDown CreateHistorySnapshot()
     {
+        // 快照权限应与当前文档一致，避免私有文档的历史版本被标记为公开
         var oldVersion = new OldMarkDown(
             MarkDownGuid,
             MarkUserGuid,
             MarkDownContent,
             MarkDownHash,
-            MarkDownAuth.PublicMark
+            MarkDownAuth
         );
 
         OldMarkDowns.Add(oldVersion);
@@ -373,9 +384,9 @@ public class MarkDown : Entity, IAggregateRoot
     {
         ArgumentNullException.ThrowIfNull(oldMarkDown);
 
-        // 使用历史版本的内容更新当前文档
+        // 使用历史版本的内容更新当前文档，保留原文档名称（还原不改变名称）
         return UpDataByMarkDownAsync(
-            $"{MarkDownName}_v{oldMarkDown.OldMarkDownGuid}",
+            MarkDownName,
             oldMarkDown.OldMarkDownContent,
             oldMarkDown.OldMarkDownHash
         );

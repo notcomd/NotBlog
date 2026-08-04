@@ -38,6 +38,7 @@ public class FileChunkRecord : Entity, IAggregateRoot
             throw new ArgumentOutOfRangeException(nameof(chunkSize), "分片大小必须大于0");
         if (totalChunks <= 0)
             throw new ArgumentOutOfRangeException(nameof(totalChunks), "分片总数必须大于0");
+        ArgumentNullException.ThrowIfNull(fileMd5);
 
         FileKey = fileKey;
         UserId = userId;
@@ -48,7 +49,7 @@ public class FileChunkRecord : Entity, IAggregateRoot
         FileMd5 = fileMd5;
         FileType = fileType;
         FileIdentity = fileIdentity;
-        FileTags = fileTags ?? new HashSet<string>();
+        FileTags = fileTags ?? [];
         FileDescription = fileDescription;
     }
 
@@ -76,7 +77,7 @@ public class FileChunkRecord : Entity, IAggregateRoot
 
     public FileIdentity FileIdentity { get; private set; }
 
-    public HashSet<string>? FileTags { get; private set; }
+    public HashSet<string> FileTags { get; private set; } = [];
 
     public string? FileDescription { get; private set; }
 
@@ -86,12 +87,16 @@ public class FileChunkRecord : Entity, IAggregateRoot
 
     public DateTimeOffset? CompletedAt { get; private set; }
 
-    /// <summary>标记分片已上传</summary>
+    /// <summary>标记分片已上传（幂等：重复上传同一分片不会产生重复记录）</summary>
     public void MarkChunkUploaded(int chunkIndex)
     {
         if (chunkIndex < 0 || chunkIndex >= TotalChunks)
             throw new ArgumentOutOfRangeException(nameof(chunkIndex),
                 $"分片索引 {chunkIndex} 超出范围 [0, {TotalChunks - 1}]");
+
+        // 幂等检查：已上传过的分片直接返回，避免断点续传时产生重复记录
+        if (UploadedChunks.Contains(chunkIndex))
+            return;
 
         UploadedChunks.Add(chunkIndex);
 
@@ -125,13 +130,4 @@ public class FileChunkRecord : Entity, IAggregateRoot
         Status = ChunkUploadStatus.Cancelled;
         CompletedAt = DateTimeOffset.UtcNow;
     }
-}
-
-public enum ChunkUploadStatus
-{
-    Pending,
-    Uploading,
-    Merged,
-    Failed,
-    Cancelled
 }

@@ -1,4 +1,3 @@
-
 using FileDev.Web.API.Application.Command;
 using Microsoft.AspNetCore.Mvc;
 
@@ -28,20 +27,37 @@ public static class FileChunkApis
         return router;
     }
 
+    private static IResult Unauthorized() => Results.Json(new { ok = false, error = "未认证" }, statusCode: 401);
+    private static IResult BadRequest(string error) => Results.Json(new { ok = false, error }, statusCode: 400);
+    private static IResult InternalError() => Results.Json(new { ok = false, error = "请求处理失败" }, statusCode: 500);
+
     private static async Task<IResult> InitChunkUploadAsync(
         HttpContext context,
         [FromServices] INotMediator mediator,
+        [FromServices] IOptionsSnapshot<NotFileStorageOptions> storageOptions,
+        [FromServices] ILoggerFactory loggerFactory,
         [FromBody] ChunkInitRequest request,
         CancellationToken ct)
     {
+        var logger = loggerFactory.CreateLogger("FileChunkApis");
         try
         {
-            var userId = GetUserId(context);
+            var userId = FileApiHelpers.GetUserId(context);
             if (userId == null)
-                return Results.Json(new { error = "未认证" }, statusCode: 401);
+                return Unauthorized();
+
+            // #28：请求参数合法性校验（文件名/总大小/分片大小）
+            if (request == null)
+                return BadRequest("请求体不能为空");
+            if (string.IsNullOrWhiteSpace(request.FileName))
+                return BadRequest("文件名不能为空");
+            if (request.TotalSize <= 0 || request.TotalSize > storageOptions.Value.MaxFileSize)
+                return BadRequest($"文件大小必须在 (0, {storageOptions.Value.MaxFileSize / 1024 / 1024}MB] 范围内");
+            if (request.ChunkSize <= 0)
+                return BadRequest("分片大小必须大于0");
 
             var ext = Path.GetExtension(request.FileName).ToLowerInvariant();
-            var fileType = ResolveFileType(ext);
+            var fileType = FileApiHelpers.ResolveFileType(ext);
 
             var cmd = new ChunkUploadInitCommand
             {
@@ -57,6 +73,7 @@ public static class FileChunkApis
             var result = await mediator.SendAsync(cmd, ct);
             return Results.Json(new
             {
+                ok = true,
                 fileKey = result.FileKey,
                 totalChunks = result.TotalChunks,
                 chunkSize = result.ChunkSize,
@@ -65,7 +82,9 @@ public static class FileChunkApis
         }
         catch (Exception ex)
         {
-            return Results.Json(new { error = ex.Message }, statusCode: 400);
+            // #11：完整异常仅记录服务端日志，客户端返回安全通用消息
+            logger.LogError(ex, "分片上传初始化失败: FileName={FileName}", request?.FileName);
+            return InternalError();
         }
     }
 
@@ -73,20 +92,31 @@ public static class FileChunkApis
         HttpContext context,
         [FromServices] INotMediator mediator,
         [FromServices] IOptionsSnapshot<NotFileStorageOptions> storageOptions,
+        [FromServices] ILoggerFactory loggerFactory,
         [FromForm] string fileKey,
         [FromForm] int chunkIndex,
         IFormFile chunkContent,
         CancellationToken ct)
     {
+        var logger = loggerFactory.CreateLogger("FileChunkApis");
         try
         {
-            var userId = GetUserId(context);
+            var userId = FileApiHelpers.GetUserId(context);
             if (userId == null)
-                return Results.Json(new { error = "未认证" }, statusCode: 401);
+                return Unauthorized();
+
+            // #28/#35：请求参数合法性校验（fileKey 非空、chunkIndex 非负，上限由 Handler 侧校验）
+            if (string.IsNullOrWhiteSpace(fileKey))
+                return BadRequest("fileKey 不能为空");
+            if (chunkIndex < 0)
+                return BadRequest("chunkIndex 不能为负数");
+            // Major：chunkContent 非空校验
+            if (chunkContent is null || chunkContent.Length == 0)
+                return BadRequest("分片数据不能为空");
 
             // S-09：读取前先校验分片声明大小，避免超大分片读入内存
             if (chunkContent.Length > storageOptions.Value.ChunkFileSize * 2)
-                return Results.Json(new { error = "分片数据超出大小限制" }, statusCode: 400);
+                return BadRequest("分片数据超出大小限制");
 
             using var ms = new MemoryStream();
             await chunkContent.CopyToAsync(ms, ct);
@@ -101,30 +131,38 @@ public static class FileChunkApis
             };
 
             await mediator.SendAsync(cmd, ct);
-            return Results.Json(new { chunkIndex, received = true, size = content.Length });
+            return Results.Json(new { ok = true, chunkIndex, received = true, size = content.Length });
         }
         catch (Exception ex)
         {
-            return Results.Json(new { error = ex.Message }, statusCode: 400);
+            // #11：完整异常仅记录服务端日志，客户端返回安全通用消息
+            logger.LogError(ex, "分片上传失败: FileKey={FileKey}, ChunkIndex={ChunkIndex}", fileKey, chunkIndex);
+            return InternalError();
         }
     }
 
     private static async Task<IResult> GetChunkStatusAsync(
         HttpContext context,
         [FromServices] INotMediator mediator,
+        [FromServices] ILoggerFactory loggerFactory,
         string fileKey,
         CancellationToken ct)
     {
+        var logger = loggerFactory.CreateLogger("FileChunkApis");
         try
         {
-            var userId = GetUserId(context);
+            var userId = FileApiHelpers.GetUserId(context);
             if (userId == null)
-                return Results.Json(new { error = "未认证" }, statusCode: 401);
+                return Unauthorized();
+
+            if (string.IsNullOrWhiteSpace(fileKey))
+                return BadRequest("fileKey 不能为空");
 
             var query = new ChunkStatusQuery { FileKey = fileKey, UserId = userId.Value };
             var result = await mediator.SendAsync(query, ct);
             return Results.Json(new
             {
+                ok = true,
                 fileKey = result.FileKey,
                 totalChunks = result.TotalChunks,
                 uploadedChunks = result.UploadedChunks.ToList(),
@@ -134,21 +172,28 @@ public static class FileChunkApis
         }
         catch (Exception ex)
         {
-            return Results.Json(new { error = ex.Message }, statusCode: 404);
+            // #11：完整异常仅记录服务端日志，客户端返回安全通用消息
+            logger.LogError(ex, "查询分片状态失败: FileKey={FileKey}", fileKey);
+            return InternalError();
         }
     }
 
     private static async Task<IResult> MergeChunksAsync(
         HttpContext context,
         [FromServices] INotMediator mediator,
+        [FromServices] ILoggerFactory loggerFactory,
         [FromBody] MergeRequest request,
         CancellationToken ct)
     {
+        var logger = loggerFactory.CreateLogger("FileChunkApis");
         try
         {
-            var userId = GetUserId(context);
+            var userId = FileApiHelpers.GetUserId(context);
             if (userId == null)
-                return Results.Json(new { error = "未认证" }, statusCode: 401);
+                return Unauthorized();
+
+            if (request == null || string.IsNullOrWhiteSpace(request.FileKey))
+                return BadRequest("fileKey 不能为空");
 
             var cmd = new MergeChunksCommand
             {
@@ -159,7 +204,7 @@ public static class FileChunkApis
             var result = await mediator.SendAsync(cmd, ct);
             return Results.Json(new
             {
-                success = true,
+                ok = true,
                 fileKey = request.FileKey,
                 fileName = result.FileName,
                 fileUri = result.FileUri.ToString()
@@ -167,46 +212,40 @@ public static class FileChunkApis
         }
         catch (Exception ex)
         {
-            return Results.Json(new { error = ex.Message }, statusCode: 400);
+            // #11：完整异常仅记录服务端日志，客户端返回安全通用消息
+            logger.LogError(ex, "合并分片失败: FileKey={FileKey}", request?.FileKey);
+            return InternalError();
         }
     }
 
     private static async Task<IResult> CancelChunksAsync(
         HttpContext context,
         [FromServices] INotMediator mediator,
+        [FromServices] ILoggerFactory loggerFactory,
         string fileKey,
         CancellationToken ct)
     {
-        var userId = GetUserId(context);
-        if (userId == null)
-            return Results.Json(new { error = "未认证" }, statusCode: 401);
+        var logger = loggerFactory.CreateLogger("FileChunkApis");
+        try
+        {
+            var userId = FileApiHelpers.GetUserId(context);
+            if (userId == null)
+                return Unauthorized();
 
-        var cmd = new CancelChunksCommand { FileKey = fileKey, UserId = userId.Value };
-        await mediator.SendAsync(cmd, ct);
-        return Results.Json(new { cancelled = true, fileKey });
+            if (string.IsNullOrWhiteSpace(fileKey))
+                return BadRequest("fileKey 不能为空");
+
+            var cmd = new CancelChunksCommand { FileKey = fileKey, UserId = userId.Value };
+            await mediator.SendAsync(cmd, ct);
+            return Results.Json(new { ok = true, cancelled = true, fileKey });
+        }
+        catch (Exception ex)
+        {
+            // #11：完整异常仅记录服务端日志，客户端返回安全通用消息
+            logger.LogError(ex, "取消分片上传失败: FileKey={FileKey}", fileKey);
+            return InternalError();
+        }
     }
-
-    // ---- 共享辅助方法 ----
-
-    internal static Guid? GetUserId(HttpContext context)
-    {
-        var claim = context.User.Claims.FirstOrDefault(x => x.Type == "id")
-            ?? context.User.Claims.FirstOrDefault(x =>
-                x.Type == System.Security.Claims.ClaimTypes.NameIdentifier);
-
-        if (claim == null || !Guid.TryParse(claim.Value, out var userId))
-            return null;
-        return userId;
-    }
-
-    internal static FileType ResolveFileType(string ext) => ext switch
-    {
-        ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".webp" or ".svg" or ".ico" => FileType.FileImage,
-        ".mp4" or ".avi" or ".mkv" or ".mov" or ".wmv" or ".flv" or ".webm" => FileType.FileVideo,
-        ".mp3" or ".wav" or ".ogg" or ".flac" or ".aac" or ".wma" or ".m4a" => FileType.FileAudio,
-        ".zip" or ".rar" or ".7z" or ".tar" or ".gz" or ".bz2" => FileType.CompressFiles,
-        _ => FileType.FileFile
-    };
 
     // ---- 请求模型 ----
 

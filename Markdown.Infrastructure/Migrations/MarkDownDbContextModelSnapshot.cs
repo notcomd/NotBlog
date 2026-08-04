@@ -31,6 +31,9 @@ namespace Markdown.Infrastructure.Migrations
             modelBuilder.HasSequence("MarkReviewGuid")
                 .IncrementsBy(10);
 
+            modelBuilder.HasSequence("MarkReviewLikeGuid")
+                .IncrementsBy(10);
+
             modelBuilder.HasSequence("ReviewImageGuid")
                 .IncrementsBy(10);
 
@@ -53,7 +56,8 @@ namespace Markdown.Infrastructure.Migrations
 
                     b.Property<string>("MarkDownContent")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(1000000)
+                        .HasColumnType("character varying(1000000)");
 
                     b.Property<Guid>("MarkDownGuid")
                         .HasColumnType("uuid");
@@ -177,6 +181,33 @@ namespace Markdown.Infrastructure.Migrations
                     b.ToTable("MarkReview", (string)null);
                 });
 
+            modelBuilder.Entity("Markdown.Domain.Entities.MarkReviewLike", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<int>("Id"), "MarkReviewLikeGuid");
+
+                    b.Property<DateTimeOffset>("CreateAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("MarkReviewGuid")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MarkReviewGuid");
+
+                    b.HasIndex("MarkReviewGuid", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("MarkReviewLike", (string)null);
+                });
+
             modelBuilder.Entity("Markdown.Domain.Entities.OldMarkDown", b =>
                 {
                     b.Property<int>("Id")
@@ -184,6 +215,9 @@ namespace Markdown.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AuthType")
+                        .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("CreateAt")
                         .HasColumnType("timestamp with time zone");
@@ -204,9 +238,6 @@ namespace Markdown.Infrastructure.Migrations
                     b.Property<string>("OldMarkDownHash")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("UpdateAt")
                         .HasColumnType("timestamp with time zone");

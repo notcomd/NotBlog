@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Markdown.Web.API.Application.Commands;
 using Markdown.Web.API.Application.Dto;
+using Markdown.Web.API.Application.IntegrationEvents;
 using Markdown.Web.API.Application.Queries;
 using Microsoft.AspNetCore.Mvc;
 
@@ -194,18 +195,22 @@ public static class MarkdownApis
             return Results.BadRequest(ApiResponse.Error("文章名称不能为空"));
         if (string.IsNullOrWhiteSpace(request.Content))
             return Results.BadRequest(ApiResponse.Error("文章内容不能为空"));
+        if (!TryValidateTags(request.Tags, out var tagError))
+            return Results.BadRequest(ApiResponse.Error(tagError ?? "标签校验失败"));
 
         try
         {
             var userId = currentUserService.GetUserId();
             var auth = ParseAuth(request.Auth);
+            if (auth is null)
+                return Results.BadRequest(ApiResponse.Error("非法的文章权限类型"));
 
             var command = new CreateMarkdownCommand(
                 userId,
                 request.Name,
                 request.Content,
                 Tags: request.Tags,
-                MarkDownAuth: auth);
+                MarkDownAuth: auth.Value);
 
             var result = await notMediator.SendAsync(command);
 
@@ -257,9 +262,12 @@ public static class MarkdownApis
         if (markdown is null || markdown.IsDelete)
             return Results.NotFound(ApiResponse<MarkdownResponse>.NotFound("文章不存在"));
 
-        // 审核门控（F-10.2）：未通过审核的文章仅作者可见，其余一律 404
-        var viewerGuid = TryGetCurrentUserId(currentUserService);
-        if (!markdown.IsApproved && markdown.MarkUserGuid != (viewerGuid ?? Guid.Empty))
+        // 越权防护（S-10）：权限校验 + 审核门控（F-10.2）双重要求。
+        // 私有/受保护文档非所有者一律 404（含已审核通过的私有文档）；
+        // 未通过审核的文章仅作者可见，其余一律 404。
+        var viewerGuid = TryGetCurrentUserId(currentUserService) ?? Guid.Empty;
+        if (!markdown.HasPermission(viewerGuid) ||
+            (!markdown.IsApproved && markdown.MarkUserGuid != viewerGuid))
             return Results.NotFound(ApiResponse<MarkdownResponse>.NotFound("文章不存在"));
 
         var response = MapToResponse(markdown);
@@ -280,6 +288,8 @@ public static class MarkdownApis
             return Results.BadRequest(ApiResponse.Error("文章名称不能为空"));
         if (string.IsNullOrWhiteSpace(request.Content))
             return Results.BadRequest(ApiResponse.Error("文章内容不能为空"));
+        if (!TryValidateTags(request.Tags, out var tagError))
+            return Results.BadRequest(ApiResponse.Error(tagError ?? "标签校验失败"));
 
         try
         {
@@ -323,12 +333,13 @@ public static class MarkdownApis
     private static async Task<IResult> DeleteAsync(
         Guid markDownGuid,
         INotMediator notMediator,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        HttpContext httpContext)
     {
         try
         {
             var userId = currentUserService.GetUserId();
-            var command = new DeleteMarkdownCommand(markDownGuid, userId, Guid.CreateVersion7());
+            var command = new DeleteMarkdownCommand(markDownGuid, userId, GetIdempotencyKey(httpContext));
 
             var result = await notMediator.SendAsync(command);
 
@@ -357,23 +368,36 @@ public static class MarkdownApis
         Guid markDownGuid,
         [FromBody] CreateMarkReviewRequest request,
         INotMediator notMediator,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        HttpContext httpContext)
     {
         if (string.IsNullOrWhiteSpace(request.Content))
             return Results.BadRequest(ApiResponse.Error("评论内容不能为空"));
+
+        List<ReviewImage>? reviewImages;
+        try
+        {
+            reviewImages = MapReviewImages(request.ReviewImages);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.BadRequest(ApiResponse.Error(ex.Message));
+        }
 
         try
         {
             var userId = currentUserService.GetUserId();
             var reviewAuth = ParseReviewAuth(request.Auth);
+            if (reviewAuth is null)
+                return Results.BadRequest(ApiResponse.Error("非法的评论权限类型"));
 
             var command = new CreateMarkReviewCommand(
                 markDownGuid,
                 userId,
                 request.Content,
-                ReviewImages: request.ReviewImages,
-                ReviewAuth: reviewAuth,
-                IdempotencyKey: Guid.CreateVersion7());
+                ReviewImages: reviewImages,
+                ReviewAuth: reviewAuth.Value,
+                IdempotencyKey: GetIdempotencyKey(httpContext));
 
             var reviewGuid = await notMediator.SendAsync(command);
 
@@ -441,9 +465,8 @@ public static class MarkdownApis
         if (!IsReviewVisible(review, userId))
             return Results.NotFound(ApiResponse<MarkReviewResponse>.NotFound("评论不存在"));
 
-        // 浏览量计数接线（F-10.5）：阅读评论详情时浏览数 +1
+        // 浏览量计数接线（F-10.5）：读取评论详情时浏览数 +1（ExecuteUpdate 原子更新，无需 SaveChanges）
         await markdownRepository.IncreaseReviewViewAsync(reviewGuid);
-        await markdownRepository.UnitOfWork.SaveChangesAsync(CancellationToken.None);
 
         var response = MapToReviewResponse(review);
         return Results.Ok(ApiResponse<MarkReviewResponse>.Ok(response));
@@ -488,7 +511,8 @@ public static class MarkdownApis
         Guid reviewGuid,
         [FromBody] UpdateMarkReviewRequest request,
         INotMediator notMediator,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        HttpContext httpContext)
     {
         if (string.IsNullOrWhiteSpace(request.Content))
             return Results.BadRequest(ApiResponse.Error("评论内容不能为空"));
@@ -496,7 +520,7 @@ public static class MarkdownApis
         try
         {
             var userId = currentUserService.GetUserId();
-            var command = new UpdateMarkReviewCommand(reviewGuid, userId, request.Content, Guid.CreateVersion7());
+            var command = new UpdateMarkReviewCommand(reviewGuid, userId, request.Content, GetIdempotencyKey(httpContext));
 
             var result = await notMediator.SendAsync(command);
 
@@ -522,12 +546,13 @@ public static class MarkdownApis
     private static async Task<IResult> DeleteReviewAsync(
         Guid reviewGuid,
         INotMediator notMediator,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        HttpContext httpContext)
     {
         try
         {
             var userId = currentUserService.GetUserId();
-            var command = new DeleteMarkReviewCommand(reviewGuid, userId, Guid.CreateVersion7());
+            var command = new DeleteMarkReviewCommand(reviewGuid, userId, GetIdempotencyKey(httpContext));
 
             var result = await notMediator.SendAsync(command);
 
@@ -557,9 +582,13 @@ public static class MarkdownApis
         IMarkdownRepository markdownRepository,
         ICurrentUserService currentUserService)
     {
-        // 越权防护：文档不可读时（私有文档非所有者/已删除）一律 404
+        // 越权防护：权限校验 + 审核门控双重要求（与 GetAsync 一致），
+        // 防止草稿文档的历史版本被匿名读取
         var markdown = await markdownRepository.FindMarkDownAsync(markDownGuid);
-        if (markdown is null || markdown.IsDelete || !markdown.HasPermission(TryGetCurrentUserId(currentUserService) ?? Guid.Empty))
+        var viewerGuid = TryGetCurrentUserId(currentUserService) ?? Guid.Empty;
+        if (markdown is null || markdown.IsDelete ||
+            !markdown.HasPermission(viewerGuid) ||
+            (!markdown.IsApproved && markdown.MarkUserGuid != viewerGuid))
             return Results.NotFound(ApiResponse<List<OldMarkDownResponse>>.NotFound("文章不存在"));
 
         var oldVersions = await markdownRepository.GetOldMarkDownsByMarkDownGuidAsync(markDownGuid);
@@ -580,9 +609,12 @@ public static class MarkdownApis
         if (oldVersion is null || oldVersion.IsDelete)
             return Results.NotFound(ApiResponse<OldMarkDownResponse>.NotFound("历史版本不存在"));
 
-        // 越权防护：历史版本所属文档不可读时（私有文档非所有者）一律 404
+        // 越权防护：权限校验 + 审核门控双重要求（与 GetAsync 一致）
         var markdown = await markdownRepository.FindMarkDownAsync(oldVersion.MarkDownGuid);
-        if (markdown is null || markdown.IsDelete || !markdown.HasPermission(TryGetCurrentUserId(currentUserService) ?? Guid.Empty))
+        var viewerGuid = TryGetCurrentUserId(currentUserService) ?? Guid.Empty;
+        if (markdown is null || markdown.IsDelete ||
+            !markdown.HasPermission(viewerGuid) ||
+            (!markdown.IsApproved && markdown.MarkUserGuid != viewerGuid))
             return Results.NotFound(ApiResponse<OldMarkDownResponse>.NotFound("历史版本不存在"));
 
         var response = OldMarkDownMapper.MapToOldMarkDownResponse(oldVersion);
@@ -777,22 +809,37 @@ public static class MarkdownApis
         Guid reviewGuid,
         [FromBody] CreateMarkReviewRequest request,
         INotMediator notMediator,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        HttpContext httpContext)
     {
         if (string.IsNullOrWhiteSpace(request.Content))
             return Results.BadRequest(ApiResponse.Error("评论内容不能为空"));
 
+        List<ReviewImage>? reviewImages;
+        try
+        {
+            reviewImages = MapReviewImages(request.ReviewImages);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.BadRequest(ApiResponse.Error(ex.Message));
+        }
+
         try
         {
             var userId = currentUserService.GetUserId();
+            var reviewAuth = ParseReviewAuth(request.Auth);
+            if (reviewAuth is null)
+                return Results.BadRequest(ApiResponse.Error("非法的评论权限类型"));
+
             var command = new AddChildReviewCommand(
                 markDownGuid,
                 reviewGuid,
                 userId,
                 request.Content,
-                ReviewImages: request.ReviewImages,
-                ReviewAuth: ParseReviewAuth(request.Auth),
-                IdempotencyKey: Guid.CreateVersion7());
+                ReviewImages: reviewImages,
+                ReviewAuth: reviewAuth.Value,
+                IdempotencyKey: GetIdempotencyKey(httpContext));
 
             var childGuid = await notMediator.SendAsync(command);
 
@@ -806,18 +853,27 @@ public static class MarkdownApis
     }
 
     /// <summary>
-    /// 评论点赞 +1（F-10.5）
+    /// 评论点赞 +1（F-10.5，同一用户仅可点赞一次）
     /// </summary>
     private static async Task<IResult> LikeReviewAsync(
         Guid reviewGuid,
         IMarkdownRepository markdownRepository,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        IEventBus eventBus)
     {
         try
         {
-            currentUserService.GetUserId();
-            var count = await markdownRepository.LikeReviewAsync(reviewGuid);
-            await markdownRepository.UnitOfWork.SaveChangesAsync(CancellationToken.None);
+            var userId = currentUserService.GetUserId();
+            var count = await markdownRepository.LikeReviewAsync(reviewGuid, userId);
+
+            // 发布点赞集成事件（计数实时通知下游服务）
+            var review = await markdownRepository.GetReviewByIdAsync(reviewGuid);
+            if (review is not null)
+            {
+                await eventBus.PublishAsync(new MarkReviewLikedIntegrationEvent(
+                    reviewGuid, review.MarkDownGuid, userId, count, DateTimeOffset.UtcNow));
+            }
+
             return Results.Ok(ApiResponse<long>.Ok(count, "点赞成功"));
         }
         catch (KeyNotFoundException ex) { return Results.NotFound(ApiResponse.Error(ex.Message)); }
@@ -825,7 +881,7 @@ public static class MarkdownApis
     }
 
     /// <summary>
-    /// 取消评论点赞 -1（F-10.5）
+    /// 取消评论点赞 -1（F-10.5，未点赞时幂等返回）
     /// </summary>
     private static async Task<IResult> UnlikeReviewAsync(
         Guid reviewGuid,
@@ -834,9 +890,8 @@ public static class MarkdownApis
     {
         try
         {
-            currentUserService.GetUserId();
-            var count = await markdownRepository.RemoveLikeReviewAsync(reviewGuid);
-            await markdownRepository.UnitOfWork.SaveChangesAsync(CancellationToken.None);
+            var userId = currentUserService.GetUserId();
+            var count = await markdownRepository.RemoveLikeReviewAsync(reviewGuid, userId);
             return Results.Ok(ApiResponse<long>.Ok(count, "已取消点赞"));
         }
         catch (KeyNotFoundException ex) { return Results.NotFound(ApiResponse.Error(ex.Message)); }
@@ -846,12 +901,26 @@ public static class MarkdownApis
 
     /// <summary>
     /// 判断当前用户是否具备管理员角色（用于审核操作授权，F-10.2）
+    /// 精确匹配角色名（支持逗号分隔的多角色 claim），避免 "SuperAdmin"/"adminn" 等子串误判
     /// </summary>
     private static bool IsAdmin(ICurrentUserService currentUserService)
     {
         var role = currentUserService.GetUserRole();
-        return !string.IsNullOrWhiteSpace(role) &&
-               role.Contains("admin", StringComparison.OrdinalIgnoreCase);
+        if (string.IsNullOrWhiteSpace(role))
+            return false;
+
+        return role.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Any(r => r.Equals("Admin", StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// 获取幂等 key：优先取请求头 Idempotency-Key（客户端提供稳定 key 时幂等保护生效，
+    /// 防止网络重试导致重复写入）；缺失/非法时回退为新生成值（保持向后兼容）
+    /// </summary>
+    private static Guid GetIdempotencyKey(HttpContext httpContext)
+    {
+        var header = httpContext.Request.Headers["Idempotency-Key"].FirstOrDefault();
+        return Guid.TryParse(header, out var key) ? key : Guid.CreateVersion7();
     }
 
     /// <summary>
@@ -878,9 +947,9 @@ public static class MarkdownApis
     }
 
     /// <summary>
-    /// 解析文章权限类型
+    /// 解析文章权限类型（fail-closed：非法值返回 null，由调用方拒绝请求，避免静默公开）
     /// </summary>
-    private static MarkDownAuth ParseAuth(string? auth)
+    private static MarkDownAuth? ParseAuth(string? auth)
     {
         if (string.IsNullOrWhiteSpace(auth))
             return MarkDownAuth.PublicMark;
@@ -892,14 +961,14 @@ public static class MarkdownApis
             "protected" => MarkDownAuth.ProtectedMark,
             "admin" => MarkDownAuth.AdminMark,
             "root" => MarkDownAuth.RootMark,
-            _ => MarkDownAuth.PublicMark
+            _ => null
         };
     }
 
     /// <summary>
-    /// 解析评论权限类型
+    /// 解析评论权限类型（fail-closed：非法值返回 null，由调用方拒绝请求）
     /// </summary>
-    private static MarkReviewAuth ParseReviewAuth(string? auth)
+    private static MarkReviewAuth? ParseReviewAuth(string? auth)
     {
         if (string.IsNullOrWhiteSpace(auth))
             return MarkReviewAuth.ReviewAuthPublic;
@@ -909,8 +978,65 @@ public static class MarkdownApis
             "public" => MarkReviewAuth.ReviewAuthPublic,
             "private" => MarkReviewAuth.ReviewAuthPrivate,
             "protected" => MarkReviewAuth.ReviewAuthProtected,
-            _ => MarkReviewAuth.ReviewAuthPublic
+            _ => null
         };
+    }
+
+    /// <summary>
+    /// 将图片 URL 字符串列表映射为 ReviewImage 域实体（对外 DTO 不直接暴露域实体），
+    /// 同时完成基础校验：数量上限、URL 必须为合法的 http/https 绝对地址
+    /// </summary>
+    private static List<ReviewImage>? MapReviewImages(List<string>? imageUrls)
+    {
+        if (imageUrls is null || imageUrls.Count == 0)
+            return null;
+
+        if (imageUrls.Count > 9)
+            throw new InvalidOperationException("评论配图最多 9 张");
+
+        var images = new List<ReviewImage>(imageUrls.Count);
+        foreach (var url in imageUrls)
+        {
+            if (string.IsNullOrWhiteSpace(url) || url.Length > 2048 ||
+                !Uri.TryCreate(url, UriKind.Absolute, out var uri) ||
+                (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+                throw new InvalidOperationException($"非法图片地址：{url}");
+
+            var name = Path.GetFileName(uri.AbsolutePath);
+            images.Add(new ReviewImage(uri, string.IsNullOrWhiteSpace(name) ? "image" : name));
+        }
+
+        return images;
+    }
+
+    /// <summary>
+    /// 校验标签列表：数量上限 20、单标签长度不超过 50（空白标签由领域层过滤）
+    /// </summary>
+    private static bool TryValidateTags(List<string>? tags, out string? error)
+    {
+        if (tags is null)
+        {
+            error = null;
+            return true;
+        }
+
+        if (tags.Count > 20)
+        {
+            error = "标签数量不能超过 20 个";
+            return false;
+        }
+
+        foreach (var tag in tags)
+        {
+            if (!string.IsNullOrWhiteSpace(tag) && tag.Length > 50)
+            {
+                error = "单个标签长度不能超过 50 个字符";
+                return false;
+            }
+        }
+
+        error = null;
+        return true;
     }
 
     /// <summary>
@@ -966,7 +1092,7 @@ public class OldMarkDownResponse
     public Guid OldMarkDownGuid { get; set; }
     public Guid MarkDownGuid { get; set; }
     public Guid UserGuid { get; set; }
-    public string Status { get; set; } = null!;
+    public string Auth { get; set; } = null!;
     public string Content { get; set; } = null!;
     public string Hash { get; set; } = null!;
     public DateTimeOffset CreateAt { get; set; }
@@ -985,7 +1111,7 @@ file static class OldMarkDownMapper
             OldMarkDownGuid = old.OldMarkDownGuid,
             MarkDownGuid = old.MarkDownGuid,
             UserGuid = old.UserGuid,
-            Status = old.Status.ToString(),
+            Auth = old.AuthType.ToString(),
             Content = old.OldMarkDownContent,
             Hash = old.OldMarkDownHash,
             CreateAt = old.CreateAt,

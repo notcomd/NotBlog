@@ -15,8 +15,20 @@ public class CreateNotFileGroupCommandHandler(
         if (string.IsNullOrWhiteSpace(request.FileGroupName))
             throw new ArgumentException("文件组名称不能为空");
 
-        // 同级（根级）名称唯一性校验
-        if (await notFileGroupRepository.ExistsByNameAtSameLevelAsync(null, request.FileGroupName))
+        // 校验父文件组：父组必须存在且属于当前用户，否则拒绝创建（防止越权）
+        NotFileGroup? parent = null;
+        if (request.ParentGroupId.HasValue)
+        {
+            parent = await notFileGroupRepository.GetNotFileGroupByIdAsync(request.ParentGroupId.Value);
+            // Critical：父组不存在时直接抛 NPE，需先判空再访问 UserId
+            if (parent is null)
+                throw new InvalidOperationException("指定的父文件组不存在");
+            if (parent.UserId != request.UserGuid)
+                throw new UnauthorizedAccessException("无权在他人文件组下创建子组");
+        }
+
+        // 同级名称唯一性校验（限定当前用户与父级层级）
+        if (await notFileGroupRepository.ExistsByNameAtSameLevelAsync(request.UserGuid, request.ParentGroupId, request.FileGroupName))
             throw new InvalidOperationException($"文件组名称 '{request.FileGroupName}' 已存在");
 
         var data = new NotFileGroup.NotFileGroupBuilder()
@@ -25,21 +37,12 @@ public class CreateNotFileGroupCommandHandler(
             .WithFileGroupDescription(request.FileGroupDescription)
             .WithFileGroupTags(request.FileGroupTags)
             .WithFileIdentity(request.FileIdentity)
-            .WithParentGroupId(request.ParentGroupId)
+            .WithParent(parent)
             .Build();
 
         await notFileGroupRepository.InsertNotFileGroupAsync(data);
         await notFileGroupRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
 
         return true;
-    }
-
-    public class CreateNotFileGroupIdentifiedCommandHandler(
-        INotMediator mediator,
-        IRequestManagement requestManagement,
-        ILogger<CreateNotFileGroupIdentifiedCommandHandler> logger)
-        : IdentifiedCommandHandler<CreateNotFileGroupCommand, bool>(mediator, requestManagement, logger)
-    {
-        protected override bool CreateResultForDuplicateRequest() => true;
     }
 }

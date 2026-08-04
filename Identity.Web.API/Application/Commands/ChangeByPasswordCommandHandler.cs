@@ -1,8 +1,11 @@
+using Identity.Domain.ICache;
 using Identity.Infrastructure.Idempotent;
 
 namespace Identity.Web.API.Application.Commands;
 
-public class ChangeByPasswordCommandHandler(IUserRepository userRepository)
+public class ChangeByPasswordCommandHandler(
+    IUserRepository userRepository,
+    IIdentityCacheService identityCacheService)
     : NotMediator.IRequestHandler<ChangeByPasswordCommand, bool>
 {
     public async Task<bool> Handler(ChangeByPasswordCommand request, CancellationToken cancellationToken)
@@ -13,6 +16,16 @@ public class ChangeByPasswordCommandHandler(IUserRepository userRepository)
         if (data is null)
         {
             return false;
+        }
+
+        // 邮箱验证码路径：必须校验验证码匹配后才允许改密（修复 hasCode 路径绕过校验漏洞）
+        if (!string.IsNullOrWhiteSpace(request.Code))
+        {
+            var cached = await identityCacheService.GetStringAsync($"Login_{data.UserEmail}", cancellationToken);
+            if (string.IsNullOrEmpty(cached) || !string.Equals(cached, request.Code, StringComparison.Ordinal))
+                return false;
+            // 验证通过后消费验证码（一次性）
+            await identityCacheService.RemoveAsync($"Login_{data.UserEmail}", cancellationToken);
         }
 
         await data.ChangeByPasswordAsync(request.NewPassword);

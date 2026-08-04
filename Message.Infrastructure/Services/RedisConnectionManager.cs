@@ -2,7 +2,7 @@ using System.Text.Json;
 
 namespace Message.Infrastructure.Services;
 
-public class RedisConnectionManager : IConnectionManager
+public class RedisConnectionManager : IConnectionManager, IConnectionCommandService
 {
     private const string UserConnectionsPrefix = "message:user:";
     private const string ConnectionUserPrefix = "message:connection:";

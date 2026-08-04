@@ -6,6 +6,7 @@ global using Message.Domain.Enums;
 global using Message.Domain.IRepository;
 global using Message.Domain.IServices;
 global using Message.Domain.SeedWork;
+global using Message.Domain.ValueObjects.Tweet;
 global using Microsoft.AspNetCore.SignalR;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.EntityFrameworkCore.Metadata.Builders;

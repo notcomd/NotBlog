@@ -38,8 +38,16 @@ public class FileCheckTypeMiddleware : IMiddleware
         var form = await TryReadFormAsync(context);
         if (form is null)
         {
-            _logger.LogWarning("[FileCheck] 跳过 — Form 解析失败或无 Endpoint");
-            await next(context);
+            // Major：原代码在表单解析失败/无 Endpoint 时直接放行，存在安全风险（攻击者构造异常
+            // Content-Type 绕过白名单）。改为返回 400 拒绝，确保所有 multipart 上传必经白名单校验。
+            _logger.LogWarning("[FileCheck] 拒绝 — 表单解析失败或无 Endpoint: {Method} {Path}",
+                context.Request.Method, context.Request.Path);
+            context.Response.StatusCode = 400;
+            await context.Response.WriteAsJsonAsync(new
+            {
+                ok = false,
+                error = "上传表单解析失败"
+            });
             return;
         }
 
@@ -62,21 +70,25 @@ public class FileCheckTypeMiddleware : IMiddleware
                 context.Response.StatusCode = 400;
                 await context.Response.WriteAsJsonAsync(new
                 {
+                    ok = false,
                     error = $"无法识别文件类型: {file.FileName}"
                 });
                 return;
             }
 
+            // S-26：扩展名统一小写后再匹配，防止 ".PNG"、".JPG" 等大小写变体绕过白名单
+            ext = ext.ToLowerInvariant();
             var isAllowed = _options.Value.AllowedExtensions.Contains(ext);
             if (!isAllowed)
             {
                 _logger.LogWarning("[FileCheck] 拒绝 — 扩展名不在白名单: Ext={Ext}, FileName={FileName}, Size={Size}",
                     ext, file.FileName, file.Length);
                 context.Response.StatusCode = 400;
+                // Major：不向客户端暴露白名单内容（安全加固）；统一响应 { ok, error }
                 await context.Response.WriteAsJsonAsync(new
                 {
-                    error = $"不支持的文件类型: {ext}",
-                    allowedTypes = _options.Value.AllowedExtensions.OrderBy(x => x).ToArray()
+                    ok = false,
+                    error = $"不支持的文件类型: {ext}"
                 });
                 return;
             }

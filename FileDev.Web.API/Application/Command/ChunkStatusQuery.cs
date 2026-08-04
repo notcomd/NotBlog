@@ -5,12 +5,3 @@ public class ChunkStatusQuery : IRequest<ChunkStatusResponse>
     public Guid UserId { get; set; }
     public string FileKey { get; set; } = null!;
 }
-
-public class ChunkStatusResponse
-{
-    public string FileKey { get; set; } = null!;
-    public int TotalChunks { get; set; }
-    public List<int> UploadedChunks { get; set; } = [];
-    public bool IsComplete { get; set; }
-    public ChunkUploadStatus Status { get; set; }
-}

@@ -1,7 +1,11 @@
 using Message.Domain.SeedWork;
 
-namespace Message.Domain.Entities.MessageContent;
+namespace Message.Domain.ValueObjects.Message;
 
+/// <summary>
+/// 文本消息内容值对象。
+/// 承载文本消息的原子内容约束（非空、长度上限），不可变。
+/// </summary>
 public class TextContent : ValueObject
 {
     private TextContent(string value)

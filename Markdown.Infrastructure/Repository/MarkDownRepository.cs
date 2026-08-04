@@ -1,5 +1,7 @@
 
 
+using Npgsql;
+
 namespace Markdown.Infrastructure.Repository;
 
 /// <summary>
@@ -524,14 +526,29 @@ public class MarkDownRepository(
     }
 
     /// <summary>
-    ///     评论点赞 +1（线程安全），返回最新点赞数
+    ///     评论点赞 +1（点赞去重：同一用户对同一评论仅能点赞一次，依赖数据库唯一约束防并发重复），返回最新点赞数
     /// </summary>
-    public async Task<long> LikeReviewAsync(Guid reviewGuid)
+    public async Task<long> LikeReviewAsync(Guid reviewGuid, Guid userId)
     {
         try
         {
             var review = await LoadTrackedReviewAsync(reviewGuid);
+
+            // 先落点赞记录：唯一约束 (MarkReviewGuid, UserId) 兜底并发重复
+            markDownDbContext.MarkReviewLikes.Add(new MarkReviewLike(reviewGuid, userId));
+            try
+            {
+                await markDownDbContext.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex) when (IsUniqueViolation(ex))
+            {
+                // 已点赞过：幂等返回当前计数，不再递增
+                logger.LogInformation("用户 {UserId} 已点赞过评论 {ReviewGuid}，忽略重复点赞", userId, reviewGuid);
+                return review.MarkQuote.LoveSome;
+            }
+
             var count = review.MarkQuote.AddLove();
+            await markDownDbContext.SaveChangesAsync();
             logger.LogInformation("评论 {ReviewGuid} 点赞数更新为 {Count}", reviewGuid, count);
             return count;
         }
@@ -543,14 +560,26 @@ public class MarkDownRepository(
     }
 
     /// <summary>
-    ///     取消评论点赞 -1（不低于 0），返回最新点赞数
+    ///     取消评论点赞 -1（不低于 0，未点赞时幂等返回当前计数），返回最新点赞数
     /// </summary>
-    public async Task<long> RemoveLikeReviewAsync(Guid reviewGuid)
+    public async Task<long> RemoveLikeReviewAsync(Guid reviewGuid, Guid userId)
     {
         try
         {
             var review = await LoadTrackedReviewAsync(reviewGuid);
+
+            var like = await markDownDbContext.MarkReviewLikes
+                .FirstOrDefaultAsync(l => l.MarkReviewGuid == reviewGuid && l.UserId == userId);
+            if (like is null)
+            {
+                // 未点赞过：幂等返回当前计数，不再递减
+                logger.LogInformation("用户 {UserId} 未点赞过评论 {ReviewGuid}，忽略取消点赞", userId, reviewGuid);
+                return review.MarkQuote.LoveSome;
+            }
+
+            markDownDbContext.MarkReviewLikes.Remove(like);
             var count = review.MarkQuote.RemoveLove();
+            await markDownDbContext.SaveChangesAsync();
             logger.LogInformation("评论 {ReviewGuid} 取消点赞后点赞数为 {Count}", reviewGuid, count);
             return count;
         }
@@ -562,7 +591,7 @@ public class MarkDownRepository(
     }
 
     /// <summary>
-    ///     评论浏览量 +1（线程安全），返回最新浏览数
+    ///     评论浏览量 +1（原子 SQL 更新，不经过 EF 追踪，避免 GET 请求全实体保存的写放大）
     /// </summary>
     public async Task<long> IncreaseReviewViewAsync(Guid reviewGuid)
     {
@@ -570,6 +599,14 @@ public class MarkDownRepository(
         {
             var review = await LoadTrackedReviewAsync(reviewGuid);
             var count = review.MarkQuote.AddView();
+
+            // ExecuteUpdate 直接生成 UPDATE SQL 原子递增，无需后续 SaveChanges
+            await markDownDbContext.Markdowns
+                .SelectMany(m => m.MarkReviews)
+                .Where(r => r.MarkReviewGuid == reviewGuid)
+                .ExecuteUpdateAsync(s => s.SetProperty(
+                    r => r.MarkQuote.ViewSome, r => r.MarkQuote.ViewSome + 1));
+
             logger.LogInformation("评论 {ReviewGuid} 浏览数更新为 {Count}", reviewGuid, count);
             return count;
         }
@@ -595,4 +632,10 @@ public class MarkDownRepository(
 
         return review;
     }
+
+    /// <summary>
+    ///     判断 DbUpdateException 是否为唯一约束冲突（PostgreSQL 23505）
+    /// </summary>
+    private static bool IsUniqueViolation(DbUpdateException ex)
+        => ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation };
 }

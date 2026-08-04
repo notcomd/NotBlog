@@ -5,7 +5,7 @@ namespace FileDev.Domain.SeedWork;
 public abstract class Entity
 {
 
-    private List<INotifications>? _domainEventbus;
+    private List<INotifications>? _domainEventBus;
 
     private int _id;
 
@@ -17,24 +17,24 @@ public abstract class Entity
         protected set => _id = value;
     }
 
-    public IReadOnlyCollection<INotifications> DomainEventbus =>
-        _domainEventbus?.AsReadOnly() ?? new List<INotifications>().AsReadOnly();
+    public IReadOnlyCollection<INotifications> DomainEventBus =>
+        _domainEventBus?.AsReadOnly() ?? new List<INotifications>().AsReadOnly();
 
     public void AddDomainEvent(INotifications notification)
     {
-        _domainEventbus = _domainEventbus ?? [];
-        _domainEventbus.Add(notification);
+        _domainEventBus = _domainEventBus ?? [];
+        _domainEventBus.Add(notification);
     }
 
     public void RemoveDomainEvent(INotifications notification)
     {
-        if (_domainEventbus is null) return;
-        _domainEventbus.Remove(notification);
+        if (_domainEventBus is null) return;
+        _domainEventBus.Remove(notification);
     }
 
     public void ClearDomainEvents()
     {
-        _domainEventbus?.Clear();
+        _domainEventBus?.Clear();
     }
 
     public bool IsTransient()

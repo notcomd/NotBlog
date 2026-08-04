@@ -3,6 +3,7 @@ using Message.Domain.Enums;
 using Message.Domain.IRepository;
 using Message.Domain.SeedWork;
 using Message.Domain.IServices;
+using Message.Infrastructure.Services;
 using Message.Web.API.Dto;
 using Message.Web.API.Dto.Request;
 using Message.Web.API.Dto.Response;
@@ -48,7 +49,7 @@ public class MessageHubTests
     {
         await _harness.Hub.OnConnectedAsync();
 
-        _harness.ConnectionManager.Verify(m => m.AddConnectionAsync(UserId, "conn-test"), Times.Once);
+        _harness.ConnectionCommandService.Verify(m => m.AddConnectionAsync(UserId, "conn-test"), Times.Once);
         // Q-05：在线状态经 UserStatusCacheService 写入 Redis（message:online:users 集合）
         _harness.UserStatusDb.Verify(d => d.SetAddAsync("message:online:users", UserId.ToString(),
             It.IsAny<CommandFlags>()), Times.Once);
@@ -76,7 +77,7 @@ public class MessageHubTests
 
         await _harness.Hub.OnConnectedAsync();
 
-        _harness.ConnectionManager.Verify(m => m.AddConnectionAsync(UserId, "conn-test"), Times.Once);
+        _harness.ConnectionCommandService.Verify(m => m.AddConnectionAsync(UserId, "conn-test"), Times.Once);
     }
 
     [Test]
@@ -86,7 +87,7 @@ public class MessageHubTests
 
         await _harness.Hub.OnDisconnectedAsync(null);
 
-        _harness.ConnectionManager.Verify(m => m.RemoveConnectionAsync(UserId, "conn-test"), Times.Once);
+        _harness.ConnectionCommandService.Verify(m => m.RemoveConnectionAsync(UserId, "conn-test"), Times.Once);
         // Q-05：离线状态经 UserStatusCacheService 写入 Redis（从 message:online:users 集合移除）
         _harness.UserStatusDb.Verify(d => d.SetRemoveAsync("message:online:users", UserId.ToString(),
             It.IsAny<CommandFlags>()), Times.Once);
@@ -353,6 +354,7 @@ public class MessageHubTests
         public Mock<IChatSessionRepository> SessionRepository { get; }
         public Mock<IUnitOfWork> UnitOfWork { get; }
         public Mock<IConnectionManager> ConnectionManager { get; }
+        public Mock<IConnectionCommandService> ConnectionCommandService { get; }
         public Mock<IFileStorageGrpcClient> FileStorageGrpc { get; }
         public Mock<ICurrentUserService> CurrentUser { get; }
         public Mock<IGroupManager> Groups { get; }
@@ -380,15 +382,16 @@ public class MessageHubTests
             hubContext.Setup(h => h.Clients).Returns(clients.Object);
 
             ConnectionManager = new Mock<IConnectionManager>();
-            ConnectionManager.Setup(m => m.AddConnectionAsync(It.IsAny<Guid>(), It.IsAny<string>()))
-                .Returns(Task.CompletedTask);
-            ConnectionManager.Setup(m => m.RemoveConnectionAsync(It.IsAny<Guid>(), It.IsAny<string>()))
-                .Returns(Task.CompletedTask);
-            ConnectionManager.Setup(m => m.SetUserOnlineAsync(It.IsAny<Guid>())).Returns(Task.CompletedTask);
-            ConnectionManager.Setup(m => m.SetUserOfflineAsync(It.IsAny<Guid>())).Returns(Task.CompletedTask);
             ConnectionManager.Setup(m => m.HasOtherConnectionsAsync(It.IsAny<Guid>())).ReturnsAsync(true);
             ConnectionManager.Setup(m => m.GetConnectionsAsync(It.IsAny<Guid>()))
                 .ReturnsAsync((Guid id) => new[] { $"conn-{id}" });
+
+            // CQRS：命令侧（连接登记/注销）经 IConnectionCommandService 分发
+            ConnectionCommandService = new Mock<IConnectionCommandService>();
+            ConnectionCommandService.Setup(m => m.AddConnectionAsync(It.IsAny<Guid>(), It.IsAny<string>()))
+                .Returns(Task.CompletedTask);
+            ConnectionCommandService.Setup(m => m.RemoveConnectionAsync(It.IsAny<Guid>(), It.IsAny<string>()))
+                .Returns(Task.CompletedTask);
 
             UnitOfWork = new Mock<IUnitOfWork>();
             UnitOfWork.Setup(u => u.SaveEntitiesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(true);
@@ -439,6 +442,7 @@ public class MessageHubTests
                 SessionRepository.Object,
                 UnitOfWork.Object,
                 ConnectionManager.Object,
+                ConnectionCommandService.Object,
                 deliveryService,
                 FileStorageGrpc.Object,
                 CurrentUser.Object,

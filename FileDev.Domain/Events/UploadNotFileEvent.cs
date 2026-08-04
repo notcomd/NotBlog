@@ -1,15 +1,14 @@
-
 using System.Diagnostics;
 using NotMediator;
 
 namespace FileDev.Domain.Events;
 
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-public record UploadNotFileEvent(Guid NotFileId,
-                                 Guid UserGuid,
+public record UploadNotFileEvent(Guid FileId,
+                                 Guid UserId,
                                  string FileName,
                                  HashSet<string>? FileTags,
-                                 string FileDescription,                              
+                                 string FileDescription,
                                  long FileSize,
                                  Uri FileUri,
                                  string FileMd5,

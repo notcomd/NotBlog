@@ -1,5 +1,5 @@
-﻿using Message.Domain.Entities.MessageContent;
-using Message.Domain.Entities.Recall;
+﻿using Message.Domain.Entities.Recall;
+using Message.Domain.ValueObjects.Message;
 using Message.Domain.Enums;
 using Message.Domain.Events;
 using Message.Domain.SeedWork;

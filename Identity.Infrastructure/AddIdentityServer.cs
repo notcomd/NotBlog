@@ -12,7 +12,6 @@ public static class AddIdentityServer
         IConfiguration configuration)
     {
         serviceCollection.AddJwtAuthentication(configuration);
-        serviceCollection.AddScoped<IGitHubAuthService, GithubAuthService>();
         serviceCollection.AddScoped<IUserExternalLoginRepository, UserExternalLoginRepository>();
         serviceCollection.AddScoped<IOAuthService, OAuthService>();
         serviceCollection.AddScoped<IRoleGroupService, RoleGroupService>();

@@ -22,6 +22,7 @@
         </PackageReference>
         <PackageReference Include="MailKit" Version="4.17.0" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.9" />
+        <PackageReference Include="Microsoft.Identity.Client" Version="4.87.0" />
         <PackageReference Include="Microsoft.OpenApi" Version="2.7.5" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.9" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.9">

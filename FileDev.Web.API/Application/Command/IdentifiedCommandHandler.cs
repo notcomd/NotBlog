@@ -40,15 +40,16 @@ public abstract class IdentifiedCommandHandler<T, R>(
                         commandId = createNotFileCommand.UserGuid.ToString();
                         break;
                     case CreateNotFileGroupCommand createNotFileGroupCommand:
-                        idProvider = "Guid";
-                        commandId = "";
+                        // Major：原代码 idProvider 写死 "Guid"、commandId 为空字符串，无法定位具体文件组。
+                        // 改为记录 UserGuid 与 FileGroupName，便于审计追踪。
+                        idProvider = nameof(createNotFileGroupCommand.UserGuid);
+                        commandId = createNotFileGroupCommand.UserGuid.ToString();
                         break;
                     default:
                         idProvider = "id/?";
                         commandId = "?";
                         break;
                 }
-
 
                 _logger.LogInformation(
                     "Sending command: {CommandName} - {IdProperty}: {CommandId}",
@@ -64,8 +65,9 @@ public abstract class IdentifiedCommandHandler<T, R>(
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error handling command {CommandName}: {Error}",
-                    request.Command.GetGenericTypeName(), ex.Message);
+                // Major：异常日志记录 ex.Message 可能泄露内部信息，但服务端日志可接受
+                _logger.LogError(ex, "Error handling command {CommandName}",
+                    request.Command.GetGenericTypeName());
                 throw;
             }
         }

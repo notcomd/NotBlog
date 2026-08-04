@@ -20,9 +20,9 @@ public class NotFileDbContext(DbContextOptions<NotFileDbContext> options, INotMe
 
     public bool HasActiveTransaction => _currentTransaction is not null;
 
-    public new async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        //if (_notMediator is null) throw new ArgumentNullException(nameof(_notMediator), "Mediator cannot be null");
+        // 使用 override 而非 new：确保通过 DbContext 基类引用调用时也正确分发领域事件
         await _notMediator.DispatchDomainEventsAsync(this);
         return await base.SaveChangesAsync(cancellationToken);
     }

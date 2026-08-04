@@ -28,30 +28,42 @@ public static class StreamUploadApis
         return router;
     }
 
+    private static IResult Unauthorized() => Results.Json(new { ok = false, error = "未认证" }, statusCode: 401);
+    private static IResult BadRequest(string error) => Results.Json(new { ok = false, error }, statusCode: 400);
+    private static IResult InternalError() => Results.Json(new { ok = false, error = "请求处理失败" }, statusCode: 500);
+
     private static async Task<IResult> StreamUploadAsync(
         HttpContext context,
         [FromServices] INotMediator mediator,
         [FromServices] IOptionsSnapshot<NotFileStorageOptions> storageOptions,
+        [FromServices] ILoggerFactory loggerFactory,
         CancellationToken ct)
     {
+        var logger = loggerFactory.CreateLogger("StreamUploadApis");
+        var fileName = "unnamed.bin";
+        long fileSize = 0;
         try
         {
-            var userId = FileChunkApis.GetUserId(context);
+            var userId = FileApiHelpers.GetUserId(context);
             if (userId == null)
-                return Results.Json(new { error = "未认证" }, statusCode: 401);
+                return Unauthorized();
 
-            var fileName = context.Request.Headers["X-File-Name"].FirstOrDefault()
-                ?? "unnamed.bin";
+            // Major：从请求头解析文件名，缺失或非法统一拒绝
+            var fileNameHeader = context.Request.Headers["X-File-Name"].FirstOrDefault();
+            if (string.IsNullOrWhiteSpace(fileNameHeader))
+                return BadRequest("X-File-Name 请求头不能为空");
+            fileName = fileNameHeader;
 
-            if (!long.TryParse(context.Request.Headers["X-File-Size"].FirstOrDefault(), out var fileSize))
+            // 路径穿越防御：禁止包含路径分隔符或父目录引用的文件名
+            if (fileName.IndexOfAny(['/', '\\']) >= 0 || fileName.Contains("..", StringComparison.Ordinal))
+                return BadRequest("文件名不能包含路径分隔符");
+
+            if (!long.TryParse(context.Request.Headers["X-File-Size"].FirstOrDefault(), out fileSize))
                 fileSize = context.Request.ContentLength ?? 0;
 
             // S-09：读取请求体前先校验声明大小，拒绝超限请求（避免整读超大文件）
             if (fileSize <= 0 || fileSize > storageOptions.Value.MaxFileSize)
-                return Results.Json(new
-                {
-                    error = $"文件大小必须在 (0, {storageOptions.Value.MaxFileSize / 1024 / 1024}MB] 范围内"
-                }, statusCode: 400);
+                return BadRequest($"文件大小必须在 (0, {storageOptions.Value.MaxFileSize / 1024 / 1024}MB] 范围内");
 
             using var ms = new MemoryStream();
             await context.Request.Body.CopyToAsync(ms, ct);
@@ -68,37 +80,59 @@ public static class StreamUploadApis
 
             var result = await mediator.SendAsync(cmd, ct);
 
-            return Results.Json(new { success = true, fileName = result.FileName, fileUri = result.FileUri.ToString() });
+            return Results.Json(new { ok = true, fileName = result.FileName, fileUri = result.FileUri.ToString() });
         }
         catch (Exception ex)
         {
-            return Results.Json(new { error = ex.Message }, statusCode: 400);
+            // #11：完整异常仅记录服务端日志，客户端返回安全通用消息
+            logger.LogError(ex, "流式上传失败: FileName={FileName}, Size={Size}", fileName, fileSize);
+            return InternalError();
         }
     }
 
     private static async Task<IResult> CheckDedupAsync(
         HttpContext context,
         [FromServices] INotMediator mediator,
+        [FromServices] ILoggerFactory loggerFactory,
         [FromBody] FileChunkApis.DedupRequest request,
         CancellationToken ct)
     {
-        // F-09.1：秒传命中需绑定当前调用者，从 JWT 解析用户 id
-        var userId = FileChunkApis.GetUserId(context);
-        if (userId == null)
-            return Results.Json(new { error = "未认证" }, statusCode: 401);
+        var logger = loggerFactory.CreateLogger("StreamUploadApis");
+        try
+        {
+            // F-09.1：秒传命中需绑定当前调用者，从 JWT 解析用户 id
+            var userId = FileApiHelpers.GetUserId(context);
+            if (userId == null)
+                return Unauthorized();
 
-        var cmd = new DeduplicateFileCommand
+            // Major：参数合法性校验
+            if (request == null)
+                return BadRequest("请求体不能为空");
+            if (string.IsNullOrWhiteSpace(request.FileMd5))
+                return BadRequest("FileMd5 不能为空");
+            if (request.FileSize < 0)
+                return BadRequest("FileSize 不能为负数");
+
+            var cmd = new DeduplicateFileCommand
+            {
+                FileMd5 = request.FileMd5,
+                FileSize = request.FileSize,
+                UserId = userId.Value
+            };
+            var result = await mediator.SendAsync(cmd, ct);
+            return Results.Json(new
+            {
+                ok = true,
+                exists = result.Exists,
+                fileId = result.FileId,
+                fileUri = result.FileUri
+            });
+        }
+        catch (Exception ex)
         {
-            FileMd5 = request.FileMd5,
-            FileSize = request.FileSize,
-            UserId = userId.Value
-        };
-        var result = await mediator.SendAsync(cmd, ct);
-        return Results.Json(new
-        {
-            exists = result.Exists,
-            fileId = result.FileId,
-            fileUri = result.FileUri
-        });
+            // #11：完整异常仅记录服务端日志，客户端返回安全通用消息
+            logger.LogError(ex, "秒传检查失败: Md5={Md5}", request?.FileMd5);
+            return InternalError();
+        }
     }
 }

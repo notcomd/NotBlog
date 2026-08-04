@@ -2,6 +2,7 @@ using DomainInfrastructure;
 using FileDev.Web.API.Background;
 using FileDev.Web.API.Grpc;
 using Notcomd.Token.JWT.Extensions;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,7 +22,6 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped<INotFileService, NotFileService>();
 builder.Services.AddScoped<FileStorageServiceGRPC>();
 builder.Services.AddScoped<GrpcJwtAuthInterceptor>();
-builder.Services.AddScoped<FileAccessMiddleware>();
 builder.Services.AddHostedService<ChunkCleanupBackgroundService>();
 builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
 builder.Services.AddGrpc(options =>
@@ -64,17 +64,17 @@ builder.WebHost.ConfigureKestrel(options => { options.Limits.MaxRequestBodySize 
 
 var app = builder.Build();
 
-// Ensure database is created
+// 启动时自动应用 EF Core 迁移（与 Identity/Markdown 项目的 AddMigration 一致，
+// 用 Database.Migrate 替代 EnsureCreated，避免与 Migration 管理的库结构冲突）
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<NotFileDbContext>();
-    dbContext.Database.EnsureCreated();
+    dbContext.Database.Migrate();
 }
 
 app.UseNotBlogPipeline();
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseFileAccess();
 app.UseMiddleware<FileCheckTypeMiddleware>();
 app.MapDefaultEndpoints();
 

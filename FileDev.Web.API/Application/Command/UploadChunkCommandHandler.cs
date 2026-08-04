@@ -30,6 +30,11 @@ public class UploadChunkCommandHandler(
             || record.Status == ChunkUploadStatus.Cancelled)
             throw new InvalidOperationException("上传任务已结束，无法继续上传");
 
+        // 分片索引合法性校验（越界直接拒绝，避免写盘脏数据）
+        if (request.ChunkIndex < 0 || request.ChunkIndex >= record.TotalChunks)
+            throw new ArgumentOutOfRangeException(nameof(request.ChunkIndex),
+                $"分片索引 {request.ChunkIndex} 超出范围 [0, {record.TotalChunks - 1}]");
+
         var result = await storageService.UploadChunkAsync(
             request.FileKey, request.ChunkIndex, request.ChunkContent,
             request.ChunkHash);

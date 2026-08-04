@@ -10,7 +10,7 @@ public class NotFile : Entity, IAggregateRoot
 
     public HashSet<string> FileTags { get; private set; }
 
-    public string FileDescription { get; set; } = string.Empty;
+    public string FileDescription { get; private set; } = string.Empty;
 
     public long FileSize { get; private set; }
 
@@ -36,6 +36,7 @@ public class NotFile : Entity, IAggregateRoot
         if (string.IsNullOrWhiteSpace(fileName)) throw new ArgumentException("文件名不能为 null 或空白", nameof(fileName));
         if (fileSize < 0) throw new ArgumentOutOfRangeException(nameof(fileSize), "文件大小不能为负数");
         ArgumentNullException.ThrowIfNull(fileUri);
+        ArgumentNullException.ThrowIfNull(fileMd5);
 
         UserId = userId;
         FileName = fileName;
@@ -86,11 +87,6 @@ public class NotFile : Entity, IAggregateRoot
             fileDescription ?? this.FileDescription, this.FileIdentity, this.FileMd5));
     }
 
-    public void SetFileMd5(string fileMd5)
-    {
-        FileMd5 = fileMd5;
-    }
-
     public bool IsFileEqualMd5(string fileMd5)
     {
         return fileMd5 == FileMd5;
@@ -103,11 +99,6 @@ public class NotFile : Entity, IAggregateRoot
 
         FileTags.Add(tag);
         UpdateTime = DateTimeOffset.UtcNow;
-    }
-
-    public bool IsEquesFile(string fileMd5)
-    {
-        return fileMd5 == FileMd5;
     }
 
     public void RemoveTag(string tag)
@@ -147,7 +138,6 @@ public class NotFile : Entity, IAggregateRoot
         private string _fileName = null!;
         private long _fileSize;
         private HashSet<string> _fileTags = [];
-        private FileType _fileType;
         private Uri _fileUri = null!;
         private Guid _userId;
 
@@ -172,12 +162,6 @@ public class NotFile : Entity, IAggregateRoot
         public NotFileBuilder WithFileDescription(string fileDescription)
         {
             _fileDescription = fileDescription;
-            return this;
-        }
-
-        public NotFileBuilder WithFileType(FileType fileType)
-        {
-            _fileType = fileType;
             return this;
         }
 

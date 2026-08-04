@@ -1,7 +1,8 @@
-namespace FileDev.Web.API.Application.Command;
-
 using FileDev.Domain.Entities;
 using FileDev.Domain.IServices;
+using FileDev.Web.API.APIs;
+
+namespace FileDev.Web.API.Application.Command;
 
 public class MergeChunksCommandHandler(
     INotFileStorageService storageService,
@@ -14,6 +15,11 @@ public class MergeChunksCommandHandler(
 {
     public async Task<NotFile> Handler(MergeChunksCommand request, CancellationToken cancellationToken)
     {
+        if (string.IsNullOrWhiteSpace(request.FileKey))
+            throw new ArgumentException("FileKey不能为空");
+        if (request.UserId == Guid.Empty)
+            throw new ArgumentException("用户ID不能为空");
+
         var record = await chunkManager.GetUploadStatusAsync(request.FileKey, cancellationToken);
         if (record == null)
             throw new InvalidOperationException($"未找到上传任务: {request.FileKey}");
@@ -22,13 +28,14 @@ public class MergeChunksCommandHandler(
         if (record.UserId != request.UserId)
             throw new UnauthorizedAccessException("无权合并此上传任务");
 
-        // S-09：合并前配额检查
+        // Major：合并前先校验分片完整性，避免在缺片情况下做无谓的配额检查
+        if (!await chunkManager.AreAllChunksUploadedAsync(request.FileKey, cancellationToken))
+            throw new InvalidOperationException($"分片未全部上传完毕: {request.FileKey}");
+
+        // S-09：合并前配额检查（校验时机后移至完整性校验之后）
         var used = await notFileRepository.GetTotalFileSizeByUserIdAsync(request.UserId);
         if (used + record.TotalSize > configOptions.Value.UserStorageQuota)
             throw new InvalidOperationException("用户存储配额不足");
-
-        if (!await chunkManager.AreAllChunksUploadedAsync(request.FileKey, cancellationToken))
-            throw new InvalidOperationException($"分片未全部上传完毕: {request.FileKey}");
 
         // 合并分片
         var mergeResult = await storageService.MergeChunksAsync(
@@ -41,9 +48,8 @@ public class MergeChunksCommandHandler(
         await chunkManager.MarkMergedAsync(request.FileKey, cancellationToken);
 
         // 创建文件实体记录：fileKey 即 {userId:N}/{guid:N}{ext}，
-        // 物理路径与下载 URI（/files/{fileKey}）一一对应，上传后可按 URI 下载
-        var relativePath = request.FileKey;
-        var fileUri = new Uri($"/files/{relativePath}", UriKind.Relative);
+        // 物理路径与下载 URI（/files/{fileKey}）一一对应；路径拼接统一收敛至 FileApiHelpers
+        var fileUri = FileApiHelpers.BuildFileUri(request.FileKey);
 
         await notFileService.CreateFileAsync(
             record.UserId, record.FileName, record.FileTags,
@@ -54,9 +60,9 @@ public class MergeChunksCommandHandler(
         logger.LogInformation("[ChunkMerge] 文件合并完成: FileKey={FileKey}, FileName={FileName}",
             request.FileKey, record.FileName);
 
-        // 返回 NotFile (需要通过 repository 查询)
-        // 通过 notFileService 创建后无法直接返回 entity,
-        // 返回一个简化的 NotFile 标记
+        // Major：返回的内存 NotFile 实体的 FileId 与持久化记录不同（NotFileId 在实体构造时新生成）。
+        // 调用方（HTTP MergeChunksAsync）仅消费 FileName/FileUri/FileMd5，不需要真实 FileId；
+        // gRPC MergeChunks 自行反查 savedFile.FileId 返回真实值。
         return new NotFile(
             record.UserId, record.FileName, record.FileTags,
             record.FileDescription ?? string.Empty,

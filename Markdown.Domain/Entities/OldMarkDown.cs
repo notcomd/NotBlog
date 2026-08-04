@@ -23,9 +23,9 @@ public class OldMarkDown : Entity
     public Guid UserGuid { get; private set; }
 
     /// <summary>
-    ///     历史版本的权限状态
+    ///     历史版本的权限类型
     /// </summary>
-    public MarkDownAuth Status { get; private set; }
+    public MarkDownAuth AuthType { get; private set; }
 
     /// <summary>
     ///     历史版本文档内容
@@ -88,7 +88,7 @@ public class OldMarkDown : Entity
     {
         MarkDownGuid = markDownGuid;
         UserGuid = userGuid;
-        Status = authType;
+        AuthType = authType;
         OldMarkDownContent = content ?? throw new ArgumentNullException(nameof(content));
         OldMarkDownHash = hash ?? throw new ArgumentNullException(nameof(hash));
     }
@@ -98,7 +98,7 @@ public class OldMarkDown : Entity
     {
         OldMarkDownContent = content ?? throw new ArgumentNullException(nameof(content));
         OldMarkDownHash = hash ?? throw new ArgumentNullException(nameof(hash));
-        Status = authType;
+        AuthType = authType;
         UpdateAt = DateTimeOffset.UtcNow;
     }
 

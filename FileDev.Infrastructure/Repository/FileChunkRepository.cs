@@ -16,9 +16,16 @@ public class FileChunkRepository : IFileChunkRepository
 
     public IUnitOfWork UnitOfWork => _context;
 
+    /// <summary>
+    /// 使用 AsNoTracking 读取：FileChunkManager.GetUploadStatusAsync 会修改返回的实体
+    /// （合并 Redis 状态），AsNoTracking 避免修改被跟踪实体导致意外保存。
+    /// 写路径（MarkChunkUploadedAsync / MarkMergedAsync / CancelUploadAsync）通过
+    /// UpdateAsync 调用 Update(record) 显式附加实体，AsNoTracking 不影响写操作。
+    /// </summary>
     public async Task<FileChunkRecord?> GetByFileKeyAsync(string fileKey, CancellationToken ct = default)
     {
         return await _context.Set<FileChunkRecord>()
+            .AsNoTracking()
             .FirstOrDefaultAsync(r => r.FileKey == fileKey, ct)
             .ConfigureAwait(false);
     }
@@ -28,10 +35,10 @@ public class FileChunkRepository : IFileChunkRepository
         await _context.Set<FileChunkRecord>().AddAsync(record, ct).ConfigureAwait(false);
     }
 
-    public async Task UpdateAsync(FileChunkRecord record, CancellationToken ct = default)
+    public Task UpdateAsync(FileChunkRecord record, CancellationToken ct = default)
     {
         _context.Set<FileChunkRecord>().Update(record);
-        await Task.CompletedTask;
+        return Task.CompletedTask;
     }
 
     public async Task DeleteAsync(string fileKey, CancellationToken ct = default)
@@ -45,6 +52,7 @@ public class FileChunkRepository : IFileChunkRepository
         CancellationToken ct = default)
     {
         return await _context.Set<FileChunkRecord>()
+            .AsNoTracking()
             .Where(r => r.Status != ChunkUploadStatus.Merged &&
                         r.Status != ChunkUploadStatus.Cancelled &&
                         r.CreatedAt < threshold)

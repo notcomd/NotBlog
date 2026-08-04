@@ -1,4 +1,5 @@
-using FileDev.Domain.Entities;
+﻿using FileDev.Domain.Entities;
+using FileDev.Domain.Exception;
 using FileDev.Domain.IRepository;
 using FileDev.Domain.IServices;
 using Microsoft.Extensions.Logging;
@@ -15,7 +16,6 @@ public class NotFileService(INotFileRepository notFileRepository, ILogger<INotFi
             .WithFileName(fileName)
             .WithFileTags(fileTags ?? [])
             .WithFileDescription(fileDescription ?? string.Empty)
-            .WithFileType(fileType)
             .WithFileSize(fileSize)
             .WithFileUri(fileUri)
             .WithFileMd5(fileMd5)
@@ -36,7 +36,8 @@ public class NotFileService(INotFileRepository notFileRepository, ILogger<INotFi
         var fileData = await notFileRepository.GetFileByIdAsync(fileId);
         if (fileData is { IsDeleted: true })
         {
-            logger.LogError("File not found {FileId}", fileId);
+            // 可预期的业务性失败（文件已被删除），用 Warning 而非 Error
+            logger.LogWarning("File not found {FileId}", fileId);
             return null;
         }
 
@@ -50,8 +51,9 @@ public class NotFileService(INotFileRepository notFileRepository, ILogger<INotFi
         var file = await GetFileByIdAsync(fileId);
         if (file is null)
         {
-            logger.LogError("File not found {FileId}", fileId);
-            return;
+            // 不再静默吞错：文件不存在属于可预期业务性失败，记录警告并抛异常交由上层统一处理
+            logger.LogWarning("File not found {FileId}", fileId);
+            throw new NotFileException($"文件不存在: {fileId}");
         }
 
         file.ChangeFileData(fileName, fileTags, fileDescription, fileIdentity, fileMd5);
@@ -66,15 +68,17 @@ public class NotFileService(INotFileRepository notFileRepository, ILogger<INotFi
         var file = await GetFileByIdAsync(fileId);
         if (file is null)
         {
-            logger.LogError("File not found {FileId}", fileId);
-            return;
+            // 不再静默吞错：文件不存在属于可预期业务性失败，记录警告并抛异常交由上层统一处理
+            logger.LogWarning("File not found {FileId}", fileId);
+            throw new NotFileException($"文件不存在: {fileId}");
         }
 
         if (file.UserId != userId)
         {
-            logger.LogError("User not authorized to delete file {FileId}",
+            // 越权删除属于业务性拒绝，用 Warning 级别记录，并抛异常交由上层统一处理
+            logger.LogWarning("User not authorized to delete file {FileId}",
                           fileId);
-            return;
+            throw new NotFileException($"无权删除文件: {fileId}");
         }
 
         file.SoftDelete();

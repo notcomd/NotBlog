@@ -65,7 +65,9 @@ public static class ServiceCollectionExtensions
     private static void RegisterServices(IServiceCollection services)
     {
         services.AddScoped<ICurrentUserService, CurrentUserService>();
+        // CQRS：连接管理按职责拆分注册——查询侧（IConnectionManager）与命令侧（IConnectionCommandService）指向同一实现
         services.AddScoped<IConnectionManager, RedisConnectionManager>();
+        services.AddScoped<IConnectionCommandService, RedisConnectionManager>();
 
 
         services.AddScoped<ISensitiveWordFilter, DefaultSensitiveWordFilter>();

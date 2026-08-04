@@ -20,6 +20,8 @@ public class MarkDownDbContext(DbContextOptions<MarkDownDbContext> options, INot
 
     public DbSet<ClientRequest> ClientRequests { get; set; }
 
+    public DbSet<MarkReviewLike> MarkReviewLikes { get; set; }
+
 
     /// <summary>
     ///     保存更改并分发领域事件
@@ -56,6 +58,18 @@ public class MarkDownDbContext(DbContextOptions<MarkDownDbContext> options, INot
             entity.ToTable("ClientRequest");
             entity.HasKey(e => e.ClientRequestId);
             entity.Property(e => e.ClientRequestName).HasMaxLength(256).IsRequired();
+        });
+
+        // MarkReviewLike 评论点赞记录表配置（唯一约束实现点赞去重）
+        modelBuilder.Entity<MarkReviewLike>(entity =>
+        {
+            entity.ToTable("MarkReviewLike");
+            entity.Property(x => x.Id).UseHiLo("MarkReviewLikeGuid");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.MarkReviewGuid).IsRequired();
+            entity.Property(x => x.UserId).IsRequired();
+            entity.HasIndex(x => new { x.MarkReviewGuid, x.UserId }).IsUnique();
+            entity.HasIndex(x => x.MarkReviewGuid);
         });
     }
 

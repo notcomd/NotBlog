@@ -30,23 +30,9 @@ public class CreateNotFileCommand(Guid userGuid,
 
     public long FileSize { get; set; } = fileSize;
 
-    public override bool Equals(object? obj)
-    {
-        return base.Equals(obj);
-    }
-
-    public override int GetHashCode()
-    {
-        return base.GetHashCode();
-    }
-
-    public override string? ToString()
-    {
-        return base.ToString();
-    }
-
+    // Major：删除原 Equals/GetHashCode/ToString 仅调用 base 的无意义重写
     private string GetDebuggerDisplay()
     {
-        return ToString() ?? string.Empty;
+        return $"{nameof(CreateNotFileCommand)}: UserGuid={UserGuid}, FileName={FileName}";
     }
 }

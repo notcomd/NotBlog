@@ -14,7 +14,7 @@ namespace FileDev.Web.API.Background;
 /// </summary>
 public class ChunkCleanupBackgroundService(
     IServiceScopeFactory scopeFactory,
-    IOptionsSnapshot<NotFileStorageOptions> options,
+    IOptionsMonitor<NotFileStorageOptions> options,
     ILogger<ChunkCleanupBackgroundService> logger) : BackgroundService
 {
     /// <summary>清理周期：1 小时</summary>
@@ -44,7 +44,7 @@ public class ChunkCleanupBackgroundService(
 
     private async Task CleanupExpiredChunksAsync(CancellationToken ct)
     {
-        var threshold = DateTimeOffset.UtcNow.AddHours(-options.Value.ChunkExpirationHours);
+        var threshold = DateTimeOffset.UtcNow.AddHours(-options.CurrentValue.ChunkExpirationHours);
 
         // BackgroundService 为单例，仓储为 Scoped，需通过作用域工厂解析
         using var scope = scopeFactory.CreateScope();

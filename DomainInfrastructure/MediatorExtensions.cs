@@ -13,8 +13,8 @@ namespace DomainInfrastructure;
 public static class MediatorExtensions
 {
     /// <summary>
-    /// 缓存实体类型的 DomainEventbus 属性信息和 ClearDomainEvents 方法信息，避免重复反射
-    /// 键：实体类型；值：(DomainEventbus 属性, ClearDomainEvents 方法)
+    /// 缓存实体类型的 DomainEventBus 属性信息和 ClearDomainEvents 方法信息，避免重复反射
+    /// 键：实体类型；值：(DomainEventBus 属性, ClearDomainEvents 方法)
     /// </summary>
     private static readonly ConcurrentDictionary<Type, (PropertyInfo? Property, MethodInfo? Method)>
         _entityMetadataCache = new();
@@ -117,7 +117,7 @@ public static class MediatorExtensions
     }
 
     /// <summary>
-    /// 通过反射获取实体类型的 DomainEventbus 属性和 ClearDomainEvents 方法，
+    /// 通过反射获取实体类型的 DomainEventBus 属性和 ClearDomainEvents 方法，
     /// 结果使用 ConcurrentDictionary 缓存以提升性能。
     /// </summary>
     private static (PropertyInfo? Property, MethodInfo? Method) GetEntityMetadata(object entity)
@@ -125,13 +125,13 @@ public static class MediatorExtensions
         var type = entity.GetType();
         return _entityMetadataCache.GetOrAdd(type, t =>
         {
-            const string propertyName = "DomainEventbus";
+            const string propertyName = "DomainEventBus";
             const string methodName = "ClearDomainEvents";
 
             var property = t.GetProperty(propertyName,
-                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase);
             var method = t.GetMethod(methodName,
-                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase);
 
             return (property, method);
         });

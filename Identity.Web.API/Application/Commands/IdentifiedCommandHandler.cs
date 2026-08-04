@@ -1,4 +1,4 @@
-﻿using Identity.Infrastructure.Idempotent;
+using Identity.Infrastructure.Idempotent;
 
 namespace Identity.Web.API.Application.Commands;
 
@@ -25,7 +25,13 @@ public abstract class IdentifiedCommandHandler<T, R>(
             return CreateResultForDuplicateRequest();
         }
 
-        await _requestManagement.CreateRequestForCommandAsync<T>(request.Id);
+        // 创建幂等记录：并发下相同 request 仅一个成功，其余返回 false（视为重复）
+        var created = await _requestManagement.CreateRequestForCommandAsync<T>(request.Id);
+        if (!created)
+        {
+            return CreateResultForDuplicateRequest();
+        }
+
         try
         {
             var command = request.Command;

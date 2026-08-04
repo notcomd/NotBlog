@@ -1,6 +1,7 @@
 using Message.Domain.Enums;
 using Message.Domain.Events;
 using Message.Domain.SeedWork;
+using Message.Domain.ValueObjects.Tweet;
 
 namespace Message.Domain.Entities.Tweet;
 

@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Identity.Web.API;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,12 +9,24 @@ builder.AddCacheMemory("Redis");
 
 builder.AddRabbitMQClient("EventBus");
 
+// ═══ NotEmail：Outlook OAuth 2.0 发送验证码 ═══
+// Outlook.com 已禁用 SMTP 密码认证，必须使用 OAuth 2.0（MSAL 设备代码流）
+var notEmailCfg = builder.Configuration.GetSection("NotEmail");
+var outlookTokenService = new OutlookTokenService(
+    string.IsNullOrWhiteSpace(notEmailCfg["ClientId"])
+        ? throw new InvalidOperationException(
+            "未配置 Outlook OAuth 2.0 ClientId：请在 appsettings.json 的 NotEmail:ClientId 填写 Azure 应用 ID。")
+        : notEmailCfg["ClientId"]!,
+    notEmailCfg["TenantId"] ?? "consumers",
+    string.IsNullOrWhiteSpace(notEmailCfg["CachePath"]) ? null : notEmailCfg["CachePath"]);
+builder.Services.AddSingleton(outlookTokenService);
+
 builder.Services.AddNotEmail(opt =>
 {
-    builder.Configuration.GetSection("NotEmail").Bind(opt);
-    // 凭据外置（S-01）：SMTP 密码从环境变量读取
-    if (string.IsNullOrEmpty(opt.Password))
-        opt.Password = Environment.GetEnvironmentVariable("SMTP_PASSWORD");
+    notEmailCfg.Bind(opt);
+    opt.UseOAuth2 = true;
+    // OAuth 2.0 Access Token 获取/刷新回调（首次运行需在浏览器授权一次）
+    opt.AccessTokenCallback = async ct => await outlookTokenService.GetAccessTokenAsync(ct);
 });
 
 
@@ -141,23 +154,28 @@ builder.Services.PostConfigure<OAuthOptions>(opt =>
     }
 });
 
-// 注册 OAuth 服务
-// 注册 Github 认证服务并配置弹性策略
-builder.Services.AddHttpClient<GithubAuthService>()
-    .ConfigureHttpClient(client => { client.Timeout = TimeSpan.FromMinutes(2); })
-    .AddResilienceHandler("github-resilience", bu =>
+// Microsoft OAuth：ClientId 缺省复用 NotEmail 的 Outlook 应用（公共客户端 + PKCE）；
+// ClientSecret 可留空（走公共客户端 PKCE），也可通过环境变量 MICROSOFT_CLIENT_SECRET 提供（走机密客户端）。
+builder.Services.PostConfigure<OAuthOptions>(opt =>
+{
+    var microsoft = opt.MicrosoftOptions;
+    if (!microsoft.Enable)
+        return;
+
+    if (string.IsNullOrWhiteSpace(microsoft.ClientId))
     {
-        bu.AddTimeout(TimeSpan.FromMinutes(2));
-        bu.AddRetry(new HttpRetryStrategyOptions
-        {
-            MaxRetryAttempts = 3,
-            BackoffType = DelayBackoffType.Exponential
-        });
-    });
+        microsoft.ClientId = notEmailCfg["ClientId"]
+            ?? throw new InvalidOperationException(
+                "Microsoft OAuth 未配置 ClientId：请在 OAuthOptions:MicrosoftOptions:ClientId 或 NotEmail:ClientId 中设置。");
+    }
 
+    if (string.IsNullOrWhiteSpace(microsoft.ClientSecret))
+        microsoft.ClientSecret = Environment.GetEnvironmentVariable("MICROSOFT_CLIENT_SECRET") ?? string.Empty;
+});
 
-// 注册 Github 认证 DI 聚合
-builder.Services.AddScoped<GithubAuthDI>();
+// 注册 OAuth 服务
+// 注：GitHub 端点已统一到 /api/identity/auth/oauth/{provider}（OAuthApis），
+// OAuthService 内部自行实现 GitHub 用户获取（GetGitHubUserInfoAsync）。
 
 var app = builder.Build();
 
@@ -180,14 +198,28 @@ app.MapGroup("api/identity/permission").MapPermissionApi();
 app.MapGroup("api/identity/rolegroup").MapRoleGroupApi();
 // 角色管理端点
 app.MapGroup("api/identity/role").MapRoleApi();
-// 注册 Github 认证 API
-app.MapGroup("api/identity/git").GithubAuthApis();
-// 注册 OAuth 端点
+// 注册 OAuth 端点（统一支持 google / github / microsoft 登录与回调）
 app.MapGroup("api/identity/auth").MapOAuthEndpoints();
+// 邮件验证码 RESTful 端点（公共访问：发送验证码 + 确认验证结果）
+app.MapGroup("api/identity/ready").MapEmailVerificationApi();
 //管理端点
 app.MapGroup("api/identity/manger").MapUserManagerApi();
 //头像上传端点
 app.MapGroup("api/identity").MapAvatarApi();
+
+// ═══ NotEmail 管理端点：无控制台环境下获取 Outlook OAuth 授权链接 ═══
+// 调用后返回授权 URL 与代码，管理员在任意浏览器完成授权即可（需管理员权限）
+app.MapGet("api/email/authorize", async (OutlookTokenService svc) =>
+{
+    var result = await svc.BeginDeviceCodeAsync();
+    return Results.Ok(new
+    {
+        verification_url = result.VerificationUrl,
+        user_code = result.UserCode,
+        expires_in_seconds = (int)(result.ExpiresOn - DateTimeOffset.UtcNow).TotalSeconds,
+        message = result.Message
+    });
+}).RequireAuthorization("AdminOnly");
 
 app.MapControllers();
 

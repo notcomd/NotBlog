@@ -3,16 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace FileDev.Web.API.Application.IntegrationEvents.EventHanding;
 
-[EventBusName("FileCreatedIntegrationEvent")]
-public class FileCreatedIntegrationEventHandler(ILogger<FileCreatedIntegrationEventHandler> logger)
-    : JsonIntegrationEventHandler<FileCreatedEventData>
-{
-    public override async Task Handler(FileCreatedEventData eventData)
-    {
-        logger.LogInformation("[FileCreatedIntegrationEventHandler] 文件创建事件已接收: FileName={FileName}, UserId={UserId}",
-            eventData.FileName, eventData.UserId);
-        await Task.CompletedTask;
-    }
-}
-
+/// <summary>
+/// 文件创建集成事件载荷。生产端由文件元数据持久化触发，消费端仅做日志记录。
+/// </summary>
 public record FileCreatedEventData(Guid FileId, Guid UserId, string FileName, long FileSize, string FileType) : IntegrationEvent;

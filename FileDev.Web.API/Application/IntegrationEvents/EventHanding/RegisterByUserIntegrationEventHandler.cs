@@ -7,8 +7,7 @@ namespace FileDev.Web.API.Application.IntegrationEvents.EventHanding;
 /// 消费 Identity 服务发布的用户注册事件。
 /// 路由键: RegisterByUserIntegrationEvent
 /// </summary>
-
-public class RegisterByUserIntegrationEventHandler(ILogger<RegisterByUserIntegrationEventHandler> logger,                                                   
+public class RegisterByUserIntegrationEventHandler(ILogger<RegisterByUserIntegrationEventHandler> logger,
                                                    INotMediator notMediator)
     : IIntegrationEventHandler<RegisterByUserIntegrationEvent>
 {
@@ -33,13 +32,4 @@ public class RegisterByUserIntegrationEventHandler(ILogger<RegisterByUserIntegra
             "[Integration] 创建默认文件组成功: UserId={UserId}, RegisterTime={RegisterTime}",
             @event.UserId, @event.RegisterTime);
     }
-}
-
-/// <summary>
-/// 用户注册集成事件 — 与 Identity 服务发布的 JSON 结构一致。
-/// 放在消费端项目中避免对 Identity 项目的编译依赖。
-/// </summary>
-public record RegisterByUserIntegrationEvent(Guid UserId) : IntegrationEvent
-{
-    public DateTime RegisterTime { get; init; }
 }

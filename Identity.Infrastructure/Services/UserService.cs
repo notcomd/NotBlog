@@ -1,5 +1,6 @@
-﻿using CacheMemory.Core;
+using CacheMemory.Core;
 using Identity.Domain.Events;
+using Identity.Domain.ICache;
 
 namespace Identity.Infrastructure.Services;
 
@@ -10,11 +11,12 @@ public class UserService(
     IUserRoleRepository userRoleRepository,
     IJwtTokenService jwtTokenServer,
     ICacheMemory<TokenCacheEntry> cacheMemory,
-    ILogger<IUserRoleRepository> loggerUserRole)
+    IIdentityCacheService identityCacheService)
     : IUserService
 {
     private const string AccessTokenKeyPrefix = "auth:token";
     private const string RefreshTokenKeyPrefix = "auth:refresh";
+    private const string EmailCodeKeyPrefix = "Login_";
 
     // ── 邮箱密码登录 ──
 
@@ -26,6 +28,15 @@ public class UserService(
         // S-13：用户不存在与密码错误返回同一结果，避免账号枚举
         if (userData is null)
             return null;
+
+        // 邮箱登录验证码：传了就校验（一次性消费），未传则放行纯密码登录
+        if (!string.IsNullOrWhiteSpace(code))
+        {
+            var cached = await identityCacheService.GetStringAsync($"{EmailCodeKeyPrefix}{email}", default);
+            if (string.IsNullOrEmpty(cached) || !string.Equals(cached, code, StringComparison.Ordinal))
+                return null;
+            await identityCacheService.RemoveAsync($"{EmailCodeKeyPrefix}{email}", default);
+        }
 
         return await LogInByCheckPasswordCoreAsync(userData, password);
     }
@@ -45,36 +56,8 @@ public class UserService(
     }
 
     // ── 注册 ──
-
-    /// <summary>
-    /// 创建用户
-    /// </summary>
-    public async Task<bool> RegisterByCreateUserAsync(string email, string password, string code)
-    {
-        var userData = await userRepository.FindOneByUserAsync(email);
-        if (userData is not null)
-        {
-            loggerUser.LogError("[{DateTime}] 用户 {Email} 已存在", DateTime.UtcNow, email);
-            return false;
-        }
-
-        Roles? userRole = null;
-        if (!await userRoleRepository.IsUserRoleAsync("User"))
-            userRole = Roles.RoleFactory.CreateUserRole();
-        if (userRole is null)
-        {
-            loggerUserRole.LogError("[{DateTime}] 创建用户角色失败", DateTime.UtcNow);
-            return false;
-        }
-
-        var newUser = await User.CreateByEmailUser(
-            userRole.RoleGuid, email,
-            password,
-            null, null);
-        await userRepository.AddOneByUserAsync(newUser);
-
-        return true;
-    }
+    // 注：邮箱注册走 RegisterByUserCommandHandler（命令链路，含验证码校验+事件发布），
+    // 此前残留的 RegisterByCreateUserAsync 已删除（死代码且未 SaveChanges）。
 
     // ── 用户信息查询 ──
 

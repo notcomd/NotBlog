@@ -7,6 +7,7 @@ global using Message.Domain.Events;
 global using Message.Domain.IRepository;
 global using Message.Domain.IServices;
 global using Message.Domain.SeedWork;
+global using Message.Domain.ValueObjects.Tweet;
 global using Message.Web.API.Dto;
 global using Message.Web.API.Dto.Request;
 global using Message.Web.API.Dto.Response;

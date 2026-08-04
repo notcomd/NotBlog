@@ -32,6 +32,7 @@ public class MessageHub : Hub<IMessageClient>
     private readonly IChatSessionRepository _sessionRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IConnectionManager _connectionManager;
+    private readonly IConnectionCommandService _connectionCommandService;
     private readonly MessageDeliveryService _deliveryService;
     private readonly IFileStorageGrpcClient _fileStorageGrpcClient;
     private readonly ICurrentUserService _currentUserService;
@@ -46,6 +47,7 @@ public class MessageHub : Hub<IMessageClient>
         IChatSessionRepository sessionRepository,
         IUnitOfWork unitOfWork,
         IConnectionManager connectionManager,
+        IConnectionCommandService connectionCommandService,
         MessageDeliveryService deliveryService,
         IFileStorageGrpcClient fileStorageGrpcClient,
         ICurrentUserService currentUserService,
@@ -59,6 +61,7 @@ public class MessageHub : Hub<IMessageClient>
         _sessionRepository = sessionRepository;
         _unitOfWork = unitOfWork;
         _connectionManager = connectionManager;
+        _connectionCommandService = connectionCommandService;
         _deliveryService = deliveryService;
         _fileStorageGrpcClient = fileStorageGrpcClient;
         _currentUserService = currentUserService;
@@ -85,8 +88,8 @@ public class MessageHub : Hub<IMessageClient>
         {
             var connectionId = Context.ConnectionId;
 
-            // 登记连接（Redis 连接管理器）
-            await _connectionManager.AddConnectionAsync(userId, connectionId);
+            // 登记连接（命令侧：Redis 连接命令服务）
+            await _connectionCommandService.AddConnectionAsync(userId, connectionId);
             // Q-05：在线状态统一经 UserStatusCacheService 写入（与 RedisConnectionManager 同一套 Key：message:user:status:{userId} + message:online:users）
             await _userStatusCache.SetUserOnlineAsync(userId);
 
@@ -124,7 +127,7 @@ public class MessageHub : Hub<IMessageClient>
         {
             var connectionId = Context.ConnectionId;
 
-            await _connectionManager.RemoveConnectionAsync(userId, connectionId);
+            await _connectionCommandService.RemoveConnectionAsync(userId, connectionId);
 
             // 仅当该用户没有任何剩余连接时才置为离线（Q-05：经 UserStatusCacheService，唯一在线状态入口）
             var hasOtherConnections = await _connectionManager.HasOtherConnectionsAsync(userId);

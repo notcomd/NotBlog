@@ -213,6 +213,18 @@ public sealed class RabbitMqEventBus : IEventBus, IHostedService, IAsyncDisposab
                 {
                     await StartConsumerAsync(cancellationToken).ConfigureAwait(false);
                     attempt = 0;
+
+                    // 消费者已建立：阻塞等待消费者通道失效（断线/通道关闭）后再重建。
+                    // 若此处立即进入下一轮循环，会在成功路径上不断创建新通道并丢弃旧通道，
+                    // 导致连接通道数暴涨至服务端上限（ChannelAllocationException）。
+                    while (!cancellationToken.IsCancellationRequested)
+                    {
+                        var channel = _consumerChannel;
+                        if (channel is null || !channel.IsOpen || !_connection.IsConnected)
+                            break;
+                        await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken)
+                            .ConfigureAwait(false);
+                    }
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {
@@ -242,6 +254,20 @@ public sealed class RabbitMqEventBus : IEventBus, IHostedService, IAsyncDisposab
     private async Task StartConsumerAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("[Evenbus] 正在启动 RabbitMQ 消费者...");
+
+        // S-19：释放上一轮重试遗留的消费者通道，防止 channel 泄漏耗尽连接上限
+        if (_consumerChannel is not null)
+        {
+            try
+            {
+                await _consumerChannel.DisposeAsync().ConfigureAwait(false);
+            }
+            catch
+            {
+                // 通道可能已释放，忽略
+            }
+            _consumerChannel = null;
+        }
 
         if (!_connection.IsConnected)
             await _connection.TryConnectAsync(cancellationToken).ConfigureAwait(false);
@@ -305,17 +331,20 @@ public sealed class RabbitMqEventBus : IEventBus, IHostedService, IAsyncDisposab
             .ConfigureAwait(false);
 
         // S-19：断线重建——连接关闭时销毁消费者通道，触发外层重试循环重新建立
-        _consumerChannel.ChannelShutdownAsync += (_, _) =>
+        // 注意：闭包捕获局部变量 channel，避免旧通道的关闭回调误杀重试期间新建的通道
+        var consumerChannel = _consumerChannel;
+        consumerChannel.ChannelShutdownAsync += (_, _) =>
         {
             try
             {
-                _consumerChannel?.DisposeAsync().AsTask().GetAwaiter().GetResult();
+                consumerChannel.DisposeAsync().AsTask().GetAwaiter().GetResult();
             }
             catch
             {
                 // 通道可能已释放，忽略
             }
-            _consumerChannel = null;
+            if (ReferenceEquals(_consumerChannel, consumerChannel))
+                _consumerChannel = null;
             return Task.CompletedTask;
         };
 

@@ -4,15 +4,15 @@ namespace Identity.Web.API.Application.Behaviors;
 
 public class TransactionBehavior<TRequest, TResponse>(
     ILogger<TransactionBehavior<TRequest, TResponse>> logger,
-    IdentityDbContext notFileDbContext)
+    IdentityDbContext identityDbContext)
     : IPipelineBehavior<TRequest, TResponse>
     where TRequest : IRequest<TResponse>
 {
     private readonly ILogger<TransactionBehavior<TRequest, TResponse>> _logger =
         logger ?? throw new ArgumentNullException(nameof(logger));
 
-    private readonly IdentityDbContext _notFileDbContext =
-        notFileDbContext ?? throw new ArgumentNullException(nameof(notFileDbContext));
+    private readonly IdentityDbContext _identityDbContext =
+        identityDbContext ?? throw new ArgumentNullException(nameof(identityDbContext));
 
 
     public async Task<TResponse> Handler(TRequest request, Func<Task<TResponse>> next,
@@ -22,15 +22,15 @@ public class TransactionBehavior<TRequest, TResponse>(
         var typeName = request.GetGenericTypeName();
         try
         {
-            if (_notFileDbContext.HasActiveTransaction)
+            if (_identityDbContext.HasActiveTransaction)
             {
                 return await next();
             }
 
-            var strategy = _notFileDbContext.Database.CreateExecutionStrategy();
+            var strategy = _identityDbContext.Database.CreateExecutionStrategy();
             await strategy.ExecuteAsync(async () =>
             {
-                await using var transaction = await _notFileDbContext.BeginTransactionAsync();
+                await using var transaction = await _identityDbContext.BeginTransactionAsync();
                 using (_logger.BeginScope(new List<KeyValuePair<string, object>>
                        {
                            new("TransactionId", transaction.TransactionId)
@@ -45,7 +45,7 @@ public class TransactionBehavior<TRequest, TResponse>(
                     _logger.LogInformation("Commit transaction {TransactionId} for {CommandName}",
                         transaction.TransactionId, typeName);
 
-                    await _notFileDbContext.CommitTransactionAsync(transaction);
+                    await _identityDbContext.CommitTransactionAsync(transaction);
                 }
             });
             return response!;

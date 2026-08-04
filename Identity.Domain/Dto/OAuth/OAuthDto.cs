@@ -26,15 +26,17 @@ public record OAuthLoginInitRequest(
 /// <summary>
 ///  登录响应
 /// </summary>
-/// <param name="AccessToken"></param>
-/// <param name="RefreshToken"></param>
-/// <param name="ExpiresAt"></param>
-/// <param name="UserInfo"></param>
+/// <param name="AccessToken">访问令牌</param>
+/// <param name="RefreshToken">刷新令牌（用于续期 AccessToken）</param>
+/// <param name="ExpiresAt">AccessToken 过期时间</param>
+/// <param name="UserInfo">用户信息</param>
+/// <param name="IsNewUser">是否为本次新建的用户（供 API 层发布注册集成事件）</param>
 public record OAuthLoginResponse(
     string AccessToken,
     string RefreshToken,
     DateTimeOffset ExpiresAt,
-    UserInfo UserInfo
+    UserInfo UserInfo,
+    bool IsNewUser = false
 );
 
 /// <summary>

@@ -6,7 +6,7 @@ namespace Markdown.Web.API.Application.Commands;
 ///  创建 Markdown 文档命令处理器
 /// </summary>
 public class CreateMarkdownCommandHandler(
-    MarkDownDbContext dbContext,
+    IMarkdownRepository markdownRepository,
     IEventBus eventBus) : NotMediator.IRequestHandler<CreateMarkdownCommand, bool>
 {
     public async Task<bool> Handler(CreateMarkdownCommand request, CancellationToken cancellationToken)
@@ -33,9 +33,9 @@ public class CreateMarkdownCommandHandler(
 
         var markdownEntity = builder.Build();
 
-        // 通过 UnitOfWork 写入
-        await dbContext.Markdowns.AddAsync(markdownEntity, cancellationToken);
-        await dbContext.SaveChangesAsync(cancellationToken);
+        // 通过聚合根仓储写入（不绕过仓储直接操作 DbContext）
+        await markdownRepository.AddAsync(markdownEntity);
+        await markdownRepository.UnitOfWork.SaveChangesAsync(cancellationToken);
 
         // 发布集成事件
         await eventBus.PublishAsync(new MarkdownCreatedEventData

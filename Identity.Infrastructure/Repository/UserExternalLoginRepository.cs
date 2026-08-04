@@ -1,4 +1,4 @@
-﻿namespace Identity.Infrastructure.Repository;
+namespace Identity.Infrastructure.Repository;
 
 public class UserExternalLoginRepository(IdentityDbContext dbContext) : IUserExternalLoginRepository
 {
@@ -39,10 +39,10 @@ public class UserExternalLoginRepository(IdentityDbContext dbContext) : IUserExt
         return await dbContext.UserExternalLogins.ToListAsync();
     }
 
-    public async Task<UserExternalLogin?> FindOneByUserIdAndProviderAsync(LoginProviderType provider,
-        string providerKey)
-    {
-        return await dbContext.UserExternalLogins
-            .FirstOrDefaultAsync(x => x.Provider == provider && x.ProviderKey == providerKey);
-    }
+    /// <summary>
+    /// 按 provider + providerKey 查找（与 <see cref="FindByProviderAsync"/> 等价，保留以兼容既有调用方）。
+    /// 新代码请直接使用 <see cref="FindByProviderAsync"/>。
+    /// </summary>
+    public Task<UserExternalLogin?> FindOneByUserIdAndProviderAsync(LoginProviderType provider, string providerKey)
+        => FindByProviderAsync(provider, providerKey);
 }

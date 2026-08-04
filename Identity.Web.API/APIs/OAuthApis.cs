@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Identity.Domain.Dto.OAuth;
+using Identity.Web.API.Application.IntegrationEvents.Events;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Identity.Web.API.APIs;
@@ -78,17 +79,37 @@ public static class OAuthApis
     private static async Task<IResult> HandleOAuthCallback(
         string provider,
         [FromBody] OAuthCallbackRequest request,
-        IOAuthService oauthService)
+        IOAuthService oauthService,
+        IEventBus eventBus,
+        ILoggerFactory loggerFactory)
     {
+        var logger = loggerFactory.CreateLogger("OAuthApis");
         try
         {
+            // S-11：state 必须透传，用于 CSRF 校验（GenerateAuthorizationUrlAsync 生成并存入 Redis）
             var response = await oauthService.HandleCallbackAsync(
                 provider,
                 request.Code,
-                request.RedirectUri
+                request.RedirectUri,
+                request.State
             );
 
+            // 与原 RegisterByGitHubCommand 链路一致：新用户注册后发布集成事件，下游服务消费
+            if (response.IsNewUser)
+            {
+                await eventBus.PublishAsync(
+                    new RegisterByUserIntegrationEvent(response.UserInfo.UserId));
+                logger.LogInformation(
+                    "OAuth 新用户注册，已发布集成事件：Provider={Provider}, UserId={UserId}",
+                    provider, response.UserInfo.UserId);
+            }
+
             return Results.Ok(response);
+        }
+        catch (InvalidOperationException ex)
+        {
+            // S-11：state 校验失败 / PKCE code_verifier 缺失等业务拒绝
+            return Results.BadRequest(new { error = ex.Message });
         }
         catch (HttpRequestException ex)
         {
@@ -100,6 +121,7 @@ public static class OAuthApis
         }
         catch (Exception ex)
         {
+            logger.LogError(ex, "OAuth 回调处理失败：Provider={Provider}", provider);
             return Results.Problem(
                 title: "Authentication Failed",
                 detail: ex.Message,

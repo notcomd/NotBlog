@@ -1,41 +1,35 @@
-﻿using Projects;
+﻿using Aspire.Hosting.ApplicationModel;
+using Projects;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
 // ═══════════════════════════════════════════════════════════════════
-// 基础设施资源（容器）
-// 说明（F-03）：统一为单一路径（容器资源 + AddProject + WithReference），
-// 不再区分 #if DEBUG / #else 双轨；各服务期望的连接串名称均按下方命名注入。
+// 基础设施资源（本机服务连接串）
+// 说明（本地模式）：当前网络环境无法从 Docker Hub/国内镜像源拉取大镜像，
+// 故改为连接本机已运行的 PostgreSQL(127.0.0.1:5432, postgres 免密) /
+// Redis(127.0.0.1:6379) / RabbitMQ(127.0.0.1:5672, guest/guest)。
+// 数据库（identity/notfile/message/video/markdownpostgres）已在本地建好；
+// 如需恢复容器模式，将下方替换回 AddPostgres/AddRedis/AddRabbitMQ 即可。
 // ═══════════════════════════════════════════════════════════════════
 
-// PostgreSQL：统一实例，按模块拆库；数据库名即各服务期望的连接串名称。
-// S-01 凭据外置：口令优先取环境变量 POSTGRES_PASSWORD；未设置时由 Aspire 自动生成（不硬编码）。
-// 注意：使用 WithDataVolume 时需固定 POSTGRES_PASSWORD，否则重启后数据卷口令会失配。
-var postgresPasswordValue = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD") ?? "notblog2026";
-var postgresUser = builder.AddParameter("postgres-user", "notblog");
-var postgresPassword = builder.AddParameter("postgres-password", postgresPasswordValue, secret: true);
-var postgres = builder.AddPostgres("PostgresSQL", userName: postgresUser, password: postgresPassword);
-if (!string.IsNullOrWhiteSpace(postgresPasswordValue))
-{
-    postgres = postgres.WithDataVolume();
-}
+// 注意：Aspire 13.4 中 AddConnectionString(name, string) 已不存在（该签名现被解析为
+// AddConnectionString(name, environmentVariableName)，会把字符串当作环境变量名），
+// 必须使用 AddConnectionString(name, ReferenceExpression.Create($"...")) 显式传值。
+// 本地 PostgreSQL 为 trust 免密认证，Password 为占位值，用于满足各服务 S-01 凭据外置校验。
 
-var identityDb = postgres.AddDatabase("IdentityPostgres");  // Identity.Web.API（RELEASE 读 ConnectionStrings:IdentityPostgres）
-var notfileDb  = postgres.AddDatabase("NotFilePostgres");   // FileDev.Web.API（经环境变量 DbContextConnect 注入）
-var messageDb  = postgres.AddDatabase("MessagePostgres");   // Message.Web.API（经 connectionName 映射为 "PostgresSQL"）
-var videoDb    = postgres.AddDatabase("VideoPostgres");     // Video.Web.API（AddNpgsql("VideoPostgres")）
-var markDb     = postgres.AddDatabase("MarkDownPostgres");  // Markdown.Web.API（AddNpgsql("MarkDownPostgres")）
+// PostgreSQL：本机实例，按模块拆库；数据库名即各服务期望的连接串名称（F-03 命名约定保持不变）。
+var identityDb = builder.AddConnectionString("IdentityPostgres", ReferenceExpression.Create($"Host=127.0.0.1;Port=5432;Database=identitypostgres;Username=postgres;Password=postgres"));  // Identity.Web.API（RELEASE 读 ConnectionStrings:IdentityPostgres）
+var notfileDb = builder.AddConnectionString("NotFilePostgres", ReferenceExpression.Create($"Host=127.0.0.1;Port=5432;Database=notfilepostgres;Username=postgres;Password=postgres"));    // FileDev.Web.API（经环境变量 DbContextConnect 注入）
+var messageDb = builder.AddConnectionString("MessagePostgres", ReferenceExpression.Create($"Host=127.0.0.1;Port=5432;Database=messagepostgres;Username=postgres;Password=postgres"));    // Message.Web.API（经 connectionName 映射为 "PostgresSQL"）
+var videoDb = builder.AddConnectionString("VideoPostgres", ReferenceExpression.Create($"Host=127.0.0.1;Port=5432;Database=videopostgres;Username=postgres;Password=postgres"));          // Video.Web.API（AddNpgsql("VideoPostgres")）
+var markDb = builder.AddConnectionString("MarkDownPostgres", ReferenceExpression.Create($"Host=127.0.0.1;Port=5432;Database=markdownpostgres;Username=postgres;Password=postgres"));     // Markdown.Web.API（AddNpgsql("MarkDownPostgres")）
 
-// Redis：单实例。不同模块期望的连接名不同（Identity/Message 用 "Redis"，Video/FileDev 用 "CacheMemory"），
+// Redis：本机实例。不同模块期望的连接名不同（Identity/Message 用 "Redis"，Video/FileDev 用 "CacheMemory"），
 // 通过 WithReference(connectionName:) 将同一实例按各自期望的名称注入。
-var redis = builder.AddRedis("Redis");
+var redis = builder.AddConnectionString("Redis", ReferenceExpression.Create($"127.0.0.1:6379"));
 
-// RabbitMQ：命名 EventBus，与各服务 AddRabbitMQClient("EventBus") 对齐。
-// 本地开发默认 guest/guest（RabbitMQ 官方默认），可用 RABBITMQ_USER / RABBITMQ_PASSWORD 覆盖（S-01）；
-// 固定宿主端口 5672 以兼容 FileDev 从 EventBus 配置节手动连接（appsettings 默认 127.0.0.1:5672）。
-var rabbitUser = builder.AddParameter("rabbit-user", Environment.GetEnvironmentVariable("RABBITMQ_USER") ?? "guest");
-var rabbitPassword = builder.AddParameter("rabbit-password", Environment.GetEnvironmentVariable("RABBITMQ_PASSWORD") ?? "guest", secret: true);
-var rabbitmq = builder.AddRabbitMQ("EventBus", userName: rabbitUser, password: rabbitPassword);
+// RabbitMQ：本机实例（guest/guest），命名 EventBus，与各服务 AddRabbitMQClient("EventBus") 对齐。
+var rabbitmq = builder.AddConnectionString("EventBus", ReferenceExpression.Create($"amqp://guest:guest@127.0.0.1:5672"));
 
 // ═══════════════════════════════════════════════════════════════════
 // 业务服务（项目）

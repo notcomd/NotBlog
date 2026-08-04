@@ -107,14 +107,14 @@ public interface IMarkdownRepository : IRepository<MarkDown>
     Task<MarkReview> AddChildReviewAsync(Guid markDownGuid, Guid parentReviewGuid, MarkReview childReview);
 
     /// <summary>
-    ///     评论点赞 +1（线程安全），返回最新点赞数（F-10.5）
+    ///     评论点赞 +1（同一用户对同一评论仅能点赞一次），返回最新点赞数（F-10.5）
     /// </summary>
-    Task<long> LikeReviewAsync(Guid reviewGuid);
+    Task<long> LikeReviewAsync(Guid reviewGuid, Guid userId);
 
     /// <summary>
-    ///     取消评论点赞 -1（不低于 0），返回最新点赞数（F-10.5）
+    ///     取消评论点赞 -1（不低于 0，未点赞时幂等返回当前计数），返回最新点赞数（F-10.5）
     /// </summary>
-    Task<long> RemoveLikeReviewAsync(Guid reviewGuid);
+    Task<long> RemoveLikeReviewAsync(Guid reviewGuid, Guid userId);
 
     /// <summary>
     ///     评论浏览量 +1（线程安全），返回最新浏览数（F-10.5）

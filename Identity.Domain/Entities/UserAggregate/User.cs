@@ -189,8 +189,9 @@ public class User : Entity, IAggregateRoot
         if (UserSafety.UserStatus == UserStatus.Locked)
             throw new InvalidOperationException("用户已被锁定，无法修改密码");
 
-        if (password.Length <= 8)
-            throw new ArgumentOutOfRangeException(nameof(password), "密码长度不能小于 8 位");
+        // 密码至少 8 位（< 8 拒绝；原 <= 8 会拒绝 8 位密码，与"至少 8 位"语义不符）
+        if (password.Length < 8)
+            throw new ArgumentException("密码长度不能小于 8 位", nameof(password));
 
         var salt = await HashH256Tool.GenerateSValueTask() ?? throw new ArgumentNullException("salt is null!");
         var saltStr = Convert.ToBase64String(salt);

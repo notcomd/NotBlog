@@ -13,10 +13,14 @@ public class LoggerBehavior<TRequest, TResponse>(ILogger<LoggerBehavior<TRequest
     public async Task<TResponse> Handler(TRequest request, Func<Task<TResponse>> next,
         CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Handling Command {CommandName} {@Command}:", request.GetGenericTypeName(), request);
+        // Major：原代码使用 {@Command} 序列化整个请求对象，会把 UploadChunkCommand.ChunkContent
+        // (byte[], 单分片最高 10MB) / 流式上传内容 / 文件元数据等敏感/大对象写入日志，
+        // 既泄漏敏感信息也严重拖慢日志性能。仅记录命令类型名（不序列化请求体）。
+        var typeName = request.GetGenericTypeName();
+        _logger.LogInformation("Handling Command {CommandName}", typeName);
         var response = await next();
-        _logger.LogInformation("d Command {CommandName}with response {@Response}",
-            request.GetGenericTypeName(), response);
+        // Major：响应同样可能携带文件内容/敏感字段，仅记录类型与完成事件
+        _logger.LogInformation("Handled Command {CommandName}", typeName);
         return response;
     }
 }

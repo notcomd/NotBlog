@@ -25,4 +25,10 @@ public class IdentityCacheService : IIdentityCacheService
         await _redisCacheService.StringSetAsync(key, value, ct: cancellationToken);
     }
 
+    /// <inheritdoc />
+    public async Task SetStringAsync(string key, string value, TimeSpan ttl, CancellationToken cancellationToken)
+    {
+        await _redisCacheService.StringSetAsync(key, value, ttl, cancellationToken);
+    }
+
 }

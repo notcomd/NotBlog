@@ -1,8 +1,9 @@
-﻿
+
 using Google.Protobuf;
 using Grpc.Core;
 
 using Notcomd.Token.JWT.Security;
+using FileDev.Web.API.APIs;
 using FileInfoProto = FileDev.Web.API.Grpc.FileInfo;
 using FileIdentityProto = FileDev.Web.API.Grpc.FileIdentity;
 using FileTypeProto = FileDev.Web.API.Grpc.FileType;
@@ -111,7 +112,7 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "获取文件信息失败 FileId={FileId}", request.FileId);
-            return new GetFileInfoResponse { Success = false, ErrorMessage = ex.Message };
+            return new GetFileInfoResponse { Success = false, ErrorMessage = "获取文件信息失败" };
         }
     }
 
@@ -126,10 +127,11 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
     public override async Task<ListUserFilesResponse> ListUserFiles(
         ListUserFilesRequest request, ServerCallContext context)
     {
+        // S-08：仅允许列出调用者自己的文件，忽略客户端传入的 UserId
+        Guid userId = Guid.Empty;
         try
         {
-            // S-08：仅允许列出调用者自己的文件，忽略客户端传入的 UserId
-            var userId = GetCallerId(context);
+            userId = GetCallerId(context);
 
             var files = await _notFileService.GetFilesByUserIdAsync(userId);
             var fileList = files.Where(f => !f.IsDeleted).ToList();
@@ -150,8 +152,9 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "列出用户文件失败 UserId={UserId}", request.UserId);
-            return new ListUserFilesResponse { Success = false, ErrorMessage = ex.Message };
+            // S-08：日志记录服务端解析的 callerId（request.UserId 是客户端传入，已被忽略）
+            _logger.LogError(ex, "列出用户文件失败 CallerId={CallerId}", userId);
+            return new ListUserFilesResponse { Success = false, ErrorMessage = "获取文件列表失败" };
         }
     }
 
@@ -183,7 +186,7 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "删除文件失败 FileId={FileId}", request.FileId);
-            return new DeleteFileResponse { Success = false, ErrorMessage = ex.Message };
+            return new DeleteFileResponse { Success = false, ErrorMessage = "删除文件失败" };
         }
     }
 
@@ -233,7 +236,7 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "更新文件信息失败 FileId={FileId}", request.FileId);
-            return new UpdateFileInfoResponse { Success = false, ErrorMessage = ex.Message };
+            return new UpdateFileInfoResponse { Success = false, ErrorMessage = "更新文件信息失败" };
         }
     }
 
@@ -243,7 +246,7 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
     /// <summary>
     /// 上传文件
     /// </summary>
-    /// <param name="request">包含用户ID、文件名、文件内容和预期MD5的请求</param>
+    /// <param name="request">包含用户ID、文件名、文件内容和预期文件哈希（SHA256）的请求</param>
     /// <param name="context">gRPC 上下文</param>
     /// <returns>包含上传结果的响应</returns>
     /// <exception cref="ArgumentException">如果用户ID无效</exception>
@@ -255,6 +258,10 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
         {
             // S-08：使用服务端解析的调用者 id，忽略客户端传入的 UserId
             var userId = GetCallerId(context);
+
+            // Critical：FileName 非空校验前置，避免 Path.GetExtension 抛 NPE
+            if (string.IsNullOrWhiteSpace(request.FileName))
+                return new UploadFileResponse { Success = false, ErrorMessage = "文件名不能为空" };
 
             var content = request.FileContent.ToByteArray();
             if (content.Length == 0)
@@ -276,49 +283,71 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
                 return new UploadFileResponse { Success = false, ErrorMessage = $"不支持的文件类型: {ext}" };
 
             // SHA256 校验（F-09.5：上传/查重统一使用 SHA256）
-            if (!string.IsNullOrEmpty(request.ExpectedMd5))
+            var expectedFileHash = request.ExpectedMd5;
+            if (!string.IsNullOrEmpty(expectedFileHash))
             {
                 var actualHash = HashHelper.ComputeHash(content);
-                if (!string.Equals(actualHash, request.ExpectedMd5, StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(actualHash, expectedFileHash, StringComparison.OrdinalIgnoreCase))
                     return new UploadFileResponse
                     {
                         Success = false,
-                        ErrorMessage = $"哈希校验失败，预期: {request.ExpectedMd5}，实际: {actualHash}"
+                        ErrorMessage = $"哈希校验失败，预期: {expectedFileHash}，实际: {actualHash}"
                     };
             }
 
-            var fileGuid = Guid.CreateVersion7();
-            var relativePath = $"{userId:N}/{fileGuid}{ext}";
+            // Major：路径拼接统一收敛至 FileApiHelpers（原 fileGuid 未使用，已删除）
+            var relativePath = FileApiHelpers.BuildFileKey(userId, ext);
 
             var storageRequest = new NotFileStorageRequest
             {
                 FileRelativePath = relativePath,
                 FileContent = content,
                 Overwrite = false,
-                ExpectedHash = request.ExpectedMd5
+                ExpectedHash = expectedFileHash
             };
 
             var storageResult = await _storageService.SaveAsync(storageRequest);
             if (!storageResult.Success)
                 return new UploadFileResponse { Success = false, ErrorMessage = storageResult.ErrorMessage };
 
-            var fileUri = new Uri($"/files/{relativePath}", UriKind.Relative);
+            var fileUri = FileApiHelpers.BuildFileUri(relativePath);
             var tags = request.FileTags?.ToHashSet();
             var fileType = ResolveFileType(ext);
             var identity = MapToDomainIdentity(request.FileIdentity);
 
-            await _notFileService.CreateFileAsync(
-                userId, request.FileName, tags, request.FileDescription ?? string.Empty,
-                fileType, content.Length, fileUri,
-                storageResult.ActualHash ?? string.Empty, identity);
+            try
+            {
+                await _notFileService.CreateFileAsync(
+                    userId, request.FileName, tags, request.FileDescription ?? string.Empty,
+                    fileType, content.Length, fileUri,
+                    storageResult.ActualHash ?? string.Empty, identity);
 
-            // 提交元数据：gRPC 服务不经过 Mediator 事务管道，需显式持久化
-            await _notFileRepository.UnitOfWork.SaveEntitiesAsync(context.CancellationToken);
+                // 提交元数据：gRPC 服务不经过 Mediator 事务管道，需显式持久化
+                await _notFileRepository.UnitOfWork.SaveEntitiesAsync(context.CancellationToken);
+            }
+            catch (Exception metaEx)
+            {
+                // Major：物理文件已写入但元数据保存失败时，补偿删除物理文件，避免存储泄漏
+                _logger.LogWarning(metaEx, "上传文件元数据保存失败，清理物理文件: Path={Path}", relativePath);
+                try { await _storageService.DeleteAsync(relativePath); }
+                catch (Exception cleanEx)
+                {
+                    _logger.LogError(cleanEx, "清理物理文件失败: Path={Path}", relativePath);
+                }
+                throw;
+            }
+
+            // 实体的 FileId 在实体构造函数中自生成（与文件存储路径所用的临时 fileGuid 不同），
+            // 必须反查落库实体，以真实 FileId 作为响应返回，保证客户端后续按 FileId 查询/删除一致
+            var savedFile = (await _notFileService.GetFilesByUserIdAsync(userId))
+                .FirstOrDefault(f => string.Equals(f.FileUri?.ToString(), fileUri.ToString(), StringComparison.Ordinal));
+            if (savedFile is null)
+                throw new InvalidOperationException("文件元数据保存失败，无法获取真实 FileId");
 
             return new UploadFileResponse
             {
                 Success = true,
-                FileId = fileGuid.ToString(),
+                FileId = savedFile.FileId.ToString(),
                 FileUri = fileUri.ToString(),
                 FileMd5 = storageResult.ActualHash ?? string.Empty,
                 FileSize = content.Length
@@ -327,7 +356,7 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "上传文件失败 FileName={FileName}", request.FileName);
-            return new UploadFileResponse { Success = false, ErrorMessage = ex.Message };
+            return new UploadFileResponse { Success = false, ErrorMessage = "上传文件失败" };
         }
     }
 
@@ -369,7 +398,8 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
                 return;
             }
 
-            var relativePath = file.FileUri.ToString().TrimStart('/').Replace("files/", "");
+            // Major：路径还原统一收敛至 FileApiHelpers
+            var relativePath = FileApiHelpers.FileUriToRelativePath(file.FileUri);
             // S-09：流式读取，避免整文件读入内存
             var (stream, storageResponse) = await _storageService.GetContentStreamAsync(relativePath);
 
@@ -423,6 +453,12 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
             // S-08：使用服务端解析的调用者 id，忽略客户端传入的 UserId
             var userId = GetCallerId(context);
 
+            // Critical：FileName/TotalSize 校验前置
+            if (string.IsNullOrWhiteSpace(request.FileName))
+                return new InitChunkUploadResponse { Success = false, ErrorMessage = "文件名不能为空" };
+            if (request.TotalSize <= 0)
+                return new InitChunkUploadResponse { Success = false, ErrorMessage = "文件大小必须大于0" };
+
             if (request.TotalSize > _options.Value.MaxFileSize)
                 return new InitChunkUploadResponse
                 {
@@ -442,7 +478,8 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
                 ? request.TotalChunks
                 : (int)Math.Ceiling((double)request.TotalSize / chunkSize);
 
-            var fileKey = $"{userId:N}/{Guid.CreateVersion7():N}{ext}";
+            // Major：路径拼接统一收敛至 FileApiHelpers
+            var fileKey = FileApiHelpers.BuildFileKey(userId, ext);
 
             var record = await _chunkManager.InitializeUploadAsync(
                 fileKey, userId, request.FileName, request.TotalSize,
@@ -464,7 +501,7 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "初始化分片上传失败 FileName={FileName}", request.FileName);
-            return new InitChunkUploadResponse { Success = false, ErrorMessage = ex.Message };
+            return new InitChunkUploadResponse { Success = false, ErrorMessage = "初始化分片上传失败" };
         }
     }
     /// <summary>
@@ -484,6 +521,10 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
             if (string.IsNullOrWhiteSpace(request.FileKey))
                 return new UploadChunkResponse { Success = false, ErrorMessage = "文件Key不能为空" };
 
+            // Critical：chunkIndex 非负校验前置
+            if (request.ChunkIndex < 0)
+                return new UploadChunkResponse { Success = false, ErrorMessage = "chunkIndex 不能为负数" };
+
             // S-08：分片归属校验前置——仅上传任务所有者可上传分片
             var uploadRecord = await _chunkManager.GetUploadStatusAsync(request.FileKey, context.CancellationToken);
             if (uploadRecord is null)
@@ -493,6 +534,14 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
             if (uploadRecord.Status == Domain.Entities.ChunkUploadStatus.Merged
                 || uploadRecord.Status == Domain.Entities.ChunkUploadStatus.Cancelled)
                 return new UploadChunkResponse { Success = false, ErrorMessage = "上传任务已结束，无法继续上传" };
+
+            // Critical：分片索引越界校验前置
+            if (request.ChunkIndex >= uploadRecord.TotalChunks)
+                return new UploadChunkResponse
+                {
+                    Success = false,
+                    ErrorMessage = $"分片索引 {request.ChunkIndex} 超出范围 [0, {uploadRecord.TotalChunks - 1}]"
+                };
 
             var chunkData = request.ChunkData.ToByteArray();
             if (chunkData.Length == 0)
@@ -531,7 +580,7 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
             {
                 Success = false,
                 ChunkIndex = request.ChunkIndex,
-                ErrorMessage = ex.Message
+                ErrorMessage = "上传分片失败"
             };
         }
     }
@@ -578,7 +627,7 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "查询分片状态失败 FileKey={FileKey}", request.FileKey);
-            return new GetChunkStatusResponse { Success = false, ErrorMessage = ex.Message };
+            return new GetChunkStatusResponse { Success = false, ErrorMessage = "查询分片状态失败" };
         }
     }
     /// <summary>
@@ -628,7 +677,8 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
             await _chunkManager.MarkMergedAsync(request.FileKey, context.CancellationToken);
 
             // 创建文件元数据记录
-            var fileUri = new Uri($"/files/{request.FileKey}", UriKind.Relative);
+            // Major：路径拼接统一收敛至 FileApiHelpers
+            var fileUri = FileApiHelpers.BuildFileUri(request.FileKey);
             var tags = request.FileTags?.ToHashSet();
 
             await _notFileService.CreateFileAsync(
@@ -645,9 +695,21 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
             // 提交元数据：gRPC 服务不经过 Mediator 事务管道，需显式持久化
             await _notFileRepository.UnitOfWork.SaveEntitiesAsync(context.CancellationToken);
 
+            // Critical：proto 响应定义了 file_id 字段，必须反查落库实体返回真实 FileId，
+            // 保证客户端按 FileId 后续查询/删除一致
+            var savedFile = (await _notFileService.GetFilesByUserIdAsync(userId))
+                .FirstOrDefault(f => string.Equals(f.FileUri?.ToString(), fileUri.ToString(), StringComparison.Ordinal));
+            if (savedFile is null)
+            {
+                _logger.LogError("合并分片后无法反查 FileId: FileKey={FileKey}, FileUri={FileUri}",
+                    request.FileKey, fileUri);
+                return new MergeChunksResponse { Success = false, ErrorMessage = "文件元数据保存失败" };
+            }
+
             return new MergeChunksResponse
             {
                 Success = true,
+                FileId = savedFile.FileId.ToString(),
                 FileUri = fileUri.ToString(),
                 FileMd5 = mergeResult.ActualHash ?? string.Empty,
                 FileSize = mergeResult.FileSize
@@ -656,7 +718,7 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "合并分片失败 FileKey={FileKey}", request.FileKey);
-            return new MergeChunksResponse { Success = false, ErrorMessage = ex.Message };
+            return new MergeChunksResponse { Success = false, ErrorMessage = "合并分片失败" };
         }
     }
 
@@ -692,7 +754,7 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "取消分片上传失败 FileKey={FileKey}", request.FileKey);
-            return new CancelChunkUploadResponse { Success = false, ErrorMessage = ex.Message };
+            return new CancelChunkUploadResponse { Success = false, ErrorMessage = "取消分片上传失败" };
         }
     }
 
@@ -714,6 +776,10 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
         {
             // S-08：使用服务端解析的调用者 id，忽略客户端传入的 UserId
             var userId = GetCallerId(context);
+
+            // Critical：FileName 非空校验前置，避免 Path.GetExtension 抛 NPE
+            if (string.IsNullOrWhiteSpace(request.FileName))
+                return new UploadImageResponse { Success = false, ErrorMessage = "文件名不能为空" };
 
             var imageData = request.ImageContent.ToByteArray();
             if (imageData.Length == 0)
@@ -758,8 +824,8 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
             await EnsureQuotaAvailableAsync(userId, imageData.Length, context.CancellationToken);
 
             var ext2 = Path.GetExtension(request.FileName).ToLowerInvariant();
-            var fileGuid = Guid.CreateVersion7();
-            var relativePath = $"{userId:N}/{fileGuid}{ext2}";
+            // Major：路径拼接统一收敛至 FileApiHelpers
+            var relativePath = FileApiHelpers.BuildFileKey(userId, ext2);
 
             var storageRequest = new NotFileStorageRequest
             {
@@ -772,17 +838,38 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
             if (!storageResult.Success)
                 return new UploadImageResponse { Success = false, ErrorMessage = storageResult.ErrorMessage };
 
-            var fileUri = new Uri($"/files/{relativePath}", UriKind.Relative);
+            var fileUri = FileApiHelpers.BuildFileUri(relativePath);
             var tags = request.FileTags?.ToHashSet();
 
-            await _notFileService.CreateFileAsync(
-                userId, request.FileName, tags, request.FileDescription ?? string.Empty,
-                DomainFileType.FileImage, imageData.Length, fileUri,
-                storageResult.ActualHash ?? string.Empty,
-                MapToDomainIdentity(request.FileIdentity));
+            try
+            {
+                await _notFileService.CreateFileAsync(
+                    userId, request.FileName, tags, request.FileDescription ?? string.Empty,
+                    DomainFileType.FileImage, imageData.Length, fileUri,
+                    storageResult.ActualHash ?? string.Empty,
+                    MapToDomainIdentity(request.FileIdentity));
 
-            // 提交元数据：gRPC 服务不经过 Mediator 事务管道，需显式持久化
-            await _notFileRepository.UnitOfWork.SaveEntitiesAsync(context.CancellationToken);
+                // 提交元数据：gRPC 服务不经过 Mediator 事务管道，需显式持久化
+                await _notFileRepository.UnitOfWork.SaveEntitiesAsync(context.CancellationToken);
+            }
+            catch (Exception metaEx)
+            {
+                // Major：物理文件已写入但元数据保存失败时，补偿删除物理文件
+                _logger.LogWarning(metaEx, "上传图片元数据保存失败，清理物理文件: Path={Path}", relativePath);
+                try { await _storageService.DeleteAsync(relativePath); }
+                catch (Exception cleanEx)
+                {
+                    _logger.LogError(cleanEx, "清理物理文件失败: Path={Path}", relativePath);
+                }
+                throw;
+            }
+
+            // 实体的 FileId 在实体构造函数中自生成（与文件存储路径所用的临时 fileGuid 不同），
+            // 必须反查落库实体，以真实 FileId 作为响应返回，保证客户端后续按 FileId 查询/删除一致
+            var savedFile = (await _notFileService.GetFilesByUserIdAsync(userId))
+                .FirstOrDefault(f => string.Equals(f.FileUri?.ToString(), fileUri.ToString(), StringComparison.Ordinal));
+            if (savedFile is null)
+                throw new InvalidOperationException("文件元数据保存失败，无法获取真实 FileId");
 
             // 获取图片尺寸
             var (width, height) = ImageValidator.GetDimensions(imageData);
@@ -790,7 +877,7 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
             return new UploadImageResponse
             {
                 Success = true,
-                FileId = fileGuid.ToString(),
+                FileId = savedFile.FileId.ToString(),
                 FileUri = fileUri.ToString(),
                 FileMd5 = storageResult.ActualHash ?? string.Empty,
                 FileSize = imageData.Length,
@@ -802,7 +889,7 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "上传图片失败 FileName={FileName}", request.FileName);
-            return new UploadImageResponse { Success = false, ErrorMessage = ex.Message };
+            return new UploadImageResponse { Success = false, ErrorMessage = "上传图片失败" };
         }
     }
 
@@ -843,7 +930,8 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
                 return;
             }
 
-            var relativePath = file.FileUri.ToString().TrimStart('/').Replace("files/", "");
+            // Major：路径还原统一收敛至 FileApiHelpers
+            var relativePath = FileApiHelpers.FileUriToRelativePath(file.FileUri);
             // S-09：流式读取，避免整文件读入内存
             var (stream, storageResponse) = await _storageService.GetContentStreamAsync(relativePath);
 
@@ -904,7 +992,8 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
                 return new GetImageInfoResponse { Success = false, ErrorMessage = "无权访问此文件" };
 
             // 获取图片内容以解析尺寸
-            var relativePath = file.FileUri.ToString().TrimStart('/').Replace("files/", "");
+            // Major：路径还原统一收敛至 FileApiHelpers
+            var relativePath = FileApiHelpers.FileUriToRelativePath(file.FileUri);
 
             int width = 0, height = 0;
             string format = "unknown";
@@ -936,7 +1025,7 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "获取图片信息失败 FileId={FileId}", request.FileId);
-            return new GetImageInfoResponse { Success = false, ErrorMessage = ex.Message };
+            return new GetImageInfoResponse { Success = false, ErrorMessage = "获取图片信息失败" };
         }
     }
 
@@ -1047,18 +1136,7 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
     /// </summary>
     /// <param name="status">gRPC文件块上传状态协议缓冲区</param>
     /// <returns>域文件块上传状态枚举</returns>
-    private static DomainFileType ResolveFileType(string ext) => ext switch
-    {
-        ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".webp" or ".svg" or ".ico"
-            => DomainFileType.FileImage,
-        ".mp4" or ".avi" or ".mkv" or ".mov" or ".wmv" or ".flv" or ".webm"
-            => DomainFileType.FileVideo,
-        ".mp3" or ".wav" or ".ogg" or ".flac" or ".aac" or ".wma" or ".m4a"
-            => DomainFileType.FileAudio,
-        ".zip" or ".rar" or ".7z" or ".tar" or ".gz" or ".bz2"
-            => DomainFileType.CompressFiles,
-        _ => DomainFileType.FileFile
-    };
+    private static DomainFileType ResolveFileType(string ext) => FileApiHelpers.ResolveFileType(ext);
 
     /// <summary>
     /// 获取文件内容类型（S-17：.html/.htm/.svg 可被浏览器直接渲染，一律按 application/octet-stream 返回）

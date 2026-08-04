@@ -90,9 +90,8 @@ public class FileStorageService(
     public async Task<NotFileStorageResponse> UploadChunkAsync(string fileKey, int chunkIndex, byte[] chunkContent,
         bool autoVerify = true)
     {
-        // 自动计算分片哈希并校验（统一 SHA256，见 F-09.5）
-        string chunkHash = (autoVerify ? HashHelper.ComputeHash(chunkContent, AlgorithmType.SHA256) : null) ??
-                           throw new InvalidOperationException();
+        // 自动计算分片哈希并校验（统一 SHA256，见 F-09.5）；autoVerify=false 时不传哈希，跳过校验
+        string? chunkHash = autoVerify ? HashHelper.ComputeHash(chunkContent, AlgorithmType.SHA256) : null;
         return await storageProvider.UploadChunkAsync(fileKey, chunkIndex, chunkContent, chunkHash);
     }
 
@@ -107,7 +106,7 @@ public class FileStorageService(
         var expectedFileHash = originalFileContent != null
             ? HashHelper.ComputeHash(originalFileContent, AlgorithmType.SHA256)
             : null;
-        return await storageProvider.MergeChunksAsync(fileKey, totalChunks, expectedFileHash ?? string.Empty,
+        return await storageProvider.MergeChunksAsync(fileKey, totalChunks, expectedFileHash,
             overwrite);
     }
 
@@ -127,7 +126,7 @@ public class FileStorageService(
         {
             // 小于分片大小，直接保存
             return await SaveBinaryFileAsync(fileKey, fileContent,
-                HashHelper.ComputeHash(fileContent,AlgorithmType.MD5),
+                HashHelper.ComputeHash(fileContent,AlgorithmType.SHA256),
                 overwrite);
         }
 
