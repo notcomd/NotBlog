@@ -74,3 +74,49 @@ public record ChunkUploadProgress(
     int TotalChunks,
     double Percent,
     int CurrentChunkIndex);
+
+/// <summary>
+/// 文件上传/合并后的统一引用（消息与 Tweet 附件共用）。
+/// <para>
+/// 由 FileDev gRPC 服务返回的元数据组装；客户端持 FileId 即可在发送消息/推文时引用附件，
+/// 服务端凭 FileId 回查 FileDev 校验归属并填充消息元数据。
+/// </para>
+/// </summary>
+public record FileRef(
+    Guid FileId,
+    Uri FileUri,
+    string FileName,
+    long FileSize,
+    string FileMd5,
+    string MimeType,
+    int? Width = null,
+    int? Height = null);
+
+/// <summary>文件信息查询结果（FileDev gRPC GetFileInfo 的封装）</summary>
+public record FileInfoResult(
+    bool Success,
+    Guid? FileId,
+    Guid? UserId,
+    string FileName,
+    long FileSize,
+    Uri? FileUri,
+    string FileMd5,
+    string FileType,
+    string? ErrorMessage);
+
+/// <summary>删除文件结果（FileDev gRPC DeleteFile 的封装）</summary>
+public record DeleteFileResult(bool Success, string? ErrorMessage);
+
+/// <summary>文件流式下载结果（FileDev gRPC DownloadFile 的封装；Chunks 为响应流分片）</summary>
+/// <remarks>文件名/大小/类型等元数据由 Message 侧附件记录提供，流仅承载二进制分片。</remarks>
+public record DownloadFileStreamResult(
+    bool Success,
+    IAsyncEnumerable<byte[]> Chunks,
+    string? ErrorMessage);
+
+/// <summary>图片流式下载结果（FileDev gRPC DownloadImage 的封装）</summary>
+/// <remarks>文件名/大小/类型等元数据由 Message 侧附件记录提供，流仅承载二进制分片。</remarks>
+public record DownloadImageStreamResult(
+    bool Success,
+    IAsyncEnumerable<byte[]> Chunks,
+    string? ErrorMessage);

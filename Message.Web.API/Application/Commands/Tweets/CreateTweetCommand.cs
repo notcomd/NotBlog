@@ -6,13 +6,13 @@ namespace Message.Web.API.Application.Commands.Tweets;
 /// </summary>
 /// <param name="UserId">作者用户 ID</param>
 /// <param name="Content">推文内容</param>
-/// <param name="MediaUrls">媒体 URL 列表</param>
+/// <param name="FileIds">FileDev 文件 ID 列表（媒体推文；服务端校验归属并解析元数据）</param>
 /// <param name="LinkUrl">链接 URL</param>
 /// <param name="Visibility">可见性</param>
 public record CreateTweetCommand(
     Guid UserId,
     string Content,
-    IEnumerable<string>? MediaUrls,
+    IEnumerable<Guid>? FileIds,
     string? LinkUrl,
     Visibility Visibility) : IRequest<Guid>;
 
@@ -23,6 +23,7 @@ public class CreateTweetCommandHandler(
     ITweetRepository tweetRepository,
     ISensitiveWordFilter sensitiveWordFilter,
     IImageModerationService imageModerationService,
+    Message.Web.API.Grpc.IFileStorageGrpcClient fileStorage,
     ILogger<CreateTweetCommandHandler> logger) : IRequestHandler<CreateTweetCommand, Guid>
 {
     public async Task<Guid> Handler(CreateTweetCommand command, CancellationToken cancellationToken)
@@ -44,7 +45,9 @@ public class CreateTweetCommandHandler(
             if (isSensitive)
                 throw new InvalidOperationException($"推文内容包含敏感内容（{matchedWord}），已拒绝发布");
 
-            var tweet = Tweet.Create(command.UserId, safeContent, null, linkMetadata, null, parsedVisibility);
+            // 媒体校验与解析：FileDev 逐个校验归属（防 IDOR），服务端解析元数据填充 TweetMedia
+            var media = await ResolveMediaAsync(command.FileIds, command.UserId, cancellationToken);
+            var tweet = Tweet.Create(command.UserId, safeContent, media, linkMetadata, null, parsedVisibility);
 
             // 兼容既有 ISensitiveWordFilter 注入：保留日志补充（真实决策已由上方静态过滤器完成）
             try
@@ -61,12 +64,13 @@ public class CreateTweetCommandHandler(
                 logger.LogWarning(ex, "敏感词过滤失败，继续创建推文");
             }
 
-            // 图片审核（仅记录日志）
-            if (command.MediaUrls is not null && command.MediaUrls.Any())
+            // 图片审核（仅记录日志，使用 FileDev 解析后的媒体 URL）
+            if (media is not null && media.Count > 0)
             {
                 try
                 {
-                    var moderationResult = await imageModerationService.ModerateAsync(command.MediaUrls);
+                    var moderationResult =
+                        await imageModerationService.ModerateAsync(media.Select(m => m.MediaUrl));
                     if (!moderationResult.Passed)
                     {
                         logger.LogWarning("图片审核未通过，原因: {Reason}", moderationResult.Reason);
@@ -90,6 +94,34 @@ public class CreateTweetCommandHandler(
             logger.LogError(ex, "创建推文失败，作者: {AuthorGuid}", command.UserId);
             throw;
         }
+    }
+
+    /// <summary>
+    /// 解析媒体：FileDev gRPC GetFileInfo 逐个校验存在性与归属（防 IDOR），
+    /// 服务端用 FileDev 元数据构建 TweetMedia（MediaUrl/MediaType/FileSize），客户端不再提供任意 URL。
+    /// </summary>
+    private async Task<List<TweetMedia>?> ResolveMediaAsync(
+        IEnumerable<Guid>? fileIds, Guid userId, CancellationToken cancellationToken)
+    {
+        if (fileIds is null)
+            return null;
+
+        var media = new List<TweetMedia>();
+        var sortOrder = 0;
+        foreach (var fileId in fileIds.Distinct())
+        {
+            var info = await fileStorage.GetFileInfoAsync(fileId, cancellationToken);
+            if (!info.Success || info.FileId == null)
+                throw new KeyNotFoundException($"媒体文件不存在：{fileId}");
+            if (info.UserId != userId)
+                throw new UnauthorizedAccessException($"无权使用媒体文件：{fileId}");
+
+            var mimeType = Message.Web.API.Extensions.MimeTypeMap.FromFileName(info.FileName);
+            var tweetMedia = new TweetMedia(info.FileUri!.ToString(), mimeType, sortOrder++);
+            tweetMedia.SetFileSize(info.FileSize);
+            media.Add(tweetMedia);
+        }
+        return media;
     }
 
     private static LinkMetadata? CreateLinkMetadata(string? linkUrl) =>

@@ -5,11 +5,13 @@ public class SendMessageRequest
     public Guid SessionId { get; init; }
     public MessageType MessageType { get; init; }
     public string? Content { get; init; }
-    public string? MediaUrl { get; init; }
-    public string? ThumbnailUrl { get; init; }
-    public string? FileName { get; init; }
-    public long? FileSize { get; init; }
-    public string? MimeType { get; init; }
+
+    /// <summary>FileDev 文件 ID（图片/视频/音频/文件消息必填，来自上传接口返回的 FileRef.FileId）</summary>
+    public Guid? FileId { get; init; }
+
+    /// <summary>缩略图 FileDev 文件 ID（图片/视频消息可选）</summary>
+    public Guid? ThumbnailFileId { get; init; }
+
     public double? Duration { get; init; }
     public string? Caption { get; init; }
     public double? Latitude { get; init; }
@@ -89,15 +91,6 @@ public class SetAdminRequest
 {
     public Guid UserId { get; init; }
     public bool IsAdmin { get; init; }
-}
-
-public class UploadFileRequest
-{
-    public Guid MessageId { get; init; }
-    public string FileName { get; init; } = string.Empty;
-    public string FileType { get; init; } = string.Empty;
-    public long FileSize { get; init; }
-    public string FileUrl { get; init; } = string.Empty;
 }
 
 // ─────────────────────────────────────────────────────────
@@ -185,4 +178,11 @@ public class ChunkResumeRequest
 
     /// <summary>待上传分片集合（分片索引 → 分片二进制数据）</summary>
     public Dictionary<int, byte[]> Chunks { get; init; } = [];
+}
+
+/// <summary>给已发送消息补附件请求</summary>
+public class AddAttachmentRequest
+{
+    /// <summary>FileDev 文件 ID（来自上传接口返回的 FileRef.FileId）</summary>
+    public Guid FileId { get; init; }
 }

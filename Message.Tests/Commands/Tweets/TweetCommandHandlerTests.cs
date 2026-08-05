@@ -51,6 +51,7 @@ public class TweetCommandHandlerTests
             _tweetRepository.Object,
             sensitiveWordFilter.Object,
             imageModeration.Object,
+            new Mock<Message.Web.API.Grpc.IFileStorageGrpcClient>().Object,
             new Mock<ILogger<CreateTweetCommandHandler>>().Object);
 
         var result = await handler.Handler(

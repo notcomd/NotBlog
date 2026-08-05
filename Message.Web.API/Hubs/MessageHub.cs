@@ -1,10 +1,11 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Message.Infrastructure.Services;
-using Message.Web.API.Dto.Request;
 using Message.Web.API.Grpc;
 using Message.Web.API.Services;
-using MessageEntity = Message.Domain.Entities.Message;
+using Message.Web.API.Application.Commands.Messages;
+using Message.Web.API.Application.Queries.Files;
+using Message.Web.API.Dto.Request;
 
 namespace Message.Web.API.Hubs;
 
@@ -41,6 +42,7 @@ public class MessageHub : Hub<IMessageClient>
     private readonly UnreadCountCacheService _unreadCountCache;
     private readonly SessionCacheService _sessionCache;
     private readonly RedisCacheService _redisCache;
+    private readonly INotMediator _mediator;
 
     public MessageHub(
         IMessageRepository messageRepository,
@@ -55,7 +57,8 @@ public class MessageHub : Hub<IMessageClient>
         UserStatusCacheService userStatusCache,
         UnreadCountCacheService unreadCountCache,
         SessionCacheService sessionCache,
-        RedisCacheService redisCache)
+        RedisCacheService redisCache,
+        INotMediator mediator)
     {
         _messageRepository = messageRepository;
         _sessionRepository = sessionRepository;
@@ -70,6 +73,7 @@ public class MessageHub : Hub<IMessageClient>
         _unreadCountCache = unreadCountCache;
         _sessionCache = sessionCache;
         _redisCache = redisCache;
+        _mediator = mediator;
     }
 
     // ═══════════════════════════════════════════════════════
@@ -195,6 +199,63 @@ public class MessageHub : Hub<IMessageClient>
         catch (Exception ex)
         {
             throw WrapError("发送消息", ex);
+        }
+    }
+
+    /// <summary>
+    /// 上传完成后一键发送文件消息（重新设计 v2）。
+    /// <para>
+    /// 与 REST 通道共用同一 <see cref="SendMessageCommand"/> 链路：服务端经 FileDev gRPC
+    /// 校验文件归属后自动创建消息与附件记录。fileId 来自上传接口（REST /api/files/* 或
+    /// 本 Hub 的 InitChunkUpload/MergeChunks）返回的 FileRef/合并结果。
+    /// </para>
+    /// </summary>
+    /// <param name="sessionId">会话ID</param>
+    /// <param name="fileId">FileDev 文件 ID</param>
+    [HubMethodName("SendFileMessage")]
+    public async Task SendFileMessage(Guid sessionId, Guid fileId)
+    {
+        var userId = GetUserId();
+        if (fileId == Guid.Empty)
+            throw new HubException("文件ID不能为空");
+
+        try
+        {
+            // 会话校验：存在且当前用户为参与者（防越权）
+            var session = await _sessionRepository.GetByIdAsync(sessionId);
+            if (session is null)
+                throw new HubException("会话不存在");
+            if (!session.IsParticipant(userId))
+                throw new HubException("您不是该会话的参与者");
+
+            var request = new SendMessageRequest
+            {
+                SessionId = sessionId,
+                MessageType = MessageType.MessageFile,
+                FileId = fileId
+            };
+
+            var message = await CreateMessageAsync(sessionId, userId, request);
+            var dto = message.MapToDto();
+
+            // 1) 按连接并行推送（Redis 连接管理器为权威来源，跨实例无重复）
+            await _deliveryService.DeliverMessageAsync(
+                sessionId, dto, session.Participants, ct: Context.ConnectionAborted);
+
+            // 2) 通过会话群组广播（支持按 session:{id} 订阅的客户端）
+            if (Context.Items.TryGetValue(GroupKey(sessionId), out var joined) && joined is true)
+                await Clients.Group(SessionGroupName(sessionId)).ReceiveMessage(dto);
+
+            _logger.LogDebug("会话 {SessionId} 文件消息 {MessageId} 已推送，FileId={FileId}",
+                sessionId, message.MessageId, fileId);
+        }
+        catch (HubException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw WrapError("发送文件消息", ex);
         }
     }
 
@@ -503,238 +564,32 @@ public class MessageHub : Hub<IMessageClient>
     // ═══════════════════════════════════════════════════════
 
     /// <summary>
-    /// 按消息类型分发到领域服务创建消息实体。
+    /// 创建消息（重新设计 v2：与 REST 通道共用同一 <see cref="SendMessageCommand"/> 链路，
+    /// 消除 Hub 侧重复实现；媒体消息的 FileDev 归属校验/元数据填充/附件创建均在命令内完成）。
     /// </summary>
     private async Task<Domain.Entities.Message> CreateMessageAsync(
         Guid sessionId, Guid userId, SendMessageRequest request)
     {
-        return request.MessageType switch
-        {
-            MessageType.MessageText => await SendTextMessageAsync(sessionId, userId,
-                request.Content ?? string.Empty, Context.ConnectionAborted),
+        var messageId = await _mediator.SendAsync(new SendMessageCommand(
+            sessionId,
+            userId,
+            request.MessageType,
+            request.Content,
+            request.FileId,
+            request.ThumbnailFileId,
+            request.Duration,
+            request.Caption,
+            request.Latitude,
+            request.Longitude,
+            request.LocationName,
+            request.LinkUrl,
+            request.LinkTitle,
+            request.LinkDescription,
+            request.ExpressionCode),
+            Context.ConnectionAborted);
 
-            MessageType.MessageImage => await SendImageMessageAsync(sessionId, userId,
-                RequireUri(request.MediaUrl, nameof(request.MediaUrl)), request.Caption, request.ThumbnailUrl,
-                Context.ConnectionAborted),
-
-            MessageType.MessageVideo => await SendVideoMessageAsync(sessionId, userId,
-                RequireUri(request.MediaUrl, nameof(request.MediaUrl)), request.Duration ?? 0, request.Caption,
-                request.ThumbnailUrl, Context.ConnectionAborted),
-
-            MessageType.MessageAudio => await SendAudioMessageAsync(sessionId, userId,
-                RequireUri(request.MediaUrl, nameof(request.MediaUrl)), request.Duration ?? 0, request.Caption,
-                Context.ConnectionAborted),
-
-            MessageType.MessageFile => await SendFileMessageAsync(sessionId, userId,
-                RequireUri(request.MediaUrl, nameof(request.MediaUrl)), request.FileName ?? string.Empty,
-                request.FileSize ?? 0, request.MimeType ?? string.Empty, Context.ConnectionAborted),
-
-            MessageType.MessageLocation => await SendLocationMessageAsync(sessionId, userId,
-                request.Latitude ?? 0, request.Longitude ?? 0, request.LocationName ?? string.Empty,
-                Context.ConnectionAborted),
-
-            MessageType.MessageLink => await SendLinkMessageAsync(sessionId, userId,
-                RequireUri(request.LinkUrl, nameof(request.LinkUrl)).AbsoluteUri, request.LinkTitle,
-                request.LinkDescription, Context.ConnectionAborted),
-
-            MessageType.MessageExpression => await SendExpressionMessageAsync(sessionId, userId,
-                request.ExpressionCode ?? string.Empty, Context.ConnectionAborted),
-
-            _ => throw new NotSupportedException($"不支持的消息类型: {request.MessageType}")
-        };
-    }
-
-    private async Task<MessageEntity> SendTextMessageAsync(Guid sessionId, Guid senderId, string content,
-        CancellationToken cancellationToken)
-    {
-        var session = await ValidateSessionAndSenderAsync(sessionId, senderId);
-
-        // S-17：内容净化 + 长度校验 + 敏感词过滤（拒绝策略，与 REST 通道 SendMessageCommand 保持一致）
-        content = SafeContentSanitizer.Sanitize(content);
-        if (content.Length > 2000)
-            throw new HubException("消息内容不能超过2000个字符");
-        RejectIfSensitive(content, "消息");
-
-        var message = MessageEntity.CreateTextMessage(sessionId, senderId, content);
-        ApplyPrivateReceiver(message, session, senderId);
-
-        await _messageRepository.AddAsync(message);
-
-        await UpdateSessionLastMessageAsync(sessionId, message.MessageId, content);
-        await _unitOfWork.SaveEntitiesAsync(cancellationToken);
-
-        return message;
-    }
-
-    private async Task<MessageEntity> SendImageMessageAsync(Guid sessionId, Guid senderId, Uri mediaUri,
-        string? caption = null, string? thumbnailUri = null, CancellationToken cancellationToken = default)
-    {
-        var session = await ValidateSessionAndSenderAsync(sessionId, senderId);
-
-        caption = SanitizeField(caption);
-        var message = MessageEntity.CreateImageMessage(sessionId, senderId, mediaUri, caption, thumbnailUri);
-        ApplyPrivateReceiver(message, session, senderId);
-
-        await _messageRepository.AddAsync(message);
-
-        await UpdateSessionLastMessageAsync(sessionId, message.MessageId, "[图片]");
-        await _unitOfWork.SaveEntitiesAsync(cancellationToken);
-
-        return message;
-    }
-
-    private async Task<MessageEntity> SendVideoMessageAsync(Guid sessionId, Guid senderId, Uri mediaUri,
-        double durationSeconds, string? caption = null, string? thumbnailUri = null,
-        CancellationToken cancellationToken = default)
-    {
-        var session = await ValidateSessionAndSenderAsync(sessionId, senderId);
-
-        caption = SanitizeField(caption);
-        var message =
-            MessageEntity.CreateVideoMessage(sessionId, senderId, mediaUri, durationSeconds, caption, thumbnailUri);
-        ApplyPrivateReceiver(message, session, senderId);
-
-        await _messageRepository.AddAsync(message);
-
-        await UpdateSessionLastMessageAsync(sessionId, message.MessageId, "[视频]");
-        await _unitOfWork.SaveEntitiesAsync(cancellationToken);
-
-        return message;
-    }
-
-    private async Task<MessageEntity> SendAudioMessageAsync(Guid sessionId, Guid senderId, Uri mediaUri,
-        double durationSeconds, string? caption = null, CancellationToken cancellationToken = default)
-    {
-        var session = await ValidateSessionAndSenderAsync(sessionId, senderId);
-
-        caption = SanitizeField(caption);
-        var message = MessageEntity.CreateAudioMessage(sessionId, senderId, mediaUri, durationSeconds, caption);
-        ApplyPrivateReceiver(message, session, senderId);
-
-        await _messageRepository.AddAsync(message);
-
-        await UpdateSessionLastMessageAsync(sessionId, message.MessageId, "[语音]");
-        await _unitOfWork.SaveEntitiesAsync(cancellationToken);
-
-        return message;
-    }
-
-    private async Task<MessageEntity> SendFileMessageAsync(Guid sessionId, Guid senderId, Uri mediaUri, string fileName,
-        long fileSize, string mimeType, CancellationToken cancellationToken)
-    {
-        var session = await ValidateSessionAndSenderAsync(sessionId, senderId);
-
-        var message = MessageEntity.CreateFileMessage(sessionId, senderId, mediaUri, fileName, fileSize, mimeType);
-        ApplyPrivateReceiver(message, session, senderId);
-
-        await _messageRepository.AddAsync(message);
-
-        await UpdateSessionLastMessageAsync(sessionId, message.MessageId, $"[文件] {fileName}");
-        await _unitOfWork.SaveEntitiesAsync(cancellationToken);
-
-        return message;
-    }
-
-    private async Task<MessageEntity> SendLocationMessageAsync(Guid sessionId, Guid senderId, double latitude,
-        double longitude, string locationName, CancellationToken cancellationToken)
-    {
-        var session = await ValidateSessionAndSenderAsync(sessionId, senderId);
-
-        locationName = SafeContentSanitizer.Sanitize(locationName);
-        var message = MessageEntity.CreateLocationMessage(sessionId, senderId, latitude, longitude, locationName);
-        ApplyPrivateReceiver(message, session, senderId);
-
-        await _messageRepository.AddAsync(message);
-
-        await UpdateSessionLastMessageAsync(sessionId, message.MessageId, $"[位置] {locationName}");
-        await _unitOfWork.SaveEntitiesAsync(cancellationToken);
-
-        return message;
-    }
-
-    private async Task<MessageEntity> SendLinkMessageAsync(Guid sessionId, Guid senderId, string linkUrl,
-        string? title = null, string? description = null, CancellationToken cancellationToken = default)
-    {
-        var session = await ValidateSessionAndSenderAsync(sessionId, senderId);
-
-        title = SanitizeField(title);
-        description = SanitizeField(description);
-        var message = MessageEntity.CreateLinkMessage(sessionId, senderId, linkUrl, title, description);
-        ApplyPrivateReceiver(message, session, senderId);
-
-        await _messageRepository.AddAsync(message);
-
-        await UpdateSessionLastMessageAsync(sessionId, message.MessageId, title ?? linkUrl);
-        await _unitOfWork.SaveEntitiesAsync(cancellationToken);
-
-        return message;
-    }
-
-    /// <summary>S-17：净化可选文本字段（null/空白原样保留，避免引入空字符串语义差异）。</summary>
-    private static string? SanitizeField(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? value : SafeContentSanitizer.Sanitize(value);
-
-    /// <summary>S-17：敏感词拒绝策略，命中时抛出 <see cref="HubException"/>（与 REST 通道语义一致）。</summary>
-    private static void RejectIfSensitive(string content, string fieldName)
-    {
-        var (isSensitive, matchedWord) = SensitiveWordFilter.ContainsSensitive(content);
-        if (isSensitive)
-            throw new HubException($"{fieldName}包含敏感内容（{matchedWord}），已拒绝发送");
-    }
-
-    private async Task<MessageEntity> SendExpressionMessageAsync(Guid sessionId, Guid senderId, string expressionCode,
-        CancellationToken cancellationToken)
-    {
-        var session = await ValidateSessionAndSenderAsync(sessionId, senderId);
-
-        var message = MessageEntity.CreateExpressionMessage(sessionId, senderId, expressionCode);
-        ApplyPrivateReceiver(message, session, senderId);
-
-        await _messageRepository.AddAsync(message);
-
-        await UpdateSessionLastMessageAsync(sessionId, message.MessageId, "[表情]");
-        await _unitOfWork.SaveEntitiesAsync(cancellationToken);
-
-        return message;
-    }
-
-    /// <summary>
-    /// F-04：私聊会话设置消息接收者（对端用户），激活离线消息/未读查询（GetUnreadMessagesAsync 依赖 ReceiverId）；群聊保持 null。
-    /// </summary>
-    private static void ApplyPrivateReceiver(MessageEntity message, ChatSession session, Guid senderId)
-    {
-        if (session.SessionType != SessionType.Private)
-            return;
-        var receiver = session.Participants.FirstOrDefault(p => p != senderId);
-        if (receiver != Guid.Empty)
-            message.SetReceiver(receiver);
-    }
-
-    private async Task<ChatSession> ValidateSessionAndSenderAsync(Guid sessionId, Guid senderId)
-    {
-        var session = await _sessionRepository.GetByIdAsync(sessionId);
-        if (session == null)
-            throw new InvalidOperationException("会话不存在");
-        return session;
-    }
-
-    private async Task UpdateSessionLastMessageAsync(Guid sessionId, Guid messageId, string? content)
-    {
-        await _sessionRepository.UpdateLastMessageAsync(sessionId, messageId, content);
-
-        // Q-05：会话最后消息已变化，失效会话详情缓存
-        await _sessionCache.InvalidateSessionAsync(sessionId, Context.ConnectionAborted);
-    }
-
-    /// <summary>解析并校验必填 URI 参数，缺失时抛出 <see cref="HubException"/></summary>
-    private static Uri RequireUri(string? uri, string paramName)
-    {
-        if (string.IsNullOrWhiteSpace(uri))
-            throw new HubException($"{paramName} 不能为空");
-
-        return Uri.TryCreate(uri, UriKind.Absolute, out var result)
-            ? result
-            : throw new HubException($"{paramName} 不是合法的绝对地址");
+        return await _messageRepository.GetByIdAsync(messageId)
+               ?? throw new InvalidOperationException("消息创建失败");
     }
 
     /// <summary>会话对应的 SignalR 群组名</summary>

@@ -1,4 +1,5 @@
 using FileDev.Web.API.Grpc;
+using FileInfo = FileDev.Web.API.Grpc.FileInfo;
 using Google.Protobuf;
 using Grpc.Core;
 using Grpc.Net.ClientFactory;
@@ -422,4 +423,173 @@ public class FileStorageGrpcClientTests
             return (TClient)(object)factory();
         }
     }
+    // ─────────────────────────── 文件信息查询 / 删除 ───────────────────────────
+
+    [Test]
+    public async Task GetFileInfoAsync_成功响应应映射元数据()
+    {
+        var fileId = Guid.NewGuid();
+        _grpcClient
+            .Setup(c => c.GetFileInfoAsync(It.IsAny<GetFileInfoRequest>(), It.IsAny<CallOptions>()))
+            .Returns(GrpcTestHelper.Success(new GetFileInfoResponse
+            {
+                Success = true,
+                FileInfo = new FileInfo
+                {
+                    FileId = fileId.ToString(),
+                    UserId = UserId.ToString(),
+                    FileName = "a.txt",
+                    FileSize = 1024,
+                    FileUri = "files/a.txt",
+                    FileMd5 = "md5",
+                    FileType = FileType.FileDocument
+                }
+            }));
+
+        var result = await _client.GetFileInfoAsync(fileId);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Success, Is.True);
+            Assert.That(result.FileId, Is.EqualTo(fileId));
+            Assert.That(result.UserId, Is.EqualTo(UserId));
+            Assert.That(result.FileName, Is.EqualTo("a.txt"));
+            Assert.That(result.FileSize, Is.EqualTo(1024));
+            Assert.That(result.FileType, Is.EqualTo("FileDocument"));
+        });
+    }
+
+    [Test]
+    public async Task GetFileInfoAsync_文件不存在应返回失败()
+    {
+        _grpcClient
+            .Setup(c => c.GetFileInfoAsync(It.IsAny<GetFileInfoRequest>(), It.IsAny<CallOptions>()))
+            .Returns(GrpcTestHelper.Success(new GetFileInfoResponse
+            {
+                Success = false,
+                ErrorMessage = "文件不存在"
+            }));
+
+        var result = await _client.GetFileInfoAsync(Guid.NewGuid());
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Success, Is.False);
+            Assert.That(result.ErrorMessage, Is.EqualTo("文件不存在"));
+        });
+    }
+
+    [Test]
+    public async Task DeleteFileAsync_成功应返回成功结果()
+    {
+        _grpcClient
+            .Setup(c => c.DeleteFileAsync(It.IsAny<DeleteFileRequest>(), It.IsAny<CallOptions>()))
+            .Returns(GrpcTestHelper.Success(new DeleteFileResponse { Success = true }));
+
+        var result = await _client.DeleteFileAsync(Guid.NewGuid(), UserId);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Success, Is.True);
+            _grpcClient.Verify(c => c.DeleteFileAsync(
+                It.Is<DeleteFileRequest>(r => r.UserId == UserId.ToString()), It.IsAny<CallOptions>()),
+                Times.Once);
+        });
+    }
+
+    // ─────────────────────────── 流式下载 ───────────────────────────
+
+    [Test]
+    public async Task DownloadFileAsync_应流式转发分片()
+    {
+        var fileId = Guid.NewGuid();
+        var chunk1 = ByteString.CopyFrom(new byte[] { 1, 2, 3 });
+        var chunk2 = ByteString.CopyFrom(new byte[] { 4, 5 });
+
+        var reader = new Mock<IAsyncStreamReader<DownloadFileResponse>>();
+        reader.SetupSequence(r => r.MoveNext(It.IsAny<CancellationToken>()))
+            .Returns(Task.FromResult(true))
+            .Returns(Task.FromResult(true))
+            .Returns(Task.FromResult(false));
+        reader.SetupSequence(r => r.Current)
+            .Returns(new DownloadFileResponse { ChunkData = chunk1 })
+            .Returns(new DownloadFileResponse { ChunkData = chunk2 });
+
+        var call = new AsyncServerStreamingCall<DownloadFileResponse>(
+            reader.Object,
+            Task.FromResult(new Metadata()),
+            () => Status.DefaultSuccess,
+            () => new Metadata(),
+            () => { });
+
+        _grpcClient
+            .Setup(c => c.DownloadFile(It.IsAny<DownloadFileRequest>(), It.IsAny<CallOptions>()))
+            .Returns(call);
+
+        var result = await _client.DownloadFileAsync(fileId, UserId);
+
+        Assert.That(result.Success, Is.True);
+
+        var received = new List<byte[]>();
+        await foreach (var chunk in result.Chunks)
+        {
+            received.Add(chunk);
+        }
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(received.Count, Is.EqualTo(2));
+            Assert.That(received[0], Is.EqualTo(new byte[] { 1, 2, 3 }));
+            Assert.That(received[1], Is.EqualTo(new byte[] { 4, 5 }));
+            _grpcClient.Verify(c => c.DownloadFile(
+                It.Is<DownloadFileRequest>(r => r.FileId == fileId.ToString() && r.UserId == UserId.ToString()),
+                It.IsAny<CallOptions>()), Times.Once);
+        });
+    }
+
+    [Test]
+    public async Task DownloadImageAsync_应透传缩放参数并流式转发()
+    {
+        var fileId = Guid.NewGuid();
+        var chunk = ByteString.CopyFrom(new byte[] { 9, 8, 7 });
+
+        var reader = new Mock<IAsyncStreamReader<DownloadImageResponse>>();
+        reader.SetupSequence(r => r.MoveNext(It.IsAny<CancellationToken>()))
+            .Returns(Task.FromResult(true))
+            .Returns(Task.FromResult(false));
+        reader.Setup(r => r.Current)
+            .Returns(new DownloadImageResponse { ChunkData = chunk });
+
+        var call = new AsyncServerStreamingCall<DownloadImageResponse>(
+            reader.Object,
+            Task.FromResult(new Metadata()),
+            () => Status.DefaultSuccess,
+            () => new Metadata(),
+            () => { });
+
+        _grpcClient
+            .Setup(c => c.DownloadImage(It.IsAny<DownloadImageRequest>(), It.IsAny<CallOptions>()))
+            .Returns(call);
+
+        var result = await _client.DownloadImageAsync(fileId, UserId, 320, 240);
+
+        Assert.That(result.Success, Is.True);
+
+        var received = new List<byte[]>();
+        await foreach (var c in result.Chunks)
+        {
+            received.Add(c);
+        }
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(received, Has.Count.EqualTo(1));
+            Assert.That(received[0], Is.EqualTo(new byte[] { 9, 8, 7 }));
+            _grpcClient.Verify(c => c.DownloadImage(
+                It.Is<DownloadImageRequest>(r => r.FileId == fileId.ToString()
+                    && r.ResizeWidth == 320 && r.ResizeHeight == 240),
+                It.IsAny<CallOptions>()), Times.Once);
+        });
+    }
+
 }

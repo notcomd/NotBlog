@@ -15,6 +15,11 @@ public class FileAttachmentConfiguration : IEntityTypeConfiguration<FileAttachme
         builder.Property(fa => fa.MessageId)
             .IsRequired();
 
+        builder.Property(fa => fa.FileId)
+            .IsRequired();
+
+        builder.HasIndex(fa => fa.FileId);
+
         builder.Property(fa => fa.FileName)
             .IsRequired()
             .HasMaxLength(500);

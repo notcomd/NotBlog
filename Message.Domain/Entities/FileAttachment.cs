@@ -16,24 +16,33 @@ public class FileAttachment : Entity<Guid>
     /// 创建文件附件
     /// </summary>
     /// <param name="messageId">消息ID</param>
+    /// <param name="fileId">FileDev 文件ID（附件引用的文件唯一标识，转发/群聊可共享同一 fileId）</param>
     /// <param name="fileName">文件名</param>
-    /// <param name="fileType">文件类型</param>
+    /// <param name="fileType">文件类型（MIME 字符串，如 image/png）</param>
     /// <param name="fileSize">文件大小</param>
-    /// <param name="fileUri">文件URI</param>
+    /// <param name="fileUri">文件URI（FileDev 返回的 FileUri）</param>
+    /// <param name="mimeType">MIME 类型（可选，缺省时与 fileType 一致）</param>
+    /// <param name="thumbnailUri">缩略图URI（可选，图片/视频消息）</param>
     /// <returns>文件附件</returns>
-    public FileAttachment(Guid messageId, string fileName, string fileType, long fileSize, Uri fileUri)
+    public FileAttachment(Guid messageId, Guid fileId, string fileName, string fileType, long fileSize, Uri fileUri,
+        string? mimeType = null, Uri? thumbnailUri = null)
     {
         if (string.IsNullOrWhiteSpace(fileName))
             throw new ArgumentException("文件名不能为空", nameof(fileName));
         if (fileSize < 0)
             throw new ArgumentOutOfRangeException(nameof(fileSize), "文件大小不能为负数");
+        if (fileId == Guid.Empty)
+            throw new ArgumentException("文件ID不能为空", nameof(fileId));
 
         AttachmentId = Guid.NewGuid();
         MessageId = messageId;
+        FileId = fileId;
         FileName = fileName;
         FileType = fileType;
         FileSize = fileSize;
         FileUri = fileUri;
+        MimeType = mimeType ?? fileType;
+        ThumbnailUri = thumbnailUri;
         UploadTime = DateTime.UtcNow;
         DownloadCount = 0;
         IsDeleted = false;
@@ -60,6 +69,11 @@ public class FileAttachment : Entity<Guid>
     /// 消息ID
     /// </summary>
     public Guid MessageId { get; init; }
+
+    /// <summary>
+    /// FileDev 文件ID（附件引用的文件唯一标识；转发/群聊共享同一文件时多条附件记录可指向同一 FileId）
+    /// </summary>
+    public Guid FileId { get; private set; }
 
     /// <summary>
     /// 文件名

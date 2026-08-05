@@ -1,4 +1,6 @@
 using Message.Infrastructure.Services;
+using Message.Web.API.Extensions;
+using Message.Web.API.Grpc;
 using MessageEntity = Message.Domain.Entities.Message;
 
 namespace Message.Web.API.Application.Commands.Messages;
@@ -6,16 +8,18 @@ namespace Message.Web.API.Application.Commands.Messages;
 /// <summary>
 /// 发送消息命令。
 /// <para>CQRS 命令侧：仅返回新消息的标识（Guid），不返回业务实体/DTO。</para>
+/// <para>
+/// 重新设计（MessageApi-Redesign v2）：媒体消息（图片/视频/音频/文件）不再接受客户端提供的
+/// 任意 URL/文件名/大小，改为携带 <see cref="FileId"/>（上传接口返回的 FileDev 文件 ID），
+/// 服务端经 gRPC GetFileInfo 校验文件归属后统一填充消息媒体元数据，并同事务创建附件记录。
+/// </para>
 /// </summary>
 /// <param name="SessionId">会话 ID</param>
 /// <param name="SenderId">发送者用户 ID</param>
 /// <param name="MessageType">消息类型</param>
 /// <param name="Content">文本内容（文本消息必填）</param>
-/// <param name="MediaUrl">媒体文件地址（图片/视频/音频/文件消息必填）</param>
-/// <param name="ThumbnailUrl">缩略图地址（图片/视频消息可选）</param>
-/// <param name="FileName">文件名（文件消息必填）</param>
-/// <param name="FileSize">文件大小（文件消息必填）</param>
-/// <param name="MimeType">MIME 类型（文件消息必填）</param>
+/// <param name="FileId">FileDev 文件 ID（图片/视频/音频/文件消息必填）</param>
+/// <param name="ThumbnailFileId">缩略图 FileDev 文件 ID（图片/视频消息可选）</param>
 /// <param name="Duration">媒体时长（视频/音频消息可选）</param>
 /// <param name="Caption">媒体描述（图片/视频/音频消息可选）</param>
 /// <param name="Latitude">纬度（位置消息必填）</param>
@@ -30,11 +34,8 @@ public record SendMessageCommand(
     Guid SenderId,
     MessageType MessageType,
     string? Content,
-    Uri? MediaUrl,
-    string? ThumbnailUrl,
-    string? FileName,
-    long? FileSize,
-    string? MimeType,
+    Guid? FileId,
+    Guid? ThumbnailFileId,
     double? Duration,
     string? Caption,
     double? Latitude,
@@ -52,6 +53,8 @@ public record SendMessageCommand(
 public class SendMessageCommandHandler(
     IMessageRepository messageRepository,
     IChatSessionRepository sessionRepository,
+    IFileAttachmentRepository fileRepository,
+    IFileStorageGrpcClient fileStorage,
     ILogger<SendMessageCommandHandler> logger,
     UnreadCountCacheService unreadCountCache,
     SessionCacheService sessionCache) : IRequestHandler<SendMessageCommand, Guid>
@@ -62,14 +65,8 @@ public class SendMessageCommandHandler(
         {
             MessageType.MessageText => await SendTextMessageAsync(command.SessionId, command.SenderId,
                 command.Content ?? "", cancellationToken),
-            MessageType.MessageImage => await SendImageMessageAsync(command.SessionId, command.SenderId,
-                command.MediaUrl!, command.Caption, command.ThumbnailUrl, cancellationToken),
-            MessageType.MessageVideo => await SendVideoMessageAsync(command.SessionId, command.SenderId,
-                command.MediaUrl!, command.Duration ?? 0, command.Caption, command.ThumbnailUrl, cancellationToken),
-            MessageType.MessageAudio => await SendAudioMessageAsync(command.SessionId, command.SenderId,
-                command.MediaUrl!, command.Duration ?? 0, command.Caption, cancellationToken),
-            MessageType.MessageFile => await SendFileMessageAsync(command.SessionId, command.SenderId,
-                command.MediaUrl!, command.FileName!, command.FileSize ?? 0, command.MimeType!, cancellationToken),
+            MessageType.MessageImage or MessageType.MessageVideo or MessageType.MessageAudio or MessageType.MessageFile
+                => await SendMediaMessageAsync(command, cancellationToken),
             MessageType.MessageLocation => await SendLocationMessageAsync(command.SessionId, command.SenderId,
                 command.Latitude ?? 0, command.Longitude ?? 0, command.LocationName!, cancellationToken),
             MessageType.MessageLink => await SendLinkMessageAsync(command.SessionId, command.SenderId,
@@ -92,6 +89,81 @@ public class SendMessageCommandHandler(
         return message.MessageId;
     }
 
+    /// <summary>
+    /// 发送媒体消息（图片/视频/音频/文件）——统一链路：
+    /// 1. FileDev gRPC GetFileInfo 校验文件存在且归属当前用户（防 IDOR：不能引用他人文件）；
+    /// 2. 服务端用 FileDev 元数据填充 Message（MediaUri/FileName/FileSize/MimeType），客户端不再提供；
+    /// 3. 同事务创建 FileAttachment 附件记录（消息附件事实源）。
+    /// </summary>
+    private async Task<MessageEntity> SendMediaMessageAsync(SendMessageCommand command,
+        CancellationToken cancellationToken)
+    {
+        if (command.FileId is not { } fileId)
+            throw new ArgumentException("媒体消息必须携带 FileId（先调用上传接口获取）");
+
+        var session = await ValidateSessionAndSenderAsync(command.SessionId, command.SenderId);
+
+        // 1. 主文件校验（存在性 + 归属）
+        var info = await fileStorage.GetFileInfoAsync(fileId, cancellationToken);
+        if (!info.Success || info.FileId == null)
+            throw new KeyNotFoundException(info.ErrorMessage ?? "文件不存在");
+        if (info.UserId != command.SenderId)
+            throw new UnauthorizedAccessException("无权使用该文件");
+        var fileUri = info.FileUri ?? throw new InvalidOperationException("文件URI缺失");
+
+        // 2. 缩略图（可选）：同样校验存在性与归属，失败不阻断主流程
+        Uri? thumbnailUri = null;
+        if (command.ThumbnailFileId is { } thumbnailFileId)
+        {
+            var thumbInfo = await fileStorage.GetFileInfoAsync(thumbnailFileId, cancellationToken);
+            if (thumbInfo is { Success: true, UserId: not null }
+                && thumbInfo.UserId == command.SenderId && thumbInfo.FileUri != null)
+                thumbnailUri = thumbInfo.FileUri;
+        }
+
+        var mimeType = MimeTypeMap.FromFileName(info.FileName);
+        var caption = SanitizeField(command.Caption);
+
+        // 3. 创建消息实体（服务端统一填充媒体元数据）
+        var message = command.MessageType switch
+        {
+            MessageType.MessageImage => MessageEntity.CreateImageMessage(command.SessionId, command.SenderId,
+                fileUri, caption, thumbnailUri?.ToString()),
+            MessageType.MessageVideo => MessageEntity.CreateVideoMessage(command.SessionId, command.SenderId,
+                fileUri, command.Duration ?? 0, caption, thumbnailUri?.ToString()),
+            MessageType.MessageAudio => MessageEntity.CreateAudioMessage(command.SessionId, command.SenderId,
+                fileUri, command.Duration ?? 0, caption),
+            MessageType.MessageFile => MessageEntity.CreateFileMessage(command.SessionId, command.SenderId,
+                fileUri, info.FileName, info.FileSize, mimeType),
+            _ => throw new NotSupportedException($"不支持的消息类型: {command.MessageType}")
+        };
+        ApplyPrivateReceiver(message, session, command.SenderId);
+
+        // 4. 同事务创建附件记录（FileType/MimeType 均为 MIME 字符串，供 IsImage() 等分类判断）
+        var attachment = new FileAttachment(
+            message.MessageId, fileId, info.FileName, mimeType, info.FileSize, fileUri, mimeType, thumbnailUri);
+        message.AddAttachment(attachment);
+        await fileRepository.AddAsync(attachment);
+
+        await messageRepository.AddAsync(message);
+        await UpdateSessionLastMessageAsync(command.SessionId, message.MessageId,
+            MediaMessageSummary(command.MessageType, info.FileName));
+        await messageRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
+
+        logger.LogInformation("发送媒体消息成功：{MessageId}，类型={MessageType}，FileId={FileId}，附件={AttachmentId}",
+            message.MessageId, message.MessageType, fileId, attachment.AttachmentId);
+        return message;
+    }
+
+    /// <summary>媒体消息的会话最后消息摘要（[图片]/[视频]/[语音]/[文件] 文件名）</summary>
+    private static string MediaMessageSummary(MessageType type, string fileName) => type switch
+    {
+        MessageType.MessageImage => "[图片]",
+        MessageType.MessageVideo => "[视频]",
+        MessageType.MessageAudio => "[语音]",
+        _ => $"[文件] {fileName}"
+    };
+
     private async Task<MessageEntity> SendTextMessageAsync(Guid sessionId, Guid senderId, string content,
         CancellationToken cancellationToken)
     {
@@ -109,74 +181,6 @@ public class SendMessageCommandHandler(
         await messageRepository.AddAsync(message);
 
         await UpdateSessionLastMessageAsync(sessionId, message.MessageId, content);
-        await messageRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
-
-        return message;
-    }
-
-    private async Task<MessageEntity> SendImageMessageAsync(Guid sessionId, Guid senderId, Uri mediaUri,
-        string? caption = null, string? thumbnailUri = null, CancellationToken cancellationToken = default)
-    {
-        var session = await ValidateSessionAndSenderAsync(sessionId, senderId);
-
-        caption = SanitizeField(caption);
-        var message = MessageEntity.CreateImageMessage(sessionId, senderId, mediaUri, caption, thumbnailUri);
-        ApplyPrivateReceiver(message, session, senderId);
-
-        await messageRepository.AddAsync(message);
-
-        await UpdateSessionLastMessageAsync(sessionId, message.MessageId, "[图片]");
-        await messageRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
-
-        return message;
-    }
-
-    private async Task<MessageEntity> SendVideoMessageAsync(Guid sessionId, Guid senderId, Uri mediaUri,
-        double durationSeconds, string? caption = null, string? thumbnailUri = null,
-        CancellationToken cancellationToken = default)
-    {
-        var session = await ValidateSessionAndSenderAsync(sessionId, senderId);
-
-        var message =
-            MessageEntity.CreateVideoMessage(sessionId, senderId, mediaUri, durationSeconds, caption, thumbnailUri);
-        ApplyPrivateReceiver(message, session, senderId);
-
-        await messageRepository.AddAsync(message);
-
-        await UpdateSessionLastMessageAsync(sessionId, message.MessageId, "[视频]");
-        await messageRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
-
-        return message;
-    }
-
-    private async Task<MessageEntity> SendAudioMessageAsync(Guid sessionId, Guid senderId, Uri mediaUri,
-        double durationSeconds, string? caption = null, CancellationToken cancellationToken = default)
-    {
-        var session = await ValidateSessionAndSenderAsync(sessionId, senderId);
-
-        caption = SanitizeField(caption);
-        var message = MessageEntity.CreateAudioMessage(sessionId, senderId, mediaUri, durationSeconds, caption);
-        ApplyPrivateReceiver(message, session, senderId);
-
-        await messageRepository.AddAsync(message);
-
-        await UpdateSessionLastMessageAsync(sessionId, message.MessageId, "[语音]");
-        await messageRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
-
-        return message;
-    }
-
-    private async Task<MessageEntity> SendFileMessageAsync(Guid sessionId, Guid senderId, Uri mediaUri, string fileName,
-        long fileSize, string mimeType, CancellationToken cancellationToken)
-    {
-        var session = await ValidateSessionAndSenderAsync(sessionId, senderId);
-
-        var message = MessageEntity.CreateFileMessage(sessionId, senderId, mediaUri, fileName, fileSize, mimeType);
-        ApplyPrivateReceiver(message, session, senderId);
-
-        await messageRepository.AddAsync(message);
-
-        await UpdateSessionLastMessageAsync(sessionId, message.MessageId, $"[文件] {fileName}");
         await messageRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
 
         return message;

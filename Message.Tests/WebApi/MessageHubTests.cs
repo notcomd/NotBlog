@@ -4,6 +4,7 @@ using Message.Domain.IRepository;
 using Commons.SeedWork;
 using Message.Domain.IServices;
 using Message.Infrastructure.Services;
+using Message.Web.API.Application.Commands.Messages;
 using Message.Web.API.Dto;
 using Message.Web.API.Dto.Request;
 using Message.Web.API.Dto.Response;
@@ -13,6 +14,7 @@ using Message.Web.API.Services;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Moq;
+using NotMediator;
 using Message.Tests.TestHelpers;
 using StackExchange.Redis;
 using System.Security.Claims;
@@ -128,11 +130,14 @@ public class MessageHubTests
         var session = ChatSession.CreatePrivateSession(UserId, OtherUserId);
         _harness.SessionRepository.Setup(m => m.GetByIdAsync(SessionId)).ReturnsAsync(session);
 
-        DomainMessage? sent = null;
+        // 重新设计 v2：消息经 SendMessageCommand 命令链路创建，Hub 凭返回的 MessageId 重新加载实体
+        var message = DomainMessage.CreateTextMessage(SessionId, UserId, "你好");
+        _harness.Mediator
+            .Setup(m => m.SendAsync(It.IsAny<SendMessageCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(message.MessageId);
         _harness.MessageRepository
-            .Setup(m => m.AddAsync(It.IsAny<DomainMessage>()))
-            .Callback<DomainMessage>(m => sent = m)
-            .ReturnsAsync((DomainMessage m) => m);
+            .Setup(m => m.GetByIdAsync(message.MessageId))
+            .ReturnsAsync(message);
 
         // 先加入会话群组（模拟客户端订阅）
         await _harness.Hub.JoinSession(SessionId);
@@ -143,13 +148,16 @@ public class MessageHubTests
             Content = "你好"
         });
 
-        Assert.That(sent, Is.Not.Null, "应创建文本消息并提交仓储");
+        // 命令链路被调用（消息经 SendMessageCommand 创建，Hub 不再自行实现）
+        _harness.Mediator.Verify(m => m.SendAsync(
+            It.Is<SendMessageCommand>(c => c.MessageType == MessageType.MessageText),
+            It.IsAny<CancellationToken>()), Times.Once);
         // 1) 按连接并行推送（两个参与者各自 1 个连接）
         _harness.DeliveryProxy.Verify(c => c.ReceiveMessage(
-            It.Is<MessageDto>(m => m.MessageId == sent!.MessageId)), Times.Exactly(2));
+            It.Is<MessageDto>(m => m.MessageId == message.MessageId)), Times.Exactly(2));
         // 2) 会话群组广播
         _harness.GroupProxy.Verify(c => c.ReceiveMessage(
-            It.Is<MessageDto>(m => m.MessageId == sent!.MessageId)), Times.Once);
+            It.Is<MessageDto>(m => m.MessageId == message.MessageId)), Times.Once);
     }
 
     [Test]
@@ -157,8 +165,14 @@ public class MessageHubTests
     {
         var session = ChatSession.CreatePrivateSession(UserId, OtherUserId);
         _harness.SessionRepository.Setup(m => m.GetByIdAsync(SessionId)).ReturnsAsync(session);
-        _harness.MessageRepository.Setup(m => m.AddAsync(It.IsAny<DomainMessage>()))
-            .ReturnsAsync((DomainMessage m) => m);
+
+        var message = DomainMessage.CreateTextMessage(SessionId, UserId, "你好");
+        _harness.Mediator
+            .Setup(m => m.SendAsync(It.IsAny<SendMessageCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(message.MessageId);
+        _harness.MessageRepository
+            .Setup(m => m.GetByIdAsync(message.MessageId))
+            .ReturnsAsync(message);
 
         await _harness.Hub.SendMessage(SessionId, new SendMessageRequest
         {
@@ -356,6 +370,7 @@ public class MessageHubTests
         public Mock<IConnectionManager> ConnectionManager { get; }
         public Mock<IConnectionCommandService> ConnectionCommandService { get; }
         public Mock<IFileStorageGrpcClient> FileStorageGrpc { get; }
+        public Mock<INotMediator> Mediator { get; }
         public Mock<ICurrentUserService> CurrentUser { get; }
         public Mock<IGroupManager> Groups { get; }
         public Mock<IMessageClient> DeliveryProxy { get; }
@@ -372,6 +387,7 @@ public class MessageHubTests
             GroupProxy = CreateProxy();
             CallerProxy = CreateProxy();
             UserStatusDb = new Mock<IDatabase>();
+            Mediator = new Mock<INotMediator>();
 
             var clients = new Mock<IHubCallerClients<IMessageClient>>();
             clients.Setup(c => c.Client(It.IsAny<string>())).Returns(DeliveryProxy.Object);
@@ -450,7 +466,8 @@ public class MessageHubTests
                 CacheServicesTestFactory.CreateUserStatusCache(UserStatusDb),
                 CacheServicesTestFactory.CreateUnreadCountCache(),
                 CacheServicesTestFactory.CreateSessionCache(),
-                CacheServicesTestFactory.CreateRedisCache())
+                CacheServicesTestFactory.CreateRedisCache(),
+                Mediator.Object)
             {
                 Context = Context.Object,
                 Clients = clients.Object,

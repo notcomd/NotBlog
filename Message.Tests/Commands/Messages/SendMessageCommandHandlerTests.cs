@@ -4,6 +4,8 @@ using Message.Domain.IRepository;
 using Commons.SeedWork;
 using Message.Tests.TestHelpers;
 using Message.Web.API.Application.Commands.Messages;
+using Message.Web.API.Dto.Response;
+using Message.Web.API.Grpc;
 using Microsoft.Extensions.Logging;
 using Moq;
 using MessageEntity = Message.Domain.Entities.Message;
@@ -21,8 +23,13 @@ public class SendMessageCommandHandlerTests
     private static readonly Guid SenderId = Guid.NewGuid();
     private static readonly Uri MediaUri = new("https://example.com/media.png");
 
+    private static readonly Guid FileId = Guid.NewGuid();
+    private static readonly Guid ThumbnailFileId = Guid.NewGuid();
+
     private Mock<IMessageRepository> _messageRepository = null!;
     private Mock<IChatSessionRepository> _sessionRepository = null!;
+    private Mock<IFileAttachmentRepository> _fileRepository = null!;
+    private Mock<IFileStorageGrpcClient> _fileStorage = null!;
     private Mock<IUnitOfWork> _unitOfWork = null!;
     private SendMessageCommandHandler _handler = null!;
 
@@ -31,7 +38,17 @@ public class SendMessageCommandHandlerTests
     {
         _messageRepository = new Mock<IMessageRepository>();
         _sessionRepository = new Mock<IChatSessionRepository>();
+        _fileRepository = new Mock<IFileAttachmentRepository>();
+        _fileStorage = new Mock<IFileStorageGrpcClient>();
         _unitOfWork = new Mock<IUnitOfWork>();
+
+        // FileDev 默认返回：文件存在且归属 SenderId
+        _fileStorage.Setup(s => s.GetFileInfoAsync(FileId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FileInfoResult(true, FileId, SenderId, "file.png", 1024,
+                new Uri("https://example.com/file.png"), "md5", "FileImage", null));
+        _fileStorage.Setup(s => s.GetFileInfoAsync(ThumbnailFileId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FileInfoResult(true, ThumbnailFileId, SenderId, "thumb.png", 256,
+                new Uri("https://example.com/thumb.png"), "md5", "FileImage", null));
 
         _sessionRepository.Setup(r => r.GetByIdAsync(SessionId))
             .ReturnsAsync(new ChatSession(SessionType.Private, SenderId, new HashSet<Guid> { SenderId }));
@@ -41,9 +58,15 @@ public class SendMessageCommandHandlerTests
             .ReturnsAsync((MessageEntity m) => m);
         _messageRepository.SetupGet(r => r.UnitOfWork).Returns(_unitOfWork.Object);
 
+        // 媒体消息链路：附件记录与消息同事务落库
+        _fileRepository.Setup(r => r.AddAsync(It.IsAny<FileAttachment>()))
+            .ReturnsAsync((FileAttachment a) => a);
+
         _handler = new SendMessageCommandHandler(
             _messageRepository.Object,
             _sessionRepository.Object,
+            _fileRepository.Object,
+            _fileStorage.Object,
             new Mock<ILogger<SendMessageCommandHandler>>().Object,
             CacheServicesTestFactory.CreateUnreadCountCache(),
             CacheServicesTestFactory.CreateSessionCache());
@@ -53,11 +76,8 @@ public class SendMessageCommandHandlerTests
     private static SendMessageCommand BuildCommand(MessageType type) => new(
         SessionId, SenderId, type,
         Content: "你好",
-        MediaUrl: MediaUri,
-        ThumbnailUrl: null,
-        FileName: "file.png",
-        FileSize: 1024,
-        MimeType: "image/png",
+        FileId: FileId,
+        ThumbnailFileId: ThumbnailFileId,
         Duration: 30,
         Caption: null,
         Latitude: 31.2,
@@ -94,6 +114,11 @@ public class SendMessageCommandHandlerTests
                 It.Is<MessageEntity>(m => m.MessageType == MessageType.MessageImage)), Times.Once);
             _unitOfWork.Verify(u => u.SaveEntitiesAsync(It.IsAny<CancellationToken>()), Times.Once);
         });
+
+        // 重新设计 v2：媒体消息同时创建附件记录（FileDev 归属校验通过）
+        _fileStorage.Verify(s => s.GetFileInfoAsync(FileId, It.IsAny<CancellationToken>()), Times.Once);
+        _fileRepository.Verify(r => r.AddAsync(
+            It.Is<FileAttachment>(a => a.FileId == FileId && a.MessageId == result)), Times.Once);
     }
 
     [Test]

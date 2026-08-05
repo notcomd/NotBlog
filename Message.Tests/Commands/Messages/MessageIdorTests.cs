@@ -4,6 +4,7 @@ using Message.Domain.IRepository;
 using Commons.SeedWork;
 using Message.Tests.TestHelpers;
 using Message.Web.API.Application.Commands.Messages;
+using Message.Web.API.Grpc;
 using Microsoft.Extensions.Logging;
 using Moq;
 using MessageEntity = Message.Domain.Entities.Message;
@@ -45,6 +46,8 @@ public class MessageIdorTests
 
         var handler = new SendMessageCommandHandler(
             _messageRepository.Object, _sessionRepository.Object,
+            new Mock<IFileAttachmentRepository>().Object,
+            new Mock<IFileStorageGrpcClient>().Object,
             new Mock<ILogger<SendMessageCommandHandler>>().Object,
             CacheServicesTestFactory.CreateUnreadCountCache(),
             CacheServicesTestFactory.CreateSessionCache());
@@ -52,7 +55,7 @@ public class MessageIdorTests
         // 模拟调用者（OutsiderId）试图以自己身份向他人会话发消息
         var command = new SendMessageCommand(
             SessionId, OutsiderId, MessageType.MessageText, "你好",
-            MediaUrl: null, ThumbnailUrl: null, FileName: null, FileSize: null, MimeType: null,
+            FileId: null, ThumbnailFileId: null,
             Duration: null, Caption: null, Latitude: null, Longitude: null, LocationName: null,
             LinkUrl: null, LinkTitle: null, LinkDescription: null, ExpressionCode: null);
 
@@ -75,13 +78,15 @@ public class MessageIdorTests
 
         var handler = new SendMessageCommandHandler(
             _messageRepository.Object, _sessionRepository.Object,
+            new Mock<IFileAttachmentRepository>().Object,
+            new Mock<IFileStorageGrpcClient>().Object,
             new Mock<ILogger<SendMessageCommandHandler>>().Object,
             CacheServicesTestFactory.CreateUnreadCountCache(),
             CacheServicesTestFactory.CreateSessionCache());
 
         var command = new SendMessageCommand(
             SessionId, SenderId, MessageType.MessageText, "你好",
-            MediaUrl: null, ThumbnailUrl: null, FileName: null, FileSize: null, MimeType: null,
+            FileId: null, ThumbnailFileId: null,
             Duration: null, Caption: null, Latitude: null, Longitude: null, LocationName: null,
             LinkUrl: null, LinkTitle: null, LinkDescription: null, ExpressionCode: null);
 

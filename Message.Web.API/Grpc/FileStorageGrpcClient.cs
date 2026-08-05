@@ -349,6 +349,145 @@ public class FileStorageGrpcClient : IFileStorageGrpcClient
         return new ChunkStatusResult(true, fileKey, totalChunks, [.. uploaded], "Uploading", null);
     }
 
+
+    public async Task<FileInfoResult> GetFileInfoAsync(Guid fileId, CancellationToken ct = default)
+    {
+        try
+        {
+            var request = new GetFileInfoRequest { FileId = fileId.ToString() };
+
+            var response = await ExecuteWithRetryAsync(
+                client => client.GetFileInfoAsync(request, BuildCallOptions(ct)).ResponseAsync,
+                $"获取文件信息 {fileId}", ct);
+
+            if (!response.Success || response.FileInfo == null)
+                return new FileInfoResult(false, null, null, "", 0, null, "", "",
+                    response.Success ? "文件不存在" : response.ErrorMessage);
+
+            var info = response.FileInfo;
+            return new FileInfoResult(
+                true,
+                Guid.TryParse(info.FileId, out var fid) ? fid : null,
+                Guid.TryParse(info.UserId, out var uid) ? uid : null,
+                info.FileName,
+                info.FileSize,
+                ToUri(info.FileUri),
+                info.FileMd5,
+                info.FileType.ToString(),
+                null);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            return new FileInfoResult(false, null, null, "", 0, null, "", "", MapError(ex, "获取文件信息"));
+        }
+    }
+
+    public async Task<DeleteFileResult> DeleteFileAsync(Guid fileId, Guid userId, CancellationToken ct = default)
+    {
+        try
+        {
+            var request = new DeleteFileRequest
+            {
+                FileId = fileId.ToString(),
+                UserId = userId.ToString()
+            };
+
+            var response = await ExecuteWithRetryAsync(
+                client => client.DeleteFileAsync(request, BuildCallOptions(ct)).ResponseAsync,
+                $"删除文件 {fileId}", ct);
+
+            return new DeleteFileResult(response.Success, response.Success ? null : response.ErrorMessage);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            return new DeleteFileResult(false, MapError(ex, "删除文件"));
+        }
+    }
+
+
+    public async Task<DownloadFileStreamResult> DownloadFileAsync(
+        Guid fileId, Guid userId, CancellationToken ct = default)
+    {
+        try
+        {
+            var request = new DownloadFileRequest
+            {
+                FileId = fileId.ToString(),
+                UserId = userId.ToString()
+            };
+
+            var call = CreateClient().DownloadFile(request, BuildCallOptions(ct));
+
+            async IAsyncEnumerable<byte[]> ReadChunks()
+            {
+                await foreach (var chunk in call.ResponseStream.ReadAllAsync(ct))
+                {
+                    yield return chunk.ChunkData.ToByteArray();
+                }
+            }
+
+            return new DownloadFileStreamResult(true, ReadChunks(), null);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            return new DownloadFileStreamResult(false, EmptyStream(), MapError(ex, "下载文件"));
+        }
+    }
+
+    public async Task<DownloadImageStreamResult> DownloadImageAsync(
+        Guid fileId, Guid userId, int? resizeWidth = null, int? resizeHeight = null,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            var request = new DownloadImageRequest
+            {
+                FileId = fileId.ToString(),
+                UserId = userId.ToString(),
+                ResizeWidth = resizeWidth ?? 0,
+                ResizeHeight = resizeHeight ?? 0
+            };
+
+            var call = CreateClient().DownloadImage(request, BuildCallOptions(ct));
+
+            async IAsyncEnumerable<byte[]> ReadChunks()
+            {
+                await foreach (var chunk in call.ResponseStream.ReadAllAsync(ct))
+                {
+                    yield return chunk.ChunkData.ToByteArray();
+                }
+            }
+
+            return new DownloadImageStreamResult(true, ReadChunks(), null);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            return new DownloadImageStreamResult(false, EmptyStream(), MapError(ex, "下载图片"));
+        }
+    }
+
+    /// <summary>空响应流（失败结果占位，避免 API 层判空）</summary>
+    private static async IAsyncEnumerable<byte[]> EmptyStream()
+    {
+        yield break;
+    }
+
     // ─────────────────────────── 私有辅助方法 ───────────────────────────
 
     /// <summary>

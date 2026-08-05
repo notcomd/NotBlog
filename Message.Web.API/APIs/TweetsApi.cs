@@ -153,7 +153,7 @@ public static class TweetsApi
                 new CreateTweetCommand(
                     userId,
                     request.Content,
-                    request.MediaUrls,
+                    request.FileIds,
                     request.LinkUrl,
                     ParseVisibility(request.Visibility)),
                 ct);
@@ -187,7 +187,7 @@ public static class TweetsApi
                 new SaveDraftCommand(
                     userId,
                     request.Content,
-                    request.MediaUrls,
+                    request.FileIds,
                     request.LinkUrl,
                     ParseVisibility(request.Visibility)),
                 ct);
@@ -365,7 +365,7 @@ public static class TweetsApi
                     tweetGuid,
                     userId,
                     request.Content,
-                    request.MediaUrls,
+                    request.FileIds,
                     request.LinkUrl,
                     ParseVisibility(request.Visibility)),
                 ct);

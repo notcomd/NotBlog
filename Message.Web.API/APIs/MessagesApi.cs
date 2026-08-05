@@ -3,6 +3,11 @@ using Message.Web.API.Application.Commands.Messages;
 using Message.Web.API.Application.Queries.Messages;
 using MessageEntity = Message.Domain.Entities.Message;
 
+using Message.Web.API.Application.Commands.Files;
+using Message.Web.API.Application.Queries.Files;
+using Message.Web.API.Grpc;
+using Message.Web.API.Extensions;
+
 namespace Message.Web.API.APIs;
 
 /// <summary>
@@ -32,7 +37,42 @@ public static class MessagesApi
             .Produces<ApiResponse<Guid>>(StatusCodes.Status400BadRequest)
             .WithTags("Messages");
 
-        // 2. GET /{id} — 获取消息详情
+        // 2. GET /{messageId}/attachments — 消息附件列表
+        group.MapGet("/{messageId}/attachments", GetMessageAttachmentsAsync)
+            .Produces<ApiResponse<IEnumerable<FileAttachmentDto>>>(StatusCodes.Status200OK)
+            .WithTags("Messages");
+
+        // 3. GET /attachments/{attachmentId} — 附件详情（含大小/类型/下载次数/MIME）
+        group.MapGet("/attachments/{attachmentId}", GetAttachmentAsync)
+            .Produces<ApiResponse<FileAttachmentDto>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse<FileAttachmentDto>>(StatusCodes.Status404NotFound)
+            .WithTags("Messages");
+
+        // 4. POST /{messageId}/attachments — 给已发送消息补附件
+        group.MapPost("/{messageId}/attachments", AddAttachmentAsync)
+            .Produces<ApiResponse<Guid>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse<Guid>>(StatusCodes.Status400BadRequest)
+            .WithTags("Messages");
+
+        // 5. DELETE /attachments/{attachmentId} — 删除附件（软删 + 级联 FileDev 物理删除）
+        group.MapDelete("/attachments/{attachmentId}", DeleteAttachmentAsync)
+            .Produces<ApiResponse>(StatusCodes.Status200OK)
+            .Produces<ApiResponse>(StatusCodes.Status400BadRequest)
+            .WithTags("Messages");
+
+        // 6. GET /attachments/{attachmentId}/download — 流式下载（gRPC 代理，替代 302 跳转）
+        group.MapGet("/attachments/{attachmentId}/download", DownloadAttachmentAsync)
+            .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status404NotFound)
+            .WithTags("Messages");
+
+        // 7. GET /attachments/{attachmentId}/preview — 图片预览（gRPC 代理，支持缩放）
+        group.MapGet("/attachments/{attachmentId}/preview", PreviewAttachmentAsync)
+            .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status415UnsupportedMediaType)
+            .WithTags("Messages");
+
+        // 8. GET /{id} — 获取消息详情
         group.MapGet("/{id}", GetMessageAsync)
             .Produces<ApiResponse<MessageDto>>(StatusCodes.Status200OK)
             .Produces<ApiResponse<MessageDto>>(StatusCodes.Status404NotFound)
@@ -87,6 +127,219 @@ public static class MessagesApi
     /// <param name="request">发送消息请求体</param>
     /// <param name="ct">取消令牌</param>
     /// <returns>新消息 ID</returns>
+    /// <summary>
+    /// 获取消息附件列表（查询侧，复用 GetMessageFilesQuery；仅消息所属会话参与者可见）。
+    /// </summary>
+    /// <param name="messageId">消息ID（路由参数）</param>
+    /// <param name="mediator">中介者（命令/查询分发）</param>
+    /// <param name="ct">取消令牌</param>
+    /// <returns>附件 DTO 列表</returns>
+    private static async Task<IResult> GetMessageAttachmentsAsync(
+        Guid messageId,
+        [FromServices] INotMediator mediator,
+        CancellationToken ct)
+    {
+        try
+        {
+            var files = await mediator.SendAsync(new GetMessageFilesQuery(messageId), ct);
+            return Results.Ok(ApiResponse<IEnumerable<FileAttachmentDto>>.Ok(files.Select(MapAttachmentToDto)));
+        }
+        catch (Exception ex)
+        {
+            return Results.Json(ApiResponse<IEnumerable<FileAttachmentDto>>.Error($"获取消息附件失败: {ex.Message}"),
+                statusCode: 500);
+        }
+    }
+
+    /// <summary>
+    /// 获取附件详情（查询侧，GetFileQuery；合并旧 /api/files/{id}、/exists、/size、/type、/download-count 琐碎查询）。
+    /// </summary>
+    /// <param name="attachmentId">附件ID（路由参数）</param>
+    /// <param name="mediator">中介者（命令/查询分发）</param>
+    /// <param name="ct">取消令牌</param>
+    /// <returns>附件 DTO</returns>
+    private static async Task<IResult> GetAttachmentAsync(
+        Guid attachmentId,
+        [FromServices] INotMediator mediator,
+        CancellationToken ct)
+    {
+        try
+        {
+            var file = await mediator.SendAsync(new GetFileQuery(attachmentId), ct);
+            if (file == null)
+                return Results.Json(ApiResponse<FileAttachmentDto>.NotFound("附件不存在"), statusCode: 404);
+
+            return Results.Ok(ApiResponse<FileAttachmentDto>.Ok(MapAttachmentToDto(file)));
+        }
+        catch (Exception ex)
+        {
+            return Results.Json(ApiResponse<FileAttachmentDto>.Error($"获取附件失败: {ex.Message}"), statusCode: 500);
+        }
+    }
+
+    /// <summary>
+    /// 给已发送消息补附件（AddAttachmentCommand：FileDev 归属校验 + 消息会话成员校验）。
+    /// </summary>
+    /// <param name="messageId">消息ID（路由参数）</param>
+    /// <param name="request">补附件请求体（fileId）</param>
+    /// <param name="currentUser">当前用户服务</param>
+    /// <param name="mediator">中介者（命令/查询分发）</param>
+    /// <param name="ct">取消令牌</param>
+    /// <returns>新附件 ID</returns>
+    private static async Task<IResult> AddAttachmentAsync(
+        Guid messageId,
+        [FromBody] AddAttachmentRequest request,
+        [FromServices] ICurrentUserService currentUser,
+        [FromServices] INotMediator mediator,
+        CancellationToken ct)
+    {
+        try
+        {
+            var attachmentId = await mediator.SendAsync(
+                new AddAttachmentCommand(messageId, request.FileId, currentUser.GetUserId()), ct);
+            return Results.Ok(ApiResponse<Guid>.Created(attachmentId, "附件添加成功"));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return Results.Json(ApiResponse<Guid>.NotFound(ex.Message), statusCode: 404);
+        }
+        catch (Exception ex)
+        {
+            return Results.Json(ApiResponse<Guid>.Error($"添加附件失败: {ex.Message}"), statusCode: 500);
+        }
+    }
+
+    /// <summary>
+    /// 删除附件（DeleteFileCommand：软删附件记录 + 级联 FileDev gRPC 删除物理文件）。
+    /// </summary>
+    /// <param name="attachmentId">附件ID（路由参数）</param>
+    /// <param name="mediator">中介者（命令/查询分发）</param>
+    /// <param name="ct">取消令牌</param>
+    /// <returns>操作结果</returns>
+    private static async Task<IResult> DeleteAttachmentAsync(
+        Guid attachmentId,
+        [FromServices] INotMediator mediator,
+        CancellationToken ct)
+    {
+        try
+        {
+            await mediator.SendAsync(new DeleteFileCommand(attachmentId), ct);
+            return Results.Ok(ApiResponse.Ok("附件已删除"));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return Results.Json(ApiResponse.NotFound(ex.Message), statusCode: 404);
+        }
+        catch (Exception ex)
+        {
+            return Results.Json(ApiResponse.Error($"删除附件失败: {ex.Message}"), statusCode: 500);
+        }
+    }
+
+    /// <summary>
+    /// 流式下载附件（重新设计 v2：替代旧 302 重定向直链）。
+    /// <para>
+    /// 链路：附件权限校验（GetFileQuery/FileAccessGuard）→ 记录下载次数 →
+    /// FileDev gRPC DownloadFile 流式转发（元数据取附件记录，二进制流不落内存）。
+    /// </para>
+    /// </summary>
+    /// <param name="attachmentId">附件ID（路由参数）</param>
+    /// <param name="mediator">中介者（命令/查询分发）</param>
+    /// <param name="fileStorage">文件存储 gRPC 客户端</param>
+    /// <param name="currentUser">当前用户服务</param>
+    /// <param name="ct">取消令牌</param>
+    /// <returns>文件流响应</returns>
+    private static async Task<IResult> DownloadAttachmentAsync(
+        Guid attachmentId,
+        [FromServices] INotMediator mediator,
+        [FromServices] IFileStorageGrpcClient fileStorage,
+        [FromServices] ICurrentUserService currentUser,
+        CancellationToken ct)
+    {
+        try
+        {
+            var file = await mediator.SendAsync(new GetFileQuery(attachmentId), ct);
+            if (file == null)
+                return Results.Json(ApiResponse.NotFound("附件不存在"), statusCode: 404);
+
+            // 记录下载次数（GetFileQuery 已做 FileAccessGuard 权限校验）
+            await mediator.SendAsync(new RecordDownloadCommand(attachmentId), ct);
+
+            var result = await fileStorage.DownloadFileAsync(file.FileId, currentUser.GetUserId(), ct);
+            if (!result.Success)
+                return Results.Json(ApiResponse.Error(result.ErrorMessage ?? "下载失败"),
+                    statusCode: StatusCodes.Status502BadGateway);
+
+            var contentType = file.MimeType ?? MimeTypeMap.FromFileName(file.FileName);
+            return Results.Stream(new AsyncEnumerableStream(result.Chunks), contentType, file.FileName);
+        }
+        catch (Exception ex)
+        {
+            return Results.Json(ApiResponse.Error($"下载附件失败: {ex.Message}"), statusCode: 500);
+        }
+    }
+
+    /// <summary>
+    /// 图片预览（重新设计 v2：替代旧 302 跳转直链）。
+    /// <para>仅支持图片类型（否则 415）；经 FileDev gRPC DownloadImage 流式转发，支持服务端缩放。</para>
+    /// </summary>
+    /// <param name="attachmentId">附件ID（路由参数）</param>
+    /// <param name="w">缩放宽度（可选）</param>
+    /// <param name="h">缩放高度（可选）</param>
+    /// <param name="mediator">中介者（命令/查询分发）</param>
+    /// <param name="fileStorage">文件存储 gRPC 客户端</param>
+    /// <param name="currentUser">当前用户服务</param>
+    /// <param name="ct">取消令牌</param>
+    /// <returns>图片流响应</returns>
+    private static async Task<IResult> PreviewAttachmentAsync(
+        Guid attachmentId,
+        int? w,
+        int? h,
+        [FromServices] INotMediator mediator,
+        [FromServices] IFileStorageGrpcClient fileStorage,
+        [FromServices] ICurrentUserService currentUser,
+        CancellationToken ct)
+    {
+        try
+        {
+            var file = await mediator.SendAsync(new GetFileQuery(attachmentId), ct);
+            if (file == null)
+                return Results.Json(ApiResponse.NotFound("附件不存在"), statusCode: 404);
+
+            if (!file.IsImage())
+                return Results.Json(ApiResponse.Error("该文件不支持预览"),
+                    statusCode: StatusCodes.Status415UnsupportedMediaType);
+
+            var result = await fileStorage.DownloadImageAsync(file.FileId, currentUser.GetUserId(), w, h, ct);
+            if (!result.Success)
+                return Results.Json(ApiResponse.Error(result.ErrorMessage ?? "预览失败"),
+                    statusCode: StatusCodes.Status502BadGateway);
+
+            var contentType = file.MimeType ?? MimeTypeMap.FromFileName(file.FileName);
+            return Results.Stream(new AsyncEnumerableStream(result.Chunks), contentType, file.FileName);
+        }
+        catch (Exception ex)
+        {
+            return Results.Json(ApiResponse.Error($"预览附件失败: {ex.Message}"), statusCode: 500);
+        }
+    }
+
+    /// <summary>文件附件实体 → DTO 映射</summary>
+    private static FileAttachmentDto MapAttachmentToDto(FileAttachment file) => new()
+    {
+        AttachmentId = file.AttachmentId,
+        FileId = file.FileId,
+        MessageId = file.MessageId,
+        FileName = file.FileName,
+        FileType = file.FileType,
+        FileSize = file.FileSize,
+        FileUrl = file.FileUri.ToString(),
+        MimeType = file.MimeType,
+        ThumbnailUrl = file.ThumbnailUri?.ToString(),
+        UploadTime = file.UploadTime,
+        DownloadCount = file.DownloadCount
+    };
+
     private static async Task<IResult> SendMessageAsync(
         [FromServices] ICurrentUserService currentUser,
         [FromServices] INotMediator mediator,
@@ -101,11 +354,8 @@ public static class MessagesApi
                 userId,
                 request.MessageType,
                 request.Content,
-                request.MediaUrl is null ? null : new Uri(request.MediaUrl),
-                request.ThumbnailUrl,
-                request.FileName,
-                request.FileSize,
-                request.MimeType,
+                request.FileId,
+                request.ThumbnailFileId,
                 request.Duration,
                 request.Caption,
                 request.Latitude,

@@ -64,6 +64,34 @@ public interface IFileStorageGrpcClient
     /// </summary>
     Task<CancelChunkUploadResult> CancelChunkUploadAsync(string fileKey, CancellationToken ct = default);
 
+
+    /// <summary>
+    /// 查询文件信息（FileDev gRPC GetFileInfo）。
+    /// 用于发送附件消息前校验文件归属：返回的 UserId 必须与当前用户一致。
+    /// </summary>
+    Task<FileInfoResult> GetFileInfoAsync(Guid fileId, CancellationToken ct = default);
+
+    /// <summary>
+    /// 删除文件（FileDev gRPC DeleteFile），同步清理 FileDev 侧物理文件。
+    /// </summary>
+    Task<DeleteFileResult> DeleteFileAsync(Guid fileId, Guid userId, CancellationToken ct = default);
+
+
+    /// <summary>
+    /// 流式下载文件（FileDev gRPC DownloadFile，服务端流式响应）。
+    /// 用于附件下载代理：权限校验与下载计数在 Message 侧完成，文件内容经此流式转发。
+    /// </summary>
+    Task<DownloadFileStreamResult> DownloadFileAsync(
+        Guid fileId, Guid userId, CancellationToken ct = default);
+
+    /// <summary>
+    /// 流式下载图片（FileDev gRPC DownloadImage，支持服务端缩放）。
+    /// 用于附件预览代理；非图片文件应提前在 Message 侧拒绝。
+    /// </summary>
+    Task<DownloadImageStreamResult> DownloadImageAsync(
+        Guid fileId, Guid userId, int? resizeWidth = null, int? resizeHeight = null,
+        CancellationToken ct = default);
+
     /// <summary>
     /// 断点续传：先查询服务端已上传分片，仅上传缺失分片；
     /// 每个分片上传完成后通过 <paramref name="progress"/> 回调上报进度。

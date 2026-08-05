@@ -55,6 +55,14 @@ public class TweetMedia : Entity<Guid>
     /// 排序顺序
     /// </summary>
     public int SortOrder { get; private set; }
+
+    /// <summary>
+    /// 设置文件大小（服务端经 FileDev 解析媒体元数据后填充）
+    /// </summary>
+    public void SetFileSize(long fileSize)
+    {
+        FileSize = fileSize;
+    }
     /// <summary>
     /// 创建时间
     /// </summary>
