@@ -31,6 +31,22 @@ public static class ReflectionHelper
                 resultAssemblies.Add(rootAssembly);
         }
 
+        // dotnet-ef 等设计时工具场景：入口程序集是工具自身，其引用链不含业务程序集，
+        // 补充扫描当前 AppDomain 已加载的程序集，确保 IModuleInitializer、DbContext 等能被发现
+        foreach (var loadedAssembly in AppDomain.CurrentDomain.GetAssemblies())
+        {
+            if (skipSystemAssemblies && IsSystemAssembly(loadedAssembly))
+                continue;
+
+            if (!loadedAssemblies.Add(loadedAssembly.GetName().FullName))
+                continue;
+
+            assembliesToCheck.Enqueue(loadedAssembly);
+
+            if (IsValidAssembly(loadedAssembly))
+                resultAssemblies.Add(loadedAssembly);
+        }
+
         while (assembliesToCheck.Count > 0)
         {
             var assembly = assembliesToCheck.Dequeue();

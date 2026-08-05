@@ -20,5 +20,6 @@ public class ModuleInitializer : IModuleInitializer
         service.AddScoped<IFileChunkManager, FileChunkManager>();
         service.AddScoped<IRequestManagement, RequestManagement>();
         service.AddScoped<FileStorageService>();
+        
     }
 }

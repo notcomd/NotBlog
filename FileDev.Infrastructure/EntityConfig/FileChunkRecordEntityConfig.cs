@@ -1,5 +1,6 @@
 using FileDev.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace FileDev.Infrastructure.EntityConfig;
@@ -40,8 +41,11 @@ public class FileChunkRecordEntityConfig : IEntityTypeConfiguration<FileChunkRec
             .HasConversion(
                 v => string.Join(",", v.OrderBy(x => x)),
                 v => v.Split(',', StringSplitOptions.RemoveEmptyEntries)
-                    .Select(int.Parse).ToList()
-            )
+                    .Select(int.Parse).ToList(),
+                new ValueComparer<List<int>>(
+                    (l, r) => l!.SequenceEqual(r!),
+                    v => v.Aggregate(0, (a, x) => HashCode.Combine(a, x.GetHashCode())),
+                    v => new List<int>(v)))
             .HasColumnName("UploadedChunksCsv")
             .HasMaxLength(4000);
 
@@ -62,9 +66,14 @@ public class FileChunkRecordEntityConfig : IEntityTypeConfiguration<FileChunkRec
                 v => v != null ? string.Join(",", v) : string.Empty,
                 v => !string.IsNullOrEmpty(v)
                     ? v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToHashSet()
-                    : new HashSet<string>()
-            )
-            .HasMaxLength(2000);
+                    : new HashSet<string>(),
+                new ValueComparer<HashSet<string>>(
+                    (l, r) => l!.SetEquals(r!),
+                    v => v.Aggregate(0, (a, s) => HashCode.Combine(a, s.GetHashCode())),
+                    v => new HashSet<string>(v)))
+            .HasMaxLength(2000)
+            // 历史数据库结构（20260730135155_BlogFileStrong）中该列为可空，显式保持可空以对齐既有结构
+            .IsRequired(false);
 
         builder.Property(e => e.FileDescription).HasMaxLength(500);
 

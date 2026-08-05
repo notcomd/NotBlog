@@ -20,12 +20,12 @@ public class FileStorageGrpcClient : IFileStorageGrpcClient
     /// <summary>FileDev 文件服务在 Aspire 服务发现中的服务名称</summary>
     public const string ClientName = "filedev-web-api";
 
-    /// <summary>可重试的瞬时性 gRPC 状态码（网络抖动、服务重启等场景）</summary>
+    /// <summary>可重试的瞬时性 gRPC 状态码（网络抖动、服务重启等场景）。
+    /// 不含 ResourceExhausted：配额不足属于确定性业务失败，重试不会改变结果。</summary>
     private static readonly StatusCode[] RetryableStatusCodes =
     [
         StatusCode.Unavailable,
         StatusCode.DeadlineExceeded,
-        StatusCode.ResourceExhausted,
         StatusCode.Aborted,
         StatusCode.Internal
     ];

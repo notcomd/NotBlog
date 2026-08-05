@@ -1,4 +1,3 @@
-using FileDev.Web.API.Application.Command;
 using Microsoft.AspNetCore.Mvc;
 
 
@@ -10,12 +9,12 @@ public static class FileChunkApis
     {
         var router = routeGroupBuilder.MapGroup("/chunk");
 
-        // S-09：移除 DisableRequestSizeLimit，改用端点级请求体上限
-        router.MapPost("/init", InitChunkUploadAsync)
-            .WithMetadata(new RequestSizeLimitAttribute(1024 * 1024)); // init 仅含 JSON 元数据
+
+        router.MapPost("/init", InitChunkUploadAsync)        
+            .WithMetadata(new RequestSizeLimitAttribute(1024 * 1024)); 
 
         router.MapPost("/upload", UploadChunkAsync)
-            .WithMetadata(new RequestSizeLimitAttribute(11 * 1024 * 1024)); // 分片 ≤5MB + 表单开销
+            .WithMetadata(new RequestSizeLimitAttribute(11 * 1024 * 1024));
 
         router.MapGet("/status/{fileKey}", GetChunkStatusAsync)
             .WithMetadata(new IgnoreAntiforgeryTokenAttribute());
@@ -46,7 +45,6 @@ public static class FileChunkApis
             if (userId == null)
                 return Unauthorized();
 
-            // #28：请求参数合法性校验（文件名/总大小/分片大小）
             if (request == null)
                 return BadRequest("请求体不能为空");
             if (string.IsNullOrWhiteSpace(request.FileName))
@@ -82,11 +80,11 @@ public static class FileChunkApis
         }
         catch (Exception ex)
         {
-            // #11：完整异常仅记录服务端日志，客户端返回安全通用消息
             logger.LogError(ex, "分片上传初始化失败: FileName={FileName}", request?.FileName);
             return InternalError();
         }
     }
+
 
     private static async Task<IResult> UploadChunkAsync(
         HttpContext context,
@@ -95,7 +93,7 @@ public static class FileChunkApis
         [FromServices] ILoggerFactory loggerFactory,
         [FromForm] string fileKey,
         [FromForm] int chunkIndex,
-        IFormFile chunkContent,
+        [FromForm] IFormFile chunkContent,
         CancellationToken ct)
     {
         var logger = loggerFactory.CreateLogger("FileChunkApis");
@@ -105,16 +103,14 @@ public static class FileChunkApis
             if (userId == null)
                 return Unauthorized();
 
-            // #28/#35：请求参数合法性校验（fileKey 非空、chunkIndex 非负，上限由 Handler 侧校验）
             if (string.IsNullOrWhiteSpace(fileKey))
                 return BadRequest("fileKey 不能为空");
             if (chunkIndex < 0)
                 return BadRequest("chunkIndex 不能为负数");
-            // Major：chunkContent 非空校验
+
             if (chunkContent is null || chunkContent.Length == 0)
                 return BadRequest("分片数据不能为空");
 
-            // S-09：读取前先校验分片声明大小，避免超大分片读入内存
             if (chunkContent.Length > storageOptions.Value.ChunkFileSize * 2)
                 return BadRequest("分片数据超出大小限制");
 
@@ -135,7 +131,6 @@ public static class FileChunkApis
         }
         catch (Exception ex)
         {
-            // #11：完整异常仅记录服务端日志，客户端返回安全通用消息
             logger.LogError(ex, "分片上传失败: FileKey={FileKey}, ChunkIndex={ChunkIndex}", fileKey, chunkIndex);
             return InternalError();
         }
@@ -172,7 +167,6 @@ public static class FileChunkApis
         }
         catch (Exception ex)
         {
-            // #11：完整异常仅记录服务端日志，客户端返回安全通用消息
             logger.LogError(ex, "查询分片状态失败: FileKey={FileKey}", fileKey);
             return InternalError();
         }
@@ -212,7 +206,6 @@ public static class FileChunkApis
         }
         catch (Exception ex)
         {
-            // #11：完整异常仅记录服务端日志，客户端返回安全通用消息
             logger.LogError(ex, "合并分片失败: FileKey={FileKey}", request?.FileKey);
             return InternalError();
         }
@@ -241,7 +234,7 @@ public static class FileChunkApis
         }
         catch (Exception ex)
         {
-            // #11：完整异常仅记录服务端日志，客户端返回安全通用消息
+            
             logger.LogError(ex, "取消分片上传失败: FileKey={FileKey}", fileKey);
             return InternalError();
         }

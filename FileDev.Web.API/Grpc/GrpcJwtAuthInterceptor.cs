@@ -33,6 +33,13 @@ public class GrpcJwtAuthInterceptor : Interceptor
         _logger = logger;
     }
 
+    /// <summary>
+    /// 处理 gRPC 服务器单请求，认证 JWT 并将解析出的调用者 id 写入 <see cref="ServerCallContext.UserState"/>。
+    /// </summary>
+    /// <param name="request">请求消息</param>
+    /// <param name="context">gRPC 请求上下文</param>
+    /// <param name="continuation">继续处理请求的委托</param>
+    /// <returns>任务</returns>
     public override Task<TResponse> UnaryServerHandler<TRequest, TResponse>(
         TRequest request, ServerCallContext context, UnaryServerMethod<TRequest, TResponse> continuation)
     {
@@ -40,6 +47,14 @@ public class GrpcJwtAuthInterceptor : Interceptor
         return continuation(request, context);
     }
 
+    /// <summary>
+    /// 处理 gRPC 服务器流式请求，认证 JWT 并将解析出的调用者 id 写入 <see cref="ServerCallContext.UserState"/>。
+    /// </summary>
+    /// <param name="request">请求消息</param>
+    /// <param name="responseStream">响应流</param>
+    /// <param name="context">gRPC 请求上下文</param>
+    /// <param name="continuation">继续处理请求的委托</param>
+    /// <returns>任务</returns>
     public override Task ServerStreamingServerHandler<TRequest, TResponse>(
         TRequest request, IServerStreamWriter<TResponse> responseStream, ServerCallContext context,
         ServerStreamingServerMethod<TRequest, TResponse> continuation)
@@ -48,6 +63,10 @@ public class GrpcJwtAuthInterceptor : Interceptor
         return continuation(request, responseStream, context);
     }
 
+    /// <summary>
+    /// 认证 gRPC 请求，校验 JWT 并将解析出的调用者 id 写入 <see cref="ServerCallContext.UserState"/>。
+    /// </summary>
+    /// <param name="context">gRPC 请求上下文</param>
     private void Authenticate(ServerCallContext context)
     {
         var authHeader = context.RequestHeaders.FirstOrDefault(h =>
@@ -56,7 +75,6 @@ public class GrpcJwtAuthInterceptor : Interceptor
         var callerId = ResolveCallerId(authHeader);
         if (callerId is null)
         {
-            // Major：原代码无认证失败日志，难以排查越权/异常调用。记录 method 与 peer，不记录 token
             _logger.LogWarning("gRPC 认证失败: Method={Method}, Peer={Peer}",
                 context.Method, context.Peer);
             throw new RpcException(new Status(StatusCode.Unauthenticated, "未认证或令牌无效"));
@@ -65,6 +83,12 @@ public class GrpcJwtAuthInterceptor : Interceptor
         context.UserState[CallerUserIdStateKey] = callerId.Value;
     }
 
+    /// <summary>
+    /// 从请求元数据 Authorization 头（Bearer token）解析 JWT 并校验签名/有效期，
+    /// 通过后返回服务端解析出的调用者 id。
+    /// </summary>
+    /// <param name="authHeader">请求元数据 Authorization 头（Bearer token）</param>
+    /// <returns>服务端解析出的调用者 id，若解析失败则返回 null</returns>
     private Guid? ResolveCallerId(string? authHeader)
     {
         if (string.IsNullOrWhiteSpace(authHeader))

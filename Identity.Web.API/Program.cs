@@ -6,6 +6,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
+//builder.AddNpgsql("IdentityPostgres");
+
 builder.AddCacheMemory("Redis");
 
 builder.AddRabbitMQClient("EventBus");

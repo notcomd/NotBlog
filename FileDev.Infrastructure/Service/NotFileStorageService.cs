@@ -112,32 +112,29 @@ public class NotFileStorageService : INotFileStorageService
             var fullPath = await GetSafeFullPathAsync(request.FileRelativePath);
             var directory = Path.GetDirectoryName(fullPath);
             await EnsureDirectoryExistsAsync(directory ?? throw new ArgumentException("无效的相对路径"));
-
-            // 覆盖检查
+          
             if (File.Exists(fullPath) && !request.Overwrite)
             {
                 return new NotFileStorageResponse
                 {
                     Success = false,
-                    // S-16：错误消息不包含绝对路径，仅暴露相对路径
+                    
                     ErrorMessage = $"文件已存在且禁止覆盖：{request.FileRelativePath}",
                     FullPath = string.Empty
                 };
             }
-
-            // 写入文件并校验（如果传入了哈希值）
+            
             await File.WriteAllBytesAsync(fullPath, request.FileContent);
-
-            // 可选：验证文件哈希（如果请求中传入了预期哈希，统一使用 SHA256，见 F-09.5）
+            
             if (!string.IsNullOrEmpty(request.ExpectedHash))
             {
                 bool hashMatch = HashHelper.VerifyFileHash(fullPath, request.ExpectedHash, AlgorithmType.SHA256);
                 if (!hashMatch)
                 {
-                    // 必须在删除文件之前计算实际哈希，否则文件已删除会返回空字符串
+                   
                     var actualHash = HashHelper.ComputeFileHash(fullPath, AlgorithmType.SHA256);
-                    File.Delete(fullPath); // 校验失败删除文件
-                    // S-16：哈希不一致仅记日志与相对路径，不对外暴露绝对路径
+                    File.Delete(fullPath); 
+                   
                     _logger.LogWarning("保存文件哈希校验失败 FileRelativePath={FileRelativePath} ExpectedHash={ExpectedHash}",
                         request.FileRelativePath, request.ExpectedHash);
                     return new NotFileStorageResponse
@@ -160,7 +157,7 @@ public class NotFileStorageService : INotFileStorageService
         }
         catch (Exception ex)
         {
-            // S-16：异常详情与绝对路径写入日志，对外仅返回通用文案
+           
             _logger.LogError(ex, "保存文件失败 FileRelativePath={FileRelativePath}", request.FileRelativePath);
             return new NotFileStorageResponse
             {
@@ -170,6 +167,7 @@ public class NotFileStorageService : INotFileStorageService
             };
         }
     }
+
 
     public async Task<NotFileStorageResponse> DeleteAsync(string fileRelativePath)
     {
@@ -188,15 +186,13 @@ public class NotFileStorageService : INotFileStorageService
 
             return new NotFileStorageResponse
             {
-                Success = false,
-                // S-16：错误消息不包含绝对路径
+                Success = false,    
                 ErrorMessage = $"文件不存在：{fileRelativePath}",
                 FullPath = string.Empty
             };
         }
         catch (Exception ex)
-        {
-            // S-16：异常详情与绝对路径写入日志，对外仅返回通用文案
+        {            
             _logger.LogError(ex, "删除文件失败 FileRelativePath={FileRelativePath}", fileRelativePath);
             return new NotFileStorageResponse
             {
@@ -215,8 +211,7 @@ public class NotFileStorageService : INotFileStorageService
             {
                 return (null, new NotFileStorageResponse
                 {
-                    Success = false,
-                    // S-16：错误消息不包含绝对路径
+                    Success = false,                  
                     ErrorMessage = $"文件不存在：{fileRelativePath}",
                     FullPath = string.Empty
                 })!;
@@ -232,8 +227,7 @@ public class NotFileStorageService : INotFileStorageService
             });
         }
         catch (Exception ex)
-        {
-            // S-16：异常详情与绝对路径写入日志，对外仅返回通用文案
+        {         
             _logger.LogError(ex, "读取文件失败 FileRelativePath={FileRelativePath}", fileRelativePath);
             return (null, new NotFileStorageResponse
             {
@@ -250,8 +244,7 @@ public class NotFileStorageService : INotFileStorageService
             return File.Exists(await GetSafeFullPathAsync(fileRelativePath));
         }
         catch (Exception ex)
-        {
-            // S-16：非法路径视为不存在，避免路径穿越校验异常向上传播
+        {          
             _logger.LogWarning(ex, "检查文件存在性失败 FileRelativePath={FileRelativePath}", fileRelativePath);
             return false;
         }
@@ -269,8 +262,7 @@ public class NotFileStorageService : INotFileStorageService
             {
                 return (null, new NotFileStorageResponse
                 {
-                    Success = false,
-                    // S-16：错误消息不包含绝对路径
+                    Success = false,                   
                     ErrorMessage = $"文件不存在：{fileRelativePath}",
                     FullPath = string.Empty
                 })!;
@@ -302,18 +294,36 @@ public class NotFileStorageService : INotFileStorageService
     /// </summary>
     public Task CleanupChunksAsync(string fileKey)
     {
-        var safeFileKey = SanitizeFileKey(fileKey);
-        var pattern = $"{safeFileKey}_chunk_*";
-        foreach (var chunkFile in Directory.EnumerateFiles(_tempChunkFullPath, pattern))
+        try
         {
-            try
+            if (string.IsNullOrWhiteSpace(fileKey))
             {
-                File.Delete(chunkFile);
+                _logger.LogWarning("清理分片跳过：FileKey 为空");
+                return Task.CompletedTask;
             }
-            catch
+
+            if (!Directory.Exists(_tempChunkFullPath))
             {
-                // 单个分片删除失败不阻断整体清理，交由过期清理任务兜底
+                return Task.CompletedTask;
             }
+
+            var safeFileKey = SanitizeFileKey(fileKey);
+            var pattern = $"{safeFileKey}_chunk_*";
+            foreach (var chunkFile in Directory.EnumerateFiles(_tempChunkFullPath, pattern))
+            {
+                try
+                {
+                    File.Delete(chunkFile);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "删除分片失败 ChunkFile={ChunkFile}", chunkFile);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "清理分片失败 FileKey={FileKey}", fileKey);
         }
 
         return Task.CompletedTask;
@@ -336,13 +346,11 @@ public class NotFileStorageService : INotFileStorageService
     {
         try
         {
-            // 1. 校验分片哈希（如果传入，统一 SHA256，见 F-09.5）
             if (!string.IsNullOrEmpty(chunkHash))
             {
                 bool isChunkValid = HashHelper.VerifyHash(chunkContent, chunkHash, AlgorithmType.SHA256);
                 if (!isChunkValid)
                 {
-                    // S-16：哈希不一致仅记日志，不对外暴露绝对路径
                     _logger.LogWarning("分片哈希校验失败 FileKey={FileKey} ChunkIndex={ChunkIndex}",
                         fileKey, chunkIndex);
                     return new NotFileStorageResponse
@@ -354,7 +362,6 @@ public class NotFileStorageService : INotFileStorageService
                 }
             }
 
-            // 2. 保存分片到临时目录
             var chunkTempPath = await GetChunkTempPathAsync(fileKey, chunkIndex);
             await File.WriteAllBytesAsync(chunkTempPath, chunkContent);
 
@@ -368,7 +375,6 @@ public class NotFileStorageService : INotFileStorageService
         }
         catch (Exception ex)
         {
-            // S-16：异常详情与绝对路径写入日志，对外仅返回通用文案
             _logger.LogError(ex, "上传分片失败 FileKey={FileKey} ChunkIndex={ChunkIndex}", fileKey, chunkIndex);
             return new NotFileStorageResponse
             {
@@ -391,7 +397,6 @@ public class NotFileStorageService : INotFileStorageService
     {
         try
         {
-            // 1. 检查所有分片是否存在
             var chunkPaths = new List<string>();
             for (int i = 0; i < totalChunks; i++)
             {
@@ -401,7 +406,6 @@ public class NotFileStorageService : INotFileStorageService
                     return new NotFileStorageResponse
                     {
                         Success = false,
-                        // S-16：错误消息不包含绝对路径，仅提示缺失的分片序号
                         ErrorMessage = $"分片{i}缺失",
                         FullPath = string.Empty
                     };
@@ -410,24 +414,21 @@ public class NotFileStorageService : INotFileStorageService
                 chunkPaths.Add(chunkPath);
             }
 
-            // 2. 合并分片到最终文件路径
             var finalFilePath = await GetSafeFullPathAsync(fileKey);
             var finalFileDir = Path.GetDirectoryName(finalFilePath);
             await EnsureDirectoryExistsAsync(finalFileDir ?? throw new ArgumentException("无效的文件路径"));
 
-            // 覆盖检查
+
             if (File.Exists(finalFilePath) && !overwrite)
             {
                 return new NotFileStorageResponse
                 {
                     Success = false,
-                    // S-16：错误消息不包含绝对路径，仅暴露相对路径 fileKey
                     ErrorMessage = $"最终文件已存在且禁止覆盖：{fileKey}",
                     FullPath = string.Empty
                 };
             }
 
-            // 3. 写入合并后的文件（流式写入，避免大文件占满内存）
             await using (var finalStream = new FileStream(finalFilePath, FileMode.Create, FileAccess.Write))
             {
                 foreach (var chunkPath in chunkPaths)
@@ -437,15 +438,13 @@ public class NotFileStorageService : INotFileStorageService
                 }
             }
 
-            // 4. 校验最终文件哈希（如果传入，统一 SHA256，见 F-09.5）
             string actualFileHash = HashHelper.ComputeFileHash(finalFilePath, AlgorithmType.SHA256);
             if (!string.IsNullOrEmpty(expectedFileHash))
             {
                 var isFileValid = HashHelper.VerifyFileHash(finalFilePath, expectedFileHash, AlgorithmType.SHA256);
                 if (!isFileValid)
                 {
-                    File.Delete(finalFilePath); // 校验失败删除文件
-                    // S-16：哈希不一致仅记日志，不对外暴露绝对路径
+                    File.Delete(finalFilePath);
                     _logger.LogWarning("文件合并后哈希校验失败 FileKey={FileKey} ExpectedHash={ExpectedHash}",
                         fileKey, expectedFileHash);
                     return new NotFileStorageResponse
@@ -457,7 +456,6 @@ public class NotFileStorageService : INotFileStorageService
                 }
             }
 
-            // 5. 删除临时分片文件
             foreach (var chunkPath in chunkPaths)
             {
                 File.Delete(chunkPath);
@@ -473,7 +471,6 @@ public class NotFileStorageService : INotFileStorageService
         }
         catch (Exception ex)
         {
-            // S-16：异常详情与绝对路径写入日志，对外仅返回通用文案
             _logger.LogError(ex, "合并分片失败 FileKey={FileKey}", fileKey);
             return new NotFileStorageResponse
             {

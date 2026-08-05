@@ -25,32 +25,31 @@ public static class AuditApi
             .WithTags("Audit")
             .RequireAuthorization();
 
-        // GET /tweets/pending — 获取待审核推文列表
         group.MapGet("/tweets/pending", GetPendingTweetsAsync)
             .WithSummary("获取待审核推文列表")
             .WithDescription("管理员获取所有待审核的推文列表，支持分页")
             .Produces<ApiResponse<PagedResult<object>>>();
 
-        // POST /tweets/{tweetGuid}/approve — 通过推文审核
+
         group.MapPost("/tweets/{tweetGuid}/approve", ApproveTweetAsync)
             .WithSummary("通过推文审核")
             .WithDescription("管理员通过指定推文的审核")
             .Produces<ApiResponse>();
 
-        // POST /tweets/{tweetGuid}/reject — 驳回推文
+
         group.MapPost("/tweets/{tweetGuid}/reject", RejectTweetAsync)
             .WithSummary("驳回推文")
             .WithDescription("管理员驳回指定推文，需提供驳回原因")
             .Accepts<AuditActionRequest>("application/json")
             .Produces<ApiResponse>();
 
-        // GET /reports/pending — 获取待处理举报列表
+
         group.MapGet("/reports/pending", GetPendingReportsAsync)
             .WithSummary("获取待处理举报列表")
             .WithDescription("管理员获取所有待处理的举报列表，支持分页")
             .Produces<ApiResponse<PagedResult<object>>>();
 
-        // POST /reports/{reportGuid}/resolve — 处理举报
+
         group.MapPost("/reports/{reportGuid}/resolve", ResolveReportAsync)
             .WithSummary("处理举报")
             .WithDescription("管理员处理指定举报")

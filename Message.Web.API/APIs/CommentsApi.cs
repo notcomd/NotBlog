@@ -25,26 +25,26 @@ public static class CommentsApi
             .WithTags("Comments")
             .RequireAuthorization();
 
-        // POST / — 发布评论
+        
         group.MapPost("/", AddCommentAsync)
             .WithSummary("发布评论")
             .WithDescription("对推文发布评论或回复")
             .Accepts<CreateCommentRequest>("application/json")
             .Produces<ApiResponse>();
 
-        // GET /tweet/{tweetGuid} — 获取推文评论
+       
         group.MapGet("/tweet/{tweetGuid}", GetTweetCommentsAsync)
             .WithSummary("获取推文评论")
             .WithDescription("获取指定推文的评论列表，支持分页")
             .Produces<ApiResponse<PagedResult<CommentDto>>>();
 
-        // GET /{commentGuid}/replies — 获取评论回复
+      
         group.MapGet("/{commentGuid}/replies", GetCommentRepliesAsync)
             .WithSummary("获取评论回复")
             .WithDescription("获取指定评论的回复列表，支持分页")
             .Produces<ApiResponse<PagedResult<CommentDto>>>();
 
-        // DELETE /{commentGuid} — 删除评论
+        
         group.MapDelete("/{commentGuid}", DeleteCommentAsync)
             .WithSummary("删除评论")
             .WithDescription("删除指定评论")

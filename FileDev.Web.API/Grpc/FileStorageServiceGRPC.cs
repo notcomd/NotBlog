@@ -2,8 +2,6 @@
 using Google.Protobuf;
 using Grpc.Core;
 
-using Notcomd.Token.JWT.Security;
-using FileDev.Web.API.APIs;
 using FileInfoProto = FileDev.Web.API.Grpc.FileInfo;
 using FileIdentityProto = FileDev.Web.API.Grpc.FileIdentity;
 using FileTypeProto = FileDev.Web.API.Grpc.FileType;
@@ -13,35 +11,27 @@ using DomainFileType = FileDev.Domain.Entities.FileType;
 namespace FileDev.Web.API.Grpc;
 
 /// <summary>
-/// gRPC 文件存储服务实现，提供文件和图片的上传、下载、分片上传、元数据管理等完整功能。
-/// 基于现有的领域服务和基础设施层，通过 gRPC 对外暴露文件操作能力。
+/// gRPC 文件存储服务实现：薄适配器。
+/// 仅负责「解析调用者 → 构造命令/查询 → 调用应用服务（<see cref="INotMediator"/>）→ 转换响应」，
+/// 参数校验、权限/配额检查、存储操作与事务提交全部下沉到应用服务层；
+/// 业务异常由 <see cref="GrpcExceptionMapperInterceptor"/> 统一映射为 gRPC 状态码。
 /// </summary>
 public class FileStorageServiceGRPC : FileStorage.FileStorageBase
 {
-    private readonly INotFileService _notFileService;
-    private readonly INotFileStorageService _storageService;
-    private readonly IFileChunkManager _chunkManager;
-    private readonly IOptionsSnapshot<NotFileStorageOptions> _options;
-    private readonly FileDev.Domain.IRepository.INotFileRepository _notFileRepository;
-    private readonly ILogger<FileStorageServiceGRPC> _logger;
+    private const int StreamChunkSize = 64 * 1024; // 64KB per chunk
 
-    public FileStorageServiceGRPC(INotFileService notFileService,
-                                  INotFileStorageService storageService,
-                                  IFileChunkManager chunkManager,
-                                  IOptionsSnapshot<NotFileStorageOptions> options,
-                                  FileDev.Domain.IRepository.INotFileRepository notFileRepository,
-                                  ILogger<FileStorageServiceGRPC> logger)
+    private readonly INotMediator _mediator;
+    private readonly IOptionsSnapshot<NotFileStorageOptions> _options;
+
+    public FileStorageServiceGRPC(INotMediator mediator,
+                                  IOptionsSnapshot<NotFileStorageOptions> options)
     {
-        _notFileService = notFileService;
-        _storageService = storageService;
-        _chunkManager = chunkManager;
+        _mediator = mediator;
         _options = options;
-        _notFileRepository = notFileRepository;
-        _logger = logger;
     }
 
     // ═══════════════════════════════════════════════════
-    // 认证与授权辅助（S-08）
+    // 认证辅助（S-08）
     // ═══════════════════════════════════════════════════
 
     /// <summary>
@@ -57,22 +47,6 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
         throw new RpcException(new Status(StatusCode.Unauthenticated, "未认证"));
     }
 
-    /// <summary>
-    /// 校验私有文件归属：非公开文件仅允许所有者访问（S-08）。
-    /// </summary>
-    private static bool CanAccessFile(NotFile file, Guid callerId)
-        => file.FileIdentity != DomainFileIdentity.FilePrivate || file.UserId == callerId;
-
-    /// <summary>
-    /// 配额检查（S-09）：已用空间 + 本次新增不得超出 <see cref="NotFileStorageOptions.UserStorageQuota"/>。
-    /// </summary>
-    private async Task EnsureQuotaAvailableAsync(Guid userId, long additionalBytes, CancellationToken ct)
-    {
-        var used = await _notFileRepository.GetTotalFileSizeByUserIdAsync(userId);
-        if (used + additionalBytes > _options.Value.UserStorageQuota)
-            throw new RpcException(new Status(StatusCode.ResourceExhausted, "用户存储配额不足"));
-    }
-
     // ═══════════════════════════════════════════════════
     // 文件元数据操作
     // ═══════════════════════════════════════════════════
@@ -80,964 +54,404 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
     /// <summary>
     /// 获取文件信息
     /// </summary>
-    /// <param name="request">包含文件ID的请求</param>
-    /// <param name="context">gRPC 上下文</param>
-    /// <returns>包含文件信息的响应</returns>
-    /// <exception cref="ArgumentException">如果文件ID无效</exception>
-    /// <exception cref="InvalidOperationException">如果文件已被删除</exception>
-    /// <exception cref="Exception">如果发生其他异常</exception>
     public override async Task<GetFileInfoResponse> GetFileInfo(
         GetFileInfoRequest request, ServerCallContext context)
     {
-        try
+        var callerId = GetCallerId(context);
+        if (!Guid.TryParse(request.FileId, out var fileId))
+            throw new ArgumentException("无效的文件ID");
+
+        var file = await _mediator.SendAsync(
+            new GetFileInfoQuery { UserId = callerId, FileId = fileId },
+            context.CancellationToken);
+
+        return new GetFileInfoResponse
         {
-            var callerId = GetCallerId(context);
-            if (!Guid.TryParse(request.FileId, out var fileId))
-                return new GetFileInfoResponse { Success = false, ErrorMessage = "无效的文件ID" };
-
-            var file = await _notFileService.GetFileByIdAsync(fileId);
-            if (file is null || file.IsDeleted)
-                return new GetFileInfoResponse { Success = false, ErrorMessage = "文件不存在" };
-
-            // S-08：私有文件仅所有者可查看元数据
-            if (!CanAccessFile(file, callerId))
-                return new GetFileInfoResponse { Success = false, ErrorMessage = "无权访问此文件" };
-
-            return new GetFileInfoResponse
-            {
-                Success = true,
-                FileInfo = MapToFileInfo(file)
-            };
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "获取文件信息失败 FileId={FileId}", request.FileId);
-            return new GetFileInfoResponse { Success = false, ErrorMessage = "获取文件信息失败" };
-        }
+            Success = true,
+            FileInfo = MapToFileInfo(file)
+        };
     }
 
     /// <summary>
-    /// 列出用户文件
+    /// 列出用户文件（S-08：仅允许列出调用者自己的文件，忽略客户端传入的 UserId）
     /// </summary>
-    /// <param name="request">包含用户ID的请求</param>
-    /// <param name="context">gRPC 上下文</param>
-    /// <returns>包含用户文件列表的响应</returns>
-    /// <exception cref="ArgumentException">如果用户ID无效</exception>
-    /// <exception cref="Exception">如果发生其他异常</exception>
     public override async Task<ListUserFilesResponse> ListUserFiles(
         ListUserFilesRequest request, ServerCallContext context)
     {
-        // S-08：仅允许列出调用者自己的文件，忽略客户端传入的 UserId
-        Guid userId = Guid.Empty;
-        try
-        {
-            userId = GetCallerId(context);
+        var callerId = GetCallerId(context);
 
-            var files = await _notFileService.GetFilesByUserIdAsync(userId);
-            var fileList = files.Where(f => !f.IsDeleted).ToList();
-            var totalCount = fileList.Count;
-
-            var page = request.Page > 0 ? request.Page : 1;
-            var pageSize = request.PageSize > 0 ? request.PageSize : 20;
-            var pagedFiles = fileList.Skip((page - 1) * pageSize).Take(pageSize);
-
-            var response = new ListUserFilesResponse
+        var result = await _mediator.SendAsync(
+            new ListUserFilesQuery
             {
-                Success = true,
-                TotalCount = totalCount
-            };
-            response.Files.AddRange(pagedFiles.Select(MapToFileInfo));
+                UserId = callerId,
+                Page = request.Page,
+                PageSize = request.PageSize
+            },
+            context.CancellationToken);
 
-            return response;
-        }
-        catch (Exception ex)
+        var response = new ListUserFilesResponse
         {
-            // S-08：日志记录服务端解析的 callerId（request.UserId 是客户端传入，已被忽略）
-            _logger.LogError(ex, "列出用户文件失败 CallerId={CallerId}", userId);
-            return new ListUserFilesResponse { Success = false, ErrorMessage = "获取文件列表失败" };
-        }
+            Success = true,
+            TotalCount = result.TotalCount
+        };
+        response.Files.AddRange(result.Files.Select(MapToFileInfo));
+        return response;
     }
 
     /// <summary>
-    /// 删除文件
+    /// 删除文件（软删除 + 物理文件清理由领域事件驱动）
     /// </summary>
-    /// <param name="request">包含文件ID和用户ID的请求</param>
-    /// <param name="context">gRPC 上下文</param>
-    /// <returns>包含删除结果的响应</returns>
-    /// <exception cref="ArgumentException">如果文件ID无效</exception>
-    /// <exception cref="InvalidOperationException">如果文件已被删除</exception>
-    /// <exception cref="Exception">如果发生其他异常</exception>
     public override async Task<DeleteFileResponse> DeleteFile(
         DeleteFileRequest request, ServerCallContext context)
     {
-        try
-        {
-            if (!Guid.TryParse(request.FileId, out var fileId))
-                return new DeleteFileResponse { Success = false, ErrorMessage = "无效的文件ID" };
+        var callerId = GetCallerId(context);
+        if (!Guid.TryParse(request.FileId, out var fileId))
+            throw new ArgumentException("无效的文件ID");
 
-            // S-08：使用服务端解析的调用者 id，忽略客户端传入的 UserId
-            var userId = GetCallerId(context);
+        await _mediator.SendAsync(
+            new DeleteFileCommand { UserId = callerId, FileId = fileId },
+            context.CancellationToken);
 
-            await _notFileService.DeleteFileAsync(fileId, userId);
-            // F-09.4：软删除需显式持久化并触发 DeleteFileEvent（物理文件清理）
-            await _notFileRepository.UnitOfWork.SaveEntitiesAsync(context.CancellationToken);
-            return new DeleteFileResponse { Success = true };
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "删除文件失败 FileId={FileId}", request.FileId);
-            return new DeleteFileResponse { Success = false, ErrorMessage = "删除文件失败" };
-        }
+        return new DeleteFileResponse { Success = true };
     }
 
     /// <summary>
-    /// 更新文件信息
+    /// 更新文件信息（S-08：仅文件所有者可更新）
     /// </summary>
-    /// <param name="request">包含文件ID和文件信息的请求</param>
-    /// <param name="context">gRPC 上下文</param>
-    /// <returns>包含更新结果的响应</returns>
-    /// <exception cref="ArgumentException">如果文件ID无效</exception>
-    /// <exception cref="InvalidOperationException">如果文件已被删除</exception>
-    /// <exception cref="Exception">如果发生其他异常</exception>
     public override async Task<UpdateFileInfoResponse> UpdateFileInfo(
         UpdateFileInfoRequest request, ServerCallContext context)
     {
-        try
-        {
-            var callerId = GetCallerId(context);
-            if (!Guid.TryParse(request.FileId, out var fileId))
-                return new UpdateFileInfoResponse { Success = false, ErrorMessage = "无效的文件ID" };
+        var callerId = GetCallerId(context);
+        if (!Guid.TryParse(request.FileId, out var fileId))
+            throw new ArgumentException("无效的文件ID");
 
-            // S-08：仅文件所有者可更新元数据
-            var existing = await _notFileService.GetFileByIdAsync(fileId);
-            if (existing is null || existing.IsDeleted)
-                return new UpdateFileInfoResponse { Success = false, ErrorMessage = "文件不存在" };
-            if (existing.UserId != callerId)
-                return new UpdateFileInfoResponse { Success = false, ErrorMessage = "无权修改此文件" };
-
-            var identity = MapToDomainIdentity(request.FileIdentity);
-            var tags = request.FileTags?.ToHashSet();
-
-            await _notFileService.UpdateFileAsync(
-                fileId,
-                request.FileName,
-                tags,
-                request.FileDescription,
-                identity,
-                request.FileMd5);
-
-            var updated = await _notFileService.GetFileByIdAsync(fileId);
-            return new UpdateFileInfoResponse
+        var updated = await _mediator.SendAsync(
+            new UpdateFileInfoCommand
             {
-                Success = true,
-                FileInfo = updated is not null ? MapToFileInfo(updated) : null
-            };
-        }
-        catch (Exception ex)
+                UserId = callerId,
+                FileId = fileId,
+                FileName = request.FileName,
+                FileTags = request.FileTags?.ToHashSet(),
+                FileDescription = request.FileDescription,
+                FileIdentity = MapToDomainIdentity(request.FileIdentity),
+                FileMd5 = request.FileMd5
+            },
+            context.CancellationToken);
+
+        return new UpdateFileInfoResponse
         {
-            _logger.LogError(ex, "更新文件信息失败 FileId={FileId}", request.FileId);
-            return new UpdateFileInfoResponse { Success = false, ErrorMessage = "更新文件信息失败" };
-        }
+            Success = true,
+            FileInfo = MapToFileInfo(updated)
+        };
     }
 
     // ═══════════════════════════════════════════════════
     // 小文件上传/下载
     // ═══════════════════════════════════════════════════
+
     /// <summary>
     /// 上传文件
     /// </summary>
-    /// <param name="request">包含用户ID、文件名、文件内容和预期文件哈希（SHA256）的请求</param>
-    /// <param name="context">gRPC 上下文</param>
-    /// <returns>包含上传结果的响应</returns>
-    /// <exception cref="ArgumentException">如果用户ID无效</exception>
-    /// <exception cref="Exception">如果发生其他异常</exception>
     public override async Task<UploadFileResponse> UploadFile(
         UploadFileRequest request, ServerCallContext context)
     {
-        try
+        var callerId = GetCallerId(context);
+
+        var file = await _mediator.SendAsync(
+            new UploadFileCommand
+            {
+                UserId = callerId,
+                FileName = request.FileName,
+                FileContent = request.FileContent.ToByteArray(),
+                FileTags = request.FileTags?.ToHashSet(),
+                FileDescription = request.FileDescription,
+                FileIdentity = MapToDomainIdentity(request.FileIdentity),
+                ExpectedMd5 = request.ExpectedMd5
+            },
+            context.CancellationToken);
+
+        return new UploadFileResponse
         {
-            // S-08：使用服务端解析的调用者 id，忽略客户端传入的 UserId
-            var userId = GetCallerId(context);
-
-            // Critical：FileName 非空校验前置，避免 Path.GetExtension 抛 NPE
-            if (string.IsNullOrWhiteSpace(request.FileName))
-                return new UploadFileResponse { Success = false, ErrorMessage = "文件名不能为空" };
-
-            var content = request.FileContent.ToByteArray();
-            if (content.Length == 0)
-                return new UploadFileResponse { Success = false, ErrorMessage = "文件内容不能为空" };
-
-            if (content.Length > _options.Value.MaxFileSize)
-                return new UploadFileResponse
-                {
-                    Success = false,
-                    ErrorMessage = $"文件大小超过限制 {_options.Value.MaxFileSize / 1024 / 1024}MB"
-                };
-
-            // S-09：写入前配额检查
-            await EnsureQuotaAvailableAsync(userId, content.Length, context.CancellationToken);
-
-            // 扩展名白名单校验
-            var ext = Path.GetExtension(request.FileName).ToLowerInvariant();
-            if (!string.IsNullOrEmpty(ext) && !_options.Value.AllowedExtensions.Contains(ext))
-                return new UploadFileResponse { Success = false, ErrorMessage = $"不支持的文件类型: {ext}" };
-
-            // SHA256 校验（F-09.5：上传/查重统一使用 SHA256）
-            var expectedFileHash = request.ExpectedMd5;
-            if (!string.IsNullOrEmpty(expectedFileHash))
-            {
-                var actualHash = HashHelper.ComputeHash(content);
-                if (!string.Equals(actualHash, expectedFileHash, StringComparison.OrdinalIgnoreCase))
-                    return new UploadFileResponse
-                    {
-                        Success = false,
-                        ErrorMessage = $"哈希校验失败，预期: {expectedFileHash}，实际: {actualHash}"
-                    };
-            }
-
-            // Major：路径拼接统一收敛至 FileApiHelpers（原 fileGuid 未使用，已删除）
-            var relativePath = FileApiHelpers.BuildFileKey(userId, ext);
-
-            var storageRequest = new NotFileStorageRequest
-            {
-                FileRelativePath = relativePath,
-                FileContent = content,
-                Overwrite = false,
-                ExpectedHash = expectedFileHash
-            };
-
-            var storageResult = await _storageService.SaveAsync(storageRequest);
-            if (!storageResult.Success)
-                return new UploadFileResponse { Success = false, ErrorMessage = storageResult.ErrorMessage };
-
-            var fileUri = FileApiHelpers.BuildFileUri(relativePath);
-            var tags = request.FileTags?.ToHashSet();
-            var fileType = ResolveFileType(ext);
-            var identity = MapToDomainIdentity(request.FileIdentity);
-
-            try
-            {
-                await _notFileService.CreateFileAsync(
-                    userId, request.FileName, tags, request.FileDescription ?? string.Empty,
-                    fileType, content.Length, fileUri,
-                    storageResult.ActualHash ?? string.Empty, identity);
-
-                // 提交元数据：gRPC 服务不经过 Mediator 事务管道，需显式持久化
-                await _notFileRepository.UnitOfWork.SaveEntitiesAsync(context.CancellationToken);
-            }
-            catch (Exception metaEx)
-            {
-                // Major：物理文件已写入但元数据保存失败时，补偿删除物理文件，避免存储泄漏
-                _logger.LogWarning(metaEx, "上传文件元数据保存失败，清理物理文件: Path={Path}", relativePath);
-                try { await _storageService.DeleteAsync(relativePath); }
-                catch (Exception cleanEx)
-                {
-                    _logger.LogError(cleanEx, "清理物理文件失败: Path={Path}", relativePath);
-                }
-                throw;
-            }
-
-            // 实体的 FileId 在实体构造函数中自生成（与文件存储路径所用的临时 fileGuid 不同），
-            // 必须反查落库实体，以真实 FileId 作为响应返回，保证客户端后续按 FileId 查询/删除一致
-            var savedFile = (await _notFileService.GetFilesByUserIdAsync(userId))
-                .FirstOrDefault(f => string.Equals(f.FileUri?.ToString(), fileUri.ToString(), StringComparison.Ordinal));
-            if (savedFile is null)
-                throw new InvalidOperationException("文件元数据保存失败，无法获取真实 FileId");
-
-            return new UploadFileResponse
-            {
-                Success = true,
-                FileId = savedFile.FileId.ToString(),
-                FileUri = fileUri.ToString(),
-                FileMd5 = storageResult.ActualHash ?? string.Empty,
-                FileSize = content.Length
-            };
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "上传文件失败 FileName={FileName}", request.FileName);
-            return new UploadFileResponse { Success = false, ErrorMessage = "上传文件失败" };
-        }
+            Success = true,
+            FileId = file.FileId.ToString(),
+            FileUri = file.FileUri.ToString(),
+            FileMd5 = file.FileMd5,
+            FileSize = file.FileSize
+        };
     }
 
     /// <summary>
-    /// 下载文件
+    /// 下载文件（流式响应）
     /// </summary>
-    /// <param name="request">包含文件ID和用户ID的请求</param>
-    /// <param name="responseStream">gRPC 响应流</param>
-    /// <param name="context">gRPC 上下文</param>
-    /// <exception cref="ArgumentException">如果文件ID无效</exception>
-    /// <exception cref="InvalidOperationException">如果文件已被删除</exception>
-    /// <exception cref="Exception">如果发生其他异常</exception>
     public override async Task DownloadFile(
         DownloadFileRequest request,
         IServerStreamWriter<DownloadFileResponse> responseStream,
         ServerCallContext context)
     {
-        try
+        var callerId = GetCallerId(context);
+        if (!Guid.TryParse(request.FileId, out var fileId))
+            throw new ArgumentException("无效的文件ID");
+
+        var result = await _mediator.SendAsync(
+            new DownloadFileQuery { UserId = callerId, FileId = fileId },
+            context.CancellationToken);
+
+        var contentType = GetContentType(result.File.FileName);
+        await using (result.Content)
         {
-            var callerId = GetCallerId(context);
-
-            if (!Guid.TryParse(request.FileId, out var fileId))
+            var buffer = new byte[StreamChunkSize];
+            int read;
+            while ((read = await result.Content.ReadAsync(buffer, context.CancellationToken)) > 0)
             {
-                _logger.LogWarning("下载文件失败：无效的文件ID {FileId}", request.FileId);
-                return;
-            }
-
-            var file = await _notFileService.GetFileByIdAsync(fileId);
-            if (file is null || file.IsDeleted)
-            {
-                _logger.LogWarning("下载文件失败：文件不存在 {FileId}", request.FileId);
-                return;
-            }
-
-            // S-08：权限校验改用服务端解析的调用者 id，私有文件仅允许所有者下载
-            if (!CanAccessFile(file, callerId))
-            {
-                _logger.LogWarning("下载文件失败：无权限访问私有文件 {FileId}", request.FileId);
-                return;
-            }
-
-            // Major：路径还原统一收敛至 FileApiHelpers
-            var relativePath = FileApiHelpers.FileUriToRelativePath(file.FileUri);
-            // S-09：流式读取，避免整文件读入内存
-            var (stream, storageResponse) = await _storageService.GetContentStreamAsync(relativePath);
-
-            if (!storageResponse.Success || stream is null)
-            {
-                _logger.LogError("下载文件失败：存储读取错误 {FilePath}", relativePath);
-                return;
-            }
-
-            const int chunkSize = 64 * 1024; // 64KB per chunk
-            var contentType = GetContentType(file.FileName);
-
-            await using (stream)
-            {
-                var buffer = new byte[chunkSize];
-                int read;
-                while ((read = await stream.ReadAsync(buffer, context.CancellationToken)) > 0)
+                await responseStream.WriteAsync(new DownloadFileResponse
                 {
-                    await responseStream.WriteAsync(new DownloadFileResponse
-                    {
-                        ChunkData = ByteString.CopyFrom(buffer, 0, read),
-                        FileName = file.FileName,
-                        FileSize = file.FileSize,
-                        ContentType = contentType
-                    });
-                }
+                    ChunkData = ByteString.CopyFrom(buffer, 0, read),
+                    FileName = result.File.FileName,
+                    FileSize = result.File.FileSize,
+                    ContentType = contentType
+                });
             }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "下载文件失败 FileId={FileId}", request.FileId);
         }
     }
 
     // ═══════════════════════════════════════════════════
     // 大文件分片上传
     // ═══════════════════════════════════════════════════
+
     /// <summary>
     /// 初始化分片上传
     /// </summary>
-    /// <param name="request">包含用户ID、文件名、总大小、总分片数、文件MD5和文件类型的请求</param>
-    /// <param name="context">gRPC 上下文</param>
-    /// <returns>包含初始化结果的响应</returns>
-    /// <exception cref="ArgumentException">如果用户ID无效</exception>
-    /// <exception cref="Exception">如果发生其他异常</exception>
     public override async Task<InitChunkUploadResponse> InitChunkUpload(
         InitChunkUploadRequest request, ServerCallContext context)
     {
-        try
-        {
-            // S-08：使用服务端解析的调用者 id，忽略客户端传入的 UserId
-            var userId = GetCallerId(context);
+        var callerId = GetCallerId(context);
 
-            // Critical：FileName/TotalSize 校验前置
-            if (string.IsNullOrWhiteSpace(request.FileName))
-                return new InitChunkUploadResponse { Success = false, ErrorMessage = "文件名不能为空" };
-            if (request.TotalSize <= 0)
-                return new InitChunkUploadResponse { Success = false, ErrorMessage = "文件大小必须大于0" };
-
-            if (request.TotalSize > _options.Value.MaxFileSize)
-                return new InitChunkUploadResponse
-                {
-                    Success = false,
-                    ErrorMessage = $"文件大小超过限制 {_options.Value.MaxFileSize / 1024 / 1024}MB"
-                };
-
-            // S-09：写入前配额检查
-            await EnsureQuotaAvailableAsync(userId, request.TotalSize, context.CancellationToken);
-
-            var ext = Path.GetExtension(request.FileName).ToLowerInvariant();
-            if (!string.IsNullOrEmpty(ext) && !_options.Value.AllowedExtensions.Contains(ext))
-                return new InitChunkUploadResponse { Success = false, ErrorMessage = $"不支持的文件类型: {ext}" };
-
-            int chunkSize = (int)_options.Value.ChunkFileSize;
-            int totalChunks = request.TotalChunks > 0
-                ? request.TotalChunks
-                : (int)Math.Ceiling((double)request.TotalSize / chunkSize);
-
-            // Major：路径拼接统一收敛至 FileApiHelpers
-            var fileKey = FileApiHelpers.BuildFileKey(userId, ext);
-
-            var record = await _chunkManager.InitializeUploadAsync(
-                fileKey, userId, request.FileName, request.TotalSize,
-                chunkSize, totalChunks, request.FileMd5 ?? string.Empty,
-                MapToDomainFileType(request.FileType),
-                MapToDomainIdentity(request.FileIdentity),
-                request.FileTags?.ToHashSet(),
-                request.FileDescription,
-                context.CancellationToken);
-
-            return new InitChunkUploadResponse
+        var record = await _mediator.SendAsync(
+            new ChunkUploadInitCommand
             {
-                Success = true,
-                FileKey = fileKey,
-                TotalChunks = totalChunks,
-                ChunkSize = chunkSize
-            };
-        }
-        catch (Exception ex)
+                UserId = callerId,
+                FileName = request.FileName,
+                TotalSize = request.TotalSize,
+                ChunkSize = (int)_options.Value.ChunkFileSize,
+                TotalChunks = request.TotalChunks,
+                FileMd5 = request.FileMd5 ?? string.Empty,
+                FileType = MapToDomainFileType(request.FileType),
+                FileIdentity = MapToDomainIdentity(request.FileIdentity),
+                FileTags = request.FileTags?.ToHashSet(),
+                FileDescription = request.FileDescription
+            },
+            context.CancellationToken);
+
+        return new InitChunkUploadResponse
         {
-            _logger.LogError(ex, "初始化分片上传失败 FileName={FileName}", request.FileName);
-            return new InitChunkUploadResponse { Success = false, ErrorMessage = "初始化分片上传失败" };
-        }
+            Success = true,
+            FileKey = record.FileKey,
+            TotalChunks = record.TotalChunks,
+            ChunkSize = record.ChunkSize
+        };
     }
+
     /// <summary>
     /// 上传分片
     /// </summary>
-    /// <param name="request">包含文件Key、分片索引、分片数据和分片MD5的请求</param>
-    /// <param name="context">gRPC 上下文</param>
-    /// <returns>包含上传结果的响应</returns>
-    /// <exception cref="ArgumentException">如果文件Key无效</exception>
-    /// <exception cref="Exception">如果发生其他异常</exception>
     public override async Task<UploadChunkResponse> UploadChunk(
         UploadChunkRequest request, ServerCallContext context)
     {
-        try
-        {
-            var callerId = GetCallerId(context);
-            if (string.IsNullOrWhiteSpace(request.FileKey))
-                return new UploadChunkResponse { Success = false, ErrorMessage = "文件Key不能为空" };
+        var callerId = GetCallerId(context);
 
-            // Critical：chunkIndex 非负校验前置
-            if (request.ChunkIndex < 0)
-                return new UploadChunkResponse { Success = false, ErrorMessage = "chunkIndex 不能为负数" };
-
-            // S-08：分片归属校验前置——仅上传任务所有者可上传分片
-            var uploadRecord = await _chunkManager.GetUploadStatusAsync(request.FileKey, context.CancellationToken);
-            if (uploadRecord is null)
-                return new UploadChunkResponse { Success = false, ErrorMessage = "未找到分片上传记录" };
-            if (uploadRecord.UserId != callerId)
-                return new UploadChunkResponse { Success = false, ErrorMessage = "无权操作此上传任务" };
-            if (uploadRecord.Status == Domain.Entities.ChunkUploadStatus.Merged
-                || uploadRecord.Status == Domain.Entities.ChunkUploadStatus.Cancelled)
-                return new UploadChunkResponse { Success = false, ErrorMessage = "上传任务已结束，无法继续上传" };
-
-            // Critical：分片索引越界校验前置
-            if (request.ChunkIndex >= uploadRecord.TotalChunks)
-                return new UploadChunkResponse
-                {
-                    Success = false,
-                    ErrorMessage = $"分片索引 {request.ChunkIndex} 超出范围 [0, {uploadRecord.TotalChunks - 1}]"
-                };
-
-            var chunkData = request.ChunkData.ToByteArray();
-            if (chunkData.Length == 0)
-                return new UploadChunkResponse { Success = false, ErrorMessage = "分片数据不能为空" };
-
-            // 检查分片大小
-            if (chunkData.Length > _options.Value.ChunkFileSize * 2)
-                return new UploadChunkResponse { Success = false, ErrorMessage = "分片数据超出大小限制" };
-
-            var storageResult = await _storageService.UploadChunkAsync(
-                request.FileKey, request.ChunkIndex, chunkData, request.ChunkMd5);
-
-            if (!storageResult.Success)
-                return new UploadChunkResponse
-                {
-                    Success = false,
-                    ChunkIndex = request.ChunkIndex,
-                    ErrorMessage = storageResult.ErrorMessage
-                };
-
-            await _chunkManager.MarkChunkUploadedAsync(
-                request.FileKey, request.ChunkIndex, context.CancellationToken);
-
-            return new UploadChunkResponse
+        var result = await _mediator.SendAsync(
+            new UploadChunkCommand
             {
-                Success = true,
+                UserId = callerId,
+                FileKey = request.FileKey,
                 ChunkIndex = request.ChunkIndex,
-                ChunkMd5 = storageResult.ActualHash
-            };
-        }
-        catch (Exception ex)
+                ChunkContent = request.ChunkData.ToByteArray(),
+                ChunkHash = request.ChunkMd5
+            },
+            context.CancellationToken);
+
+        return new UploadChunkResponse
         {
-            _logger.LogError(ex, "上传分片失败 FileKey={FileKey} ChunkIndex={ChunkIndex}",
-                request.FileKey, request.ChunkIndex);
-            return new UploadChunkResponse
-            {
-                Success = false,
-                ChunkIndex = request.ChunkIndex,
-                ErrorMessage = "上传分片失败"
-            };
-        }
+            Success = true,
+            ChunkIndex = result.ChunkIndex,
+            ChunkMd5 = result.ChunkMd5
+        };
     }
+
     /// <summary>
     /// 查询分片状态
     /// </summary>
-    /// <param name="request">包含文件Key的请求</param>
-    /// <param name="context">gRPC 上下文</param>
-    /// <returns>包含分片状态的响应</returns>
-    /// <exception cref="ArgumentException">如果文件Key无效</exception>
-    /// <exception cref="Exception">如果发生其他异常</exception>
     public override async Task<GetChunkStatusResponse> GetChunkStatus(
         GetChunkStatusRequest request, ServerCallContext context)
     {
-        try
+        var callerId = GetCallerId(context);
+
+        var result = await _mediator.SendAsync(
+            new ChunkStatusQuery { UserId = callerId, FileKey = request.FileKey },
+            context.CancellationToken);
+
+        var response = new GetChunkStatusResponse
         {
-            var callerId = GetCallerId(context);
-            if (string.IsNullOrWhiteSpace(request.FileKey))
-                return new GetChunkStatusResponse { Success = false, ErrorMessage = "文件Key不能为空" };
-
-            var record = await _chunkManager.GetUploadStatusAsync(
-                request.FileKey, context.CancellationToken);
-
-            if (record is null)
-                return new GetChunkStatusResponse { Success = false, ErrorMessage = "未找到分片上传记录" };
-
-            // S-08：仅上传任务所有者可查询状态
-            if (record.UserId != callerId)
-                return new GetChunkStatusResponse { Success = false, ErrorMessage = "无权操作此上传任务" };
-
-            var uploadedChunks = await _chunkManager.GetUploadedChunksAsync(
-                request.FileKey, context.CancellationToken);
-
-            var response = new GetChunkStatusResponse
-            {
-                Success = true,
-                FileKey = record.FileKey,
-                TotalChunks = record.TotalChunks,
-                Status = MapToProtoChunkStatus(record.Status)
-            };
-            response.UploadedChunks.AddRange(uploadedChunks);
-            return response;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "查询分片状态失败 FileKey={FileKey}", request.FileKey);
-            return new GetChunkStatusResponse { Success = false, ErrorMessage = "查询分片状态失败" };
-        }
+            Success = true,
+            FileKey = result.FileKey,
+            TotalChunks = result.TotalChunks,
+            Status = MapToProtoChunkStatus(result.Status)
+        };
+        response.UploadedChunks.AddRange(result.UploadedChunks);
+        return response;
     }
+
     /// <summary>
     /// 合并分片
     /// </summary>
-    /// <param name="request">包含文件Key和用户ID的请求</param>
-    /// <param name="context">gRPC 上下文</param>
-    /// <returns>包含合并结果的响应</returns>
-    /// <exception cref="ArgumentException">如果文件Key无效</exception>
-    /// <exception cref="Exception">如果发生其他异常</exception>
     public override async Task<MergeChunksResponse> MergeChunks(
         MergeChunksRequest request, ServerCallContext context)
     {
-        try
-        {
-            // S-08：使用服务端解析的调用者 id，忽略客户端传入的 UserId
-            var userId = GetCallerId(context);
-            if (string.IsNullOrWhiteSpace(request.FileKey))
-                return new MergeChunksResponse { Success = false, ErrorMessage = "文件Key不能为空" };
+        var callerId = GetCallerId(context);
 
-            var record = await _chunkManager.GetUploadStatusAsync(
-                request.FileKey, context.CancellationToken);
-            if (record is null)
-                return new MergeChunksResponse { Success = false, ErrorMessage = "未找到分片上传记录" };
-
-            // S-08：合并前校验归属，用户 B 无法合并用户 A 的分片
-            if (record.UserId != userId)
-                return new MergeChunksResponse { Success = false, ErrorMessage = "无权合并此上传任务" };
-
-            // S-09：合并前配额检查
-            await EnsureQuotaAvailableAsync(userId, record.TotalSize, context.CancellationToken);
-
-            // 检查所有分片是否已上传
-            var allUploaded = await _chunkManager.AreAllChunksUploadedAsync(
-                request.FileKey, context.CancellationToken);
-            if (!allUploaded)
-                return new MergeChunksResponse { Success = false, ErrorMessage = "还有分片未上传完成" };
-
-            // 合并分片
-            var mergeResult = await _storageService.MergeChunksAsync(
-                request.FileKey, record.TotalChunks, record.FileMd5);
-
-            if (!mergeResult.Success)
-                return new MergeChunksResponse { Success = false, ErrorMessage = mergeResult.ErrorMessage };
-
-            // 标记合并完成
-            await _chunkManager.MarkMergedAsync(request.FileKey, context.CancellationToken);
-
-            // 创建文件元数据记录
-            // Major：路径拼接统一收敛至 FileApiHelpers
-            var fileUri = FileApiHelpers.BuildFileUri(request.FileKey);
-            var tags = request.FileTags?.ToHashSet();
-
-            await _notFileService.CreateFileAsync(
-                userId,
-                request.FileName ?? record.FileName,
-                tags,
-                request.FileDescription ?? string.Empty,
-                record.FileType,
-                mergeResult.FileSize,
-                fileUri,
-                mergeResult.ActualHash ?? string.Empty,
-                record.FileIdentity);
-
-            // 提交元数据：gRPC 服务不经过 Mediator 事务管道，需显式持久化
-            await _notFileRepository.UnitOfWork.SaveEntitiesAsync(context.CancellationToken);
-
-            // Critical：proto 响应定义了 file_id 字段，必须反查落库实体返回真实 FileId，
-            // 保证客户端按 FileId 后续查询/删除一致
-            var savedFile = (await _notFileService.GetFilesByUserIdAsync(userId))
-                .FirstOrDefault(f => string.Equals(f.FileUri?.ToString(), fileUri.ToString(), StringComparison.Ordinal));
-            if (savedFile is null)
+        var file = await _mediator.SendAsync(
+            new MergeChunksCommand
             {
-                _logger.LogError("合并分片后无法反查 FileId: FileKey={FileKey}, FileUri={FileUri}",
-                    request.FileKey, fileUri);
-                return new MergeChunksResponse { Success = false, ErrorMessage = "文件元数据保存失败" };
-            }
+                UserId = callerId,
+                FileKey = request.FileKey,
+                FileName = request.FileName,
+                FileTags = request.FileTags?.ToHashSet(),
+                FileDescription = request.FileDescription
+            },
+            context.CancellationToken);
 
-            return new MergeChunksResponse
-            {
-                Success = true,
-                FileId = savedFile.FileId.ToString(),
-                FileUri = fileUri.ToString(),
-                FileMd5 = mergeResult.ActualHash ?? string.Empty,
-                FileSize = mergeResult.FileSize
-            };
-        }
-        catch (Exception ex)
+        return new MergeChunksResponse
         {
-            _logger.LogError(ex, "合并分片失败 FileKey={FileKey}", request.FileKey);
-            return new MergeChunksResponse { Success = false, ErrorMessage = "合并分片失败" };
-        }
+            Success = true,
+            FileId = file.FileId.ToString(),
+            FileUri = file.FileUri.ToString(),
+            FileMd5 = file.FileMd5,
+            FileSize = file.FileSize
+        };
     }
 
     /// <summary>
     /// 取消分片上传
     /// </summary>
-    /// <param name="request">包含文件Key的请求</param>
-    /// <param name="context">gRPC 上下文</param>
-    /// <returns>包含取消结果的响应</returns>
-    /// <exception cref="ArgumentException">如果文件Key无效</exception>
-    /// <exception cref="Exception">如果发生其他异常</exception>
     public override async Task<CancelChunkUploadResponse> CancelChunkUpload(
         CancelChunkUploadRequest request, ServerCallContext context)
     {
-        try
-        {
-            var callerId = GetCallerId(context);
-            if (string.IsNullOrWhiteSpace(request.FileKey))
-                return new CancelChunkUploadResponse { Success = false, ErrorMessage = "文件Key不能为空" };
+        var callerId = GetCallerId(context);
 
-            // S-08：仅上传任务所有者可取消
-            var record = await _chunkManager.GetUploadStatusAsync(request.FileKey, context.CancellationToken);
-            if (record is null)
-                return new CancelChunkUploadResponse { Success = false, ErrorMessage = "未找到分片上传记录" };
-            if (record.UserId != callerId)
-                return new CancelChunkUploadResponse { Success = false, ErrorMessage = "无权操作此上传任务" };
+        await _mediator.SendAsync(
+            new CancelChunksCommand { UserId = callerId, FileKey = request.FileKey },
+            context.CancellationToken);
 
-            await _chunkManager.CancelUploadAsync(request.FileKey, context.CancellationToken);
-            // S-09：取消时清理临时分片文件
-            await _storageService.CleanupChunksAsync(request.FileKey);
-            return new CancelChunkUploadResponse { Success = true };
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "取消分片上传失败 FileKey={FileKey}", request.FileKey);
-            return new CancelChunkUploadResponse { Success = false, ErrorMessage = "取消分片上传失败" };
-        }
+        return new CancelChunkUploadResponse { Success = true };
     }
 
     // ═══════════════════════════════════════════════════
     // 图片专用操作
     // ═══════════════════════════════════════════════════
+
     /// <summary>
     /// 上传图片
     /// </summary>
-    /// <param name="request">包含用户ID、图片内容、文件名、文件描述和文件类型（可选）的请求</param>
-    /// <param name="context">gRPC 上下文</param>
-    /// <returns>包含上传结果的响应</returns>
-    /// <exception cref="ArgumentException">如果用户ID无效</exception>
-    /// <exception cref="Exception">如果发生其他异常</exception>
     public override async Task<UploadImageResponse> UploadImage(
         UploadImageRequest request, ServerCallContext context)
     {
-        try
+        var callerId = GetCallerId(context);
+
+        var result = await _mediator.SendAsync(
+            new UploadImageCommand
+            {
+                UserId = callerId,
+                FileName = request.FileName,
+                ImageContent = request.ImageContent.ToByteArray(),
+                FileTags = request.FileTags?.ToHashSet(),
+                FileDescription = request.FileDescription,
+                FileIdentity = MapToDomainIdentity(request.FileIdentity),
+                ValidateFormat = request.ValidateFormat
+            },
+            context.CancellationToken);
+
+        return new UploadImageResponse
         {
-            // S-08：使用服务端解析的调用者 id，忽略客户端传入的 UserId
-            var userId = GetCallerId(context);
-
-            // Critical：FileName 非空校验前置，避免 Path.GetExtension 抛 NPE
-            if (string.IsNullOrWhiteSpace(request.FileName))
-                return new UploadImageResponse { Success = false, ErrorMessage = "文件名不能为空" };
-
-            var imageData = request.ImageContent.ToByteArray();
-            if (imageData.Length == 0)
-                return new UploadImageResponse { Success = false, ErrorMessage = "图片内容不能为空" };
-
-            // 图片格式验证
-            if (request.ValidateFormat)
-            {
-                var formatResult = ImageValidator.Validate(imageData);
-                if (!formatResult.IsValid)
-                    return new UploadImageResponse
-                    {
-                        Success = false,
-                        ErrorMessage = $"图片格式验证失败: {formatResult.ErrorMessage}"
-                    };
-
-                var ext = Path.GetExtension(request.FileName).ToLowerInvariant();
-                if (!string.IsNullOrEmpty(ext))
-                {
-                    var expectedExt = formatResult.Format switch
-                    {
-                        "jpeg" => ".jpg",
-                        _ => $".{formatResult.Format}"
-                    };
-                    if (ext != expectedExt && ext != $".{formatResult.Format}")
-                        return new UploadImageResponse
-                        {
-                            Success = false,
-                            ErrorMessage = $"图片实际格式({formatResult.Format})与扩展名({ext})不匹配"
-                        };
-                }
-            }
-
-            if (imageData.Length > _options.Value.MaxFileSize)
-                return new UploadImageResponse
-                {
-                    Success = false,
-                    ErrorMessage = $"图片大小超过限制 {_options.Value.MaxFileSize / 1024 / 1024}MB"
-                };
-
-            // S-09：写入前配额检查
-            await EnsureQuotaAvailableAsync(userId, imageData.Length, context.CancellationToken);
-
-            var ext2 = Path.GetExtension(request.FileName).ToLowerInvariant();
-            // Major：路径拼接统一收敛至 FileApiHelpers
-            var relativePath = FileApiHelpers.BuildFileKey(userId, ext2);
-
-            var storageRequest = new NotFileStorageRequest
-            {
-                FileRelativePath = relativePath,
-                FileContent = imageData,
-                Overwrite = false
-            };
-
-            var storageResult = await _storageService.SaveAsync(storageRequest);
-            if (!storageResult.Success)
-                return new UploadImageResponse { Success = false, ErrorMessage = storageResult.ErrorMessage };
-
-            var fileUri = FileApiHelpers.BuildFileUri(relativePath);
-            var tags = request.FileTags?.ToHashSet();
-
-            try
-            {
-                await _notFileService.CreateFileAsync(
-                    userId, request.FileName, tags, request.FileDescription ?? string.Empty,
-                    DomainFileType.FileImage, imageData.Length, fileUri,
-                    storageResult.ActualHash ?? string.Empty,
-                    MapToDomainIdentity(request.FileIdentity));
-
-                // 提交元数据：gRPC 服务不经过 Mediator 事务管道，需显式持久化
-                await _notFileRepository.UnitOfWork.SaveEntitiesAsync(context.CancellationToken);
-            }
-            catch (Exception metaEx)
-            {
-                // Major：物理文件已写入但元数据保存失败时，补偿删除物理文件
-                _logger.LogWarning(metaEx, "上传图片元数据保存失败，清理物理文件: Path={Path}", relativePath);
-                try { await _storageService.DeleteAsync(relativePath); }
-                catch (Exception cleanEx)
-                {
-                    _logger.LogError(cleanEx, "清理物理文件失败: Path={Path}", relativePath);
-                }
-                throw;
-            }
-
-            // 实体的 FileId 在实体构造函数中自生成（与文件存储路径所用的临时 fileGuid 不同），
-            // 必须反查落库实体，以真实 FileId 作为响应返回，保证客户端后续按 FileId 查询/删除一致
-            var savedFile = (await _notFileService.GetFilesByUserIdAsync(userId))
-                .FirstOrDefault(f => string.Equals(f.FileUri?.ToString(), fileUri.ToString(), StringComparison.Ordinal));
-            if (savedFile is null)
-                throw new InvalidOperationException("文件元数据保存失败，无法获取真实 FileId");
-
-            // 获取图片尺寸
-            var (width, height) = ImageValidator.GetDimensions(imageData);
-
-            return new UploadImageResponse
-            {
-                Success = true,
-                FileId = savedFile.FileId.ToString(),
-                FileUri = fileUri.ToString(),
-                FileMd5 = storageResult.ActualHash ?? string.Empty,
-                FileSize = imageData.Length,
-                Width = width,
-                Height = height,
-                Format = ext2.TrimStart('.')
-            };
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "上传图片失败 FileName={FileName}", request.FileName);
-            return new UploadImageResponse { Success = false, ErrorMessage = "上传图片失败" };
-        }
+            Success = true,
+            FileId = result.File.FileId.ToString(),
+            FileUri = result.File.FileUri.ToString(),
+            FileMd5 = result.File.FileMd5,
+            FileSize = result.File.FileSize,
+            Width = result.Width,
+            Height = result.Height,
+            Format = result.Format
+        };
     }
 
     /// <summary>
-    /// 下载图片
+    /// 下载图片（流式响应）
     /// </summary>
-    /// <param name="request">包含文件ID和用户ID的请求</param>
-    /// <param name="responseStream">gRPC 响应流</param>
-    /// <param name="context">gRPC 上下文</param>
-    /// <exception cref="ArgumentException">如果文件ID无效</exception>
-    /// <exception cref="Exception">如果发生其他异常</exception>
     public override async Task DownloadImage(
         DownloadImageRequest request,
         IServerStreamWriter<DownloadImageResponse> responseStream,
         ServerCallContext context)
     {
-        try
+        var callerId = GetCallerId(context);
+        if (!Guid.TryParse(request.FileId, out var fileId))
+            throw new ArgumentException("无效的文件ID");
+
+        var result = await _mediator.SendAsync(
+            new DownloadFileQuery { UserId = callerId, FileId = fileId },
+            context.CancellationToken);
+
+        var contentType = GetContentType(result.File.FileName);
+        await using (result.Content)
         {
-            var callerId = GetCallerId(context);
-
-            if (!Guid.TryParse(request.FileId, out var fileId))
+            var buffer = new byte[StreamChunkSize];
+            int read;
+            while ((read = await result.Content.ReadAsync(buffer, context.CancellationToken)) > 0)
             {
-                _logger.LogWarning("下载图片失败：无效的文件ID {FileId}", request.FileId);
-                return;
-            }
-
-            var file = await _notFileService.GetFileByIdAsync(fileId);
-            if (file is null || file.IsDeleted)
-            {
-                _logger.LogWarning("下载图片失败：文件不存在 {FileId}", request.FileId);
-                return;
-            }
-
-            // S-08：权限校验改用服务端解析的调用者 id
-            if (!CanAccessFile(file, callerId))
-            {
-                _logger.LogWarning("下载图片失败：无权限访问私有文件 {FileId}", request.FileId);
-                return;
-            }
-
-            // Major：路径还原统一收敛至 FileApiHelpers
-            var relativePath = FileApiHelpers.FileUriToRelativePath(file.FileUri);
-            // S-09：流式读取，避免整文件读入内存
-            var (stream, storageResponse) = await _storageService.GetContentStreamAsync(relativePath);
-
-            if (!storageResponse.Success || stream is null)
-            {
-                _logger.LogError("下载图片失败：存储读取错误 {FilePath}", relativePath);
-                return;
-            }
-
-            const int chunkSize = 64 * 1024;
-            var contentType = GetImageContentType(file.FileName);
-
-            await using (stream)
-            {
-                var buffer = new byte[chunkSize];
-                int read;
-                while ((read = await stream.ReadAsync(buffer, context.CancellationToken)) > 0)
+                await responseStream.WriteAsync(new DownloadImageResponse
                 {
-                    await responseStream.WriteAsync(new DownloadImageResponse
-                    {
-                        ChunkData = ByteString.CopyFrom(buffer, 0, read),
-                        FileName = file.FileName,
-                        FileSize = file.FileSize,
-                        ContentType = contentType
-                    });
-                }
+                    ChunkData = ByteString.CopyFrom(buffer, 0, read),
+                    FileName = result.File.FileName,
+                    FileSize = result.File.FileSize,
+                    ContentType = contentType
+                });
             }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "下载图片失败 FileId={FileId}", request.FileId);
         }
     }
 
     /// <summary>
     /// 获取图片信息
     /// </summary>
-    /// <param name="request">包含文件ID的请求</param>
-    /// <param name="context">gRPC 上下文</param>
-    /// <returns>包含图片信息的响应</returns>
-    /// <exception cref="ArgumentException">如果文件ID无效</exception>
-    /// <exception cref="Exception">如果发生其他异常</exception>
     public override async Task<GetImageInfoResponse> GetImageInfo(
         GetImageInfoRequest request, ServerCallContext context)
     {
-        try
+        var callerId = GetCallerId(context);
+        if (!Guid.TryParse(request.FileId, out var fileId))
+            throw new ArgumentException("无效的文件ID");
+
+        var result = await _mediator.SendAsync(
+            new GetImageInfoQuery { UserId = callerId, FileId = fileId },
+            context.CancellationToken);
+
+        return new GetImageInfoResponse
         {
-            var callerId = GetCallerId(context);
-            if (!Guid.TryParse(request.FileId, out var fileId))
-                return new GetImageInfoResponse { Success = false, ErrorMessage = "无效的文件ID" };
-
-            var file = await _notFileService.GetFileByIdAsync(fileId);
-            if (file is null || file.IsDeleted)
-                return new GetImageInfoResponse { Success = false, ErrorMessage = "文件不存在" };
-
-            // S-08：私有图片仅所有者可查看
-            if (!CanAccessFile(file, callerId))
-                return new GetImageInfoResponse { Success = false, ErrorMessage = "无权访问此文件" };
-
-            // 获取图片内容以解析尺寸
-            // Major：路径还原统一收敛至 FileApiHelpers
-            var relativePath = FileApiHelpers.FileUriToRelativePath(file.FileUri);
-
-            int width = 0, height = 0;
-            string format = "unknown";
-
-            // S-09：GetContentAsync 会整读文件入内存，仅用于小图片尺寸解析；
-            // 超过 100MB（与 Kestrel 请求体上限一致）的文件跳过尺寸解析，避免大文件整读入内存
-            if (file.FileSize <= 100L * 1024 * 1024)
+            Success = true,
+            ImageInfo = new ImageInfo
             {
-                var (content, storageResponse) = await _storageService.GetContentAsync(relativePath);
-                if (storageResponse.Success && content is not null)
-                {
-                    (width, height) = ImageValidator.GetDimensions(content);
-                    format = Path.GetExtension(file.FileName).ToLowerInvariant().TrimStart('.');
-                }
+                FileInfo = MapToFileInfo(result.File),
+                Width = result.Width,
+                Height = result.Height,
+                Format = result.Format
             }
-
-            return new GetImageInfoResponse
-            {
-                Success = true,
-                ImageInfo = new ImageInfo
-                {
-                    FileInfo = MapToFileInfo(file),
-                    Width = width,
-                    Height = height,
-                    Format = format
-                }
-            };
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "获取图片信息失败 FileId={FileId}", request.FileId);
-            return new GetImageInfoResponse { Success = false, ErrorMessage = "获取图片信息失败" };
-        }
+        };
     }
 
     // ═══════════════════════════════════════════════════
-    // 私有辅助方法
+    // 私有映射辅助方法
     // ═══════════════════════════════════════════════════
+
     /// <summary>
     /// 将域文件实体映射为gRPC文件信息协议缓冲区
     /// </summary>
-    /// <param name="file">域文件实体</param>
-    /// <returns>gRPC文件信息协议缓冲区</returns>
-       private static FileInfoProto MapToFileInfo(NotFile file)
+    private static FileInfoProto MapToFileInfo(NotFile file)
     {
         return new FileInfoProto
         {
@@ -1060,8 +474,6 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
     /// <summary>
     /// 将域文件身份枚举映射为gRPC文件身份协议缓冲区
     /// </summary>
-    /// <param name="identity">域文件身份枚举</param>
-    /// <returns>gRPC文件身份协议缓冲区</returns>
     private static FileIdentityProto MapToProtoIdentity(DomainFileIdentity identity) => identity switch
     {
         DomainFileIdentity.FilePublic => FileIdentityProto.FilePublic,
@@ -1074,8 +486,6 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
     /// <summary>
     /// 将gRPC文件身份协议缓冲区映射为域文件身份枚举
     /// </summary>
-    /// <param name="identity">gRPC文件身份协议缓冲区</param>
-    /// <returns>域文件身份枚举</returns>
     private static DomainFileIdentity MapToDomainIdentity(FileIdentityProto identity) => identity switch
     {
         FileIdentityProto.FilePublic => DomainFileIdentity.FilePublic,
@@ -1088,8 +498,6 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
     /// <summary>
     /// 将域文件类型枚举映射为gRPC文件类型协议缓冲区
     /// </summary>
-    /// <param name="fileType">域文件类型枚举</param>
-    /// <returns>gRPC文件类型协议缓冲区</returns>
     private static FileTypeProto MapToProtoFileType(DomainFileType fileType) => fileType switch
     {
         DomainFileType.FileImage => FileTypeProto.FileImage,
@@ -1103,8 +511,6 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
     /// <summary>
     /// 将gRPC文件类型协议缓冲区映射为域文件类型枚举
     /// </summary>
-    /// <param name="fileType">gRPC文件类型协议缓冲区</param>
-    /// <returns>域文件类型枚举</returns>
     private static DomainFileType MapToDomainFileType(FileTypeProto fileType) => fileType switch
     {
         FileTypeProto.FileImage => DomainFileType.FileImage,
@@ -1118,8 +524,6 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
     /// <summary>
     /// 将域文件块上传状态枚举映射为gRPC文件块上传状态协议缓冲区
     /// </summary>
-    /// <param name="status">域文件块上传状态枚举</param>
-    /// <returns>gRPC文件块上传状态协议缓冲区</returns>
     private static ChunkUploadStatus MapToProtoChunkStatus(
         Domain.Entities.ChunkUploadStatus status) => status switch
     {
@@ -1131,18 +535,11 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
         _ => ChunkUploadStatus.ChunkPending
     };
 
-    /// <summary>
-    /// 将gRPC文件块上传状态协议缓冲区映射为域文件块上传状态枚举
-    /// </summary>
-    /// <param name="status">gRPC文件块上传状态协议缓冲区</param>
-    /// <returns>域文件块上传状态枚举</returns>
     private static DomainFileType ResolveFileType(string ext) => FileApiHelpers.ResolveFileType(ext);
 
     /// <summary>
     /// 获取文件内容类型（S-17：.html/.htm/.svg 可被浏览器直接渲染，一律按 application/octet-stream 返回）
     /// </summary>
-    /// <param name="fileName">文件名</param>
-    /// <returns>文件内容类型</returns>
     private static string GetContentType(string fileName)
     {
         var ext = Path.GetExtension(fileName).ToLowerInvariant();
@@ -1171,28 +568,6 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
             ".md" => "text/markdown",
             // S-17：禁止浏览器直接渲染
             ".svg" or ".html" or ".htm" => "application/octet-stream",
-            _ => "application/octet-stream"
-        };
-    }
-
-    /// <summary>
-    /// 获取图片文件内容类型（S-17：.svg 可被浏览器直接渲染，一律按 application/octet-stream 返回）
-    /// </summary>
-    /// <param name="fileName">图片文件名</param>
-    /// <returns>图片文件内容类型</returns>
-    private static string GetImageContentType(string fileName)
-    {
-        var ext = Path.GetExtension(fileName).ToLowerInvariant();
-        return ext switch
-        {
-            ".jpg" or ".jpeg" => "image/jpeg",
-            ".png" => "image/png",
-            ".gif" => "image/gif",
-            ".bmp" => "image/bmp",
-            ".webp" => "image/webp",
-            ".ico" => "image/x-icon",
-            // S-17：禁止浏览器直接渲染
-            ".svg" => "application/octet-stream",
             _ => "application/octet-stream"
         };
     }

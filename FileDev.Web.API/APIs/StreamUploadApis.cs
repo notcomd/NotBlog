@@ -1,5 +1,4 @@
 using FileDev.Domain.Entities;
-using FileDev.Web.API.Application.Command;
 using Microsoft.AspNetCore.Mvc;
 using NotMediator;
 

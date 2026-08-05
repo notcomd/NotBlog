@@ -9,12 +9,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
-// 凭据外置（S-01）：数据库口令从环境变量 FILEDEV_DB_PASSWORD 读取
+
 builder.Services.AddNotBlogServices(
-    DbConnectionStringResolver.Resolve(
-        builder.Configuration.GetValue<string>("DbContextConnect"),
-        "FILEDEV_DB_PASSWORD"),
-    [.. ReflectionHelper.GetAllReferencedAssemblies()]);
+    
+        builder.Configuration.GetValue<string>("DbContextConnect")!
+     );
 
 builder.Services.AddCacheMemory(builder.Configuration);
 builder.Services.AddJwtAuthentication(builder.Configuration.GetSection("JwtOptions"));
@@ -23,21 +22,24 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped<INotFileService, NotFileService>();
 builder.Services.AddScoped<FileStorageServiceGRPC>();
 builder.Services.AddScoped<GrpcJwtAuthInterceptor>();
+builder.Services.AddScoped<GrpcExceptionMapperInterceptor>();
 builder.Services.AddHostedService<ChunkCleanupBackgroundService>();
 builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
 builder.Services.AddGrpc(options =>
 {
-    // S-09：单条 gRPC 消息上限由 1GB 下调至 64MB，超大文件必须走分片上传
+   
     options.MaxReceiveMessageSize = 64 * 1024 * 1024;
     options.MaxSendMessageSize = 64 * 1024 * 1024;
     options.EnableDetailedErrors = builder.Environment.IsDevelopment();
-    // S-08：所有 gRPC 方法强制 JWT 认证（拦截器解析调用者 id 写入 context.UserState）
+    
+    // 异常映射拦截器注册在最外层，确保能捕获服务方法及内层拦截器抛出的业务异常
+    options.Interceptors.Add<GrpcExceptionMapperInterceptor>();
     options.Interceptors.Add<GrpcJwtAuthInterceptor>();
 });
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddProblemDetails();
-// 添加这行来注册 IHttpContextAccessor
+
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<FileCheckTypeMiddleware>();
 
@@ -52,6 +54,8 @@ builder.Services.AddSingleton<IConnectionFactory>(_ => new ConnectionFactory
 });
 builder.Services.AddEventBus(eventBusCfg, Assembly.GetExecutingAssembly());
 
+
+
 // 绑定文件存储配置（包括 AllowedExtensions 白名单）
 builder.Services.Configure<NotFileStorageOptions>(
     builder.Configuration.GetSection("NotFileStorage"));
@@ -63,15 +67,19 @@ builder.Services.Configure<FormOptions>(options => { options.MultipartBoundaryLe
 builder.WebHost.ConfigureKestrel(options => { options.Limits.MaxRequestBodySize = 100 * 1024 * 1024; });
 
 
+
 var app = builder.Build();
+
+// 静态工具类注入日志工厂（ImageValidator 为静态类，无法走构造注入）
+ImageValidator.Configure(app.Services.GetRequiredService<ILoggerFactory>());
 
 // 启动时自动应用 EF Core 迁移（与 Identity/Markdown 项目的 AddMigration 一致，
 // 用 Database.Migrate 替代 EnsureCreated，避免与 Migration 管理的库结构冲突）
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<NotFileDbContext>();
-    dbContext.Database.Migrate();
-}
+// using (var scope = app.Services.CreateScope())
+// {
+//     var dbContext = scope.ServiceProvider.GetRequiredService<NotFileDbContext>();
+//     dbContext.Database.Migrate();
+// }
 
 app.UseNotBlogPipeline();
 app.UseAuthentication();

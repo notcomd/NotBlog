@@ -1,5 +1,4 @@
 using Notcomd.EventBus.Core;
-using FileDev.Web.API.Application.Command;
 
 namespace FileDev.Web.API.Application.IntegrationEvents.EventHanding;
 
