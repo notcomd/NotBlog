@@ -73,12 +73,3 @@ public class DeleteRoleCommandHandler(
         return true;
     }
 }
-
-// Helper: SoftDelete extension for Roles
-file static class RolesExtensions
-{
-    public static void SoftDelete(this Roles role, bool deleted)
-    {
-        typeof(Roles).GetProperty(nameof(Roles.IsDeleted))!.SetValue(role, deleted);
-    }
-}

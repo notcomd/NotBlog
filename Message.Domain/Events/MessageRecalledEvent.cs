@@ -1,5 +1,3 @@
-using Message.Domain.Enums;
-using NotMediator;
 
 namespace Message.Domain.Events;
 

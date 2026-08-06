@@ -1,8 +1,8 @@
 # unpacked plugin folders
 plugins/**/*
 
-# files directory where uploads go
-files
+# files directory where uploads go（仅匹配仓库根目录；勿用裸 "files"，会误伤 Commands/Files、Queries/Files 等代码目录）
+/files
 
 # DBMigrate plugin: generated SQL
 db/sql

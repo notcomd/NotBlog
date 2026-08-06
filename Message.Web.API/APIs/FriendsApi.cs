@@ -1,5 +1,4 @@
 ﻿using Message.Web.API.Application.Commands.Friends;
-using Message.Web.API.Application.Queries.Friends;
 
 namespace Message.Web.API.APIs;
 

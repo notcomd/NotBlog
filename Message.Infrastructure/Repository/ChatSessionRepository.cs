@@ -1,4 +1,3 @@
-using Message.Infrastructure.EntityFramework;
 
 namespace Message.Infrastructure.Repository;
 

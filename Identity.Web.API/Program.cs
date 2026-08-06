@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Identity.Web.API;
+using Identity.Web.API.Application.IntegrationEvents.Events;
 using Commons.EntityFramework;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -101,6 +102,13 @@ builder.Services.AddProblemDetails();
 var eventBusCfg = builder.Configuration.GetSection("EventBus");
 builder.Services.AddEventBus(eventBusCfg, Assembly.GetExecutingAssembly());
 
+// S-19：Outbox 反序列化声明——Identity 发布的集成事件若无本地 handler，
+// 必须在此显式注册事件类型，否则 OutboxPublisher 会按"未找到事件类型"丢弃消息
+builder.Services.Configure<EventBusSubscriptionInfo>(o =>
+{
+    o.EventTypes[nameof(RegisterByUserIntegrationEvent)] = typeof(RegisterByUserIntegrationEvent);
+});
+
 // ═══ Outbox（S-19）：Identity 作为首个启用 Outbox 落表并投递的事件源服务 ═══
 // 发送事件前调用 IOutboxStore.StoreAsync 持久化，OutboxPublisher 后台投递；
 // OutboxMessages 表随 IdentityDbContext 迁移自动创建。
@@ -176,6 +184,28 @@ builder.Services.PostConfigure<OAuthOptions>(opt =>
         microsoft.ClientSecret = Environment.GetEnvironmentVariable("MICROSOFT_CLIENT_SECRET") ?? string.Empty;
 });
 
+// 凭据外置：微信 AppSecret 从环境变量读取（与 GitHub ClientSecret 同模式）
+builder.Services.PostConfigure<OAuthOptions>(opt =>
+{
+    if (opt.WeChatOptions is { Enabled: true } && string.IsNullOrEmpty(opt.WeChatOptions.AppSecret))
+    {
+        opt.WeChatOptions.AppSecret = Environment.GetEnvironmentVariable("WECHAT_APP_SECRET")
+            ?? throw new InvalidOperationException(
+                "WeChat OAuth 已启用但未配置 AppSecret：请在环境变量 WECHAT_APP_SECRET 中设置。");
+    }
+});
+
+// 凭据外置：QQ AppKey 从环境变量读取
+builder.Services.PostConfigure<OAuthOptions>(opt =>
+{
+    if (opt.QQOptions is { Enabled: true } && string.IsNullOrEmpty(opt.QQOptions.AppKey))
+    {
+        opt.QQOptions.AppKey = Environment.GetEnvironmentVariable("QQ_APP_KEY")
+            ?? throw new InvalidOperationException(
+                "QQ OAuth 已启用但未配置 AppKey：请在环境变量 QQ_APP_KEY 中设置。");
+    }
+});
+
 // 注册 OAuth 服务
 // 注：GitHub 端点已统一到 /api/identity/auth/oauth/{provider}（OAuthApis），
 // OAuthService 内部自行实现 GitHub 用户获取（GetGitHubUserInfoAsync）。
@@ -201,8 +231,12 @@ app.MapGroup("api/identity/permission").MapPermissionApi();
 app.MapGroup("api/identity/rolegroup").MapRoleGroupApi();
 // 角色管理端点
 app.MapGroup("api/identity/role").MapRoleApi();
-// 注册 OAuth 端点（统一支持 google / github / microsoft 登录与回调）
+// OAuth 客户端（NotClient）管理端点（AdminOnly）
+app.MapGroup("api/identity/client").MapClientApi();
+// 注册 OAuth 端点（统一支持 google / github / microsoft / wechat / qq 登录与回调）
 app.MapGroup("api/identity/auth").MapOAuthEndpoints();
+// 注册 OAuth 2.0 授权服务器端点（RFC 6749：NotClient 客户端注册体系）
+app.MapGroup("api/identity/oauth").MapOAuthServerApi();
 // 邮件验证码 RESTful 端点（公共访问：发送验证码 + 确认验证结果）
 app.MapGroup("api/identity/ready").MapEmailVerificationApi();
 //管理端点

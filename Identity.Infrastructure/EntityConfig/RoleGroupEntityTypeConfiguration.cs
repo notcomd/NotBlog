@@ -20,7 +20,7 @@ public class RoleGroupEntityTypeConfiguration : IEntityTypeConfiguration<RoleGro
         // 多对多: RoleGroup ↔ Permission（组拥有权限）
         builder.HasMany(g => g.Permissions)
             .WithMany(p => p.RoleGroups)
-            .UsingEntity<Dictionary<string, object>>("GroupPermissions",
+            .UsingEntity<Dictionary<string, object>>("RoleGroupPermissions",
                 j => j.HasOne<Permission>().WithMany().HasForeignKey("PermissionGuid"),
                 j => j.HasOne<RoleGroup>().WithMany().HasForeignKey("RoleGroupGuid"));
     }

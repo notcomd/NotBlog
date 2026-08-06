@@ -1,6 +1,4 @@
 ﻿using Message.Infrastructure.Services;
-using Message.Web.API.Application.Commands.Sessions;
-using Message.Web.API.Application.Queries.Sessions;
 
 namespace Message.Web.API.APIs;
 

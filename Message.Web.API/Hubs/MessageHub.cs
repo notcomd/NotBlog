@@ -1,11 +1,3 @@
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
-using Message.Infrastructure.Services;
-using Message.Web.API.Grpc;
-using Message.Web.API.Services;
-using Message.Web.API.Application.Commands.Messages;
-using Message.Web.API.Application.Queries.Files;
-using Message.Web.API.Dto.Request;
 
 namespace Message.Web.API.Hubs;
 

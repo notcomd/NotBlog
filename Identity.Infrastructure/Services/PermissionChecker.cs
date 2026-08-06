@@ -1,4 +1,5 @@
 using Identity.Domain.Entities.PermissionAggregate;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Identity.Infrastructure.Services;
 
@@ -15,15 +16,29 @@ namespace Identity.Infrastructure.Services;
 /// 数据范围判定:
 ///   Root/Admin 角色 → DataScopeType.All
 ///   其他角色 → DataScopeType.Own
+/// 
+/// 性能（P4）：权限集合与数据范围结果做 1 秒进程内缓存（网关每请求调用，原实现每请求 2~4 次 DB 查询）。
+/// 1 秒 TTL 意味着权限变更最多 1 秒后生效，无需主动失效；多实例各自缓存，延迟同样 ≤1 秒。
 /// </summary>
 public class PermissionChecker : IPermissionChecker
 {
+    /// <summary>权限集合缓存前缀</summary>
+    private const string PermCachePrefix = "identity:perm:";
+
+    /// <summary>数据范围缓存前缀</summary>
+    private const string ScopeCachePrefix = "identity:scope:";
+
+    /// <summary>缓存 TTL：1 秒（权限变更最多延迟 1 秒生效）</summary>
+    private static readonly TimeSpan CacheTtl = TimeSpan.FromSeconds(1);
+
     private readonly IdentityDbContext _db;
+    private readonly IMemoryCache _cache;
     private readonly ILogger<PermissionChecker> _logger;
 
-    public PermissionChecker(IdentityDbContext db, ILogger<PermissionChecker> logger)
+    public PermissionChecker(IdentityDbContext db, IMemoryCache cache, ILogger<PermissionChecker> logger)
     {
         _db = db ?? throw new ArgumentNullException(nameof(db));
+        _cache = cache ?? throw new ArgumentNullException(nameof(cache));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -45,44 +60,15 @@ public class PermissionChecker : IPermissionChecker
 
         try
         {
-            var userRoles = await GetUserActiveRolesAsync(userId, ct);
-            if (userRoles is null || userRoles.Count == 0)
-            {
-                _logger.LogDebug("[PermissionChecker] 用户无角色 UserId={UserId}", userId);
-                return false;
-            }
-
-            // 1. 角色直连权限
-            var directHasPermission = userRoles
-                .SelectMany(r => r.Permissions)
-                .Where(p => !p.IsDeleted)
-                .Any(p => p.PermissionCode == permissionCode);
-
-            if (directHasPermission)
-                return true;
-
-            // 2. 角色组继承权限
-            var roleGroupGuids = userRoles
-                .SelectMany(r => r.RoleGroupGuids)
-                .ToHashSet();
-
-            if (roleGroupGuids.Count == 0)
-                return false;
-
-            var groupHasPermission = await _db.RoleGroups
-                .AsNoTracking()
-                .Where(g => roleGroupGuids.Contains(g.RoleGroupGuid)
-                            && !g.IsDeleted)
-                .SelectMany(g => g.Permissions
-                    .Where(p => !p.IsDeleted)
-                    .Select(p => p.PermissionCode))
-                .AnyAsync(code => code == permissionCode, ct);
+            // P4：统一走缓存后的权限集合（直连 + 组继承，去重），一次缓存命中替代多次 DB 查询
+            var permissions = await GetUserPermissionsAsync(userId, ct);
+            var hasPermission = permissions.Contains(permissionCode);
 
             _logger.LogDebug(
                 "[PermissionChecker] Result={Result} UserId={UserId} Code={PermissionCode}",
-                groupHasPermission, userId, permissionCode);
+                hasPermission, userId, permissionCode);
 
-            return groupHasPermission;
+            return hasPermission;
         }
         catch (Exception ex)
         {
@@ -105,6 +91,10 @@ public class PermissionChecker : IPermissionChecker
 
         try
         {
+            var cacheKey = $"{PermCachePrefix}{userId}";
+            if (_cache.TryGetValue(cacheKey, out IReadOnlySet<string>? cached) && cached is not null)
+                return cached;
+
             var userRoles = await GetUserActiveRolesAsync(userId, ct);
             if (userRoles is null || userRoles.Count == 0)
             {
@@ -142,6 +132,7 @@ public class PermissionChecker : IPermissionChecker
                 "[PermissionChecker] GetUserPermissions UserId={UserId} Direct={DirectCount} Group={GroupCount} Total={TotalCount}",
                 userId, directCodes.Count(), groupCodes.Count, allCodes.Count);
 
+            _cache.Set(cacheKey, allCodes, CacheTtl);
             return allCodes;
         }
         catch (Exception ex)
@@ -164,6 +155,10 @@ public class PermissionChecker : IPermissionChecker
 
         try
         {
+            var cacheKey = $"{ScopeCachePrefix}{userId}";
+            if (_cache.TryGetValue(cacheKey, out DataScope? cached) && cached is not null)
+                return cached;
+
             var userRoleGuids = await GetUserRoleGuidsAsync(userId, ct);
             if (userRoleGuids is null || userRoleGuids.Count == 0)
             {
@@ -179,18 +174,25 @@ public class PermissionChecker : IPermissionChecker
                 .Select(r => r.RoleAuthority)
                 .ToListAsync(ct);
 
+            DataScope result;
             if (roleAuthorities.Count == 0)
-                return DataScope.Own();
-
-            if (roleAuthorities.Contains(RoleAuthority.Root) ||
-                roleAuthorities.Contains(RoleAuthority.Admin))
+            {
+                result = DataScope.Own();
+            }
+            else if (roleAuthorities.Contains(RoleAuthority.Root) ||
+                     roleAuthorities.Contains(RoleAuthority.Admin))
             {
                 _logger.LogDebug("[PermissionChecker] GetUserDataScope UserId={UserId} Scope=All", userId);
-                return DataScope.All();
+                result = DataScope.All();
+            }
+            else
+            {
+                _logger.LogDebug("[PermissionChecker] GetUserDataScope UserId={UserId} Scope=Own", userId);
+                result = DataScope.Own();
             }
 
-            _logger.LogDebug("[PermissionChecker] GetUserDataScope UserId={UserId} Scope=Own", userId);
-            return DataScope.Own();
+            _cache.Set(cacheKey, result, CacheTtl);
+            return result;
         }
         catch (Exception ex)
         {

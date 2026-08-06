@@ -1,12 +1,5 @@
-using Message.Infrastructure.Services;
-using Message.Web.API.Application.Commands.Messages;
-using Message.Web.API.Application.Queries.Messages;
 using MessageEntity = Message.Domain.Entities.Message;
 
-using Message.Web.API.Application.Commands.Files;
-using Message.Web.API.Application.Queries.Files;
-using Message.Web.API.Grpc;
-using Message.Web.API.Extensions;
 
 namespace Message.Web.API.APIs;
 

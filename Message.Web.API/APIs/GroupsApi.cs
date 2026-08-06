@@ -1,5 +1,3 @@
-using Message.Web.API.Application.Commands.Groups;
-using Message.Web.API.Application.Queries.Groups;
 
 namespace Message.Web.API.APIs;
 

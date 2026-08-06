@@ -1,4 +1,3 @@
-using Message.Domain.Entities.Tweet;
 
 namespace Message.Domain.IRepository;
 /// <summary>

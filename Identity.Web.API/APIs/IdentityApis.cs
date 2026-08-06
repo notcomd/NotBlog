@@ -33,6 +33,11 @@ public static class IdentityApis
         // S-12：刷新 Token（单次使用，刷新后旧 RefreshToken 进入黑名单）
         route.MapPost("/refresh", Refresh).WithHttpLogging(HttpLoggingFields.All);
 
+        // P3：登出（吊销当前设备会话，不影响其他设备）
+        route.MapPost("/Logout", Logout)
+            .RequireAuthorization()
+            .WithHttpLogging(HttpLoggingFields.All);
+
         return route;
     }
 
@@ -86,7 +91,8 @@ public static class IdentityApis
         HttpContext httpContext)
     {
         // S-13：登录 IP 级限流（10 次/分钟；Redis 原子计数，窗口内首请求设置 TTL，超限返回 429）
-        var ip = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        // P9：取 X-Forwarded-For 客户端 IP（网关后限流不再全员同源）
+        var ip = httpContext.GetClientIp();
         var window = DateTimeOffset.UtcNow.ToString("yyyyMMddHHmm");
         var rateKey = $"{LoginRateLimitKeyPrefix}{ip}:{window}";
 
@@ -124,6 +130,28 @@ public static class IdentityApis
     }
 
 
+    /// <summary>
+    /// P3：登出当前设备——吊销当前 Bearer Token（黑名单）+ 注销该设备会话登记；
+    /// 仅影响当前设备，其他设备会话不受影响（全端下线请使用改密或后续的禁用端点）。
+    /// </summary>
+    private static async Task<IResult> Logout(
+        [FromServices] IJwtTokenService jwtTokenService,
+        [FromServices] ITokenSessionService tokenSessionService,
+        HttpContext httpContext)
+    {
+        var authHeader = httpContext.Request.Headers.Authorization.ToString();
+        var bearerToken = authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
+            ? authHeader["Bearer ".Length..].Trim()
+            : null;
+        if (string.IsNullOrWhiteSpace(bearerToken))
+            return Results.BadRequest(new { error = "缺少 Bearer Token" });
+
+        await jwtTokenService.RevokeTokenAsync(bearerToken);
+        await tokenSessionService.RevokeSessionAsync(bearerToken);
+        return Results.Ok(new { message = "已登出" });
+    }
+
+
     private static async Task<IResult> GenerateCode([FromServices] IdentityService identityService,
         [FromBody] GenerateCodeRequest generateCodeRequest,
         HttpContext httpContext)
@@ -145,7 +173,7 @@ public static class IdentityApis
     /// </summary>
     private static async Task<IResult> ChangeByPassword([FromServices] IdentityService identityService,
         [FromServices] IJwtTokenService jwtTokenService,
-        [FromServices] ICacheMemory<TokenCacheEntry> tokenCache,
+        [FromServices] ITokenSessionService tokenSessionService,
         [FromBody] ChangeByPasswordRequest changeByPasswordRequestRequest,
         HttpContext httpContext)
     {
@@ -193,8 +221,8 @@ public static class IdentityApis
                 : null;
             if (!string.IsNullOrWhiteSpace(bearerToken))
                 await jwtTokenService.RevokeTokenAsync(bearerToken);
-            await tokenCache.RemoveAsync($"auth:token:{userId}");
-            await tokenCache.RemoveAsync($"auth:refresh:{userId}");
+            // P3：吊销该用户全部已登记会话（多设备全端下线，替代此前仅清单槽缓存）
+            await tokenSessionService.RevokeAllSessionsAsync(userId);
 
             var emailCommand = new SendEmailCommand(userdata.UserEmail, "重置账号消息！(≧∇≦)ﾉ",
                 "你的账号密码重置了，请注意这是非常规的账号变动，确认为本人操作。");

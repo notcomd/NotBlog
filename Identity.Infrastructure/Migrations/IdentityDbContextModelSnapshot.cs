@@ -333,6 +333,9 @@ namespace Identity.Infrastructure.Migrations
 
                     b.HasKey("UserGuid");
 
+                    b.HasIndex("UserEmail")
+                        .IsUnique();
+
                     b.ToTable("User", (string)null);
                 });
 

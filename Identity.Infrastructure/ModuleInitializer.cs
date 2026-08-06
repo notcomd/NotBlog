@@ -12,9 +12,15 @@ public class ModuleInitializer : IModuleInitializer
         service.AddScoped<IUserRoleRepository, UserRoleRepository>();
         service.AddScoped<IRoleGroupRepository, RoleGroupRepository>();
         service.AddScoped<IPermissionRepository, PermissionRepository>();
+        service.AddScoped<INotClientRepository, NotClientRepository>();
+        service.AddScoped<ITokenEncryptionService, TokenEncryptionService>();
+        service.AddScoped<ITokenSessionService, TokenSessionService>();
+        service.AddSingleton<MailQueue>();
+        service.AddSingleton<IMailQueue>(sp => sp.GetRequiredService<MailQueue>());
+        service.AddHostedService<MailQueueProcessor>();
         service.AddScoped<IEmailCodeSend, EmailCodeSend>();
         service.AddScoped<IRequestManagement, RequestManagement>();
-        service.AddDistributedMemoryCache();
+        service.AddMemoryCache();
         if (!service.Any(s => s.ServiceType == typeof(IJwtTokenService)))
             service.AddScoped<IJwtTokenService, JwtTokenService>();
         //service.AddScoped<ISmsCodeSend, SmsCodeSend>();

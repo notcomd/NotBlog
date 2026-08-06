@@ -10,7 +10,7 @@ public class RegisterByUserCommandHandler(
     IUserRepository userRepository,
     IUserRoleRepository userRoleRepository,
     IIdentityCacheService identityCacheService,
-    IEventBus eventBus
+    IOutboxStore outboxStore
 )
     : NotMediator.IRequestHandler<RegisterByUserCommand, bool>
 {
@@ -49,11 +49,26 @@ public class RegisterByUserCommandHandler(
             null,
             null);
         await userRepository.AddOneByUserAsync(user);
-        await userRepository.UnitOfWork.SaveChangesAsync(cancellationToken);
-        await eventBus.PublishAsync(new RegisterByUserIntegrationEvent(user.UserGuid));
+
+        // S-19：Outbox 落库——与用户创建同事务提交，OutboxPublisher 后台投递，避免事件丢失
+        await outboxStore.StoreAsync(new OutboxMessage(
+            nameof(RegisterByUserIntegrationEvent),
+            new RegisterByUserIntegrationEvent(user.UserGuid)), cancellationToken);
+
+        try
+        {
+            await userRepository.UnitOfWork.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException)
+        {
+            // 并发注册同邮箱：UserEmail 唯一索引兜底（先查后插的 TOCTOU 竞态由 DB 约束终结）
+            logger.LogWarning("[RegisterByUserCommandHandler] 并发注册冲突，邮箱已存在: {Email}",
+                command.UserEmail);
+            return false;
+        }
+
         logger.LogInformation("[RegisterByUserCommandHandler] 注册用户成功: UserId={UserId}",
             user.UserGuid);
-        await Task.CompletedTask;
         return true;
     }
 }

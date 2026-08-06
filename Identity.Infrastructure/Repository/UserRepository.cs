@@ -1,11 +1,8 @@
 namespace Identity.Infrastructure.Repository;
 
-public class UserRepository(IdentityDbContext userDbContext, IDistributedCache distributedCache)
+public class UserRepository(IdentityDbContext userDbContext)
     : IUserRepository
 {
-    /// <summary>手机验证码缓存 key 前缀（统一所有手机验证码方法的 key 格式）</summary>
-    private const string PhoneCodeKeyPrefix = "PhoneCode";
-
     public IUnitOfWork UnitOfWork => userDbContext;
 
     public async ValueTask<User?> FindOneByUserAsync(Guid guid)
@@ -65,10 +62,10 @@ public class UserRepository(IdentityDbContext userDbContext, IDistributedCache d
         var find = await FindOneByUserAsync(phoneNumber);
         if (find is not null)
         {
-            // F-07：落库登录历史
+            // P6：仅登记变更，提交由 UnitOfWork/外层事务统一负责（此前在此直接 SaveChanges，
+            // 破坏事务原子性——若外层事务回滚，登录历史已落库无法撤销）
             var history = new UserLoginHistory(find.UserGuid, phoneNumber, message, find.UserEmail);
             await userDbContext.UserLoginHistories.AddAsync(history);
-            await userDbContext.SaveChangesAsync();
         }
     }
 
@@ -97,27 +94,6 @@ public class UserRepository(IdentityDbContext userDbContext, IDistributedCache d
             .ExecuteUpdateAsync(s => s.SetProperty(x => x.LockOutEnd, lockOutEnd));
     }
 
-    public async ValueTask SaveByPhoneNumberAsync(PhoneNumber phoneNumber, string code)
-    {
-        var key = $"{PhoneCodeKeyPrefix}{phoneNumber.PhoneCode}_{phoneNumber.AddressRegion}";
-        await distributedCache.SetStringAsync(key, code,
-            new DistributedCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
-            });
-    }
-
-    public async ValueTask SaveByEmailNumberAsync(string email, string code)
-    {
-        // 参数即邮箱，无需查库（修复此前为拿 UserEmail 而发起的冗余数据库查询）
-        var key = $"emailAddress:{email}_{code}";
-        await distributedCache.SetStringAsync(key, code,
-            new DistributedCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
-            });
-    }
-
     public Task UpdateByUserAsync(User user)
     {
         userDbContext.Update(user);
@@ -130,20 +106,4 @@ public class UserRepository(IdentityDbContext userDbContext, IDistributedCache d
         return Task.CompletedTask;
     }
 
-    public async ValueTask<string> RetirievePhoneCodeAsync(PhoneNumber phoneNumber)
-    {
-        var key = $"{PhoneCodeKeyPrefix}{phoneNumber.PhoneCode}_{phoneNumber.AddressRegion}";
-        var code = await distributedCache.GetStringAsync(key);
-        await distributedCache.RemoveAsync(key);
-        return code ?? string.Empty;
-    }
-
-    public async ValueTask<string> FindPhoneNumberAsync(PhoneNumber phoneNumber)
-    {
-        // 修复：此前 key 格式与 Save/Retirieve 不一致（大小写+分隔符都不同），导致永远取不到
-        var key = $"{PhoneCodeKeyPrefix}{phoneNumber.PhoneCode}_{phoneNumber.AddressRegion}";
-        var code = await distributedCache.GetStringAsync(key);
-        await distributedCache.RemoveAsync(key);
-        return code ?? string.Empty;
-    }
 }

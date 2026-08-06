@@ -66,6 +66,17 @@ var identityBaseUrl = builder.Configuration["IdentityService:BaseUrl"];
 
 if (!string.IsNullOrWhiteSpace(identityBaseUrl))
 {
+    // 内部调用凭证（V4）：网关 → Identity 的内部端点（权限检查/映射拉取）必须携带共享密钥，
+    // 与 Identity 侧 InternalApiKeyFilter 配对；未配置则启动失败（fail-closed，不静默降级）。
+    var internalApiKey = builder.Configuration["GatewayInternal:ApiKey"]
+        ?? Environment.GetEnvironmentVariable("GATEWAY_INTERNAL_API_KEY");
+    if (string.IsNullOrWhiteSpace(internalApiKey))
+    {
+        throw new InvalidOperationException(
+            "网关内部调用凭证未配置：请在环境变量 GATEWAY_INTERNAL_API_KEY（或配置 GatewayInternal:ApiKey）中设置，"
+            + "且与 Identity 服务保持一致。");
+    }
+
     // 生产模式：HTTP 调用 Identity 服务
     // 弹性（F-12）：AddServiceDefaults 已通过 ConfigureHttpClientDefaults 为所有 HttpClient
     // 注册 AddStandardResilienceHandler（重试/熔断/attempt+total 超时），此处不重复注册；
@@ -74,6 +85,8 @@ if (!string.IsNullOrWhiteSpace(identityBaseUrl))
     {
         client.BaseAddress = new Uri(identityBaseUrl);
         client.Timeout = Timeout.InfiniteTimeSpan;
+        // V4：所有到 Identity 的内部调用携带共享密钥
+        client.DefaultRequestHeaders.Add("X-Internal-Api-Key", internalApiKey);
     });
 
     // 注册映射加载器：启动后从 Identity 拉取权威映射，替换本地配置

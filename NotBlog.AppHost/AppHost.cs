@@ -35,6 +35,11 @@ var rabbitmq = builder.AddConnectionString("EventBus", ReferenceExpression.Creat
 // 业务服务（项目）
 // ═══════════════════════════════════════════════════════════════════
 
+// 网关内部调用凭证（V4）：从 AppHost 配置（GatewayInternal:ApiKey / 环境变量
+// GatewayInternal__ApiKey）透传给 Identity 与网关，二者必须一致；
+// 未配置时网关启动会因凭证缺失而失败（fail-closed，不静默降级）。
+var gatewayInternalApiKey = builder.Configuration["GatewayInternal:ApiKey"];
+
 // FileDev：文件服务。
 // - 数据库：FileDev 从配置键 DbContextConnect 读取连接串（而非 ConnectionStrings），故经环境变量覆盖注入容器连接串；
 // - 缓存：AddCacheMemory(builder.Configuration) 读取 ConnectionStrings:CacheMemory；
@@ -56,6 +61,10 @@ var identity = builder.AddProject<Identity_Web_API>("identity-web-api")
     .WithReference(filedev)
     .WithEnvironment("FileStorageGrpc__Address", "https://filedev-web-api")
     .WithEnvironment("DbContextOption__DbContextConnect", identityDb);
+
+// V4：网关内部调用凭证（未配置时不注入，Identity 侧保持 fail-closed）
+if (!string.IsNullOrEmpty(gatewayInternalApiKey))
+    identity.WithEnvironment("GATEWAY_INTERNAL_API_KEY", gatewayInternalApiKey);
 
 // Message：消息服务。数据库期望连接名 "PostgresSQL"（非 MessagePostgres），缓存用 "Redis"；
 // 经服务发现（WithReference(filedev)）调用 FileDev 的文件上传 gRPC 服务。
@@ -79,11 +88,15 @@ var video = builder.AddProject<Video_Web_API>("video-web-api")
 
 // YARP 网关：接入服务发现（WithReference 注入各服务的 services__<name>__http/https 端点），
 // appsettings.json 中集群地址与 IdentityService:BaseUrl 改用虚拟主机名（https://<service-name>）。
-builder.AddProject<NotBlog_Yarp>("notblog-yarp-gateway")
+var gateway = builder.AddProject<NotBlog_Yarp>("notblog-yarp-gateway")
     .WithReference(identity)
     .WithReference(message)
     .WithReference(markdown)
     .WithReference(video)
     .WithReference(filedev);
+
+// V4：网关内部调用凭证（与 Identity 侧保持一致；未配置时网关启动将失败）
+if (!string.IsNullOrEmpty(gatewayInternalApiKey))
+    gateway.WithEnvironment("GATEWAY_INTERNAL_API_KEY", gatewayInternalApiKey);
 
 builder.Build().Run();

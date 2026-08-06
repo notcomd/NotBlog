@@ -1,7 +1,3 @@
-using Message.Domain.Enums;
-using Message.Domain.Events;
-using Commons.SeedWork;
-using NotMediator;
 
 namespace Message.Domain.Entities.Tweet;
 

@@ -1,8 +1,4 @@
 ﻿using Message.Domain.Entities.Recall;
-using Message.Domain.ValueObjects.Message;
-using Message.Domain.Enums;
-using Message.Domain.Events;
-using Commons.SeedWork;
 
 namespace Message.Domain.Entities;
 

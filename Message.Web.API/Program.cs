@@ -1,10 +1,6 @@
 using System.Reflection;
 using Message.Infrastructure;
-using Message.Infrastructure.EntityFramework;
-using Message.Web.API.Extensions;
-using Message.Web.API.Middleware;
 using NotBlog.ServiceDefaults;
-using NotMediator;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +8,23 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 
 builder.AddRedisDistributedCache("Redis");
+
+// ═══ EventBus（RabbitMQ）：社区事件总线 ═══
+// DEBUG：手动 ConnectionFactory（appsettings EventBus 节）；Release：Aspire 服务发现 AddRabbitMQClient("EventBus")
+#if DEBUG
+builder.Services.AddSingleton<RabbitMQ.Client.IConnectionFactory>(_ =>
+{
+    var eventBusCfg = builder.Configuration.GetSection("EventBus");
+    return new RabbitMQ.Client.ConnectionFactory
+    {
+        HostName = eventBusCfg["HostName"] ?? "localhost",
+        UserName = eventBusCfg["UserName"] ?? "guest",
+        Password = eventBusCfg["Password"] ?? "guest"
+    };
+});
+#else
+builder.AddRabbitMQClient("EventBus");
+#endif
 builder.Services.AddNpgsql<MessageDbContext>("PostgresSQL");
 builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
 
@@ -56,7 +69,11 @@ app.MapMessagesApi();
 app.MapReportsApi();
 app.MapSessionsApi();
 app.MapTweetsApi();
+app.MapCirclesApi();
+app.MapTopicsApi();
+app.MapFollowsApi();
 
 app.MapHub<Message.Web.API.Hubs.MessageHub>("/MessageHub");
+app.MapHub<Message.Web.API.Hubs.CommunityHub>("/CommunityHub");
 
 app.Run();

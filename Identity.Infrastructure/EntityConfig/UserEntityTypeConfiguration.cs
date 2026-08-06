@@ -18,6 +18,9 @@ public class UserEntityTypeConfiguration : IEntityTypeConfiguration<User>
 
         builder.Property(x => x.UserGuid).HasColumnName("user_guid").IsRequired();
 
+        // P5：UserEmail 唯一索引——并发注册同邮箱由 DB 约束终结（先查后插的 TOCTOU 由唯一索引兜底）
+        builder.HasIndex(x => x.UserEmail).IsUnique();
+
         builder.Property(x => x.UserRoleGuid).HasColumnName("user_role_guid").IsRequired();
 
         builder.Property(x => x.UserName).HasColumnName("user_name").IsRequired().HasMaxLength(50);

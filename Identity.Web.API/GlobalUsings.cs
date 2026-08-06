@@ -9,6 +9,7 @@ global using Commons.Web;
 global using Commons.Extensions;
 
 global using Identity.Domain.Dto.Request;
+global using Identity.Domain.Entities.ClientAggregate;
 global using Identity.Domain.Entities.RoleAggregate;
 global using Identity.Domain.Entities.UserAggregate;
 global using Identity.Domain.IRepository;
@@ -26,6 +27,7 @@ global using Microsoft.Extensions.Http.Resilience;
 global using NotBlog.ServiceDefaults;
 
 global using Notcomd.EventBus.Core;
+global using Notcomd.EventBus.Outbox;
 global using Notcomd.EventBus.Extension;
 global using Notcomd.NotEmail.Core;
 global using Notcomd.NotEmail.Extensions;

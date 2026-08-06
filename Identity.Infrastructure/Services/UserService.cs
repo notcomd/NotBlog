@@ -1,4 +1,3 @@
-using CacheMemory.Core;
 using Identity.Domain.Events;
 using Identity.Domain.ICache;
 
@@ -10,12 +9,10 @@ public class UserService(
     IUserRepository userRepository,
     IUserRoleRepository userRoleRepository,
     IJwtTokenService jwtTokenServer,
-    ICacheMemory<TokenCacheEntry> cacheMemory,
+    ITokenSessionService tokenSessionService,
     IIdentityCacheService identityCacheService)
     : IUserService
 {
-    private const string AccessTokenKeyPrefix = "auth:token";
-    private const string RefreshTokenKeyPrefix = "auth:refresh";
     private const string EmailCodeKeyPrefix = "Login_";
 
     // ── 邮箱密码登录 ──
@@ -100,7 +97,8 @@ public class UserService(
         {
             // S-13：失败计数原子递增（ExecuteUpdate，并发安全），达到阈值时锁定账号
             var failCount = await userRepository.IncrementAccessFaildCountAsync(userData.UserGuid);
-            if (failCount > UserAccessFail.MaxFailedAttempts)
+            // 第 MaxFailedAttempts 次失败即锁定（与 UserAccessFail 注释语义一致）
+            if (failCount >= UserAccessFail.MaxFailedAttempts)
             {
                 await userRepository.LockUserAsync(
                     userData.UserGuid, DateTimeOffset.UtcNow.Add(UserAccessFail.LockOutDuration));
@@ -122,7 +120,10 @@ public class UserService(
             var config = optionsSnapshot.Value;
             var tokenData = await jwtTokenServer.BuildTokenAsync(claims, config);
 
-            await CacheTokensAsync(userData.UserGuid, tokenData, config);
+            // P3：多设备会话登记（每设备独立槽位，不再互相覆盖）
+            await tokenSessionService.RegisterAsync(userData.UserGuid, tokenData,
+                TimeSpan.FromSeconds(config.ExpireSeconds),
+                TimeSpan.FromSeconds(config.RefreshTokenExpireSeconds));
 
             loggerUser.LogInformation(
                 "[{DateTime}] 用户 {UserEmail} 验证通过，" +
@@ -135,51 +136,6 @@ public class UserService(
         {
             loggerUser.LogError(ex, "[{DateTime}] 用户 {UserEmail} Token 生成失败", DateTime.UtcNow, userData.UserEmail);
             return null;
-        }
-    }
-
-    // ── Token 缓存 ──
-
-    /// <summary>
-    /// 将 AccessToken 和 RefreshToken 分别存入缓存
-    /// </summary>
-    private async Task CacheTokensAsync(Guid userGuid, TokenResult tokenResult, JwtOptions config)
-    {
-        var accessTokenEntry = new TokenCacheEntry
-        {
-            Token = tokenResult.AccessToken,
-            UserGuid = userGuid,
-            CreatedAt = DateTimeOffset.UtcNow,
-            ExpiresAt = tokenResult.ExpiresAt,
-            TokenType = tokenResult.TokenType,
-            LinkedAccessToken = tokenResult.RefreshToken
-        };
-
-        var accessKey = $"{AccessTokenKeyPrefix}:{userGuid}";
-        var accessTtl = config.ExpireSeconds > 0
-            ? TimeSpan.FromSeconds(config.ExpireSeconds)
-            : TimeSpan.FromHours(1);
-
-        await cacheMemory.SetAsync(accessKey, accessTokenEntry, accessTtl);
-
-        if (!string.IsNullOrEmpty(tokenResult.RefreshToken))
-        {
-            var refreshTokenEntry = new TokenCacheEntry
-            {
-                Token = tokenResult.RefreshToken,
-                UserGuid = userGuid,
-                CreatedAt = DateTimeOffset.UtcNow,
-                ExpiresAt = DateTimeOffset.UtcNow.AddSeconds(config.RefreshTokenExpireSeconds),
-                TokenType = "refresh",
-                LinkedAccessToken = tokenResult.AccessToken
-            };
-
-            var refreshKey = $"{RefreshTokenKeyPrefix}:{userGuid}";
-            var refreshTtl = config.RefreshTokenExpireSeconds > 0
-                ? TimeSpan.FromSeconds(config.RefreshTokenExpireSeconds)
-                : TimeSpan.FromDays(7);
-
-            await cacheMemory.SetAsync(refreshKey, refreshTokenEntry, refreshTtl);
         }
     }
 
@@ -225,15 +181,3 @@ public class UserService(
     }
 }
 
-/// <summary>
-/// 缓存中的 Token 实体
-/// </summary>
-public sealed class TokenCacheEntry : IMemory
-{
-    public string Token { get; init; } = null!;
-    public Guid UserGuid { get; init; }
-    public DateTimeOffset CreatedAt { get; init; }
-    public DateTimeOffset ExpiresAt { get; init; }
-    public string TokenType { get; init; } = null!;
-    public string? LinkedAccessToken { get; init; }
-}

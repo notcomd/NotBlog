@@ -14,16 +14,16 @@ namespace Identity.Web.API.Application.DomainEventHandlers;
 public class AccountLockedEventHandler : INotificationHandler<AccountLockedEvent>
 {
     private readonly ILogger<AccountLockedEventHandler> _logger;
-    private readonly IEmailCodeSend _emailSender;
+    private readonly IMailQueue _mailQueue;
     private readonly IUserRepository _userRepository;
 
     public AccountLockedEventHandler(
         ILogger<AccountLockedEventHandler> logger,
-        IEmailCodeSend emailSender,
+        IMailQueue mailQueue,
         IUserRepository userRepository)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _emailSender = emailSender ?? throw new ArgumentNullException(nameof(emailSender));
+        _mailQueue = mailQueue ?? throw new ArgumentNullException(nameof(mailQueue));
         _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
     }
 
@@ -69,19 +69,10 @@ public class AccountLockedEventHandler : INotificationHandler<AccountLockedEvent
                 </div>
                 """;
 
-            //var emailMessage = new EmailMessage(user.UserEmail, "NotBlog - 账户锁定通知", body, isHtml: true);
-            var result = await _emailSender.SendEmailCodeAsync(user.UserEmail, "NotBlog - 账户锁定通知", body);
-
-            if (result)
-            {
-                _logger.LogInformation("[{Time}] 账户锁定通知邮件已发送: Email={Email}",
-                    utcNow, user.UserEmail);
-            }
-            else
-            {
-                _logger.LogWarning("[{Time}] 账户锁定通知邮件发送失败: Email={Email}, Error={Error}",
-                    utcNow, user.UserEmail, result);
-            }
+            // P6：锁定通知邮件入后台队列（领域事件在数据库事务内派发，不做 SMTP 外部 IO）
+            _mailQueue.Enqueue(user.UserEmail, "NotBlog - 账户锁定通知", body);
+            _logger.LogInformation("[{Time}] 账户锁定通知邮件已入队发送: Email={Email}",
+                utcNow, user.UserEmail);
         }
         catch (Exception ex)
         {
