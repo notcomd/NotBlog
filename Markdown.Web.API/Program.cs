@@ -68,6 +68,10 @@ builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddProblemDetails();
 
+// 统一业务异常映射（KeyNotFoundException→404 / 越权→403 / 非法参数→400），
+// 未识别的异常返回 false 交由 ExceptionSanitizingMiddleware 脱敏为 500
+builder.Services.AddExceptionHandler<MarkdownApiExceptionHandler>();
+
 
 
 // 当前用户服务
@@ -82,6 +86,9 @@ builder.Services.AddAuthorization();
 var app = builder.Build();
 
 app.MapDefaultEndpoints();
+
+// 业务异常统一映射（必须位于脱敏中间件之前：先识别业务异常，未识别的交给下方脱敏兜底）
+app.UseExceptionHandler();
 
 // S-16：全局异常脱敏（无内部路径/堆栈泄漏），必须位于管道最前
 app.UseNotBlogExceptionHandler();
