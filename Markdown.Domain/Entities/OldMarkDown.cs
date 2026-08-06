@@ -93,15 +93,6 @@ public class OldMarkDown : Entity<int>
         OldMarkDownHash = hash ?? throw new ArgumentNullException(nameof(hash));
     }
 
-   
-    internal void UpdateHistory(string content, string hash, MarkDownAuth authType)
-    {
-        OldMarkDownContent = content ?? throw new ArgumentNullException(nameof(content));
-        OldMarkDownHash = hash ?? throw new ArgumentNullException(nameof(hash));
-        AuthType = authType;
-        UpdateAt = DateTimeOffset.UtcNow;
-    }
-
     /// <summary>
     ///     标记为已删除（软删除）
     /// </summary>
@@ -111,30 +102,4 @@ public class OldMarkDown : Entity<int>
         UpdateAt = DateTimeOffset.UtcNow;
     }
 
-    /// <summary>
-    ///     验证当前版本是否与指定哈希值匹配
-    /// </summary>
-    /// <param name="hash">要比较的哈希值</param>
-    /// <returns>如果匹配返回 true</returns>
-    public bool IsVersionMatch(string hash)
-    {
-        return OldMarkDownHash == hash;
-    }
-
-    /// <summary>
-    ///     转换为当前文档的格式
-    /// </summary>
-    /// <returns>MarkDown 实例</returns>
-    public MarkDown ToCurrentFormat()
-    {
-        // 创建一个只读的 MarkDown 实例用于查看
-        var markdown = new MarkDown(
-            UserGuid,
-            $"历史版本_{OldMarkDownGuid}",
-            OldMarkDownContent,
-            OldMarkDownHash
-        );
-        // 使用反射或其他方式设置只读属性（如果需要完全还原）
-        return markdown;
-    }
 }

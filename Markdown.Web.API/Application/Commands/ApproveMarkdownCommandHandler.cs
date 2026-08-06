@@ -15,8 +15,9 @@ public class ApproveMarkdownCommandHandler(
         if (markdown.IsDelete)
             throw new InvalidOperationException("已删除的文档无法审核");
 
-        if (markdown.MarkUserGuid != request.UserId && !request.IsAdmin)
-            throw new UnauthorizedAccessException("仅作者或管理员可执行审核操作");
+        // P1-3：审核必须由管理员执行——作者自审会让审核流程形同虚设
+        if (!request.IsAdmin)
+            throw new UnauthorizedAccessException("仅管理员可执行审核操作");
 
         markdown.Approve();
         await markdownRepository.UnitOfWork.SaveChangesAsync(cancellationToken);

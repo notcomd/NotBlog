@@ -7,4 +7,4 @@ public record RejectMarkdownCommand(
     Guid MarkDownGuid,
     Guid UserId,
     bool IsAdmin
-) : IRequest<bool>;
+) : IRequest<bool>, ICommandRequest;

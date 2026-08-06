@@ -147,15 +147,6 @@ public class MarkQuote
     }
 
     /// <summary>
-    ///  创建当前实例的副本
-    /// </summary>
-    /// <returns>新的 MarkQuote 实例</returns>
-    public MarkQuote Copy()
-    {
-        return new MarkQuote(LoveSome, ReviewSome, CommentSome, ShareSome, ViewSome);
-    }
-
-    /// <summary>
     ///     与另一个 MarkQuote 比较是否相等
     /// </summary>
     public override bool Equals(object? obj)

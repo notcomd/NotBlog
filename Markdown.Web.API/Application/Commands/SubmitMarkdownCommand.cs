@@ -6,4 +6,4 @@ namespace Markdown.Web.API.Application.Commands;
 public record SubmitMarkdownCommand(
     Guid MarkDownGuid,
     Guid UserId
-) : IRequest<bool>;
+) : IRequest<bool>, ICommandRequest;

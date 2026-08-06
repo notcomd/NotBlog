@@ -10,4 +10,4 @@ public record UpdateMarkdownCommand(
     string MarkDownContent,
     string? MarkDownHash = null,
     IEnumerable<string>? Tags = null
-) : IRequest<bool>;
+) : IRequest<bool>, ICommandRequest;

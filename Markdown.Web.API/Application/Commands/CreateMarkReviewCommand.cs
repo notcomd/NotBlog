@@ -10,4 +10,4 @@ public record CreateMarkReviewCommand(
     List<ReviewImage>? ReviewImages = null,
     MarkReviewAuth ReviewAuth = MarkReviewAuth.ReviewAuthPublic,
     Guid IdempotencyKey = default
-) : IRequest<Guid>;
+) : IRequest<Guid>, ICommandRequest;

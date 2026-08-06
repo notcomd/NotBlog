@@ -7,4 +7,4 @@ public record RestoreMarkdownCommand(
     Guid MarkDownGuid,
     Guid OldMarkDownGuid,
     Guid UserId
-) : IRequest<bool>;
+) : IRequest<bool>, ICommandRequest;

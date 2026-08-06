@@ -35,13 +35,13 @@ public class UpdateMarkdownCommandHandler(
         markdown.CreateHistorySnapshot();
 
         // 5. 计算内容哈希
-        var md5Hash = request.MarkDownHash ?? ComputeMd5(request.MarkDownContent);
+        var contentHash = request.MarkDownHash ?? ComputeSha256(request.MarkDownContent);
 
         // 6. 更新文档内容
-        await markdown.UpDataByMarkDownAsync(
+        await markdown.UpdateByMarkDownAsync(
             request.MarkDownName,
             request.MarkDownContent,
-            md5Hash);
+            contentHash);
 
         // 7. 更新标签（如果提供）
         if (request.Tags is not null)
@@ -58,13 +58,11 @@ public class UpdateMarkdownCommandHandler(
     }
 
     /// <summary>
-    /// 计算内容 MD5
+    ///     计算内容 SHA-256 哈希（P2-4：MD5 仅适合校验不适合内容指纹语义，升级为 SHA-256）
     /// </summary>
-    private static string ComputeMd5(string content)
+    private static string ComputeSha256(string content)
     {
-        using var md5 = MD5.Create();
-        var inputBytes = Encoding.UTF8.GetBytes(content);
-        var hashBytes = md5.ComputeHash(inputBytes);
-        return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+        var hashBytes = SHA256.HashData(Encoding.UTF8.GetBytes(content));
+        return Convert.ToHexStringLower(hashBytes);
     }
 }

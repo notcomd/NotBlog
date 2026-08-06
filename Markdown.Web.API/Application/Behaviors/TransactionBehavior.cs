@@ -20,6 +20,13 @@ public class TransactionBehavior<TRequest, TResponse>(
     {
         var response = default(TResponse)!;
         var typeName = request.GetGenericTypeName();
+
+        // P1-7：查询等只读请求（未实现 ICommandRequest）直接穿透，不开数据库事务
+        if (request is not ICommandRequest)
+        {
+            return await next();
+        }
+
         try
         {
             if (_markDownDbContext.HasActiveTransaction)

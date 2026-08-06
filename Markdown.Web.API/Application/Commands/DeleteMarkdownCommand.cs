@@ -7,4 +7,4 @@ public record DeleteMarkdownCommand(
     Guid MarkDownGuid,
     Guid MarkUserGuid,
     Guid IdempotencyKey
-) : IRequest<bool>;
+) : IRequest<bool>, ICommandRequest;

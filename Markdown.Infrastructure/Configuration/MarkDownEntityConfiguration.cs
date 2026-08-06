@@ -7,9 +7,10 @@ public class MarkDownEntityConfiguration : IEntityTypeConfiguration<MarkDown>
         builder.Ignore(en => en.DomainEvents);
         builder.ToTable("MarkDown");
 
-        // 审核状态（F-10.2）：默认值=审核通过，保证迁移后已有公开文章继续对外可见；新文章由实体默认草稿
+        // 审核状态（P1-3）：默认值=草稿，与实体默认一致——数据库默认"审核通过"会让
+        // SQL 直插/漏填 Status 的文章绕过审核直接对外可见；已有行的值不受默认值变更影响
         builder.Property(x => x.Status)
-            .HasDefaultValue(MarkStatus.MarkApproved);
+            .HasDefaultValue(MarkStatus.MarkDraft);
         // 资源限制（P-05）：正文上限 1,000,000 字符
         builder.Property(x => x.MarkDownContent)
             .HasMaxLength(1_000_000);

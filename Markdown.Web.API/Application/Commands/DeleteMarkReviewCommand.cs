@@ -7,4 +7,4 @@ public record DeleteMarkReviewCommand(
     Guid ReviewGuid,
     Guid UserId,
     Guid IdempotencyKey
-) : IRequest<bool>;
+) : IRequest<bool>, ICommandRequest;

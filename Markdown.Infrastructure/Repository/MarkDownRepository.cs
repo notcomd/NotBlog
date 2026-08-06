@@ -164,7 +164,7 @@ public class MarkDownRepository(
             var reviews = await markDownDbContext.Markdowns
                 .Where(x => x.MarkDownGuid == markdownGuid)
                 .SelectMany(m => m.MarkReviews)
-                .Where(r => r.MarkAggregateRootGuid == null)
+                .Where(r => r.MarkAggregateRootGuid == null && !r.IsDelete)
                 .OrderByDescending(r => r.MarkReviewTime)
                 .ToListAsync();
 
@@ -187,7 +187,7 @@ public class MarkDownRepository(
         {
             var review = await markDownDbContext.Markdowns
                 .SelectMany(m => m.MarkReviews)
-                .FirstOrDefaultAsync(r => r.MarkReviewGuid == reviewGuid);
+                .FirstOrDefaultAsync(r => r.MarkReviewGuid == reviewGuid && !r.IsDelete);
 
             if (review is null)
                 logger.LogWarning("评论不存在：{ReviewGuid}", reviewGuid);
@@ -210,7 +210,7 @@ public class MarkDownRepository(
         {
             var childReviews = await markDownDbContext.Markdowns
                 .SelectMany(m => m.MarkReviews)
-                .Where(r => r.MarkAggregateRootGuid == parentReviewGuid)
+                .Where(r => r.MarkAggregateRootGuid == parentReviewGuid && !r.IsDelete)
                 .OrderBy(r => r.MarkReviewTime)
                 .ToListAsync();
 
@@ -454,7 +454,7 @@ public class MarkDownRepository(
             if (markDown.IsDelete)
                 throw new InvalidOperationException("已删除的文档无法操作评论");
 
-            markDown.RemoveReview(reviewGuid);
+            markDown.SoftDeleteReview(reviewGuid);
             logger.LogInformation("评论已软删除：{ReviewGuid}", reviewGuid);
         }
         catch (Exception ex)
@@ -534,21 +534,23 @@ public class MarkDownRepository(
         {
             var review = await LoadTrackedReviewAsync(reviewGuid);
 
-            // 先落点赞记录：唯一约束 (MarkReviewGuid, UserId) 兜底并发重复
+            // 点赞记录与计数在同一 SaveChanges 提交（P1-5）：
+            // 唯一约束 (MarkReviewGuid, UserId) 冲突时整批回滚，内存计数同步回滚，
+            // 避免"点赞记录已落库而计数未增"的非原子不一致
             markDownDbContext.MarkReviewLikes.Add(new MarkReviewLike(reviewGuid, userId));
+            var count = review.MarkQuote.AddLove();
             try
             {
                 await markDownDbContext.SaveChangesAsync();
             }
             catch (DbUpdateException ex) when (IsUniqueViolation(ex))
             {
-                // 已点赞过：幂等返回当前计数，不再递增
+                // 已点赞过：回滚内存计数，幂等返回当前计数，不再递增
+                review.MarkQuote.RemoveLove();
                 logger.LogInformation("用户 {UserId} 已点赞过评论 {ReviewGuid}，忽略重复点赞", userId, reviewGuid);
                 return review.MarkQuote.LoveSome;
             }
 
-            var count = review.MarkQuote.AddLove();
-            await markDownDbContext.SaveChangesAsync();
             logger.LogInformation("评论 {ReviewGuid} 点赞数更新为 {Count}", reviewGuid, count);
             return count;
         }

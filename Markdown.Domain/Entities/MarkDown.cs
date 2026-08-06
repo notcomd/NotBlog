@@ -17,8 +17,7 @@ public class MarkDown : Entity<int>, IAggregateRoot
 
     // 私有全参数构造函数，供 Builder 调用
     private MarkDown(Guid markUserGuid, string markDownName, string markDownContent, string markDownHash,
-        Guid markReviewGuid, HashSet<string> markDownTagboard, MarkDownAuth markDownAuth,
-        MarkOption markOption) : this()
+        Guid markReviewGuid, HashSet<string> markDownTagboard, MarkDownAuth markDownAuth) : this()
     {
         MarkUserGuid = markUserGuid;
         MarkDownName = markDownName;
@@ -27,14 +26,13 @@ public class MarkDown : Entity<int>, IAggregateRoot
         MarkReviewGuid = markReviewGuid;
         MarkDownTagboard = markDownTagboard;
         MarkDownAuth = markDownAuth;
-        MarkOption = markOption;
         IsDelete = false;
     }
 
     // 公有简化构造函数，使用默认值调用私有构造函数
     public MarkDown(Guid markUserGuid, string markDownName, string markDownContent, string markDownHash)
         : this(markUserGuid, markDownName, markDownContent, markDownHash, Guid.Empty, [],
-            MarkDownAuth.PublicMark, MarkOption.Default)
+            MarkDownAuth.PublicMark)
     {
     }
 
@@ -49,8 +47,6 @@ public class MarkDown : Entity<int>, IAggregateRoot
     public HashSet<string> MarkDownTagboard { get; private set; }
 
     public MarkDownAuth MarkDownAuth { get; private set; } = MarkDownAuth.PublicMark;
-
-    public MarkOption MarkOption { get; private set; } = MarkOption.Default;
 
     public string MarkDownHash { get; private set; } = null!;
 
@@ -84,16 +80,18 @@ public class MarkDown : Entity<int>, IAggregateRoot
     }
 
     /// <summary>
-    ///     从聚合中移除评论及其所有后代评论（递归，聚合根统一入口）
+    ///     软删除评论及其所有后代评论（递归，聚合根统一入口）。
+    ///     仅标记 IsDelete 保留记录与评论树结构（可审计、可追溯），
+    ///     已删除评论在所有对外查询中不可见；注意：删除整棵子树而非仅单条评论
     /// </summary>
-    /// <param name="reviewGuid">要移除的评论 GUID</param>
-    public void RemoveReview(Guid reviewGuid)
+    /// <param name="reviewGuid">要删除的评论 GUID</param>
+    public void SoftDeleteReview(Guid reviewGuid)
     {
         var review = FindReview(reviewGuid);
         if (review is null)
             throw new InvalidOperationException($"评论 {reviewGuid} 不存在于当前文档聚合中");
 
-        // 广度优先收集所有后代评论（子、孙…），确保整棵评论子树一并移除
+        // 广度优先收集所有后代评论（子、孙…），确保整棵评论子树一并软删除
         var descendants = new List<MarkReview>();
         var queue = new Queue<MarkReview>();
         queue.Enqueue(review);
@@ -108,12 +106,12 @@ public class MarkDown : Entity<int>, IAggregateRoot
             }
         }
 
+        review.SoftDelete();
         foreach (var descendant in descendants)
         {
-            MarkReviews.Remove(descendant);
+            descendant.SoftDelete();
         }
 
-        MarkReviews.Remove(review);
         UpdateAt = DateTimeOffset.UtcNow;
     }
 
@@ -156,7 +154,7 @@ public class MarkDown : Entity<int>, IAggregateRoot
     /// <param name="markDownContent">新内容</param>
     /// <param name="markDownHash">新哈希值</param>
     /// <returns>当前文档实例（支持链式调用）</returns>
-    public Task<MarkDown> UpDataByMarkDownAsync(string markDownName, string markDownContent, string markDownHash)
+    public Task<MarkDown> UpdateByMarkDownAsync(string markDownName, string markDownContent, string markDownHash)
     {
         if (string.IsNullOrWhiteSpace(markDownName))
             throw new ArgumentNullException(nameof(markDownName));
@@ -173,13 +171,6 @@ public class MarkDown : Entity<int>, IAggregateRoot
 
         return Task.FromResult(this);
     }
-
-    /// <summary>
-    ///     验证文档哈希值是否匹配
-    /// </summary>
-    /// <param name="markMd5">要比较的 MD5 哈希值</param>
-    /// <returns>如果匹配返回 true</returns>
-    public bool IsMarkDownEques(string markMd5) => MarkDownHash == markMd5;
 
     /// <summary>
     ///     提交审核：草稿/驳回 -> 待审核
@@ -306,33 +297,6 @@ public class MarkDown : Entity<int>, IAggregateRoot
     }
 
     /// <summary>
-    ///     更新文档权限设置
-    /// </summary>
-    /// <param name="markOption">新的权限选项</param>
-    public void UpdateMarkOption(MarkDownAuth markOption)
-    {
-        MarkDownAuth = markOption;
-        UpdateAt = DateTimeOffset.UtcNow;
-    }
-
-    /// <summary>
-    /// 获取文档统计信息
-    /// </summary>
-    /// <returns>包含评论数、标签数等信息的匿名对象</returns>
-    public object GetStatistics()
-    {
-        return new
-        {
-            ReviewCount = MarkReviews?.Count ?? 0,
-            TagCount = MarkDownTagboard?.Count ?? 0,
-            HistoryCount = OldMarkDowns?.Count ?? 0,
-            ContentLength = MarkDownContent?.Length ?? 0,
-            LastUpdateTime = UpdateAt,
-            CreateTime = CreateAt
-        };
-    }
-
-    /// <summary>
     /// 验证用户是否有权限操作此文档
     /// </summary>
     /// <param name="userGuid">用户 GUID</param>
@@ -356,13 +320,18 @@ public class MarkDown : Entity<int>, IAggregateRoot
     }
 
     /// <summary>
-    ///     创建历史版本快照并纳入聚合管理（用于更新前保存旧版本）
-    ///     快照自动加入 OldMarkDowns 集合，由 EF Core 级联持久化
+    ///     创建历史版本快照并纳入聚合管理（用于更新前保存旧版本）。
+    ///     快照自动加入 OldMarkDowns 集合，由 EF Core 级联持久化；
+    ///     内容去重：当前内容已存在于历史版本时不再重复快照，
+    ///     避免反复更新/还原同一内容导致历史版本无限膨胀（P1-8）
     /// </summary>
-    /// <returns>新创建的 OldMarkDown 实例</returns>
-    public OldMarkDown CreateHistorySnapshot()
+    /// <returns>新创建的 OldMarkDown 实例；内容已存在历史记录时返回 null</returns>
+    public OldMarkDown? CreateHistorySnapshot()
     {
         // 快照权限应与当前文档一致，避免私有文档的历史版本被标记为公开
+        if (OldMarkDowns.Any(o => !o.IsDelete && o.OldMarkDownHash == MarkDownHash))
+            return null;
+
         var oldVersion = new OldMarkDown(
             MarkDownGuid,
             MarkUserGuid,
@@ -385,7 +354,7 @@ public class MarkDown : Entity<int>, IAggregateRoot
         ArgumentNullException.ThrowIfNull(oldMarkDown);
 
         // 使用历史版本的内容更新当前文档，保留原文档名称（还原不改变名称）
-        return UpDataByMarkDownAsync(
+        return UpdateByMarkDownAsync(
             MarkDownName,
             oldMarkDown.OldMarkDownContent,
             oldMarkDown.OldMarkDownHash
@@ -403,7 +372,6 @@ public class MarkDown : Entity<int>, IAggregateRoot
         private readonly Guid _markUserGuid;
         private readonly HashSet<string> _tags = [];
         private MarkDownAuth _markDownAuth = MarkDownAuth.PublicMark;
-        private MarkOption _markOption = MarkOption.Default;
         private Guid _markReviewGuid;
 
         public MarkDownBuilder(Guid markUserGuid, string markDownName, string markDownContent, string markDownHash)
@@ -434,12 +402,6 @@ public class MarkDown : Entity<int>, IAggregateRoot
             return this;
         }
 
-        public MarkDownBuilder WithMarkOption(MarkOption option)
-        {
-            _markOption = option;
-            return this;
-        }
-
         public MarkDownBuilder WithMarkDownAuth(MarkDownAuth auth)
         {
             _markDownAuth = auth;
@@ -455,8 +417,7 @@ public class MarkDown : Entity<int>, IAggregateRoot
                 _markDownHash,
                 _markReviewGuid,
                 _tags,
-                _markDownAuth,
-                _markOption);
+                _markDownAuth);
         }
     }
 }

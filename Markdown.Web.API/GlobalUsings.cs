@@ -10,3 +10,6 @@ global using NotMediator;
 global using Notcomd.EventBus.Core;
 global using Notcomd.EventBus.Extension;
 global using Markdown.Web.API.Application.IntegrationEvents.IntegrationEventHandlers;
+global using Markdown.Web.API.Application.Commands;
+global using Markdown.Web.API.Dto.Request;
+global using Markdown.Web.API.Dto.Response;

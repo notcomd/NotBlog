@@ -1,5 +1,7 @@
 
 
+using Markdown.Web.API.Application.IntegrationEvents;
+
 namespace Markdown.Web.API.Application.Commands;
 
 /// <summary>
@@ -7,19 +9,20 @@ namespace Markdown.Web.API.Application.Commands;
 /// </summary>
 public class CreateMarkdownCommandHandler(
     IMarkdownRepository markdownRepository,
-    IEventBus eventBus) : NotMediator.IRequestHandler<CreateMarkdownCommand, bool>
+    IEventBus eventBus,
+    ILogger<CreateMarkdownCommandHandler> logger) : NotMediator.IRequestHandler<CreateMarkdownCommand, Guid>
 {
-    public async Task<bool> Handler(CreateMarkdownCommand request, CancellationToken cancellationToken)
+    public async Task<Guid> Handler(CreateMarkdownCommand request, CancellationToken cancellationToken)
     {
         // 计算 MD5 Hash（如果没有提供）
-        var md5Hash = request.MarkDownHash ?? ComputeMd5(request.MarkDownContent);
+        var contentHash = request.MarkDownHash ?? ComputeSha256(request.MarkDownContent);
 
         // 使用 Builder 模式创建实体
         var builder = new MarkDown.MarkDownBuilder(
             request.MarkUserGuid,
             request.MarkDownName,
             request.MarkDownContent,
-            md5Hash
+            contentHash
         );
 
         // 添加标签
@@ -37,26 +40,24 @@ public class CreateMarkdownCommandHandler(
         await markdownRepository.AddAsync(markdownEntity);
         await markdownRepository.UnitOfWork.SaveChangesAsync(cancellationToken);
 
-        // 发布集成事件
-        await eventBus.PublishAsync(new MarkdownCreatedEventData
+        // 发布集成事件（总线故障不拖垮业务，P1-6）
+        await EventPublishing.PublishSafelyAsync(eventBus, new MarkdownCreatedEventData
         {
             MarkDownGuid = markdownEntity.MarkDownGuid,
             MarkUserGuid = markdownEntity.MarkUserGuid,
             FileName = markdownEntity.MarkDownName,
             CreatedAt = markdownEntity.CreateAt
-        });
+        }, logger);
 
-        return true;
+        return markdownEntity.MarkDownGuid;
     }
 
     /// <summary>
-    ///     计算内容 MD5
+    ///     计算内容 SHA-256 哈希（P2-4：MD5 仅适合校验不适合内容指纹语义，升级为 SHA-256）
     /// </summary>
-    private static string ComputeMd5(string content)
+    private static string ComputeSha256(string content)
     {
-        using var md5 = MD5.Create();
-        var inputBytes = Encoding.UTF8.GetBytes(content);
-        var hashBytes = md5.ComputeHash(inputBytes);
-        return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+        var hashBytes = SHA256.HashData(Encoding.UTF8.GetBytes(content));
+        return Convert.ToHexStringLower(hashBytes);
     }
 }

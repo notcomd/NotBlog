@@ -1,6 +1,5 @@
 using System.Security.Claims;
 using Markdown.Web.API.Application.Commands;
-using Markdown.Web.API.Application.Dto;
 using Markdown.Web.API.Application.IntegrationEvents;
 using Markdown.Web.API.Application.Queries;
 using Microsoft.AspNetCore.Mvc;
@@ -212,14 +211,10 @@ public static class MarkdownApis
                 Tags: request.Tags,
                 MarkDownAuth: auth.Value);
 
-            var result = await notMediator.SendAsync(command);
+            // P1-4：命令直接返回新文章 Guid，避免全量加载用户文章再按名称匹配（低效且同名歧义）
+            var markDownGuid = await notMediator.SendAsync(command);
 
-            if (!result)
-                return Results.StatusCode(500);
-
-            var markdowns = await markdownRepository.FindMarkDownsAsync(userId);
-            var created = markdowns?.FirstOrDefault(x => x.MarkDownName == request.Name);
-
+            var created = await markdownRepository.FindMarkDownAsync(markDownGuid);
             if (created is null)
                 return Results.StatusCode(201);
 
@@ -369,6 +364,7 @@ public static class MarkdownApis
         [FromBody] CreateMarkReviewRequest request,
         INotMediator notMediator,
         ICurrentUserService currentUserService,
+        IMarkdownRepository markdownRepository,
         HttpContext httpContext)
     {
         if (string.IsNullOrWhiteSpace(request.Content))
@@ -387,6 +383,14 @@ public static class MarkdownApis
         try
         {
             var userId = currentUserService.GetUserId();
+
+            // 越权防护（P1-2）：文档不可见（私有/未过审/已删除）时一律 404，与读侧门控一致
+            var markdown = await markdownRepository.FindMarkDownAsync(markDownGuid);
+            if (markdown is null || markdown.IsDelete ||
+                (!markdown.IsApproved && markdown.MarkUserGuid != userId) ||
+                !markdown.HasPermission(userId))
+                return Results.NotFound(ApiResponse<Guid>.NotFound("文章不存在"));
+
             var reviewAuth = ParseReviewAuth(request.Auth);
             if (reviewAuth is null)
                 return Results.BadRequest(ApiResponse.Error("非法的评论权限类型"));
@@ -810,6 +814,7 @@ public static class MarkdownApis
         [FromBody] CreateMarkReviewRequest request,
         INotMediator notMediator,
         ICurrentUserService currentUserService,
+        IMarkdownRepository markdownRepository,
         HttpContext httpContext)
     {
         if (string.IsNullOrWhiteSpace(request.Content))
@@ -828,6 +833,14 @@ public static class MarkdownApis
         try
         {
             var userId = currentUserService.GetUserId();
+
+            // 越权防护（P1-2）：文档不可见（私有/未过审/已删除）时一律 404，与读侧门控一致
+            var markdown = await markdownRepository.FindMarkDownAsync(markDownGuid);
+            if (markdown is null || markdown.IsDelete ||
+                (!markdown.IsApproved && markdown.MarkUserGuid != userId) ||
+                !markdown.HasPermission(userId))
+                return Results.NotFound(ApiResponse<Guid>.NotFound("文章不存在"));
+
             var reviewAuth = ParseReviewAuth(request.Auth);
             if (reviewAuth is null)
                 return Results.BadRequest(ApiResponse.Error("非法的评论权限类型"));
@@ -859,20 +872,30 @@ public static class MarkdownApis
         Guid reviewGuid,
         IMarkdownRepository markdownRepository,
         ICurrentUserService currentUserService,
-        IEventBus eventBus)
+        IEventBus eventBus,
+        ILoggerFactory loggerFactory)
     {
         try
         {
             var userId = currentUserService.GetUserId();
+
+            // 越权防护（P1-2）：评论不可见（已删除）或所属文档不可读（私有/未过审）一律 404
+            var review = await markdownRepository.GetReviewByIdAsync(reviewGuid);
+            if (review is null || review.IsDelete)
+                return Results.NotFound(ApiResponse<long>.NotFound("评论不存在"));
+
+            var markdown = await markdownRepository.FindMarkDownAsync(review.MarkDownGuid);
+            if (markdown is null || markdown.IsDelete ||
+                (!markdown.IsApproved && markdown.MarkUserGuid != userId) ||
+                !markdown.HasPermission(userId))
+                return Results.NotFound(ApiResponse<long>.NotFound("评论不存在"));
+
             var count = await markdownRepository.LikeReviewAsync(reviewGuid, userId);
 
-            // 发布点赞集成事件（计数实时通知下游服务）
-            var review = await markdownRepository.GetReviewByIdAsync(reviewGuid);
-            if (review is not null)
-            {
-                await eventBus.PublishAsync(new MarkReviewLikedIntegrationEvent(
-                    reviewGuid, review.MarkDownGuid, userId, count, DateTimeOffset.UtcNow));
-            }
+            // 发布点赞集成事件（总线故障不拖垮业务，P1-6）
+            await EventPublishing.PublishSafelyAsync(eventBus, new MarkReviewLikedIntegrationEvent(
+                reviewGuid, review.MarkDownGuid, userId, count, DateTimeOffset.UtcNow),
+                loggerFactory.CreateLogger("MarkdownApis.LikeReview"));
 
             return Results.Ok(ApiResponse<long>.Ok(count, "点赞成功"));
         }
@@ -891,6 +914,18 @@ public static class MarkdownApis
         try
         {
             var userId = currentUserService.GetUserId();
+
+            // 越权防护（P1-2）：与点赞一致——评论不可见或所属文档不可读一律 404
+            var review = await markdownRepository.GetReviewByIdAsync(reviewGuid);
+            if (review is null || review.IsDelete)
+                return Results.NotFound(ApiResponse<long>.NotFound("评论不存在"));
+
+            var markdown = await markdownRepository.FindMarkDownAsync(review.MarkDownGuid);
+            if (markdown is null || markdown.IsDelete ||
+                (!markdown.IsApproved && markdown.MarkUserGuid != userId) ||
+                !markdown.HasPermission(userId))
+                return Results.NotFound(ApiResponse<long>.NotFound("评论不存在"));
+
             var count = await markdownRepository.RemoveLikeReviewAsync(reviewGuid, userId);
             return Results.Ok(ApiResponse<long>.Ok(count, "已取消点赞"));
         }
@@ -1082,40 +1117,4 @@ public static class MarkdownApis
         ViewCount = quote.ViewSome,
         TotalInteractions = quote.GetTotalInteractions()
     };
-}
-
-/// <summary>
-/// OldMarkDown 历史版本响应 DTO
-/// </summary>
-public class OldMarkDownResponse
-{
-    public Guid OldMarkDownGuid { get; set; }
-    public Guid MarkDownGuid { get; set; }
-    public Guid UserGuid { get; set; }
-    public string Auth { get; set; } = null!;
-    public string Content { get; set; } = null!;
-    public string Hash { get; set; } = null!;
-    public DateTimeOffset CreateAt { get; set; }
-    public DateTimeOffset UpdateAt { get; set; }
-}
-
-/// <summary>
-/// OldMarkDown 响应映射扩展
-/// </summary>
-file static class OldMarkDownMapper
-{
-    public static OldMarkDownResponse MapToOldMarkDownResponse(OldMarkDown old)
-    {
-        return new OldMarkDownResponse
-        {
-            OldMarkDownGuid = old.OldMarkDownGuid,
-            MarkDownGuid = old.MarkDownGuid,
-            UserGuid = old.UserGuid,
-            Auth = old.AuthType.ToString(),
-            Content = old.OldMarkDownContent,
-            Hash = old.OldMarkDownHash,
-            CreateAt = old.CreateAt,
-            UpdateAt = old.UpdateAt
-        };
-    }
 }

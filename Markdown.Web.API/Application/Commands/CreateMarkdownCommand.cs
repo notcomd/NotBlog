@@ -10,4 +10,4 @@ public record CreateMarkdownCommand(
     string? MarkDownHash = null,
     IEnumerable<string>? Tags = null,
     MarkDownAuth MarkDownAuth = MarkDownAuth.PublicMark
-) : IRequest<bool>;
+) : IRequest<Guid>, ICommandRequest;

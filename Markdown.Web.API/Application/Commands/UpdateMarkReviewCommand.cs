@@ -8,4 +8,4 @@ public record UpdateMarkReviewCommand(
     Guid UserId,
     string Content,
     Guid IdempotencyKey
-) : IRequest<bool>;
+) : IRequest<bool>, ICommandRequest;

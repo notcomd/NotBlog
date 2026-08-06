@@ -54,14 +54,7 @@ public class MarkReview : Entity<int>
 
     public bool IsDelete { get; private set; }
 
-    public Task<MarkReview> AddToChildReviewAsync(Guid aggregateRootGuid, MarkReview markReview)
-    {
-        markReview.MarkAggregateRootGuid = aggregateRootGuid;
-        MarkReviews.Add(markReview);
-        return Task.FromResult(markReview);
-    }
-
-    public Task<MarkReview> UpDataByMarkReviewAuthAsync(MarkReviewAuth markReviewAuth)
+    public Task<MarkReview> UpdateByMarkReviewAuthAsync(MarkReviewAuth markReviewAuth)
     {
         MarkReviewAuth = markReviewAuth;
         return Task.FromResult(this);
@@ -82,6 +75,4 @@ public class MarkReview : Entity<int>
     }
 
     public void SoftDelete() => IsDelete = true;
-
-    public void ResetDelete() => IsDelete = false;
 }
