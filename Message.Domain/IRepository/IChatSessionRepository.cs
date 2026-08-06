@@ -1,6 +1,3 @@
-using Message.Domain.Entities;
-using Message.Domain.Enums;
-using Commons.SeedWork;
 
 namespace Message.Domain.IRepository;
 

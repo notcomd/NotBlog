@@ -1,4 +1,3 @@
-using Message.Infrastructure.EntityFramework;
 
 namespace Message.Infrastructure.Repository;
 
@@ -30,7 +29,9 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
         if (pageSize < 1) pageSize = 10;
         if (pageSize > 100) pageSize = 100;
         var query = DbSet
-            .Where(t => t.TweetStatus == TweetStatus.Approved && authorGuids.Contains(t.AuthorGuid))
+            .Where(t => t.TweetStatus == TweetStatus.Approved
+                        && t.CircleGuid == null
+                        && authorGuids.Contains(t.AuthorGuid))
             .OrderByDescending(t => t.CreateTime);
 
         return await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
@@ -41,7 +42,7 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
         if (pageSize < 1) pageSize = 10;
         if (pageSize > 100) pageSize = 100;
         var query = DbSet
-            .Where(t => t.TweetStatus == TweetStatus.Approved)
+            .Where(t => t.TweetStatus == TweetStatus.Approved && t.CircleGuid == null)
             .OrderByDescending(t => t.HotScore)
             .ThenByDescending(t => t.CreateTime);
 
@@ -64,7 +65,7 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
         if (pageSize < 1) pageSize = 10;
         if (pageSize > 100) pageSize = 100;
         var query = DbSet
-            .Where(t => t.TweetStatus == status)
+            .Where(t => t.TweetStatus == status && t.CircleGuid == null)
             .OrderByDescending(t => t.CreateTime);
 
         return await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
@@ -116,11 +117,74 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
 
     public async Task<int> GetTimelineCountAsync(IEnumerable<Guid> authorGuids)
     {
-        return await DbSet.CountAsync(t => t.TweetStatus == TweetStatus.Approved && authorGuids.Contains(t.AuthorGuid));
+        return await DbSet.CountAsync(t => t.TweetStatus == TweetStatus.Approved
+            && t.CircleGuid == null
+            && authorGuids.Contains(t.AuthorGuid));
     }
 
     public async Task<int> GetTrendingCountAsync()
     {
-        return await DbSet.CountAsync(t => t.TweetStatus == TweetStatus.Approved);
+        return await DbSet.CountAsync(t => t.TweetStatus == TweetStatus.Approved && t.CircleGuid == null);
+    }
+
+    public async Task<IEnumerable<Tweet>> GetByCircleAsync(Guid circleGuid, int page = 1, int pageSize = 20)
+    {
+        if (pageSize < 1) pageSize = 10;
+        if (pageSize > 100) pageSize = 100;
+        return await DbSet
+            .Where(t => t.CircleGuid == circleGuid && t.TweetStatus == TweetStatus.Approved)
+            .OrderByDescending(t => t.CreateTime)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+    }
+
+    public async Task<int> GetCirclePostCountAsync(Guid circleGuid)
+    {
+        return await DbSet.CountAsync(t => t.CircleGuid == circleGuid && t.TweetStatus == TweetStatus.Approved);
+    }
+
+    public async Task<IEnumerable<Tweet>> GetByTopicAsync(Guid topicGuid, int page = 1, int pageSize = 20)
+    {
+        if (pageSize < 1) pageSize = 10;
+        if (pageSize > 100) pageSize = 100;
+        var pattern = $"%{topicGuid:N}%";
+        return await DbSet
+            .Where(t => t.TweetStatus == TweetStatus.Approved
+                        && EF.Functions.Like(t.TopicGuidsJson, pattern))
+            .OrderByDescending(t => t.CreateTime)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+    }
+
+    public async Task<int> GetTopicPostCountAsync(Guid topicGuid)
+    {
+        var pattern = $"%{topicGuid:N}%";
+        return await DbSet.CountAsync(t => t.TweetStatus == TweetStatus.Approved
+                                           && EF.Functions.Like(t.TopicGuidsJson, pattern));
+    }
+
+    public async Task<IEnumerable<Tweet>> GetCommunityFeedAsync(IEnumerable<Guid> authorGuids, int page = 1, int pageSize = 20)
+    {
+        if (pageSize < 1) pageSize = 10;
+        if (pageSize > 100) pageSize = 100;
+        var ids = authorGuids.Distinct().ToArray();
+        return await DbSet
+            .Where(t => t.TweetStatus == TweetStatus.Approved
+                        && t.CircleGuid == null
+                        && ids.Contains(t.AuthorGuid))
+            .OrderByDescending(t => t.CreateTime)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+    }
+
+    public async Task<int> GetCommunityFeedCountAsync(IEnumerable<Guid> authorGuids)
+    {
+        var ids = authorGuids.Distinct().ToArray();
+        return await DbSet.CountAsync(t => t.TweetStatus == TweetStatus.Approved
+                                           && t.CircleGuid == null
+                                           && ids.Contains(t.AuthorGuid));
     }
 }

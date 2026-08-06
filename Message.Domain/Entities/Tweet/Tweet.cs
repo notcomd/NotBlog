@@ -1,7 +1,3 @@
-using Message.Domain.Enums;
-using Message.Domain.Events;
-using Commons.SeedWork;
-using Message.Domain.ValueObjects.Tweet;
 
 namespace Message.Domain.Entities.Tweet;
 
@@ -24,6 +20,24 @@ public class Tweet : Entity<Guid>, IAggregateRoot
     public IReadOnlyList<TweetMedia> Media => _media.AsReadOnly();
     public LinkMetadata? LinkMetadata { get; private set; }
     public IReadOnlySet<string> Hashtags => _hashtags;
+    /// <summary>
+    /// 所属圈子（圈子帖非空；仅圈子成员可见、可互动）
+    /// </summary>
+    public Guid? CircleGuid { get; private set; }
+    /// <summary>
+    /// 话题GUID存储列（逗号分隔的 Guid N 格式，供 LIKE 查询）
+    /// </summary>
+    public string TopicGuidsJson { get; private set; } = string.Empty;
+    /// <summary>
+    /// 关联话题列表（逻辑视图）
+    /// </summary>
+    public IReadOnlyList<Guid> TopicGuids =>
+        string.IsNullOrWhiteSpace(TopicGuidsJson)
+            ? []
+            : TopicGuidsJson.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(s => Guid.TryParse(s, out var g) ? g : Guid.Empty)
+                .Where(g => g != Guid.Empty)
+                .ToList();
     public TweetStatus TweetStatus { get; private set; }
     public Visibility Visibility { get; private set; }
     public bool IsPinned { get; private set; }
@@ -44,7 +58,9 @@ public class Tweet : Entity<Guid>, IAggregateRoot
         IEnumerable<TweetMedia>? media = null,
         LinkMetadata? linkMetadata = null,
         IEnumerable<string>? hashtags = null,
-        Visibility visibility = Visibility.Public)
+        Visibility visibility = Visibility.Public,
+        Guid? circleGuid = null,
+        IEnumerable<Guid>? topicGuids = null)
     {
         if (authorGuid == Guid.Empty)
             throw new ArgumentException("作者ID不能为空", nameof(authorGuid));
@@ -61,8 +77,12 @@ public class Tweet : Entity<Guid>, IAggregateRoot
             Content = content,
             LinkMetadata = linkMetadata,
             Visibility = visibility,
-            TweetStatus = TweetStatus.Draft
+            TweetStatus = TweetStatus.Draft,
+            CircleGuid = circleGuid
         };
+
+        if (topicGuids is not null)
+            tweet.SetTopics(topicGuids);
 
         if (media is not null)
         {
@@ -211,5 +231,34 @@ public class Tweet : Entity<Guid>, IAggregateRoot
     public void SetUpdateTime()
     {
         UpdateTime = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>
+    /// 设置关联话题（最多 10 个）
+    /// </summary>
+    public void SetTopics(IEnumerable<Guid> topicGuids)
+    {
+        var list = (topicGuids ?? []).Distinct().ToList();
+        if (list.Count > 10)
+            throw new ArgumentException("帖子最多关联10个话题", nameof(topicGuids));
+        TopicGuidsJson = string.Join(",", list.Select(g => g.ToString("N")));
+    }
+
+    /// <summary>
+    /// 发布到圈子（圈子帖免审核，发布即 Approved）。
+    /// <para>仅在圈子帖草稿上调用；触发 <see cref="CirclePostPublishedEvent"/> 供实时推送/通知/事件总线消费。</para>
+    /// </summary>
+    public void PublishInCircle()
+    {
+        if (TweetStatus != TweetStatus.Draft)
+            throw new InvalidOperationException("只有草稿状态的推文才能发布");
+
+        if (CircleGuid is null || CircleGuid == Guid.Empty)
+            throw new InvalidOperationException("圈子帖必须指定所属圈子");
+
+        TweetStatus = TweetStatus.Approved;
+        PublishTime = DateTimeOffset.UtcNow;
+        UpdateTime = DateTimeOffset.UtcNow;
+        AddDomainEvent(new CirclePostPublishedEvent(TweetGuid, AuthorGuid, CircleGuid.Value));
     }
 }

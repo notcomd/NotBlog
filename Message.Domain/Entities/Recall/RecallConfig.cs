@@ -1,4 +1,3 @@
-using Message.Domain.Enums;
 
 namespace Message.Domain.Entities.Recall;
 

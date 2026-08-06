@@ -1,4 +1,3 @@
-using System.Text.Json;
 
 namespace Message.Infrastructure.EntityConfig;
 
@@ -68,6 +67,12 @@ public class TweetConfiguration : IEntityTypeConfiguration<Tweet>
 
         builder.Property(t => t.HotScore);
 
+        builder.Property(t => t.CircleGuid);
+
+        builder.Property(t => t.TopicGuidsJson)
+            .HasColumnName("TopicGuids")
+            .HasColumnType("text");
+
         builder.Property(t => t.AuditReason)
             .HasMaxLength(500);
 
@@ -84,5 +89,6 @@ public class TweetConfiguration : IEntityTypeConfiguration<Tweet>
         builder.HasIndex(t => t.HotScore).IsDescending();
         builder.HasIndex(t=>t.Hashtags).IsDescending();
         builder.HasIndex(t => t.CreateTime).IsDescending();
+        builder.HasIndex(t => t.CircleGuid);
     }
 }

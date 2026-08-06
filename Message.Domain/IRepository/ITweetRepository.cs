@@ -1,6 +1,3 @@
-using Message.Domain.Entities.Tweet;
-using Message.Domain.Enums;
-using Commons.SeedWork;
 
 namespace Message.Domain.IRepository;
 
@@ -114,4 +111,34 @@ public interface ITweetRepository : IRepository<Tweet, IUnitOfWork>
     /// </summary>
     /// <returns>热门推文数量</returns>
     Task<int> GetTrendingCountAsync();
+
+    /// <summary>
+    /// 获取圈子帖子列表（仅 Approved，按时间倒序）
+    /// </summary>
+    Task<IEnumerable<Tweet>> GetByCircleAsync(Guid circleGuid, int page = 1, int pageSize = 20);
+
+    /// <summary>
+    /// 获取圈子帖子数量
+    /// </summary>
+    Task<int> GetCirclePostCountAsync(Guid circleGuid);
+
+    /// <summary>
+    /// 获取话题帖子列表（全局帖 + 圈子帖，仅 Approved，按时间倒序）
+    /// </summary>
+    Task<IEnumerable<Tweet>> GetByTopicAsync(Guid topicGuid, int page = 1, int pageSize = 20);
+
+    /// <summary>
+    /// 获取话题帖子数量
+    /// </summary>
+    Task<int> GetTopicPostCountAsync(Guid topicGuid);
+
+    /// <summary>
+    /// 获取关注 Feed（我 + 关注者发布的全局帖，仅 Approved，按时间倒序）
+    /// </summary>
+    Task<IEnumerable<Tweet>> GetCommunityFeedAsync(IEnumerable<Guid> authorGuids, int page = 1, int pageSize = 20);
+
+    /// <summary>
+    /// 获取关注 Feed 数量（仅全局帖）
+    /// </summary>
+    Task<int> GetCommunityFeedCountAsync(IEnumerable<Guid> authorGuids);
 }

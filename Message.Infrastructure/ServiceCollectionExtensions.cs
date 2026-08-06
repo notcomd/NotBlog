@@ -1,9 +1,3 @@
-using Message.Infrastructure.EntityFramework;
-using Message.Infrastructure.Repository;
-using Message.Infrastructure.Services;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Message.Infrastructure;
 
@@ -18,7 +12,14 @@ public static class ServiceCollectionExtensions
         // Do not re-register DbContext here; the old UseSqlServer registration overrode the host Npgsql one.
 
         RegisterRepositories(services);
-        RegisterServices(services);
+        RegisterServices(services, configuration);
+
+        // 社区事件总线（RabbitMQ）：由 CommunityEventBus:Enabled 控制。
+        // IConnectionFactory 由宿主注册（DEBUG：appsettings EventBus 节手动 ConnectionFactory；Release：Aspire AddRabbitMQClient("EventBus")）。
+        if (configuration.GetValue<bool>("CommunityEventBus:Enabled"))
+        {
+            services.AddEventBus(configuration.GetSection("EventBus"), Array.Empty<System.Reflection.Assembly>());
+        }
 
         return services;
     }
@@ -60,9 +61,15 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITweetAuditRepository, TweetAuditRepository>();
         services.AddScoped<ITweetReportRepository, TweetReportRepository>();
         services.AddScoped<ITweetNotificationRepository, TweetNotificationRepository>();
+
+        // 兴趣社区（Community）：圈子 / 邀请 / 话题 / 关注
+        services.AddScoped<ICircleRepository, CircleRepository>();
+        services.AddScoped<ICircleInvitationRepository, CircleInvitationRepository>();
+        services.AddScoped<ITopicRepository, TopicRepository>();
+        services.AddScoped<IUserFollowRepository, UserFollowRepository>();
     }
 
-    private static void RegisterServices(IServiceCollection services)
+    private static void RegisterServices(IServiceCollection services, IConfiguration? configuration = null)
     {
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         // CQRS：连接管理按职责拆分注册——查询侧（IConnectionManager）与命令侧（IConnectionCommandService）指向同一实现
@@ -79,5 +86,13 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton<SessionCacheService>();
         services.TryAddSingleton<UnreadCountCacheService>();
         services.TryAddSingleton<UserStatusCacheService>();
+
+        // 社区事件发布器（AI 机器人 / MCP 扩展出口）：
+        // CommunityEventBus:Enabled = true → RabbitMQ 实现（需宿主已注册 IConnectionFactory）；
+        // 默认 → No-op 实现（仅日志），保证零外部依赖可运行。
+        if (configuration?.GetValue<bool>("CommunityEventBus:Enabled") == true)
+            services.AddScoped<ICommunityEventPublisher, RabbitMqCommunityEventPublisher>();
+        else
+            services.AddScoped<ICommunityEventPublisher, DefaultCommunityEventPublisher>();
     }
 }

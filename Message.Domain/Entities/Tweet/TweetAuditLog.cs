@@ -1,5 +1,3 @@
-using Message.Domain.Enums;
-using Commons.SeedWork;
 
 namespace Message.Domain.Entities.Tweet;
 

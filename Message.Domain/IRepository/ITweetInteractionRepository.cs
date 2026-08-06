@@ -1,5 +1,3 @@
-using Message.Domain.Entities.Tweet;
-using Message.Domain.Enums;
 
 
 namespace Message.Domain.IRepository;
