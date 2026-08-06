@@ -109,4 +109,6 @@ app.UseAuthorization();
 
 app.MapMarkdownApis();
 
+app.MapMarkFavoriteApi();
+
 app.Run();

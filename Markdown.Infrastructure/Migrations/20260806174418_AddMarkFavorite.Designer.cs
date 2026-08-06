@@ -3,6 +3,7 @@ using System;
 using Markdown.Infrastructure.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Markdown.Infrastructure.Migrations
 {
     [DbContext(typeof(MarkDownDbContext))]
-    partial class MarkDownDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260806174418_AddMarkFavorite")]
+    partial class AddMarkFavorite
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -26,9 +29,6 @@ namespace Markdown.Infrastructure.Migrations
                 .IncrementsBy(10);
 
             modelBuilder.HasSequence("MarkFavoriteGuid")
-                .IncrementsBy(10);
-
-            modelBuilder.HasSequence("MarkFavoriteTagGuid")
                 .IncrementsBy(10);
 
             modelBuilder.HasSequence("MarkReviewGuid")
@@ -130,46 +130,6 @@ namespace Markdown.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("MarkFavorite", (string)null);
-                });
-
-            modelBuilder.Entity("Markdown.Domain.Entities.MarkFavoriteTag", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<int>("Id"), "MarkFavoriteTagGuid");
-
-                    b.Property<DateTimeOffset>("CreateAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTimeOffset>("LastUsedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("MarkFavoriteTagGuid")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Tag")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<int>("UseCount")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0);
-
-                    b.Property<Guid>("UserGuid")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserGuid");
-
-                    b.HasIndex("UserGuid", "Tag")
-                        .IsUnique();
-
-                    b.ToTable("MarkFavoriteTag", (string)null);
                 });
 
             modelBuilder.Entity("Markdown.Domain.Entities.MarkReview", b =>

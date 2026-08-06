@@ -11,6 +11,9 @@ public static class ServiceCollectionExtensions
         // 仓储（仅暴露聚合根仓储）
         services.AddScoped<IMarkdownRepository, MarkDownRepository>();
 
+        // 收藏聚合根仓储
+        services.AddScoped<IMarkFavoriteRepository, MarkFavoriteRepository>();
+
         // 幂等性请求管理
         services.AddScoped<IRequestManagement, RequestManagement>();
 
