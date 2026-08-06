@@ -14,34 +14,36 @@ public class DeleteMarkReviewCommandHandler(
 {
     public async Task<bool> Handler(DeleteMarkReviewCommand request, CancellationToken cancellationToken)
     {
-        // 幂等性检查
-        await requestManagement.CreateRequestForCommandAsync<DeleteMarkReviewCommand>(request.IdempotencyKey);
-
-        // 获取评论验证所有权
-        var review = await markdownRepository.GetReviewByIdAsync(request.ReviewGuid)
-            ?? throw new KeyNotFoundException($"评论不存在：{request.ReviewGuid}");
-
-        if (review.IsDelete)
-            throw new InvalidOperationException("评论已被删除");
-
-        if (review.UserId != request.UserId)
+        // 幂等执行：原子占位（唯一约束防并发重复）→ 赢家执行业务并写入响应 → 输家返回首次执行结果
+        return await requestManagement.ExecuteIdempotentAsync(request.IdempotencyKey, async () =>
         {
-            logger.LogWarning("用户 {UserGuid} 无权删除评论 {ReviewGuid}", request.UserId, request.ReviewGuid);
-            throw new UnauthorizedAccessException("无权删除此评论");
-        }
+            // 获取评论验证所有权
+            var review = await markdownRepository.GetReviewByIdAsync(request.ReviewGuid)
+                ?? throw new KeyNotFoundException($"评论不存在：{request.ReviewGuid}");
 
-        // 通过聚合根删除评论
-        await markdownRepository.DeleteReviewAsync(request.ReviewGuid);
-        await markdownRepository.UnitOfWork.SaveChangesAsync(cancellationToken);
+            if (review.IsDelete)
+                throw new InvalidOperationException("评论已被删除");
 
-        // 发布集成事件
-        await eventBus.PublishAsync(new MarkReviewDeletedIntegrationEvent(
-            request.ReviewGuid,
-            review.MarkDownGuid,
-            DateTimeOffset.UtcNow
-        ));
+            if (review.UserId != request.UserId)
+            {
+                logger.LogWarning("用户 {UserGuid} 无权删除评论 {ReviewGuid}", request.UserId, request.ReviewGuid);
+                throw new UnauthorizedAccessException("无权删除此评论");
+            }
 
-        logger.LogInformation("评论已软删除：{ReviewGuid}", request.ReviewGuid);
-        return true;
+            // 通过聚合根删除评论
+            await markdownRepository.DeleteReviewAsync(request.ReviewGuid);
+            await markdownRepository.UnitOfWork.SaveChangesAsync(cancellationToken);
+
+            // 发布集成事件（总线故障不拖垮业务，P1-6）
+            await EventPublishing.PublishSafelyAsync(eventBus, new MarkReviewDeletedIntegrationEvent(
+                request.ReviewGuid,
+                review.MarkDownGuid,
+                DateTimeOffset.UtcNow
+            ), logger);
+
+            logger.LogInformation("评论已软删除：{ReviewGuid}", request.ReviewGuid);
+            return true;
+        });
     }
+
 }

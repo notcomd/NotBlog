@@ -3,6 +3,7 @@ using Commons.Web;
 using Markdown.Infrastructure;
 using Markdown.Web.API.Apis;
 using Markdown.Web.API.Extensions;
+using Markdown.Web.API.Services;
 using NotBlog.ServiceDefaults;
 using Notcomd.Token.JWT.Extensions;
 using Scalar.AspNetCore;
@@ -72,6 +73,9 @@ builder.Services.AddProblemDetails();
 // 当前用户服务
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<Markdown.Domain.IServices.ICurrentUserService, Markdown.Web.API.Services.CurrentUserService>();
+
+// ClientRequest 幂等记录过期清理（每日执行，保留 7 天）
+builder.Services.AddHostedService<ClientRequestCleanupService>();
 
 builder.Services.AddAuthorization();
 
