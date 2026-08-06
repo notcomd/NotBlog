@@ -22,6 +22,7 @@ public class MarkdownCreatedEventHandler(ILogger<MarkdownCreatedEventHandler> lo
 /// <summary>
 ///     Markdown 文档创建事件数据
 /// </summary>
+[EventBusName("MarkdownCreated")]
 public record MarkdownCreatedEventData : IntegrationEvent
 {
     public Guid MarkDownGuid { get; init; }
