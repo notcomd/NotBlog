@@ -54,6 +54,18 @@ public class PermissionMappingInitializer : BackgroundService
 
                     if (mappings.Count > 0)
                     {
+                        // 替换保护（P0-V2）：远程映射显著少于本地映射时，视为 Identity 侧
+                        // PermissionMappings 未同步完整（配置漂移），拒绝替换并保留本地配置，
+                        // 防止大量路由退回"未映射"状态而失去权限保护。
+                        var localCount = _routeMap.Count;
+                        if (mappings.Count < Math.Max(1, localCount / 2))
+                        {
+                            _logger.LogError(
+                                "[MappingLoader] 拒绝替换：Identity 返回 {RemoteCount} 条映射，远少于本地 {LocalCount} 条（< 50%），视为配置异常，保留本地映射",
+                                mappings.Count, localCount);
+                            return;
+                        }
+
                         // 替换本地配置的映射为 Identity 的权威映射
                         _routeMap.ClearMappings();
                         foreach (var m in mappings)

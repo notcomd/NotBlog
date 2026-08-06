@@ -22,14 +22,27 @@ public class PermissionOptions
     public RouteMapping[] Mappings { get; init; } = [];
 
     /// <summary>
-    /// 权限服务失败时的降级策略（F-12）：
-    /// "Open"（默认）= fail-open：权限服务异常/不可用/端点缺失时放行请求并记录日志（可用性优先）；
-    /// "Closed" = fail-closed：权限服务异常时拒绝（403，安全性优先）。
+    /// 权限服务失败时的降级策略（F-12 / V5）：
+    /// "Closed"（默认）= fail-closed：权限服务异常/不可用/返回 4xx 时拒绝（403，安全性优先）；
+    /// "Open" = fail-open：仅 5xx/429（服务不可用）时放行并记录日志（可用性优先）。
+    /// 注意：V5 起 4xx（404 端点缺失/401 凭证错误/400 参数错误）一律 fail-closed，
+    /// 不再参与降级 —— 配置或调用错误若放行会使权限体系形同虚设。
     /// </summary>
-    public string FailPolicy { get; init; } = "Open";
+    [RegularExpression("^(?i)(Open|Closed)$", ErrorMessage = "FailPolicy 仅支持 Open 或 Closed")]
+    public string FailPolicy { get; init; } = "Closed";
 
     /// <summary>是否 fail-open（权限服务失败时放行）</summary>
     public bool FailOpen => !string.Equals(FailPolicy, "Closed", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// 未映射路径的默认策略（P0-V3）：
+    /// "Deny"（默认）= 未配置权限映射的路径一律拒绝（403，白名单模式，安全性优先）；
+    /// "Allow" = 放行（兼容旧行为，仅建议开发环境使用）。
+    /// </summary>
+    public string DefaultPolicy { get; init; } = "Deny";
+
+    /// <summary>未映射路径是否放行（DefaultPolicy == "Allow"）</summary>
+    public bool DefaultAllow => string.Equals(DefaultPolicy, "Allow", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>开发用户配置（仅 ConfigPermissionServiceClient 使用）</summary>
     public Dictionary<string, DevUser>? DevUsers { get; init; }

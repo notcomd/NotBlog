@@ -123,9 +123,18 @@ public class PermissionFilterMiddleware
         }
         else
         {
-            // 3. 未配置权限映射的路径 → 白名单模式：默认放行（仅记录 Debug 日志）
+            // 3. 未配置权限映射的路径 → 默认拒绝（P0-V3，白名单模式）：
+            //    未映射 = 不受保护，默认 403；仅当 DefaultPolicy=Allow（开发环境）时放行
+            if (!_permissionOptions.Value.DefaultAllow)
+            {
+                _logger.LogWarning(
+                    "[PermissionFilter] 未映射路径默认拒绝 Path={Path} Method={Method}", path, method);
+                await WriteForbiddenAsync(context);
+                return;
+            }
+
             _logger.LogDebug(
-                "[PermissionFilter] 未映射路径放行 Path={Path} Method={Method}", path, method);
+                "[PermissionFilter] 未映射路径放行（DefaultPolicy=Allow）Path={Path} Method={Method}", path, method);
         }
 
         await _next(context);

@@ -9,8 +9,8 @@ namespace NotBlog_Yarp.Permission;
 /// 通过 HTTP 调用 Identity.Web.API 暴露的权限检查 REST 端点。
 /// 
 /// 预期 Identity 侧端点：
-///   POST /api/permission/check  → { userId, permissionCode } → { hasPermission: bool }
-///   GET  /api/permission/datascope/{userId} → { scopeType, values }
+///   POST /api/identity/permission/check → { userId, permissionCode } → { hasPermission: bool }
+///   GET  /api/identity/permission/datascope/{userId} → { scopeType, values }
 ///
 /// 失败降级（F-12）：Identity 不可用/端点缺失时按 PermissionOptions.FailPolicy 处理
 /// （Open = 放行 / Closed = 拒绝），避免权限服务短暂不可用时全站 403。
@@ -36,7 +36,7 @@ public class HttpPermissionServiceClient : IPermissionServiceClient
     {
         try
         {
-            var response = await _http.GetAsync("api/identity/permission/mappings", ct);
+            var response = await _http.GetAsync("/api/identity/permission/mappings", ct);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -82,14 +82,25 @@ public class HttpPermissionServiceClient : IPermissionServiceClient
         {
             var payload = new { userId = userId.ToString(), permissionCode };
             var response = await _http.PostAsJsonAsync(
-                "/api/permission/check-and-scope", payload, ct);
+                "/api/identity/permission/check-and-scope", payload, ct);
 
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogWarning(
-                    "[HttpPermissionClient] CheckAndGetScope 非成功 {StatusCode} UserId={UserId} Code={Code}（FailPolicy={Policy}）",
-                    (int)response.StatusCode, userId, permissionCode, _options.Value.FailPolicy);
-                return FailOpenResult();
+                // V5：仅 5xx/429 视为"服务不可用"按 FailPolicy 降级；
+                // 4xx（404 端点缺失 / 401 凭证错误 / 400 参数错误）属于配置或调用错误，
+                // fail-closed 拒绝 —— 否则权限检查会因端点缺失而静默放行。
+                if ((int)response.StatusCode >= 500 || (int)response.StatusCode == StatusCodes.Status429TooManyRequests)
+                {
+                    _logger.LogWarning(
+                        "[HttpPermissionClient] CheckAndGetScope 服务不可用 {StatusCode} UserId={UserId} Code={Code}（FailPolicy={Policy}）",
+                        (int)response.StatusCode, userId, permissionCode, _options.Value.FailPolicy);
+                    return FailOpenResult();
+                }
+
+                _logger.LogError(
+                    "[HttpPermissionClient] CheckAndGetScope 返回 {StatusCode}（4xx，fail-closed 拒绝）UserId={UserId} Code={Code}",
+                    (int)response.StatusCode, userId, permissionCode);
+                return PermissionCheckResult.Denied();
             }
 
             var result = await response.Content.ReadFromJsonAsync<CombinedResult>(ct);
@@ -133,14 +144,23 @@ public class HttpPermissionServiceClient : IPermissionServiceClient
         try
         {
             var payload = new { userId = userId.ToString(), permissionCode };
-            var response = await _http.PostAsJsonAsync("/api/permission/check", payload, ct);
+            var response = await _http.PostAsJsonAsync("/api/identity/permission/check", payload, ct);
 
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogWarning(
-                    "[HttpPermissionClient] Identity 返回非成功状态码 {StatusCode} UserId={UserId} Code={Code}（FailPolicy={Policy}）",
-                    (int)response.StatusCode, userId, permissionCode, _options.Value.FailPolicy);
-                return FailOpen();
+                // V5：同 CheckAndGetScopeAsync —— 仅 5xx/429 按策略降级，4xx fail-closed
+                if ((int)response.StatusCode >= 500 || (int)response.StatusCode == StatusCodes.Status429TooManyRequests)
+                {
+                    _logger.LogWarning(
+                        "[HttpPermissionClient] CheckPermission 服务不可用 {StatusCode} UserId={UserId} Code={Code}（FailPolicy={Policy}）",
+                        (int)response.StatusCode, userId, permissionCode, _options.Value.FailPolicy);
+                    return FailOpen();
+                }
+
+                _logger.LogError(
+                    "[HttpPermissionClient] CheckPermission 返回 {StatusCode}（4xx，fail-closed 拒绝）UserId={UserId} Code={Code}",
+                    (int)response.StatusCode, userId, permissionCode);
+                return false;
             }
 
             var result = await response.Content.ReadFromJsonAsync<CheckResult>(ct);
@@ -180,12 +200,13 @@ public class HttpPermissionServiceClient : IPermissionServiceClient
         try
         {
             var response = await _http.GetAsync(
-                $"/api/permission/datascope/{userId}", ct);
+                $"/api/identity/permission/datascope/{userId}", ct);
 
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogWarning(
-                    "[HttpPermissionClient] GetDataScope 非成功状态码 {StatusCode} UserId={UserId}",
+                // V5：任何非成功状态码都按默认 Own 范围（"0|"）处理（最严格），并记录错误日志
+                _logger.LogError(
+                    "[HttpPermissionClient] GetDataScope 返回 {StatusCode}，按默认 Own 范围处理 UserId={UserId}",
                     (int)response.StatusCode, userId);
                 return "0|";
             }
@@ -219,8 +240,9 @@ public class HttpPermissionServiceClient : IPermissionServiceClient
     }
 
     /// <summary>
-    /// 权限服务失败时的降级结果（F-12）：
-    /// FailPolicy=Open → 放行（返回通过 + 默认 Own 数据范围）；Closed → 拒绝。
+    /// 权限服务失败时的降级结果（F-12 / V5）：
+    /// 仅由 5xx/429（服务不可用）触发；FailPolicy=Open → 放行（返回通过 + 默认 Own 数据范围），
+    /// Closed → 拒绝。4xx 不走此路径（fail-closed）。
     /// </summary>
     private PermissionCheckResult FailOpenResult()
     {
@@ -232,7 +254,7 @@ public class HttpPermissionServiceClient : IPermissionServiceClient
         return PermissionCheckResult.Denied();
     }
 
-    /// <summary>权限服务失败时的布尔降级结果（F-12）：Open → true（放行），Closed → false（拒绝）</summary>
+    /// <summary>权限服务失败时的布尔降级结果（F-12 / V5）：仅由 5xx/429 触发；Open → true（放行），Closed → false（拒绝）</summary>
     private bool FailOpen()
     {
         if (_options.Value.FailOpen)
