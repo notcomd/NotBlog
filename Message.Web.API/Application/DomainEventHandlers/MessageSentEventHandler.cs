@@ -1,6 +1,3 @@
-using Message.Web.API.Hubs;
-using Microsoft.AspNetCore.SignalR;
-using NotMediator;
 
 namespace Message.Web.API.Application.DomainEventHandlers;
 

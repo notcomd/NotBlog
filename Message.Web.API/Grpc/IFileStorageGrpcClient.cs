@@ -1,4 +1,3 @@
-using Message.Web.API.Dto.Response;
 
 namespace Message.Web.API.Grpc;
 

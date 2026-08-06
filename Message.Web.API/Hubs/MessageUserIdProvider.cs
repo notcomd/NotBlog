@@ -1,5 +1,3 @@
-using System.Security.Claims;
-using Microsoft.AspNetCore.SignalR;
 
 namespace Message.Web.API.Hubs;
 

@@ -1,7 +1,5 @@
-using System.Security.Claims;
 
 namespace Message.Web.API.Middleware;
-
 /// <summary>
 /// 用户上下文中间件。
 /// <para>
@@ -59,10 +57,3 @@ public class UserContextMiddleware
     }
 }
 
-public static class UserContextMiddlewareExtensions
-{
-    public static IApplicationBuilder UseUserContext(this IApplicationBuilder builder)
-    {
-        return builder.UseMiddleware<UserContextMiddleware>();
-    }
-}

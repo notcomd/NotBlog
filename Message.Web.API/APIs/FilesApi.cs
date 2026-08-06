@@ -1,6 +1,4 @@
 ﻿using Message.Web.API.Application.Commands.Files;
-using Message.Web.API.Application.Queries.Files;
-using Message.Web.API.Extensions;
 
 namespace Message.Web.API.APIs;
 

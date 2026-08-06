@@ -2,7 +2,6 @@ using FileDev.Web.API.Grpc;
 using Google.Protobuf;
 using Grpc.Core;
 using Grpc.Net.ClientFactory;
-using Message.Web.API.Dto.Response;
 using Microsoft.Extensions.Options;
 
 namespace Message.Web.API.Grpc;

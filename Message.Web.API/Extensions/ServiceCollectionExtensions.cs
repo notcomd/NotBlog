@@ -1,9 +1,5 @@
 using FileDev.Web.API.Grpc;
-using Message.Web.API.Grpc;
-using Message.Web.API.Hubs;
-using Message.Web.API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.SignalR;
 using Notcomd.Token.JWT.Extensions;
 
 namespace Message.Web.API.Extensions;
@@ -115,6 +111,9 @@ public static class ServiceCollectionExtensions
     {
         // 消息实时推送服务（依赖 Scoped 的 IConnectionManager，故注册为 Scoped）
         services.AddScoped<MessageDeliveryService>();
+
+        // 社区实时推送服务（圈子频道 circle:{id}，依赖 Singleton 的 IHubContext，注册为 Scoped 即可）
+        services.AddScoped<CommunityDeliveryService>();
 
         // F-04：覆盖 SignalR 默认的 DefaultUserIdProvider（仅读 NameIdentifier），
         // 改为从 JWT Claim sub / user_guid / NameIdentifier 解析用户 ID，避免 Clients.User 推送落空。

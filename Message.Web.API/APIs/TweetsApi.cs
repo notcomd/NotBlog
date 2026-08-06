@@ -1,5 +1,4 @@
 ﻿using Message.Web.API.Application.Commands.Tweets;
-using Message.Web.API.Application.Queries.Tweets;
 
 namespace Message.Web.API.APIs;
 
@@ -29,6 +28,13 @@ public static class TweetsApi
             .WithSummary("创建推文")
             .WithDescription("发布一条新推文")
             .Accepts<CreateTweetRequest>("application/json")
+            .Produces<ApiResponse<Guid>>();
+
+        // POST /circle — 圈子发帖（发布即 Approved，仅圈子成员可见/可互动）
+        group.MapPost("/circle", CreateCirclePostAsync)
+            .WithSummary("圈子发帖")
+            .WithDescription("发布到圈子：图文/视频/链接 + 话题关联；仅圈子成员可见、可互动")
+            .Accepts<CreateCirclePostRequest>("application/json")
             .Produces<ApiResponse<Guid>>();
 
         // POST /draft — 保存草稿
@@ -163,6 +169,44 @@ public static class TweetsApi
         catch (Exception ex)
         {
             return Results.Json(ApiResponse<Guid>.Error($"创建推文失败: {ex.Message}"), statusCode: 500);
+        }
+    }
+
+    /// <summary>
+    /// 圈子发帖（命令侧）：发布到圈子，免审核直接生效。
+    /// </summary>
+    private static async Task<IResult> CreateCirclePostAsync(
+        [FromBody] CreateCirclePostRequest request,
+        [FromServices] ICurrentUserService currentUser,
+        [FromServices] INotMediator mediator,
+        CancellationToken ct)
+    {
+        try
+        {
+            var userId = currentUser.GetUserId();
+            var tweetId = await mediator.SendAsync(
+                new CreateCirclePostCommand(
+                    userId,
+                    request.CircleGuid,
+                    request.Content,
+                    request.FileIds,
+                    request.LinkUrl,
+                    request.TopicGuids),
+                ct);
+
+            return Results.Ok(ApiResponse<Guid>.Created(tweetId, "圈子帖子发布成功"));
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Results.Ok(ApiResponse<Guid>.Forbidden(ex.Message));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return Results.Ok(ApiResponse<Guid>.NotFound(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            return Results.Json(ApiResponse<Guid>.Error($"圈子发帖失败: {ex.Message}"), statusCode: 500);
         }
     }
 

@@ -1,5 +1,3 @@
-using Message.Web.API.Application.Commands.Comments;
-using Message.Web.API.Application.Queries.Comments;
 
 namespace Message.Web.API.APIs;
 

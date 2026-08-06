@@ -1,5 +1,4 @@
 ﻿using Message.Web.API.Application.Commands.Audit;
-using Message.Web.API.Application.Queries.Audit;
 
 namespace Message.Web.API.APIs;
 

@@ -2,7 +2,6 @@ using System.Net;
 using System.Text.Json;
 
 namespace Message.Web.API.Middleware;
-
 public class ExceptionHandlingMiddleware
 {
     private readonly ILogger<ExceptionHandlingMiddleware> _logger;
@@ -62,10 +61,3 @@ public class ExceptionHandlingMiddleware
     }
 }
 
-public static class ExceptionHandlingMiddlewareExtensions
-{
-    public static IApplicationBuilder UseExceptionHandling(this IApplicationBuilder builder)
-    {
-        return builder.UseMiddleware<ExceptionHandlingMiddleware>();
-    }
-}
