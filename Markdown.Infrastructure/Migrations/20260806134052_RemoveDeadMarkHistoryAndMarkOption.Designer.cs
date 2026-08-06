@@ -3,6 +3,7 @@ using System;
 using Markdown.Infrastructure.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Markdown.Infrastructure.Migrations
 {
     [DbContext(typeof(MarkDownDbContext))]
-    partial class MarkDownDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260806134052_RemoveDeadMarkHistoryAndMarkOption")]
+    partial class RemoveDeadMarkHistoryAndMarkOption
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

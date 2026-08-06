@@ -1,4 +1,4 @@
-namespace Markdown.Web.API.Application.Dto;
+namespace Markdown.Web.API.Dto.Request;
 
 /// <summary>
 /// 创建 MarkReview 评论请求

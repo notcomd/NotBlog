@@ -1,4 +1,4 @@
-namespace Markdown.Web.API.Application.Dto;
+namespace Markdown.Web.API.Dto.Response;
 
 /// <summary>
 /// MarkReview 评论响应
@@ -16,15 +16,3 @@ public class MarkReviewResponse
     public MarkQuoteResponse? Quote { get; set; }
 }
 
-/// <summary>
-/// MarkQuote 值对象响应
-/// </summary>
-public class MarkQuoteResponse
-{
-    public long LoveCount { get; set; }
-    public long ReplyCount { get; set; }
-    public long CommentCount { get; set; }
-    public long ShareCount { get; set; }
-    public long ViewCount { get; set; }
-    public long TotalInteractions { get; set; }
-}

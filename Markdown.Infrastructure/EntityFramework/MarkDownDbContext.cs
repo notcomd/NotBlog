@@ -49,7 +49,6 @@ public class MarkDownDbContext(DbContextOptions<MarkDownDbContext> options, INot
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfiguration(new MarkDownEntityConfiguration());
         modelBuilder.ApplyConfiguration(new MarkReviewEntityConfiguration());
-        modelBuilder.ApplyConfiguration(new MarkHistoryEntityConfiguration());
         modelBuilder.ApplyConfiguration(new ReviewImageEntityConfiguration());
 
         // ClientRequest 幂等性记录表配置
@@ -85,11 +84,6 @@ public class MarkDownDbContext(DbContextOptions<MarkDownDbContext> options, INot
         return base.GetHashCode();
     }
 
-
-    public IDbContextTransaction GetContextTransaction()
-    {
-        return Database.BeginTransaction();
-    }
 
     public async Task CommitTransactionAsync(IDbContextTransaction transaction)
     {

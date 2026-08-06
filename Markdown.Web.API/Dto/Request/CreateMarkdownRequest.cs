@@ -1,9 +1,9 @@
-namespace Markdown.Web.API.Application.Dto;
+namespace Markdown.Web.API.Dto.Request;
 
 /// <summary>
-/// 更新 Markdown 文章请求
+/// 创建 Markdown 文章请求
 /// </summary>
-public class UpdateMarkdownRequest
+public class CreateMarkdownRequest
 {
     /// <summary>
     /// 文章名称
@@ -20,7 +20,12 @@ public class UpdateMarkdownRequest
     public string Content { get; set; } = null!;
 
     /// <summary>
-    /// 标签列表（可选，传 null 表示不修改标签）
+    /// 标签列表（可选）
     /// </summary>
     public List<string>? Tags { get; set; }
+
+    /// <summary>
+    /// 文章权限类型（可选，默认为 PublicMark）
+    /// </summary>
+    public string? Auth { get; set; }
 }

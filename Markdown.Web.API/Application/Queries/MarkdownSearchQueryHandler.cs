@@ -1,5 +1,4 @@
 using Markdown.Infrastructure.EntityFramework;
-using Markdown.Web.API.Application.Dto;
 using Microsoft.EntityFrameworkCore;
 
 namespace Markdown.Web.API.Application.Queries;

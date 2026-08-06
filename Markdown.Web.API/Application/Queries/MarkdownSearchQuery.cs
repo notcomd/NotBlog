@@ -1,4 +1,3 @@
-using Markdown.Web.API.Application.Dto;
 
 namespace Markdown.Web.API.Application.Queries;
 
