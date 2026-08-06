@@ -37,7 +37,7 @@ public class GetTweetDetailQueryHandlerTests
     {
         _tweetRepository.Setup(r => r.GetByIdAsync(TweetGuid)).ReturnsAsync((Tweet?)null);
 
-        var handler = new GetTweetDetailQueryHandler(_tweetRepository.Object, _interactionRepository.Object);
+        var handler = new GetTweetDetailQueryHandler(_tweetRepository.Object, _interactionRepository.Object, new Mock<ICircleRepository>().Object);
 
         var result = await handler.Handler(new GetTweetDetailQuery(TweetGuid, UserId), CancellationToken.None);
 
@@ -65,7 +65,7 @@ public class GetTweetDetailQueryHandlerTests
         _interactionRepository.Setup(r => r.ExistsAsync(TweetGuid, UserId, InteractionType.Coin))
             .ReturnsAsync(true);
 
-        var handler = new GetTweetDetailQueryHandler(_tweetRepository.Object, _interactionRepository.Object);
+        var handler = new GetTweetDetailQueryHandler(_tweetRepository.Object, _interactionRepository.Object, new Mock<ICircleRepository>().Object);
 
         var result = await handler.Handler(new GetTweetDetailQuery(TweetGuid, UserId), CancellationToken.None);
 
@@ -97,7 +97,7 @@ public class GetTweetDetailQueryHandlerTests
                 It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<InteractionType>()))
             .ReturnsAsync(false);
 
-        var handler = new GetTweetDetailQueryHandler(_tweetRepository.Object, _interactionRepository.Object);
+        var handler = new GetTweetDetailQueryHandler(_tweetRepository.Object, _interactionRepository.Object, new Mock<ICircleRepository>().Object);
 
         var result = await handler.Handler(new GetTweetDetailQuery(TweetGuid, UserId), CancellationToken.None);
 

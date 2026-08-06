@@ -85,6 +85,7 @@ public class TweetCommandHandlerTests
         var handler = new LikeTweetCommandHandler(
             _tweetRepository.Object,
             _interactionRepository.Object,
+            new Mock<ICircleRepository>().Object,
             new Mock<ILogger<LikeTweetCommandHandler>>().Object);
 
         var result = await handler.Handler(new LikeTweetCommand(TweetGuid, UserId), CancellationToken.None);
@@ -110,6 +111,7 @@ public class TweetCommandHandlerTests
         var handler = new LikeTweetCommandHandler(
             _tweetRepository.Object,
             _interactionRepository.Object,
+            new Mock<ICircleRepository>().Object,
             new Mock<ILogger<LikeTweetCommandHandler>>().Object);
 
         Assert.ThrowsAsync<InvalidOperationException>(async () =>
