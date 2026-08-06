@@ -54,34 +54,6 @@ public interface IUserRepository : IRepository<User, IUnitOfWork>
     Task LockUserAsync(Guid userGuid, DateTimeOffset lockOutEnd);
 
     /// <summary>
-    /// 保存手机号验证码
-    /// </summary>
-    /// <param name="phoneNumber">手机号</param>
-    /// <param name="code">验证码</param>
-    ValueTask SaveByPhoneNumberAsync(PhoneNumber phoneNumber, string code);
-
-    /// <summary>
-    /// 从缓存中获取手机号验证码
-    /// </summary>
-    /// <param name="phoneNumber">手机号</param>
-    /// <returns>验证码</returns>
-    ValueTask<string> RetirievePhoneCodeAsync(PhoneNumber phoneNumber);
-
-    /// <summary>
-    /// 从缓存中获取手机号
-    /// </summary>
-    /// <param name="phoneNumber">手机号</param>
-    /// <returns>手机号</returns>
-    ValueTask<string> FindPhoneNumberAsync(PhoneNumber phoneNumber);
-
-    /// <summary>
-    /// 保存邮箱验证码
-    /// </summary>
-    /// <param name="email">邮箱</param>
-    /// <param name="code">验证码</param>
-    ValueTask SaveByEmailNumberAsync(string email, string code);
-
-    /// <summary>
     /// 
     /// </summary>
     /// <param name="user"></param>

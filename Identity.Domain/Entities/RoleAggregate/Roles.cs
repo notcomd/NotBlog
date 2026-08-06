@@ -127,6 +127,14 @@ public class Roles : Entity<int>, IAggregateRoot
         RoleStatus = roleStatus;
     }
 
+    /// <summary>
+    /// 软删除角色（领域方法，替代此前 API 层反射改私有属性的写法）
+    /// </summary>
+    public void SoftDelete(bool deleted)
+    {
+        IsDeleted = deleted;
+    }
+
     public static class RoleFactory
     {
         public static Roles CreateRootRole()

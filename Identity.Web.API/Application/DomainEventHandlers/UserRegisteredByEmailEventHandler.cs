@@ -14,18 +14,18 @@ namespace Identity.Web.API.Application.DomainEventHandlers;
 public class UserRegisteredByEmailEventHandler : INotificationHandler<UserStartedByEmailDomainEvent>
 {
     private readonly ILogger<UserRegisteredByEmailEventHandler> _logger;
-    private readonly IEmailCodeSend _emailSender;
+    private readonly IMailQueue _mailQueue;
     private readonly IUserRoleRepository _userRoleRepository;
     private readonly IUserRepository _userRepository;
 
     public UserRegisteredByEmailEventHandler(
         ILogger<UserRegisteredByEmailEventHandler> logger,
-        IEmailCodeSend emailSender,
+        IMailQueue mailQueue,
         IUserRoleRepository userRoleRepository,
         IUserRepository userRepository)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _emailSender = emailSender ?? throw new ArgumentNullException(nameof(emailSender));
+        _mailQueue = mailQueue ?? throw new ArgumentNullException(nameof(mailQueue));
         _userRoleRepository = userRoleRepository ?? throw new ArgumentNullException(nameof(userRoleRepository));
         _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
     }
@@ -75,19 +75,9 @@ public class UserRegisteredByEmailEventHandler : INotificationHandler<UserStarte
             </div>
             """;
 
-        //var emailMessage = new EmailMessage(notification.UserEmail, "欢迎加入 NotBlog！", body, isHtml: true);
-
-        var result = await _emailSender.SendEmailCodeAsync(notification.UserEmail, "欢迎加入 NotBlog！", body);
-
-        if (result)
-        {
-            _logger.LogInformation("[{Time}] 欢迎邮件已发送至: {Email}", DateTime.UtcNow, notification.UserEmail);
-        }
-        else
-        {
-            _logger.LogWarning("[{Time}] 欢迎邮件发送失败: {Email}",
-                DateTime.UtcNow, notification.UserEmail);
-        }
+        // P6：欢迎邮件入后台队列（领域事件在数据库事务内派发，不做 SMTP 外部 IO）
+        _mailQueue.Enqueue(notification.UserEmail, "欢迎加入 NotBlog！", body);
+        _logger.LogInformation("[{Time}] 欢迎邮件已入队发送至: {Email}", DateTime.UtcNow, notification.UserEmail);
     }
 
     /// <summary>

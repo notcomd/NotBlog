@@ -6,7 +6,7 @@ namespace Identity.Web.API.Application.Commands;
 
 public class GenerateCodeCommandHandler(
     ILogger<GenerateCodeCommandHandler> logger,
-    IEmailCodeSend emailCodeSend,
+    IMailQueue mailQueue,
     IIdentityCacheService identityCacheService)
     : IRequestHandler<GenerateCodeCommand, string>
 {
@@ -20,10 +20,10 @@ public class GenerateCodeCommandHandler(
             await identityCacheService.SetStringAsync($"Login_{request.Email}", code,
                 TimeSpan.FromMinutes(5), cancellationToken);
 
-            // S-16：验证码不得写入日志
-            await emailCodeSend.SendEmailCodeAsync(request.Email,  "登录验证码", code);
+            // P6：验证码邮件入后台队列发送（命令在事务内，不做 SMTP 外部 IO）
+            mailQueue.Enqueue(request.Email, "登录验证码", code);
 
-            logger.LogInformation("[{Time}] 验证码已发送至: {Email}", DateTime.UtcNow, request.Email);
+            logger.LogInformation("[{Time}] 验证码已入队发送至: {Email}", DateTime.UtcNow, request.Email);
 
             return code;
         }

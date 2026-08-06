@@ -2,6 +2,7 @@ using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Web;
+using System.Text.RegularExpressions;
 using CacheMemory.Core;
 using Identity.Domain.Dto.OAuth;
 using Identity.Domain.Options;
@@ -19,7 +20,7 @@ public class OAuthService(
     IOptionsSnapshot<OAuthOptions> oauthOptions,
     ILogger<OAuthService> logger,
     IOptionsSnapshot<JwtOptions> jwtOptions,
-    ICacheMemory<TokenCacheEntry> cacheMemory)
+    ITokenSessionService tokenSessionService)
     : IOAuthService
 {
     private const string OAuthStateKeyPrefix = "oauth:state";
@@ -29,10 +30,6 @@ public class OAuthService(
     /// <summary>OAuth 回调结果幂等缓存前缀（key=state，重复回调返回首次成功结果）</summary>
     private const string OAuthResultKeyPrefix = "oauth:result";
     private static readonly TimeSpan OAuthResultTtl = TimeSpan.FromMinutes(10);
-
-    /// <summary>token 缓存 key 前缀（与 UserService/RegisterByGitHubCommandHandler 一致，供刷新/登出使用）</summary>
-    private const string AccessTokenKeyPrefix = "auth:token";
-    private const string RefreshTokenKeyPrefix = "auth:refresh";
 
     private readonly JwtOptions _jwtOptions = jwtOptions.Value;
     private readonly OAuthOptions _oauthOptions = oauthOptions.Value;
@@ -62,6 +59,8 @@ public class OAuthService(
             "google" => GenerateGoogleAuthUrl(redirectUri, state),
             "github" => GenerateGitHubAuthUrl(redirectUri, state),
             "microsoft" => await GenerateMicrosoftAuthUrl(redirectUri, state),
+            "wechat" => GenerateWeChatAuthUrl(redirectUri, state),
+            "qq" => GenerateQQAuthUrl(redirectUri, state),
             _ => throw new ArgumentException($"Unsupported provider: {provider}")
         };
     }
@@ -116,6 +115,7 @@ public class OAuthService(
             if (byEmail is not null)
             {
                 await EnsureExternalLoginAsync(providerType, externalUserInfo, byEmail);
+                await userRepository.UnitOfWork.SaveChangesAsync();
                 return byEmail;
             }
         }
@@ -131,12 +131,11 @@ public class OAuthService(
             imageCover: externalUserInfo.AvatarUrl,
             authorGuids: null);
 
-        // S-11：添加后必须落库，否则用户不持久化
         await userRepository.AddOneByUserAsync(newUser);
-        await userRepository.UnitOfWork.SaveChangesAsync();
 
-        // 4. 写入外部登录绑定并保存
+        // 4. 写入外部登录绑定（P6：与用户创建合并为一次提交，避免两步提交中途失败产生半成品用户）
         await EnsureExternalLoginAsync(providerType, externalUserInfo, newUser);
+        await userRepository.UnitOfWork.SaveChangesAsync();
 
         return newUser;
     }
@@ -162,6 +161,7 @@ public class OAuthService(
             Email = userData.UserEmail,
             UserName = userData.UserName ?? userData.UserEmail
         }, userData);
+        await userRepository.UnitOfWork.SaveChangesAsync();
 
         logger.LogInformation("External login linked: {Provider} for user {UserId}", provider, userId);
     }
@@ -286,8 +286,10 @@ public class OAuthService(
         // 使用 BuildTokenAsync 获取完整 TokenResult（含 RefreshToken），与原命令链路一致
         var tokenResult = await jwtTokenService.BuildTokenAsync(claims, _jwtOptions);
 
-        // 缓存 access/refresh token，供刷新/登出使用（与 UserService.CacheTokensAsync 一致）
-        await CacheTokensAsync(user.UserGuid, tokenResult);
+        // P3：多设备会话登记（与 UserService 一致，每设备独立槽位）
+        await tokenSessionService.RegisterAsync(user.UserGuid, tokenResult,
+            TimeSpan.FromSeconds(_jwtOptions.ExpireSeconds),
+            TimeSpan.FromSeconds(_jwtOptions.RefreshTokenExpireSeconds));
 
         var response = new OAuthLoginResponse(
             tokenResult.AccessToken,
@@ -313,45 +315,6 @@ public class OAuthService(
         }
 
         return response;
-    }
-
-    /// <summary>
-    /// 缓存 access/refresh token（与 UserService.CacheTokensAsync / RegisterByGitHubCommandHandler.GenerateTokenAsync 一致）
-    /// </summary>
-    private async Task CacheTokensAsync(Guid userGuid, TokenResult tokenResult)
-    {
-        var accessKey = $"{AccessTokenKeyPrefix}:{userGuid}";
-        var accessTtl = _jwtOptions.ExpireSeconds > 0
-            ? TimeSpan.FromSeconds(_jwtOptions.ExpireSeconds)
-            : TimeSpan.FromHours(1);
-
-        await cacheMemory.SetAsync(accessKey, new TokenCacheEntry
-        {
-            Token = tokenResult.AccessToken,
-            UserGuid = userGuid,
-            CreatedAt = DateTimeOffset.UtcNow,
-            ExpiresAt = tokenResult.ExpiresAt,
-            TokenType = tokenResult.TokenType,
-            LinkedAccessToken = tokenResult.RefreshToken
-        }, accessTtl);
-
-        if (!string.IsNullOrEmpty(tokenResult.RefreshToken))
-        {
-            var refreshKey = $"{RefreshTokenKeyPrefix}:{userGuid}";
-            var refreshTtl = _jwtOptions.RefreshTokenExpireSeconds > 0
-                ? TimeSpan.FromSeconds(_jwtOptions.RefreshTokenExpireSeconds)
-                : TimeSpan.FromDays(7);
-
-            await cacheMemory.SetAsync(refreshKey, new TokenCacheEntry
-            {
-                Token = tokenResult.RefreshToken,
-                UserGuid = userGuid,
-                CreatedAt = DateTimeOffset.UtcNow,
-                ExpiresAt = DateTimeOffset.UtcNow.AddSeconds(_jwtOptions.RefreshTokenExpireSeconds),
-                TokenType = "refresh",
-                LinkedAccessToken = tokenResult.AccessToken
-            }, refreshTtl);
-        }
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -417,6 +380,46 @@ public class OAuthService(
                    $"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value)}"));
     }
 
+    /// <summary>
+    /// 生成微信扫码登录授权链接（开放平台网站应用，scope 固定 snsapi_login）。
+    /// 注意：微信要求 redirect_uri 必须经过 URL 编码，且 URL 末尾追加 #wechat_redirect。
+    /// </summary>
+    private string GenerateWeChatAuthUrl(string redirectUri, string state)
+    {
+        var options = _oauthOptions.WeChatOptions;
+        if (!options.Enabled)
+            throw new InvalidOperationException("WeChat OAuth 未启用，请在 OAuthOptions:WeChatOptions:Enabled 中配置。");
+        if (string.IsNullOrWhiteSpace(options.AppId))
+            throw new InvalidOperationException("WeChat OAuth 未配置 AppId。");
+
+        return "https://open.weixin.qq.com/connect/qrconnect" +
+               $"?appid={Uri.EscapeDataString(options.AppId)}" +
+               $"&redirect_uri={Uri.EscapeDataString(redirectUri)}" +
+               "&response_type=code" +
+               "&scope=snsapi_login" +
+               $"&state={Uri.EscapeDataString(state)}" +
+               "#wechat_redirect";
+    }
+
+    /// <summary>
+    /// 生成 QQ 互联授权链接（scope 固定 get_user_info）
+    /// </summary>
+    private string GenerateQQAuthUrl(string redirectUri, string state)
+    {
+        var options = _oauthOptions.QQOptions;
+        if (!options.Enabled)
+            throw new InvalidOperationException("QQ OAuth 未启用，请在 OAuthOptions:QQOptions:Enabled 中配置。");
+        if (string.IsNullOrWhiteSpace(options.AppId))
+            throw new InvalidOperationException("QQ OAuth 未配置 AppId。");
+
+        return "https://graph.qq.com/oauth2.0/authorize" +
+               "?response_type=code" +
+               $"&client_id={Uri.EscapeDataString(options.AppId)}" +
+               $"&redirect_uri={Uri.EscapeDataString(redirectUri)}" +
+               $"&state={Uri.EscapeDataString(state)}" +
+               "&scope=get_user_info";
+    }
+
     // ═══════════════════════════════════════════════════════════
     //  Private helpers — OAuth 用户信息获取
     // ═══════════════════════════════════════════════════════════
@@ -432,6 +435,8 @@ public class OAuthService(
             "google" => await GetGoogleUserInfoAsync(code, redirectUri),
             "github" => await GetGitHubUserInfoAsync(code, redirectUri),
             "microsoft" => await GetMicrosoftUserInfoAsync(code, redirectUri, state),
+            "wechat" => await GetWeChatUserInfoAsync(code, redirectUri),
+            "qq" => await GetQQUserInfoAsync(code, redirectUri),
             _ => throw new ArgumentException($"Unsupported provider: {provider}")
         };
     }
@@ -695,6 +700,171 @@ public class OAuthService(
     private static string Base64UrlEncode(byte[] bytes)
         => Convert.ToBase64String(bytes).TrimEnd('=').Replace('+', '-').Replace('/', '_');
 
+    /// <summary>
+    /// 获取微信用户信息（开放平台扫码登录）。
+    /// Step 1: code 换 access_token（返回 openid）；Step 2: access_token + openid 取用户资料。
+    /// 微信 userinfo 接口不返回邮箱，使用 {openid}@wechat.local 占位（RFC 2606 保留 .local，不会与真实邮箱冲突）。
+    /// </summary>
+    private async Task<ExternalUserInfo> GetWeChatUserInfoAsync(string code, string redirectUri)
+    {
+        var options = _oauthOptions.WeChatOptions;
+        var client = httpClient.CreateClient();
+
+        // Step 1: 用 code 换取 access_token + openid
+        using var tokenResponse = await client.GetAsync(
+            "https://api.weixin.qq.com/sns/oauth2/access_token" +
+            $"?appid={Uri.EscapeDataString(options.AppId)}" +
+            $"&secret={Uri.EscapeDataString(options.AppSecret)}" +
+            $"&code={Uri.EscapeDataString(code)}" +
+            "&grant_type=authorization_code");
+        tokenResponse.EnsureSuccessStatusCode();
+
+        var tokenJson = await tokenResponse.Content.ReadAsStringAsync();
+        var tokenData = JsonSerializer.Deserialize<JsonElement>(tokenJson);
+        EnsureWeChatSuccess(tokenData);
+
+        var accessToken = tokenData.GetProperty("access_token").GetString()!;
+        var openId = tokenData.GetProperty("openid").GetString()!;
+
+        // Step 2: 获取用户资料
+        using var userInfoResponse = await client.GetAsync(
+            "https://api.weixin.qq.com/sns/userinfo" +
+            $"?access_token={Uri.EscapeDataString(accessToken)}" +
+            $"&openid={Uri.EscapeDataString(openId)}");
+        userInfoResponse.EnsureSuccessStatusCode();
+
+        var userInfoJson = await userInfoResponse.Content.ReadAsStringAsync();
+        var userData = JsonSerializer.Deserialize<JsonElement>(userInfoJson);
+        EnsureWeChatSuccess(userData);
+
+        var info = new ExternalUserInfo
+        {
+            ProviderUserId = openId,
+            // 微信不返回邮箱：占位地址，避免与真实邮箱撞车
+            Email = $"{openId}@wechat.local",
+            UserName = userData.TryGetProperty("nickname", out var nickname) ? nickname.GetString() : null,
+            AvatarUrl = userData.TryGetProperty("headimgurl", out var headImg) &&
+                        !string.IsNullOrEmpty(headImg.GetString())
+                ? new Uri(headImg.GetString()!)
+                : null
+        };
+
+        // unionid：开放平台绑定后返回，用于跨应用唯一标识（存入 ProviderUnionId）
+        if (userData.TryGetProperty("unionid", out var unionId) && !string.IsNullOrEmpty(unionId.GetString()))
+            info.AdditionalClaims["unionid"] = unionId.GetString()!;
+
+        return info;
+    }
+
+    /// <summary>
+    /// 校验微信接口响应，失败时抛出带 errcode/errmsg 的异常
+    /// </summary>
+    private static void EnsureWeChatSuccess(JsonElement data)
+    {
+        if (data.TryGetProperty("errcode", out var errCode) && errCode.GetInt32() != 0)
+            throw new InvalidOperationException(
+                $"微信接口调用失败: errcode={errCode.GetInt32()}, errmsg={data.GetProperty("errmsg").GetString()}");
+    }
+
+    /// <summary>
+    /// 获取 QQ 用户信息（互联网站应用）。
+    /// Step 1: code 换 access_token（响应为表单文本而非 JSON）；
+    /// Step 2: /oauth2.0/me 获取 openid（响应为 JSONP 包裹的 JSON）；
+    /// Step 3: /user/get_user_info 获取昵称头像。
+    /// QQ 接口不返回邮箱，使用 {openid}@qq.local 占位。
+    /// </summary>
+    private async Task<ExternalUserInfo> GetQQUserInfoAsync(string code, string redirectUri)
+    {
+        var options = _oauthOptions.QQOptions;
+        var client = httpClient.CreateClient();
+
+        // Step 1: 用 code 换取 access_token（QQ 返回 "access_token=xxx&expires_in=xxx" 表单文本）
+        using var tokenResponse = await client.GetAsync(
+            "https://graph.qq.com/oauth2.0/token" +
+            "?grant_type=authorization_code" +
+            $"&client_id={Uri.EscapeDataString(options.AppId)}" +
+            $"&client_secret={Uri.EscapeDataString(options.AppKey)}" +
+            $"&code={Uri.EscapeDataString(code)}" +
+            $"&redirect_uri={Uri.EscapeDataString(redirectUri)}");
+        tokenResponse.EnsureSuccessStatusCode();
+
+        var tokenText = await tokenResponse.Content.ReadAsStringAsync();
+        var tokenParams = HttpUtility.ParseQueryString(tokenText);
+        var accessToken = tokenParams["access_token"];
+        if (string.IsNullOrWhiteSpace(accessToken))
+        {
+            var error = tokenParams["error"] ?? tokenParams["error_description"] ?? "未知错误";
+            throw new InvalidOperationException($"QQ token 交换失败: {error}");
+        }
+
+        // Step 2: 获取 openid（响应为 callback( {...} ); 的 JSONP 包裹格式）
+        var openId = await FetchQQOpenIdAsync(client, accessToken);
+
+        // Step 3: 获取用户资料
+        using var userInfoResponse = await client.GetAsync(
+            "https://graph.qq.com/user/get_user_info" +
+            $"?access_token={Uri.EscapeDataString(accessToken)}" +
+            $"&oauth_consumer_key={Uri.EscapeDataString(options.AppId)}" +
+            $"&openid={Uri.EscapeDataString(openId)}" +
+            "&format=json");
+        userInfoResponse.EnsureSuccessStatusCode();
+
+        var userInfoJson = await userInfoResponse.Content.ReadAsStringAsync();
+        var userData = JsonSerializer.Deserialize<JsonElement>(userInfoJson);
+        if (userData.TryGetProperty("ret", out var ret) && ret.GetInt32() != 0)
+        {
+            var msg = userData.TryGetProperty("msg", out var m) ? m.GetString() : "未知错误";
+            throw new InvalidOperationException($"QQ 用户信息获取失败: ret={ret.GetInt32()}, msg={msg}");
+        }
+
+        return new ExternalUserInfo
+        {
+            ProviderUserId = openId,
+            // QQ 不返回邮箱：占位地址，避免与真实邮箱撞车
+            Email = $"{openId}@qq.local",
+            UserName = userData.TryGetProperty("nickname", out var nickname) ? nickname.GetString() : null,
+            AvatarUrl = userData.TryGetProperty("figureurl_qq_2", out var avatar) &&
+                        !string.IsNullOrEmpty(avatar.GetString())
+                ? new Uri(avatar.GetString()!)
+                : null
+        };
+    }
+
+    /// <summary>
+    /// 获取 QQ openid（解析 JSONP 包裹的 /oauth2.0/me 响应）
+    /// </summary>
+    private static async Task<string> FetchQQOpenIdAsync(HttpClient client, string accessToken)
+    {
+        using var meResponse = await client.GetAsync(
+            "https://graph.qq.com/oauth2.0/me" +
+            $"?access_token={Uri.EscapeDataString(accessToken)}");
+        meResponse.EnsureSuccessStatusCode();
+
+        var meText = await meResponse.Content.ReadAsStringAsync();
+
+        // 响应形如: callback( {"client_id":"...","openid":"..."} );（JSONP 包裹），
+        // 失败时形如: callback( {"error":100016,"error_description":"..."} );
+        // 提取括号内的 JSON 再解析，避免依赖正则转义
+        var jsonStart = meText.IndexOf('{');
+        var jsonEnd = meText.LastIndexOf('}');
+        if (jsonStart < 0 || jsonEnd <= jsonStart)
+            throw new InvalidOperationException($"QQ openid 获取失败: {meText[..Math.Min(meText.Length, 200)]}");
+
+        using var doc = JsonDocument.Parse(meText[jsonStart..(jsonEnd + 1)]);
+        var root = doc.RootElement;
+
+        if (root.TryGetProperty("error", out var errorCode) && errorCode.GetInt32() != 0)
+        {
+            var desc = root.TryGetProperty("error_description", out var d) ? d.GetString() : "未知错误";
+            throw new InvalidOperationException($"QQ openid 获取失败: error={errorCode.GetInt32()}, {desc}");
+        }
+
+        if (!root.TryGetProperty("openid", out var openIdProp))
+            throw new InvalidOperationException($"QQ openid 获取失败: 响应缺少 openid 字段");
+
+        return openIdProp.GetString()!;
+    }
+
     // ═══════════════════════════════════════════════════════════
     //  Private helpers — 角色处理
     // ═══════════════════════════════════════════════════════════
@@ -786,10 +956,11 @@ public class OAuthService(
         if (existing is not null)
             return;
 
-        var login = UserExternalLogin.Create(provider, info.ProviderUserId, info.UserName ?? info.Email);
+        var login = UserExternalLogin.Create(provider, info.ProviderUserId, info.UserName ?? info.Email,
+            info.AdditionalClaims.TryGetValue("unionid", out var unionId) ? unionId : null);
         login.LinkUser(user.UserGuid);
 
+        // P6：只登记变更，提交由调用方统一负责（避免多次独立提交破坏原子性）
         await userExternalLoginRepository.AddAsync(login);
-        await userExternalLoginRepository.UnitOfWork.SaveEntitiesAsync();
     }
 }

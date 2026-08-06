@@ -16,4 +16,6 @@ public class OAuthOptions
     public MicrosoftOptions MicrosoftOptions { get; set; } = new();
 
     public WeChatOptions WeChatOptions { get; set; } = new();
+
+    public QQOptions QQOptions { get; set; } = new();
 }

@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Identity.Domain.Dto.OAuth;
 using Identity.Web.API.Application.IntegrationEvents.Events;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace Identity.Web.API.APIs;
 
@@ -45,13 +46,16 @@ public static class OAuthApis
         return claim is not null && Guid.TryParse(claim.Value, out var userId) ? userId : null;
     }
 
-    private static IResult GetAvailableProviders()
+    private static IResult GetAvailableProviders([FromServices] IOptions<OAuthOptions> oauthOptions)
     {
+        var options = oauthOptions.Value;
         var providers = new List<OAuthProviderInfo>
         {
-            new("google", "Google", true),
-            new("github", "GitHub", true),
-            new("microsoft", "Microsoft", true)
+            new("google", "Google", options.GoogleOptions.Enabled),
+            new("github", "GitHub", options.GitHubOptions.Enable),
+            new("microsoft", "Microsoft", options.MicrosoftOptions.Enable),
+            new("wechat", "WeChat", options.WeChatOptions.Enabled),
+            new("qq", "QQ", options.QQOptions.Enabled)
         };
 
         return Results.Ok(providers);
@@ -80,8 +84,10 @@ public static class OAuthApis
         string provider,
         [FromBody] OAuthCallbackRequest request,
         IOAuthService oauthService,
-        IEventBus eventBus,
-        ILoggerFactory loggerFactory)
+        IOutboxStore outboxStore,
+        IdentityDbContext dbContext,
+        ILoggerFactory loggerFactory,
+        CancellationToken ct)
     {
         var logger = loggerFactory.CreateLogger("OAuthApis");
         try
@@ -94,13 +100,15 @@ public static class OAuthApis
                 request.State
             );
 
-            // 与原 RegisterByGitHubCommand 链路一致：新用户注册后发布集成事件，下游服务消费
+            // S-19：新用户注册事件写入 Outbox（后台 Publisher 投递，避免进程崩溃丢失）
             if (response.IsNewUser)
             {
-                await eventBus.PublishAsync(
-                    new RegisterByUserIntegrationEvent(response.UserInfo.UserId));
+                await outboxStore.StoreAsync(new OutboxMessage(
+                    nameof(RegisterByUserIntegrationEvent),
+                    new RegisterByUserIntegrationEvent(response.UserInfo.UserId)), ct);
+                await dbContext.SaveChangesAsync(ct);
                 logger.LogInformation(
-                    "OAuth 新用户注册，已发布集成事件：Provider={Provider}, UserId={UserId}",
+                    "OAuth 新用户注册，已写入 Outbox：Provider={Provider}, UserId={UserId}",
                     provider, response.UserInfo.UserId);
             }
 

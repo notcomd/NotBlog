@@ -3,7 +3,8 @@ namespace Identity.Domain.Entities.UserAggregate;
 /// <summary>
 /// 用户登录失败追踪与锁定策略
 /// 
-/// 策略: 连续失败 5 次后锁定 15 分钟；登录成功后自动清零。
+/// 策略: 连续失败达到 MaxFailedAttempts(5) 次后锁定 15 分钟；登录成功后自动清零。
+/// 失败计数由 UserService 经仓储 ExecuteUpdate 原子递增（S-13），达到阈值时原子写入 LockOutEnd。
 /// 锁定过期后下次尝试自动解除。
 /// </summary>
 public class UserAccessFail : Entity<int>
@@ -75,28 +76,6 @@ public class UserAccessFail : Entity<int>
         if (IsLockExpired)
             AutoUnlock();
         return !IsLockedOut;
-    }
-
-    /// <summary>
-    /// 记录一次登录失败，返回 true 表示此次触发锁定
-    /// </summary>
-    public bool RecordFailure()
-    {
-        if (IsLockExpired)
-            AutoUnlock();
-
-        if (IsLockedOut)
-            return false;
-
-        AccessFaildCount++;
-
-        if (AccessFaildCount > MaxFailedAttempts)
-        {
-            LockOutEnd = DateTimeOffset.UtcNow.Add(LockOutDuration);
-            return true;
-        }
-
-        return false;
     }
 
     /// <summary>

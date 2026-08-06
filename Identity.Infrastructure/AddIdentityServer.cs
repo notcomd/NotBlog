@@ -11,20 +11,12 @@ public static class AddIdentityServer
     public static IServiceCollection AddIdentityService(this IServiceCollection serviceCollection,
         IConfiguration configuration)
     {
+        // 注：仓储/服务等公共注册统一在 ModuleInitializer（AddNotBlogServices 自动扫描），
+        // 此处仅注册本入口独有的服务，避免重复注册（此前 IUserRepository/IOAuthService/
+        // AddDistributedMemoryCache 等重复注册且内存缓存覆盖 Redis）。
         serviceCollection.AddJwtAuthentication(configuration);
-        serviceCollection.AddScoped<IUserExternalLoginRepository, UserExternalLoginRepository>();
-        serviceCollection.AddScoped<IOAuthService, OAuthService>();
-        serviceCollection.AddScoped<IRoleGroupService, RoleGroupService>();
-        //serviceCollection.AddScoped<IPermissionService, PermissionService>()
-        serviceCollection.AddScoped<IUserRepository, UserRepository>();
-        serviceCollection.AddScoped<IUserRoleRepository, UserRoleRepository>();
-        serviceCollection.AddScoped<IEmailCodeSend, EmailCodeSend>();
-        serviceCollection.AddDistributedMemoryCache();
         serviceCollection.AddScoped<ISmsCodeSend, SmsCodeSend>();
-        serviceCollection.AddScoped<UserService>();
         serviceCollection.AddScoped<IIdentityCacheService, IdentityCacheService>();
-
-
 
         return serviceCollection;
     }

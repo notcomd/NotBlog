@@ -57,7 +57,8 @@ public static class EmailVerificationApi
             return Results.BadRequest(new { error = "邮箱格式不正确" });
 
         // S-13：IP 级限流（3 次/分钟，Redis 原子计数，窗口内首请求设置 TTL）
-        var ip = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        // P9：取 X-Forwarded-For 客户端 IP（网关后限流不再全员同源）
+        var ip = httpContext.GetClientIp();
         var window = DateTimeOffset.UtcNow.ToString("yyyyMMddHHmm");
         var rateKey = $"{CodeRateLimitKeyPrefix}{ip}:{window}";
         var count = await redisCacheService.StringIncrementAsync(rateKey);
@@ -104,7 +105,8 @@ public static class EmailVerificationApi
             return Results.BadRequest(new { error = "邮箱和验证码不能为空" });
 
         // IP 级限流：10 次/分钟，防止暴力穷举验证码
-        var ip = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        // P9：取 X-Forwarded-For 客户端 IP（网关后限流不再全员同源）
+        var ip = httpContext.GetClientIp();
         var window = DateTimeOffset.UtcNow.ToString("yyyyMMddHHmm");
         var rateKey = $"{ConfirmRateLimitKeyPrefix}{ip}:{window}";
         var count = await redisCacheService.StringIncrementAsync(rateKey);
