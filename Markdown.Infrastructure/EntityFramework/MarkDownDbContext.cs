@@ -22,6 +22,10 @@ public class MarkDownDbContext(DbContextOptions<MarkDownDbContext> options, INot
 
     public DbSet<MarkReviewLike> MarkReviewLikes { get; set; }
 
+    public DbSet<MarkFavorite> MarkFavorites { get; set; }
+
+    public DbSet<MarkFavoriteTag> MarkFavoriteTags { get; set; }
+
 
     /// <summary>
     ///     保存更改并分发领域事件
@@ -50,6 +54,8 @@ public class MarkDownDbContext(DbContextOptions<MarkDownDbContext> options, INot
         modelBuilder.ApplyConfiguration(new MarkDownEntityConfiguration());
         modelBuilder.ApplyConfiguration(new MarkReviewEntityConfiguration());
         modelBuilder.ApplyConfiguration(new ReviewImageEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new MarkFavoriteEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new MarkFavoriteTagEntityConfiguration());
 
         // ClientRequest 幂等性记录表配置
         modelBuilder.Entity<ClientRequest>(entity =>

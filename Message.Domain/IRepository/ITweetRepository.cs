@@ -11,22 +11,26 @@ public interface ITweetRepository : IRepository<Tweet, IUnitOfWork>
     Task<Tweet?> GetByIdAsync(Guid tweetGuid);
     
     /// <summary>
-    /// 获取推文列表
+    /// 获取用户推文列表（R-02/R-03/R-07：SQL 层完成可见性/状态/圈子过滤，分页与计数同条件）
     /// </summary>
     /// <param name="authorGuid">作者ID</param>
+    /// <param name="viewerId">查看者ID（未认证为 Guid.Empty）</param>
+    /// <param name="followingIds">查看者的关注集合（Followers 可见性判定）</param>
     /// <param name="page">页码</param>
     /// <param name="pageSize">每页数量</param>
     /// <returns>推文列表</returns>
-    Task<IEnumerable<Tweet>> GetByAuthorAsync(Guid authorGuid, int page = 1, int pageSize = 20);
+    Task<IEnumerable<Tweet>> GetByAuthorAsync(Guid authorGuid, Guid viewerId, IEnumerable<Guid> followingIds, int page = 1, int pageSize = 20);
 
     /// <summary>
-    /// 获取多个作者的时间线推文列表
+    /// 获取多个作者的时间线推文列表（R-02/R-03/R-07：SQL 层完成可见性过滤）
     /// </summary>
     /// <param name="authorGuids">作者ID列表</param>
+    /// <param name="viewerId">查看者ID（未认证为 Guid.Empty）</param>
+    /// <param name="followingIds">查看者的关注集合（Followers 可见性判定）</param>
     /// <param name="page">页码</param>
     /// <param name="pageSize">每页数量</param>
     /// <returns>指定作者的时间线推文列表</returns>
-    Task<IEnumerable<Tweet>> GetTimelineAsync(IEnumerable<Guid> authorGuids, int page = 1, int pageSize = 20);
+    Task<IEnumerable<Tweet>> GetTimelineAsync(IEnumerable<Guid> authorGuids, Guid viewerId, IEnumerable<Guid> followingIds, int page = 1, int pageSize = 20);
     
     /// <summary>
     /// 获取热门推文列表（按热度排序）
@@ -88,11 +92,13 @@ public interface ITweetRepository : IRepository<Tweet, IUnitOfWork>
     Task<bool> ExistsAsync(Guid tweetGuid);
 
     /// <summary>
-    /// 获取指定作者的推文数量
+    /// 获取用户可见推文数量（与 GetByAuthorAsync 同条件，R-07 分页计数对齐）
     /// </summary>
     /// <param name="authorGuid">作者ID</param>
-    /// <returns>指定作者的推文数量</returns>
-    Task<int> GetCountByAuthorAsync(Guid authorGuid);
+    /// <param name="viewerId">查看者ID（未认证为 Guid.Empty）</param>
+    /// <param name="followingIds">查看者的关注集合（Followers 可见性判定）</param>
+    /// <returns>指定作者对查看者可见的推文数量</returns>
+    Task<int> GetCountByAuthorAsync(Guid authorGuid, Guid viewerId, IEnumerable<Guid> followingIds);
 
     /// <summary>
     /// 获取待审核推文数量
@@ -100,11 +106,13 @@ public interface ITweetRepository : IRepository<Tweet, IUnitOfWork>
     /// <returns>待审核推文数量</returns>
     Task<int> GetPendingAuditCountAsync();
     /// <summary>
-    /// 获取时间线推文数量（仅统计已审核通过的推文）
+    /// 获取时间线推文数量（与 GetTimelineAsync 同条件，R-07 分页计数对齐）
     /// </summary>
     /// <param name="authorGuids">作者ID列表</param>
+    /// <param name="viewerId">查看者ID（未认证为 Guid.Empty）</param>
+    /// <param name="followingIds">查看者的关注集合（Followers 可见性判定）</param>
     /// <returns>时间线推文数量</returns>
-    Task<int> GetTimelineCountAsync(IEnumerable<Guid> authorGuids);
+    Task<int> GetTimelineCountAsync(IEnumerable<Guid> authorGuids, Guid viewerId, IEnumerable<Guid> followingIds);
 
     /// <summary>
     /// 获取热门推文数量（仅统计已审核通过的推文）
@@ -133,12 +141,12 @@ public interface ITweetRepository : IRepository<Tweet, IUnitOfWork>
     Task<int> GetTopicPostCountAsync(Guid topicGuid);
 
     /// <summary>
-    /// 获取关注 Feed（我 + 关注者发布的全局帖，仅 Approved，按时间倒序）
+    /// 获取关注 Feed（我 + 关注者发布的全局帖，仅 Approved，按时间倒序；R-02：SQL 层排除 Private）
     /// </summary>
-    Task<IEnumerable<Tweet>> GetCommunityFeedAsync(IEnumerable<Guid> authorGuids, int page = 1, int pageSize = 20);
+    Task<IEnumerable<Tweet>> GetCommunityFeedAsync(IEnumerable<Guid> authorGuids, Guid viewerId, IEnumerable<Guid> followingIds, int page = 1, int pageSize = 20);
 
     /// <summary>
-    /// 获取关注 Feed 数量（仅全局帖）
+    /// 获取关注 Feed 数量（与 GetCommunityFeedAsync 同条件，R-07 分页计数对齐）
     /// </summary>
-    Task<int> GetCommunityFeedCountAsync(IEnumerable<Guid> authorGuids);
+    Task<int> GetCommunityFeedCountAsync(IEnumerable<Guid> authorGuids, Guid viewerId, IEnumerable<Guid> followingIds);
 }

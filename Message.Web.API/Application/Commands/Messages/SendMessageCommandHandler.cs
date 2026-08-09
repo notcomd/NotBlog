@@ -12,7 +12,8 @@ public class SendMessageCommandHandler(
     IFileStorageGrpcClient fileStorage,
     ILogger<SendMessageCommandHandler> logger,
     UnreadCountCacheService unreadCountCache,
-    SessionCacheService sessionCache) : IRequestHandler<SendMessageCommand, Guid>
+    SessionCacheService sessionCache,
+    MessageDeliveryService delivery) : IRequestHandler<SendMessageCommand, Guid>
 {
     public async Task<Guid> Handler(SendMessageCommand command, CancellationToken cancellationToken)
     {
@@ -38,6 +39,9 @@ public class SendMessageCommandHandler(
 
         // Q-05：会话最后消息已变化，失效会话详情缓存
         await sessionCache.InvalidateSessionAsync(command.SessionId, cancellationToken);
+
+        // R-01：REST 发送路径补齐实时推送（与 MessageHub.SendMessage 行为一致；推送失败不阻断命令）
+        await PushDeliverAsync(message, cancellationToken);
 
         logger.LogInformation("发送消息成功：{MessageId}，类型={MessageType}，会话={SessionId}",
             message.MessageId, message.MessageType, message.SessionId);
@@ -238,5 +242,24 @@ public class SendMessageCommandHandler(
     private async Task UpdateSessionLastMessageAsync(Guid sessionId, Guid messageId, string? content)
     {
         await sessionRepository.UpdateLastMessageAsync(sessionId, messageId, content);
+    }
+
+    /// <summary>
+    /// R-01：REST 发送后向会话参与者实时推送新消息。
+    /// <para>与 MessageHub.SendMessage 的 DeliverMessageAsync 链路一致；推送异常仅记日志，不阻断命令结果。</para>
+    /// </summary>
+    private async Task PushDeliverAsync(MessageEntity message, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var session = await sessionRepository.GetByIdAsync(message.SessionId);
+            if (session is not null)
+                await delivery.DeliverMessageAsync(
+                    message.SessionId, message.MapToDto(), session.Participants, ct: cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "REST 发送消息后实时推送失败：{MessageId}", message.MessageId);
+        }
     }
 }

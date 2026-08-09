@@ -1,42 +1,27 @@
 namespace Message.Web.API.Application.Queries.Tweets;
 /// <summary>
 /// 获取用户推文列表查询处理程序。
-/// <para>纯查询：不修改任何数据状态。</para>
+/// <para>纯查询：不修改任何数据状态。R-02/R-03/R-07：可见性/状态/圈子过滤下沉仓库层（SQL），TotalCount 与列表同条件。</para>
 /// </summary>
 public class GetUserTweetsQueryHandler(
     ITweetRepository tweetRepository,
-    ICircleRepository circleRepository,
-    ICurrentUserService currentUserService) : IRequestHandler<GetUserTweetsQuery, PagedResult<Tweet>>
+    ICurrentUserService currentUserService,
+    IUserFollowRepository followRepository) : IRequestHandler<GetUserTweetsQuery, PagedResult<Tweet>>
 {
     public async Task<PagedResult<Tweet>> Handler(GetUserTweetsQuery query, CancellationToken cancellationToken)
     {
-        var allTweets = await tweetRepository.GetByAuthorAsync(query.UserGuid, query.Page, query.PageSize);
-        var totalCount = await tweetRepository.GetCountByAuthorAsync(query.UserGuid);
+        // S-17/R-03：查看者视角 —— 未认证按 Guid.Empty（仅可见 Public + 圈子帖由仓库层排除）
+        var viewerId = currentUserService.IsAuthenticated ? currentUserService.GetUserId() : Guid.Empty;
+        var followingIds = viewerId == Guid.Empty
+            ? Array.Empty<Guid>()
+            : (await followRepository.GetFollowingIdsAsync(viewerId)).ToArray();
 
-        var currentUserId = currentUserService.IsAuthenticated ? currentUserService.GetUserId() : Guid.Empty;
-
-        // S-17：可见性过滤 —— 作者本人可见全部；他人仅可见 Public（Private 仅作者；Followers 无关注关系退化为仅作者）
-        // 圈子帖：查看者非圈子成员时隐藏（作者本人查看自己的帖子始终可见）
-        var items = new List<Tweet>();
-        foreach (var t in allTweets)
-        {
-            if (!TweetVisibilityPolicy.IsVisibleTo(t, currentUserId))
-                continue;
-
-            if (t.TweetStatus != TweetStatus.Approved
-                && !(currentUserId != Guid.Empty && t.AuthorGuid == currentUserId && t.TweetStatus == TweetStatus.Draft))
-                continue;
-
-            if (t.CircleGuid is not null && t.AuthorGuid != currentUserId
-                && (currentUserId == Guid.Empty || !await circleRepository.IsMemberAsync(t.CircleGuid.Value, currentUserId)))
-                continue;
-
-            items.Add(t);
-        }
+        var items = await tweetRepository.GetByAuthorAsync(query.UserGuid, viewerId, followingIds, query.Page, query.PageSize);
+        var totalCount = await tweetRepository.GetCountByAuthorAsync(query.UserGuid, viewerId, followingIds);
 
         return new PagedResult<Tweet>
         {
-            Items = items,
+            Items = items.ToList(),
             TotalCount = totalCount,
             Page = query.Page,
             PageSize = query.PageSize

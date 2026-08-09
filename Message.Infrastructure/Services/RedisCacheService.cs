@@ -77,6 +77,18 @@ public class RedisCacheService
         return await _database.SetAddAsync(cacheKey, value);
     }
 
+    /// <summary>
+    /// R-06：向 Set 添加成员（SADD 原子去重，返回是否首次添加）；新建 Set 时设置过期时间防止无界膨胀。
+    /// </summary>
+    public async Task<bool> SetAddAsync(string cacheKey, string value, TimeSpan? expiration,
+        CancellationToken cancellationToken = default)
+    {
+        var added = await _database.SetAddAsync(cacheKey, value);
+        if (added && expiration is not null)
+            await _database.KeyExpireAsync(cacheKey, expiration);
+        return added;
+    }
+
     public async Task<bool> SetRemoveAsync(string cacheKey, string value, CancellationToken cancellationToken = default)
     {
         return await _database.SetRemoveAsync(cacheKey, value);

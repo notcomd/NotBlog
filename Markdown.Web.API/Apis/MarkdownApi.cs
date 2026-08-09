@@ -1,0 +1,248 @@
+namespace Markdown.Web.API.Apis;
+
+/// <summary>
+///     Markdown 博客文章 API（文章主资源：CRUD + 列表 + 搜索）
+/// </summary>
+public static class MarkdownApi
+{
+    /// <summary>
+    ///     注册全部 Markdown 端点（文章 / 审核 / 评论 / 历史版本）
+    /// </summary>
+    public static void MapMarkdownApis(this WebApplication app)
+    {
+        // ===== MarkDown 文档端点 =====
+        var markdownGroup = app.MapGroup("/api/markdown");
+
+        // POST: 创建文章（需认证）
+        markdownGroup.MapPost("/", CreateAsync)
+            .RequireAuthorization()
+            .Produces<ApiResponse<MarkdownResponse>>(StatusCodes.Status201Created)
+            .Produces<ApiResponse>(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status401Unauthorized);
+
+        // GET: 获取文章列表（无需认证，仅返回公开文档）
+        markdownGroup.MapGet("/", GetAllAsync)
+            .Produces<ApiResponse<List<MarkdownResponse>>>(StatusCodes.Status200OK);
+
+        // GET: 获取文章详情（无需认证）
+        markdownGroup.MapGet("/{markDownGuid:guid}", GetAsync)
+            .Produces<ApiResponse<MarkdownResponse>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse>(StatusCodes.Status404NotFound);
+
+        // PUT: 更新文章（需认证）
+        markdownGroup.MapPut("/{markDownGuid:guid}", UpdateAsync)
+            .RequireAuthorization()
+            .Produces<ApiResponse<MarkdownResponse>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse>(StatusCodes.Status400BadRequest)
+            .Produces<ApiResponse>(StatusCodes.Status403Forbidden)
+            .Produces<ApiResponse>(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status401Unauthorized);
+
+        // DELETE: 删除文章（需认证，软删除）
+        markdownGroup.MapDelete("/{markDownGuid:guid}", DeleteAsync)
+            .RequireAuthorization()
+            .Produces<ApiResponse>(StatusCodes.Status200OK)
+            .Produces<ApiResponse>(StatusCodes.Status403Forbidden)
+            .Produces<ApiResponse>(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status401Unauthorized);
+
+        // GET: 文章列表（分页/按标签/按用户，摘要投影，仅已审核通过）
+        markdownGroup.MapGet("/list", GetListAsync)
+            .Produces<ApiResponse<List<MarkdownSummaryResponse>>>(StatusCodes.Status200OK);
+
+        // GET: 文章搜索（摘要投影，仅已审核通过）
+        markdownGroup.MapGet("/search", SearchAsync)
+            .Produces<ApiResponse<List<MarkdownSummaryResponse>>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse>(StatusCodes.Status400BadRequest);
+
+        // ===== 子资源：审核 / 评论 / 历史版本 =====
+        MarkdownAuditApi.MapMarkdownAuditApi(markdownGroup);
+        MarkdownReviewApi.MapMarkdownReviewApi(markdownGroup);
+        MarkdownHistoryApi.MapMarkdownHistoryApi(markdownGroup);
+    }
+
+    /// <summary>
+    ///     创建 Markdown 博客文章
+    /// </summary>
+    private static async Task<IResult> CreateAsync(
+        [FromBody] CreateMarkdownRequest request,
+        INotMediator notMediator,
+        ICurrentUserService currentUserService,
+        IMarkdownRepository markdownRepository)
+    {
+        if (string.IsNullOrWhiteSpace(request.Name))
+            return Results.BadRequest(ApiResponse.Error("文章名称不能为空"));
+        if (string.IsNullOrWhiteSpace(request.Content))
+            return Results.BadRequest(ApiResponse.Error("文章内容不能为空"));
+        if (!MarkdownApiHelpers.TryValidateTags(request.Tags, out var tagError))
+            return Results.BadRequest(ApiResponse.Error(tagError ?? "标签校验失败"));
+
+        var userId = currentUserService.GetUserId();
+        var auth = MarkdownApiHelpers.ParseAuth(request.Auth);
+        if (auth is null)
+            return Results.BadRequest(ApiResponse.Error("非法的文章权限类型"));
+
+        var command = new CreateMarkdownCommand(
+            userId,
+            request.Name,
+            request.Content,
+            Tags: request.Tags,
+            MarkDownAuth: auth.Value);
+
+        // P1-4：命令直接返回新文章 Guid，避免全量加载用户文章再按名称匹配（低效且同名歧义）
+        var markDownGuid = await notMediator.SendAsync(command);
+
+        var created = await markdownRepository.FindMarkDownAsync(markDownGuid);
+        if (created is null)
+            return Results.StatusCode(201);
+
+        var response = MarkdownResponseMapper.MapToMarkdownResponse(created);
+        return Results.Created($"/api/markdown/{created.MarkDownGuid}",
+            ApiResponse<MarkdownResponse>.Created(response, "文章创建成功"));
+    }
+
+    /// <summary>
+    ///     获取公开 Markdown 文章列表（分页）
+    /// </summary>
+    private static async Task<IResult> GetAllAsync(
+        IMarkdownRepository markdownRepository,
+        int skip = 0,
+        int take = 20)
+    {
+        // 资源限制（P-05）：skip 不允许为负，take 钳制在 1~100
+        var markdowns = await markdownRepository.FindAllMarkDownsAsync(
+            Math.Max(0, skip),
+            Math.Clamp(take, 1, 100));
+        var responses = markdowns.Select(MarkdownResponseMapper.MapToMarkdownResponse).ToList();
+        return Results.Ok(ApiResponse<List<MarkdownResponse>>.Ok(responses));
+    }
+
+    /// <summary>
+    ///     获取 Markdown 博客文章详情
+    /// </summary>
+    private static async Task<IResult> GetAsync(
+        Guid markDownGuid,
+        IMarkdownRepository markdownRepository,
+        ICurrentUserService currentUserService)
+    {
+        var markdown = await markdownRepository.FindMarkDownAsync(markDownGuid);
+
+        if (markdown is null || markdown.IsDelete)
+            return Results.NotFound(ApiResponse<MarkdownResponse>.NotFound("文章不存在"));
+
+        // 越权防护（S-10）：权限校验 + 审核门控（F-10.2）双重要求。
+        // 私有/受保护文档非所有者一律 404（含已审核通过的私有文档）；
+        // 未通过审核的文章仅作者可见，其余一律 404。
+        var viewerGuid = MarkdownApiHelpers.TryGetCurrentUserId(currentUserService) ?? Guid.Empty;
+        if (!markdown.HasPermission(viewerGuid) ||
+            (!markdown.IsApproved && markdown.MarkUserGuid != viewerGuid))
+            return Results.NotFound(ApiResponse<MarkdownResponse>.NotFound("文章不存在"));
+
+        var response = MarkdownResponseMapper.MapToMarkdownResponse(markdown);
+        return Results.Ok(ApiResponse<MarkdownResponse>.Ok(response));
+    }
+
+    /// <summary>
+    ///     更新 Markdown 博客文章
+    /// </summary>
+    private static async Task<IResult> UpdateAsync(
+        Guid markDownGuid,
+        [FromBody] UpdateMarkdownRequest request,
+        INotMediator notMediator,
+        ICurrentUserService currentUserService,
+        IMarkdownRepository markdownRepository)
+    {
+        if (string.IsNullOrWhiteSpace(request.Name))
+            return Results.BadRequest(ApiResponse.Error("文章名称不能为空"));
+        if (string.IsNullOrWhiteSpace(request.Content))
+            return Results.BadRequest(ApiResponse.Error("文章内容不能为空"));
+        if (!MarkdownApiHelpers.TryValidateTags(request.Tags, out var tagError))
+            return Results.BadRequest(ApiResponse.Error(tagError ?? "标签校验失败"));
+
+        var userId = currentUserService.GetUserId();
+
+        var command = new UpdateMarkdownCommand(
+            markDownGuid,
+            userId,
+            request.Name,
+            request.Content,
+            Tags: request.Tags);
+
+        var result = await notMediator.SendAsync(command);
+
+        if (!result)
+            return Results.StatusCode(500);
+
+        var markdown = await markdownRepository.FindMarkDownAsync(markDownGuid);
+
+        if (markdown is null || markdown.IsDelete)
+            return Results.NotFound(ApiResponse<MarkdownResponse>.NotFound("文章不存在"));
+
+        var response = MarkdownResponseMapper.MapToMarkdownResponse(markdown);
+        return Results.Ok(ApiResponse<MarkdownResponse>.Ok(response, "文章更新成功"));
+    }
+
+    /// <summary>
+    ///     删除 Markdown 文章（软删除）
+    /// </summary>
+    private static async Task<IResult> DeleteAsync(
+        Guid markDownGuid,
+        INotMediator notMediator,
+        ICurrentUserService currentUserService,
+        HttpContext httpContext)
+    {
+        var userId = currentUserService.GetUserId();
+        var command = new DeleteMarkdownCommand(markDownGuid, userId, MarkdownApiHelpers.GetIdempotencyKey(httpContext));
+
+        var result = await notMediator.SendAsync(command);
+
+        return result
+            ? Results.Ok(ApiResponse.Ok("文章已删除"))
+            : Results.StatusCode(500);
+    }
+
+    /// <summary>
+    ///     获取文章列表（分页/按标签/按用户，摘要投影，仅已审核通过）
+    /// </summary>
+    private static async Task<IResult> GetListAsync(
+        int? skip,
+        int? take,
+        string? tag,
+        Guid? userGuid,
+        INotMediator notMediator,
+        ICurrentUserService currentUserService)
+    {
+        var query = new MarkdownListQuery(
+            Skip: Math.Max(0, skip ?? 0),
+            Take: take is > 0 and <= 100 ? take.Value : 20,
+            Tag: tag,
+            UserGuid: userGuid,
+            ViewerGuid: MarkdownApiHelpers.TryGetCurrentUserId(currentUserService));
+
+        var result = await notMediator.SendAsync(query);
+        return Results.Ok(ApiResponse<List<MarkdownSummaryResponse>>.Ok(result));
+    }
+
+    /// <summary>
+    ///     搜索文章（摘要投影，仅已审核通过）
+    /// </summary>
+    private static async Task<IResult> SearchAsync(
+        string? keyword,
+        int? skip,
+        int? take,
+        INotMediator notMediator,
+        ICurrentUserService currentUserService)
+    {
+        if (string.IsNullOrWhiteSpace(keyword))
+            return Results.BadRequest(ApiResponse.Error("搜索关键字不能为空"));
+
+        var query = new MarkdownSearchQuery(
+            keyword.Trim(),
+            Skip: Math.Max(0, skip ?? 0),
+            Take: take is > 0 and <= 100 ? take.Value : 20,
+            ViewerGuid: MarkdownApiHelpers.TryGetCurrentUserId(currentUserService));
+
+        var result = await notMediator.SendAsync(query);
+        return Results.Ok(ApiResponse<List<MarkdownSummaryResponse>>.Ok(result));
+    }
+}

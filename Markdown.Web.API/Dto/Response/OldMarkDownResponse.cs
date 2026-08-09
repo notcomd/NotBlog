@@ -16,22 +16,3 @@ public class OldMarkDownResponse
 }
 
 /// <summary>
-/// OldMarkDown 响应映射扩展
-/// </summary>
-public static class OldMarkDownMapper
-{
-    public static OldMarkDownResponse MapToOldMarkDownResponse(OldMarkDown old)
-    {
-        return new OldMarkDownResponse
-        {
-            OldMarkDownGuid = old.OldMarkDownGuid,
-            MarkDownGuid = old.MarkDownGuid,
-            UserGuid = old.UserGuid,
-            Auth = old.AuthType.ToString(),
-            Content = old.OldMarkDownContent,
-            Hash = old.OldMarkDownHash,
-            CreateAt = old.CreateAt,
-            UpdateAt = old.UpdateAt
-        };
-    }
-}

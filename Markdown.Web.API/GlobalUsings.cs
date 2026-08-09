@@ -1,5 +1,6 @@
 // 全局 using 指令 — Markdown.Web.API 项目
 global using System.ComponentModel.DataAnnotations;
+global using System.Security.Claims;
 global using System.Security.Cryptography;
 global using System.Text;
 global using Markdown.Domain.Entities;
@@ -9,7 +10,10 @@ global using Markdown.Infrastructure.EntityFramework;
 global using NotMediator;
 global using Notcomd.EventBus.Core;
 global using Notcomd.EventBus.Extension;
-global using Markdown.Web.API.Application.IntegrationEvents.IntegrationEventHandlers;
 global using Markdown.Web.API.Application.Commands;
+global using Markdown.Web.API.Application.IntegrationEvents;
+global using Markdown.Web.API.Application.IntegrationEvents.IntegrationEventHandlers;
+global using Markdown.Web.API.Application.Queries;
 global using Markdown.Web.API.Dto.Request;
 global using Markdown.Web.API.Dto.Response;
+global using Microsoft.AspNetCore.Mvc;

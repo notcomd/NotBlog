@@ -22,6 +22,11 @@
     </ItemGroup>
 
     <ItemGroup>
+        <!-- R-01：MessageDeliveryService 依赖 SignalR 的 IHubContext，测试项目需显式引用 ASP.NET Core 框架（项目引用不传递 FrameworkReference） -->
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\Message.Web.API\Message.Web.API.csproj"/>
         <ProjectReference Include="..\Message.Domain\Message.Domain.csproj"/>
     </ItemGroup>

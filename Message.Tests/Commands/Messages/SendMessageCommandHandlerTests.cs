@@ -1,11 +1,15 @@
 using Message.Domain.Entities;
 using Message.Domain.Enums;
 using Message.Domain.IRepository;
+using Message.Domain.IServices;
 using Commons.SeedWork;
 using Message.Tests.TestHelpers;
 using Message.Web.API.Application.Commands.Messages;
 using Message.Web.API.Dto.Response;
 using Message.Web.API.Grpc;
+using Message.Web.API.Hubs;
+using Message.Web.API.Services;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Moq;
 using MessageEntity = Message.Domain.Entities.Message;
@@ -69,8 +73,22 @@ public class SendMessageCommandHandlerTests
             _fileStorage.Object,
             new Mock<ILogger<SendMessageCommandHandler>>().Object,
             CacheServicesTestFactory.CreateUnreadCountCache(),
-            CacheServicesTestFactory.CreateSessionCache());
+            CacheServicesTestFactory.CreateSessionCache(),
+            CreateDeliveryService());
     }
+
+    /// <summary>R-01：构造真实 MessageDeliveryService（连接管理器返回空连接，推送静默完成不干扰断言）。</summary>
+    private static MessageDeliveryService CreateDeliveryService()
+    {
+        var connectionManager = new Mock<IConnectionManager>();
+        connectionManager.Setup(c => c.GetConnectionsAsync(It.IsAny<Guid>()))
+            .ReturnsAsync(Array.Empty<string>());
+        return new MessageDeliveryService(
+            new Mock<IHubContext<MessageHub, IMessageClient>>().Object,
+            connectionManager.Object,
+            new Mock<ILogger<MessageDeliveryService>>().Object);
+    }
+
 
     /// <summary>构造一个携带全部可选参数的命令，测试时按需覆盖类型字段</summary>
     private static SendMessageCommand BuildCommand(MessageType type) => new(
