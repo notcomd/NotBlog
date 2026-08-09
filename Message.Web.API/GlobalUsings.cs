@@ -53,5 +53,7 @@ global using Message.Web.API.Middleware;
 global using Message.Web.API.Services;
 global using Message.Infrastructure.EntityFramework;
 global using Message.Infrastructure.Services;
+global using Notcomd.EventBus.Core;
+global using Notcomd.EventBus.Extension;
 global using Microsoft.AspNetCore.Authorization;
 global using System.Security.Claims;
