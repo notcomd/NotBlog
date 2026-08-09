@@ -2,6 +2,7 @@ using Message.Domain.Entities.Tweet;
 using Message.Domain.Enums;
 using Message.Domain.IRepository;
 using Commons.SeedWork;
+using Message.Web.API.Services;
 using Message.Web.API.Application.Queries.Tweets;
 using Moq;
 
@@ -20,6 +21,7 @@ public class GetTweetDetailQueryHandlerTests
     private Mock<ITweetRepository> _tweetRepository = null!;
     private Mock<ITweetInteractionRepository> _interactionRepository = null!;
     private Mock<IUnitOfWork> _unitOfWork = null!;
+    private Mock<IUserFollowRepository> _followRepository = null!;
 
     [SetUp]
     public void Setup()
@@ -27,9 +29,13 @@ public class GetTweetDetailQueryHandlerTests
         _tweetRepository = new Mock<ITweetRepository>();
         _interactionRepository = new Mock<ITweetInteractionRepository>();
         _unitOfWork = new Mock<IUnitOfWork>();
+        _followRepository = new Mock<IUserFollowRepository>();
         _tweetRepository.SetupGet(r => r.UnitOfWork).Returns(_unitOfWork.Object);
         _tweetRepository.Setup(r => r.UpdateAsync(It.IsAny<Tweet>()))
             .ReturnsAsync((Tweet t) => t);
+        // R-03：默认空关注集合（查看者不关注任何人）
+        _followRepository.Setup(r => r.GetFollowingIdsAsync(It.IsAny<Guid>()))
+            .ReturnsAsync(Array.Empty<Guid>());
     }
 
     [Test]
@@ -37,7 +43,7 @@ public class GetTweetDetailQueryHandlerTests
     {
         _tweetRepository.Setup(r => r.GetByIdAsync(TweetGuid)).ReturnsAsync((Tweet?)null);
 
-        var handler = new GetTweetDetailQueryHandler(_tweetRepository.Object, _interactionRepository.Object, new Mock<ICircleRepository>().Object);
+        var handler = new GetTweetDetailQueryHandler(_tweetRepository.Object, _interactionRepository.Object, new Mock<ICircleRepository>().Object, _followRepository.Object);
 
         var result = await handler.Handler(new GetTweetDetailQuery(TweetGuid, UserId), CancellationToken.None);
 
@@ -65,7 +71,7 @@ public class GetTweetDetailQueryHandlerTests
         _interactionRepository.Setup(r => r.ExistsAsync(TweetGuid, UserId, InteractionType.Coin))
             .ReturnsAsync(true);
 
-        var handler = new GetTweetDetailQueryHandler(_tweetRepository.Object, _interactionRepository.Object, new Mock<ICircleRepository>().Object);
+        var handler = new GetTweetDetailQueryHandler(_tweetRepository.Object, _interactionRepository.Object, new Mock<ICircleRepository>().Object, _followRepository.Object);
 
         var result = await handler.Handler(new GetTweetDetailQuery(TweetGuid, UserId), CancellationToken.None);
 
@@ -87,7 +93,7 @@ public class GetTweetDetailQueryHandlerTests
     }
 
     [Test]
-    public async Task GetTweetDetail_已审核推文_应增加浏览量并持久化()
+    public async Task GetTweetDetail_已审核推文_不自动增加浏览量且不写库()
     {
         var tweet = Tweet.Create(UserId, "推文内容");
         tweet.Publish();
@@ -97,16 +103,17 @@ public class GetTweetDetailQueryHandlerTests
                 It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<InteractionType>()))
             .ReturnsAsync(false);
 
-        var handler = new GetTweetDetailQueryHandler(_tweetRepository.Object, _interactionRepository.Object, new Mock<ICircleRepository>().Object);
+        var handler = new GetTweetDetailQueryHandler(_tweetRepository.Object, _interactionRepository.Object, new Mock<ICircleRepository>().Object, _followRepository.Object);
 
         var result = await handler.Handler(new GetTweetDetailQuery(TweetGuid, UserId), CancellationToken.None);
 
+        // R-06：详情查询不再自动 +1 浏览量（计数唯一入口为 POST /{tweetGuid}/view，Redis 去重），也不写库
         Assert.Multiple(() =>
         {
             Assert.That(result.Tweet, Is.SameAs(tweet));
-            Assert.That(tweet.ViewCount, Is.EqualTo(1));
-            _tweetRepository.Verify(r => r.UpdateAsync(tweet), Times.Once);
-            _unitOfWork.Verify(u => u.SaveEntitiesAsync(It.IsAny<CancellationToken>()), Times.Once);
+            Assert.That(tweet.ViewCount, Is.EqualTo(0));
+            _tweetRepository.Verify(r => r.UpdateAsync(It.IsAny<Tweet>()), Times.Never);
+            _unitOfWork.Verify(u => u.SaveEntitiesAsync(It.IsAny<CancellationToken>()), Times.Never);
         });
     }
 }
