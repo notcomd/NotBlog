@@ -1,4 +1,4 @@
-﻿using MessageEntity = Message.Domain.Entities.Message;
+﻿using MessageEntity = Message.Domain.Entities.Chat.Message;
 
 namespace Message.Web.API.Application.Commands.Messages;
 /// <summary>

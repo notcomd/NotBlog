@@ -1,5 +1,5 @@
 global using Commons.Extensions;
-global using Message.Domain.Entities;
+global using Message.Domain.Entities.Chat;
 global using Message.Domain.Entities.Community;
 global using Message.Domain.Entities.Group;
 global using Message.Domain.Entities.Tweet;

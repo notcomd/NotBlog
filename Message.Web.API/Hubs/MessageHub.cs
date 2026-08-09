@@ -591,7 +591,7 @@ public class MessageHub : Hub<IMessageClient>
     /// 创建消息（重新设计 v2：与 REST 通道共用同一 <see cref="SendMessageCommand"/> 链路，
     /// 消除 Hub 侧重复实现；媒体消息的 FileDev 归属校验/元数据填充/附件创建均在命令内完成）。
     /// </summary>
-    private async Task<Domain.Entities.Message> CreateMessageAsync(
+    private async Task<Domain.Entities.Chat.Message> CreateMessageAsync(
         Guid sessionId, Guid userId, SendMessageRequest request)
     {
         var messageId = await _mediator.SendAsync(new SendMessageCommand(

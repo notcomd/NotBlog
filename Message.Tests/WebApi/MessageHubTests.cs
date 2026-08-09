@@ -1,4 +1,4 @@
-using Message.Domain.Entities;
+using Message.Domain.Entities.Chat;
 using Message.Domain.Enums;
 using Message.Domain.IRepository;
 using Commons.SeedWork;
@@ -18,7 +18,7 @@ using NotMediator;
 using Message.Tests.TestHelpers;
 using StackExchange.Redis;
 using System.Security.Claims;
-using DomainMessage = Message.Domain.Entities.Message;
+using DomainMessage = Message.Domain.Entities.Chat.Message;
 
 namespace Message.Tests.WebApi;
 

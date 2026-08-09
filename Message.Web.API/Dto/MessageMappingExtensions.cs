@@ -2,7 +2,7 @@
 
 public static class MessageMappingExtensions
 {
-    public static MessageDto MapToDto(this Domain.Entities.Message message) => new()
+    public static MessageDto MapToDto(this Domain.Entities.Chat.Message message) => new()
     {
         MessageId = message.MessageId,
         SessionId = message.SessionId,

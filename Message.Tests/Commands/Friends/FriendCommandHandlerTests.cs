@@ -1,4 +1,4 @@
-using Message.Domain.Entities;
+using Message.Domain.Entities.Chat;
 using Message.Domain.IRepository;
 using Commons.SeedWork;
 using Message.Web.API.Application.Commands.Friends;
