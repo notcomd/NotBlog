@@ -23,6 +23,7 @@ public class CreateGroupCommandHandlerTests
     private Mock<IGroupRepository> _groupRepository = null!;
     private Mock<IUnitOfWork> _unitOfWork = null!;
     private Mock<ICurrentUserService> _currentUser = null!;
+    private Mock<IUserInfoRepository> _userInfoRepository = null!;
 
     [SetUp]
     public void Setup()
@@ -32,10 +33,14 @@ public class CreateGroupCommandHandlerTests
         _currentUser = new Mock<ICurrentUserService>();
         _currentUser.Setup(c => c.GetUserId()).Returns(UserId);
         _groupRepository.SetupGet(r => r.UnitOfWork).Returns(_unitOfWork.Object);
+        // 等级挂钩（设计文档 4.5）：默认无资料按 1 级（群人数上限 30）
+        _userInfoRepository = new Mock<IUserInfoRepository>();
+        _userInfoRepository.Setup(r => r.GetByUserIdAsync(It.IsAny<Guid>()))
+            .ReturnsAsync((Message.Domain.Entities.User.UserInfo?)null);
     }
 
     private CreateGroupCommandHandler CreateHandler() => new(
-        _groupRepository.Object, _currentUser.Object,
+        _groupRepository.Object, _currentUser.Object, _userInfoRepository.Object,
         new Mock<ILogger<CreateGroupCommandHandler>>().Object);
 
     [Test]

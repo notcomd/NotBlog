@@ -7,8 +7,14 @@ public class GetMyUserInfoQueryHandler(
     public async Task<UserInfoDto> Handler(GetMyUserInfoQuery query, CancellationToken cancellationToken)
     {
         var userInfo = await userInfoRepository.GetByUserIdAsync(query.UserId);
+        var signedInToday = await userInfoRepository.IsSignedInAsync(
+            query.UserId, DateOnly.FromDateTime(DateTime.UtcNow));
+
         if (userInfo is not null)
-            return userInfo.ToDto();
+        {
+            var dto = userInfo.ToDto();
+            return dto with { SignedInToday = signedInToday };
+        }
 
         // 未创建过资料：返回默认值（前端可直接展示，首次写操作时再落库）
         return new UserInfoDto
@@ -16,6 +22,8 @@ public class GetMyUserInfoQueryHandler(
             UserId = query.UserId,
             Level = 1,
             Coins = 0,
+            Experience = 0,
+            SignedInToday = signedInToday,
             BackgroundCoverUrl = null,
             UpdateTime = DateTimeOffset.UtcNow
         };

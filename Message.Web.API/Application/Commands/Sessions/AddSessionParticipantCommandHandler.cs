@@ -7,6 +7,7 @@ namespace Message.Web.API.Application.Commands.Sessions;
 public class AddSessionParticipantCommandHandler(
     IChatSessionRepository sessionRepository,
     ICurrentUserService currentUser,
+    IUserInfoRepository userInfoRepository,
     ILogger<AddSessionParticipantCommandHandler> logger,
     SessionCacheService sessionCache) : IRequestHandler<AddSessionParticipantCommand, bool>
 {
@@ -19,6 +20,16 @@ public class AddSessionParticipantCommandHandler(
         var operatorId = currentUser.GetUserId();
         if (!session.IsParticipant(operatorId))
             throw new UnauthorizedAccessException("您不是该会话的参与者");
+
+        // 设计文档 4.5：群聊会话人数上限 = 10 × 会话创建者等级 + 20（防绕过群成员管理的直加路径）
+        if (session.SessionType == SessionType.Group)
+        {
+            var creatorInfo = await userInfoRepository.GetByUserIdAsync(session.CreatorId);
+            var creatorLevel = creatorInfo?.Level ?? 1;
+            var maxParticipants = 10 * creatorLevel + 20;
+            if (session.Participants.Count >= maxParticipants)
+                throw new InvalidOperationException($"会话人数已达上限（{maxParticipants} 人）");
+        }
 
         session.AddParticipant(command.UserId);
         await sessionRepository.UpdateAsync(session);

@@ -39,6 +39,9 @@ public class UserInfo : Entity<Guid>, IAggregateRoot
     /// <summary>硬币余额（投币/消费的账户口径，与推文 CoinCount 收款口径正交）</summary>
     public long Coins { get; private set; }
 
+    /// <summary>当前等级累计经验（升级清零，满级后继续累计展示用）</summary>
+    public long Experience { get; private set; }
+
     /// <summary>背景封面 URL（区别于头像；FileDev 上传后存 URI，可空）</summary>
     public string? BackgroundCoverUrl { get; private set; }
 
@@ -86,5 +89,34 @@ public class UserInfo : Entity<Guid>, IAggregateRoot
 
         Level = level;
         UpdateTime = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>最高等级</summary>
+    public const int MaxLevel = 9;
+
+    /// <summary>从 level 级升到 level+1 级所需经验：500 × (5 × level) = 2500 × level（设计文档 3.1，口径 A）</summary>
+    public static long LevelUpThreshold(int level) => 500L * 5 * level;
+
+    /// <summary>
+    /// 增加经验并自动升级（经验每级清零、剩余带入下一级）。
+    /// </summary>
+    /// <param name="amount">增加的经验值（必须大于 0）</param>
+    /// <returns>本次升级的级数（0 表示未升级）</returns>
+    public int AddExperience(long amount)
+    {
+        if (amount <= 0)
+            throw new ArgumentException("增加经验必须大于0", nameof(amount));
+
+        Experience += amount;
+        var upgraded = 0;
+        while (Level < MaxLevel && Experience >= LevelUpThreshold(Level))
+        {
+            Experience -= LevelUpThreshold(Level);
+            Level++;
+            upgraded++;
+        }
+
+        UpdateTime = DateTimeOffset.UtcNow;
+        return upgraded;
     }
 }

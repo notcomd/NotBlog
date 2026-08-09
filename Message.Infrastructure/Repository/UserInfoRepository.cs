@@ -23,4 +23,9 @@ public class UserInfoRepository(MessageDbContext context) : IUserInfoRepository
         var entry = DbSet.Update(userInfo);
         return entry.Entity;
     }
+
+    public async Task<bool> IsSignedInAsync(Guid userId, DateOnly date)
+    {
+        return await context.UserSignIns.AnyAsync(s => s.UserId == userId && s.SignInDate == date);
+    }
 }

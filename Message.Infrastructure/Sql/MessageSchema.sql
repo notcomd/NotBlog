@@ -245,6 +245,28 @@ CREATE TABLE "UserFollows" (
 );
 
 
+CREATE TABLE "UserInfos" (
+    "UserId" uuid NOT NULL,
+    "Level" integer NOT NULL,
+    "Coins" bigint NOT NULL,
+    "Experience" bigint NOT NULL,
+    "BackgroundCoverUrl" character varying(2048),
+    "CreateTime" timestamp with time zone NOT NULL,
+    "UpdateTime" timestamp with time zone NOT NULL,
+    "Id" uuid NOT NULL,
+    CONSTRAINT "PK_UserInfos" PRIMARY KEY ("UserId")
+);
+
+
+CREATE TABLE "UserSignIns" (
+    "Id" uuid NOT NULL,
+    "UserId" uuid NOT NULL,
+    "SignInDate" date NOT NULL,
+    "CreateTime" timestamp with time zone NOT NULL,
+    CONSTRAINT "PK_UserSignIns" PRIMARY KEY ("Id")
+);
+
+
 CREATE TABLE "CircleMembers" (
     "Id" uuid NOT NULL,
     "CircleGuid" uuid NOT NULL,
@@ -434,16 +456,10 @@ CREATE INDEX "IX_UserFollows_FolloweeGuid" ON "UserFollows" ("FolloweeGuid");
 CREATE UNIQUE INDEX "IX_UserFollows_FollowerGuid_FolloweeGuid" ON "UserFollows" ("FollowerGuid", "FolloweeGuid");
 
 
+CREATE INDEX "IX_UserSignIns_UserId" ON "UserSignIns" ("UserId");
 
 
--- 用户资料表（2026-08 新增，UserInfo 模块：等级/硬币/背景封面）
-CREATE TABLE IF NOT EXISTS "UserInfos" (
-    "UserId" uuid NOT NULL,
-    "Level" integer NOT NULL,
-    "Coins" bigint NOT NULL,
-    "BackgroundCoverUrl" character varying(2048),
-    "CreateTime" timestamp with time zone NOT NULL,
-    "UpdateTime" timestamp with time zone NOT NULL,
-    "Id" uuid NOT NULL,
-    CONSTRAINT "PK_UserInfos" PRIMARY KEY ("UserId")
-);
+CREATE UNIQUE INDEX "IX_UserSignIns_UserId_SignInDate" ON "UserSignIns" ("UserId", "SignInDate");
+
+
+

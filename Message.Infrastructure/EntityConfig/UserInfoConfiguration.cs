@@ -19,6 +19,9 @@ public class UserInfoConfiguration : IEntityTypeConfiguration<UserInfo>
         builder.Property(u => u.Coins)
             .IsRequired();
 
+        builder.Property(u => u.Experience)
+            .IsRequired();
+
         builder.Property(u => u.BackgroundCoverUrl)
             .HasMaxLength(2048);
 

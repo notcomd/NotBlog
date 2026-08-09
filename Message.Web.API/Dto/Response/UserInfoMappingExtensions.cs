@@ -8,6 +8,7 @@ public static class UserInfoMappingExtensions
         UserId = userInfo.UserId,
         Level = userInfo.Level,
         Coins = userInfo.Coins,
+        Experience = userInfo.Experience,
         BackgroundCoverUrl = userInfo.BackgroundCoverUrl,
         UpdateTime = userInfo.UpdateTime
     };

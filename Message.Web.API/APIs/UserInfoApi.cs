@@ -25,6 +25,12 @@ public static class UserInfoApi
             .Accepts<UpdateBackgroundCoverRequest>("application/json")
             .Produces<ApiResponse>();
 
+        // POST /sign-in — 每日签到（+250 经验）
+        group.MapPost("/sign-in", SignInAsync)
+            .WithSummary("每日签到")
+            .WithDescription("签到获得 250 经验并自动升级；每日一次，重复签到返回 400")
+            .Produces<ApiResponse<SignInResultDto>>();
+
         // POST /me/coins/add — 增加硬币
         group.MapPost("/me/coins/add", AddCoinsAsync)
             .WithSummary("增加硬币")
@@ -53,6 +59,26 @@ public static class UserInfoApi
         catch (Exception ex)
         {
             return Results.Json(ApiResponse<UserInfoDto>.Error($"获取用户资料失败: {ex.Message}"), statusCode: 500);
+        }
+    }
+
+    private static async Task<IResult> SignInAsync(
+        [FromServices] ICurrentUserService currentUser,
+        [FromServices] INotMediator mediator,
+        CancellationToken ct)
+    {
+        try
+        {
+            var result = await mediator.SendAsync(new SignInCommand(currentUser.GetUserId()), ct);
+            return Results.Ok(ApiResponse<SignInResultDto>.Ok(result));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.Ok(ApiResponse<SignInResultDto>.BadRequest(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            return Results.Json(ApiResponse<SignInResultDto>.Error($"签到失败: {ex.Message}"), statusCode: 500);
         }
     }
 
