@@ -36,6 +36,7 @@ public class MessageDbContext : DbContext, IUnitOfWork
     public DbSet<CircleInvitation> CircleInvitations { get; set; } = null!;
     public DbSet<Topic> Topics { get; set; } = null!;
     public DbSet<UserFollow> UserFollows { get; set; } = null!;
+    public DbSet<UserInfo> UserInfos { get; set; } = null!;
 
 
     public IUnitOfWork UnitOfWork => this;

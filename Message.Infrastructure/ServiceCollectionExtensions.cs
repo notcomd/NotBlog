@@ -67,6 +67,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICircleInvitationRepository, CircleInvitationRepository>();
         services.AddScoped<ITopicRepository, TopicRepository>();
         services.AddScoped<IUserFollowRepository, UserFollowRepository>();
+
+        // 用户资料（UserInfo）：等级 / 硬币 / 背景封面
+        services.AddScoped<IUserInfoRepository, UserInfoRepository>();
     }
 
     private static void RegisterServices(IServiceCollection services, IConfiguration? configuration = null)

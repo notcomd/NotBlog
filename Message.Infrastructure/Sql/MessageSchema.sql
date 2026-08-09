@@ -435,3 +435,15 @@ CREATE UNIQUE INDEX "IX_UserFollows_FollowerGuid_FolloweeGuid" ON "UserFollows" 
 
 
 
+
+-- 用户资料表（2026-08 新增，UserInfo 模块：等级/硬币/背景封面）
+CREATE TABLE IF NOT EXISTS "UserInfos" (
+    "UserId" uuid NOT NULL,
+    "Level" integer NOT NULL,
+    "Coins" bigint NOT NULL,
+    "BackgroundCoverUrl" character varying(2048),
+    "CreateTime" timestamp with time zone NOT NULL,
+    "UpdateTime" timestamp with time zone NOT NULL,
+    "Id" uuid NOT NULL,
+    CONSTRAINT "PK_UserInfos" PRIMARY KEY ("UserId")
+);

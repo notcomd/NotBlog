@@ -73,6 +73,7 @@ app.MapCirclesApi();
 app.MapTopicsApi();
 app.MapFollowsApi();
 app.MapNotificationsApi();
+app.MapUserInfoApi();
 
 app.MapHub<Message.Web.API.Hubs.MessageHub>("/MessageHub");
 app.MapHub<Message.Web.API.Hubs.CommunityHub>("/CommunityHub");
