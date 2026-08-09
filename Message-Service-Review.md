@@ -11,7 +11,7 @@
 | 阶段 0 | ✅ 已实施（d528471c） | R-01 REST 三链路推送、R-02 Feed 可见性、R-03 Followers、R-05 审核真实内容、R-06 浏览量去重、R-07 分页对齐、R-17 死枚举删除 |
 | 阶段 1 | ✅ 已实施（本分支） | R-04 通知读侧（4 端点）、R-08 草稿箱、R-09 在线状态推送（好友维度）、R-10 全量建表脚本 |
 | 阶段 2 | ✅ 已实施（本分支） | R-11 群解散/移出成员站内通知、R-12 圈子发现列表 + 话题更新/停用（按用户指示跳过 IsDiscoverable 数据库字段，圈子列表默认返回全部 Active 圈子） |
-| 阶段 3 | ⬜ 待定 | R-13 list.md 更新、R-14 RecallConfig 决策、R-15/R-16 文档标注 |
+| 阶段 3 | ✅ 已实施（本分支） | R-13 list.md 文档漂移修正（T005/T006/T007 标注已移除+替代方案）、R-14 RecallConfig 死代码删除（方案 A）、R-15 枚举注释标注（MessagePush/MessageOther/Pending/Delivered/Failed）、R-16 维持邮件/本地化占位（代码已有 [预留] 注释，接入 NotEmail 时替换） |
 
 ### 阶段 1 实施中发现的 P0 修复（R-10 生成脚本时暴露，本分支一并修复）
 
@@ -433,7 +433,7 @@ public static bool IsVisibleTo(Tweet tweet, Guid viewerId, IReadOnlySet<Guid>? f
 - [x] R-12 圈子发现（GET /api/circles 列表+名称搜索）+ 话题管理（PUT/DELETE /api/topics/{id}，创建者/管理员权限；停用后列表与帖子流不展示）——按用户指示跳过 IsDiscoverable 数据库字段
 
 ### 阶段 3：决策与清理
-- [ ] R-13 list.md 更新 ｜ R-14 RecallConfig 删除（方案 A） ｜ R-15 文档标注 ｜ R-16 接入 NotEmail 时替换
+- [x] R-13 list.md 更新（T005/T006/T007 已移除+替代方案） ｜ R-14 RecallConfig 删除（方案 A） ｜ R-15 枚举注释标注 ｜ R-16 邮件占位维持（接入 NotEmail 时替换）
 
 ## 8. 兼容与废弃时间表
 

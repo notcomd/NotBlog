@@ -3,7 +3,7 @@ namespace Message.Domain.Enums;
 public enum MessageStatus
 {
     /// <summary>
-    /// 待发送状态
+    /// 待发送状态（状态机预留：发送链路当前直接置 Sent）
     /// </summary>
     Pending,
 
@@ -13,7 +13,7 @@ public enum MessageStatus
     Sent,
 
     /// <summary>
-    /// 已送达状态
+    /// 已送达状态（状态机预留：当前未在发送链路使用，可留待 SignalR 送达回执接入）
     /// </summary>
     Delivered,
 
@@ -28,7 +28,7 @@ public enum MessageStatus
     Recalled,
 
     /// <summary>
-    /// 失败状态
+    /// 失败状态（状态机预留：当前发送失败直接抛异常，不落 Failed 状态）
     /// </summary>
     Failed
 }
