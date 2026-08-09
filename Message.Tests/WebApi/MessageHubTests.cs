@@ -377,6 +377,7 @@ public class MessageHubTests
         public Mock<IMessageClient> GroupProxy { get; }
         public Mock<IMessageClient> CallerProxy { get; }
         public Mock<IDatabase> UserStatusDb { get; }
+        public Mock<IMessageFriendsRepository> FriendsRepository { get; }
         public Mock<HubCallerContext> Context { get; }
         public Dictionary<object, object?> Items { get; } = new();
         public MessageHub Hub { get; }
@@ -388,6 +389,10 @@ public class MessageHubTests
             CallerProxy = CreateProxy();
             UserStatusDb = new Mock<IDatabase>();
             Mediator = new Mock<INotMediator>();
+            FriendsRepository = new Mock<IMessageFriendsRepository>();
+            // R-09：默认无好友（在线状态推送静默完成）
+            FriendsRepository.Setup(r => r.GetFriendIdsAsync(It.IsAny<Guid>()))
+                .ReturnsAsync(Array.Empty<Guid>());
 
             var clients = new Mock<IHubCallerClients<IMessageClient>>();
             clients.Setup(c => c.Client(It.IsAny<string>())).Returns(DeliveryProxy.Object);
@@ -467,7 +472,8 @@ public class MessageHubTests
                 CacheServicesTestFactory.CreateUnreadCountCache(),
                 CacheServicesTestFactory.CreateSessionCache(),
                 CacheServicesTestFactory.CreateRedisCache(),
-                Mediator.Object)
+                Mediator.Object,
+                FriendsRepository.Object)
             {
                 Context = Context.Object,
                 Clients = clients.Object,

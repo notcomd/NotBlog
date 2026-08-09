@@ -29,6 +29,8 @@ public class MessageDbContext : DbContext, IUnitOfWork
     public DbSet<TweetAuditLog> TweetAuditLogs { get; set; } = null!;
     public DbSet<TweetReport> TweetReports { get; set; } = null!;
 
+    public DbSet<TweetNotification> TweetNotifications { get; set; } = null!;
+
     public DbSet<Circle> Circles { get; set; } = null!;
     public DbSet<CircleMember> CircleMembers { get; set; } = null!;
     public DbSet<CircleInvitation> CircleInvitations { get; set; } = null!;

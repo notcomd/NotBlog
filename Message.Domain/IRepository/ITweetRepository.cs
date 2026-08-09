@@ -22,6 +22,16 @@ public interface ITweetRepository : IRepository<Tweet, IUnitOfWork>
     Task<IEnumerable<Tweet>> GetByAuthorAsync(Guid authorGuid, Guid viewerId, IEnumerable<Guid> followingIds, int page = 1, int pageSize = 20);
 
     /// <summary>
+    /// 获取指定作者指定状态的推文列表（R-08：草稿箱，按最近编辑倒序）
+    /// </summary>
+    Task<IEnumerable<Tweet>> GetByAuthorAndStatusAsync(Guid authorGuid, TweetStatus status, int page = 1, int pageSize = 20);
+
+    /// <summary>
+    /// 获取指定作者指定状态的推文数量（R-08：草稿箱 TotalCount）
+    /// </summary>
+    Task<int> CountByAuthorAndStatusAsync(Guid authorGuid, TweetStatus status);
+
+    /// <summary>
     /// 获取多个作者的时间线推文列表（R-02/R-03/R-07：SQL 层完成可见性过滤）
     /// </summary>
     /// <param name="authorGuids">作者ID列表</param>

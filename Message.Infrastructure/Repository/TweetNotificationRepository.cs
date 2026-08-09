@@ -51,6 +51,14 @@ public class TweetNotificationRepository : ITweetNotificationRepository
         return await _dbSet.CountAsync(n => n.UserGuid == userGuid && !n.IsRead);
     }
 
+    public async Task<int> CountByUserAsync(Guid userGuid, bool unreadOnly = false)
+    {
+        var query = _dbSet.Where(n => n.UserGuid == userGuid);
+        if (unreadOnly)
+            query = query.Where(n => !n.IsRead);
+        return await query.CountAsync();
+    }
+
     public async Task MarkAllAsReadAsync(Guid userGuid)
     {
         var notifications = await _dbSet

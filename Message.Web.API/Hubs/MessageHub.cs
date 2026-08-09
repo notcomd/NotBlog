@@ -35,6 +35,7 @@ public class MessageHub : Hub<IMessageClient>
     private readonly SessionCacheService _sessionCache;
     private readonly RedisCacheService _redisCache;
     private readonly INotMediator _mediator;
+    private readonly IMessageFriendsRepository _friendsRepository;
 
     public MessageHub(
         IMessageRepository messageRepository,
@@ -50,7 +51,8 @@ public class MessageHub : Hub<IMessageClient>
         UnreadCountCacheService unreadCountCache,
         SessionCacheService sessionCache,
         RedisCacheService redisCache,
-        INotMediator mediator)
+        INotMediator mediator,
+        IMessageFriendsRepository friendsRepository)
     {
         _messageRepository = messageRepository;
         _sessionRepository = sessionRepository;
@@ -66,6 +68,7 @@ public class MessageHub : Hub<IMessageClient>
         _sessionCache = sessionCache;
         _redisCache = redisCache;
         _mediator = mediator;
+        _friendsRepository = friendsRepository;
     }
 
     // ═══════════════════════════════════════════════════════
@@ -88,6 +91,9 @@ public class MessageHub : Hub<IMessageClient>
             await _connectionCommandService.AddConnectionAsync(userId, connectionId);
             // Q-05：在线状态统一经 UserStatusCacheService 写入（与 RedisConnectionManager 同一套 Key：message:user:status:{userId} + message:online:users）
             await _userStatusCache.SetUserOnlineAsync(userId);
+
+            // R-09：通知好友该用户已上线
+            await NotifyFriendsStatusChangedAsync(userId, isOnline: true);
 
             _logger.LogInformation("用户连接: UserId={UserId}, ConnectionId={ConnectionId}",
                 userId, connectionId);
@@ -128,7 +134,12 @@ public class MessageHub : Hub<IMessageClient>
             // 仅当该用户没有任何剩余连接时才置为离线（Q-05：经 UserStatusCacheService，唯一在线状态入口）
             var hasOtherConnections = await _connectionManager.HasOtherConnectionsAsync(userId);
             if (!hasOtherConnections)
+            {
                 await _userStatusCache.SetUserOfflineAsync(userId);
+
+                // R-09：仅当全部连接断开（真正离线）时通知好友
+                await NotifyFriendsStatusChangedAsync(userId, isOnline: false);
+            }
 
             _logger.LogInformation("用户断开连接: UserId={UserId}, ConnectionId={ConnectionId}", userId, connectionId);
 
@@ -138,6 +149,27 @@ public class MessageHub : Hub<IMessageClient>
         {
             _logger.LogError(ex, "用户断开连接时发生错误: UserId={UserId}", userId);
             throw;
+        }
+    }
+
+    /// <summary>
+    /// R-09：向好友推送我的在线状态变更（双向 Accepted 好友）。
+    /// <para>推送失败仅记日志，不影响连接生命周期。</para>
+    /// </summary>
+    private async Task NotifyFriendsStatusChangedAsync(Guid userId, bool isOnline)
+    {
+        try
+        {
+            var friendIds = await _friendsRepository.GetFriendIdsAsync(userId);
+            if (!friendIds.Any())
+                return;
+
+            await _deliveryService.NotifyUserStatusChangedAsync(
+                userId, isOnline, friendIds, Context.ConnectionAborted);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "推送在线状态变更失败: UserId={UserId}, Online={IsOnline}", userId, isOnline);
         }
     }
 
