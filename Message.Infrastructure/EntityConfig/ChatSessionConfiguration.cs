@@ -39,7 +39,7 @@ public class ChatSessionConfiguration : IEntityTypeConfiguration<ChatSession>
 
         builder.Property(s => s.Participants)
             .HasColumnName("Participants")
-            .HasColumnType("nvarchar(max)")
+            .HasColumnType("text")
             .HasConversion(
                 v => string.Join(",", v.Select(g => g.ToString())),
                 v => v.Split(',', StringSplitOptions.RemoveEmptyEntries)
@@ -52,6 +52,6 @@ public class ChatSessionConfiguration : IEntityTypeConfiguration<ChatSession>
         builder.HasIndex(s => s.CreatorId);
         builder.HasIndex(s => s.GroupId)
             .IsUnique()
-            .HasFilter("[GroupId] IS NOT NULL");
+            .HasFilter("\"GroupId\" IS NOT NULL");
     }
 }

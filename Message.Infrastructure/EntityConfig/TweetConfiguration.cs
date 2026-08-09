@@ -22,21 +22,21 @@ public class TweetConfiguration : IEntityTypeConfiguration<Tweet>
 
         builder.Property(t => t.Media)
             .HasColumnName("MediaUrls")
-            .HasColumnType("nvarchar(max)")
+            .HasColumnType("text")
             .HasConversion(
                 v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
                 v => JsonSerializer.Deserialize<List<TweetMedia>>(v, (JsonSerializerOptions?)null) ?? new List<TweetMedia>())
             .UsePropertyAccessMode(PropertyAccessMode.Field);
 
         builder.Property(t => t.LinkMetadata)
-            .HasColumnType("nvarchar(max)")
+            .HasColumnType("text")
             .HasConversion(
                 v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
                 v => JsonSerializer.Deserialize<LinkMetadata>(v, (JsonSerializerOptions?)null));
 
         builder.Property(t => t.Hashtags)
             .HasColumnName("Hashtags")
-            .HasColumnType("nvarchar(max)")
+            .HasColumnType("text")
             .HasConversion(
                 v => string.Join(",", v),
                 v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToHashSet())
