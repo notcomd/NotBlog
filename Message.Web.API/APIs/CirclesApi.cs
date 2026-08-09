@@ -35,6 +35,12 @@ public static class CirclesApi
             .WithSummary("拒绝直邀")
             .Produces<ApiResponse>();
 
+        // GET / — 圈子发现（活跃圈子列表 + 名称搜索；R-12）
+        group.MapGet("/", GetCirclesAsync)
+            .WithSummary("圈子发现列表")
+            .WithDescription("获取活跃圈子列表，支持名称关键词搜索与分页")
+            .Produces<ApiResponse<PagedResult<CircleDto>>>();
+
         group.MapGet("/my", GetMyCirclesAsync)
             .WithSummary("我加入的圈子列表")
             .Produces<ApiResponse<List<CircleDto>>>();
@@ -114,6 +120,35 @@ public static class CirclesApi
         catch (Exception ex)
         {
             return Results.Json(ApiResponse<Guid>.Error($"创建圈子失败: {ex.Message}"), statusCode: 500);
+        }
+    }
+
+    /// <summary>
+    /// 圈子发现列表（R-12：活跃圈子 + 名称模糊搜索，分页）。
+    /// </summary>
+    private static async Task<IResult> GetCirclesAsync(
+        [FromServices] INotMediator mediator,
+        [FromQuery] string? keyword = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            var paged = await mediator.SendAsync(new GetCirclesQuery(keyword, page, pageSize), ct);
+
+            var result = new PagedResult<CircleDto>
+            {
+                Items = paged.Items.Select(c => c.ToDto()).ToList(),
+                TotalCount = paged.TotalCount,
+                Page = paged.Page,
+                PageSize = paged.PageSize
+            };
+            return Results.Ok(ApiResponse<PagedResult<CircleDto>>.Ok(result));
+        }
+        catch (Exception ex)
+        {
+            return Results.Json(ApiResponse<PagedResult<CircleDto>>.Error($"获取圈子列表失败: {ex.Message}"), statusCode: 500);
         }
     }
 

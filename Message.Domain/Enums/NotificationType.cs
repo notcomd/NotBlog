@@ -13,5 +13,7 @@ public enum NotificationType
     CircleInvited,
     CircleJoined,
     CirclePostPublished,
-    NewFollower
+    NewFollower,
+    GroupDissolved,
+    GroupMemberRemoved
 }

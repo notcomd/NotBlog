@@ -10,7 +10,7 @@
 |---|---|---|
 | 阶段 0 | ✅ 已实施（d528471c） | R-01 REST 三链路推送、R-02 Feed 可见性、R-03 Followers、R-05 审核真实内容、R-06 浏览量去重、R-07 分页对齐、R-17 死枚举删除 |
 | 阶段 1 | ✅ 已实施（本分支） | R-04 通知读侧（4 端点）、R-08 草稿箱、R-09 在线状态推送（好友维度）、R-10 全量建表脚本 |
-| 阶段 2 | ⬜ 待定 | R-11 群解散/移出成员通知、R-12 圈子发现/话题管理（需产品确认） |
+| 阶段 2 | ✅ 已实施（本分支） | R-11 群解散/移出成员站内通知、R-12 圈子发现列表 + 话题更新/停用（按用户指示跳过 IsDiscoverable 数据库字段，圈子列表默认返回全部 Active 圈子） |
 | 阶段 3 | ⬜ 待定 | R-13 list.md 更新、R-14 RecallConfig 决策、R-15/R-16 文档标注 |
 
 ### 阶段 1 实施中发现的 P0 修复（R-10 生成脚本时暴露，本分支一并修复）
@@ -429,8 +429,8 @@ public static bool IsVisibleTo(Tweet tweet, Guid viewerId, IReadOnlySet<Guid>? f
 - **验证**：同上 + 空库部署演练（执行脚本 → 启动 → 全模块冒烟）
 
 ### 阶段 2：增强项（按产品优先级）
-- [ ] R-11 群解散/移出成员通知（第一批）
-- [ ] R-12 圈子发现 + 话题管理（需产品确认 IsDiscoverable）
+- [x] R-11 群解散/移出成员通知（GroupDissolved/GroupMemberRemoved 站内通知，NotificationType 新增 2 值，Type 存 text 无 DB 变更）
+- [x] R-12 圈子发现（GET /api/circles 列表+名称搜索）+ 话题管理（PUT/DELETE /api/topics/{id}，创建者/管理员权限；停用后列表与帖子流不展示）——按用户指示跳过 IsDiscoverable 数据库字段
 
 ### 阶段 3：决策与清理
 - [ ] R-13 list.md 更新 ｜ R-14 RecallConfig 删除（方案 A） ｜ R-15 文档标注 ｜ R-16 接入 NotEmail 时替换
