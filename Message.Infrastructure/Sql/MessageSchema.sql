@@ -43,6 +43,7 @@ CREATE TABLE "Circles" (
     "Name" character varying(50) NOT NULL,
     "Description" character varying(500),
     "AvatarUrl" character varying(500),
+    "CoverUrl" character varying(500),
     "MaxMembers" integer NOT NULL,
     "MemberCount" integer NOT NULL,
     "Status" text NOT NULL,

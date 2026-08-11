@@ -15,6 +15,7 @@ public static class CommunityMapping
             Name = circle.Name,
             Description = circle.Description,
             AvatarUrl = circle.AvatarUrl,
+            CoverUrl = circle.CoverUrl,
             MemberCount = circle.MemberCount,
             MaxMembers = circle.MaxMembers,
             Status = circle.Status.ToString(),

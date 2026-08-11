@@ -8,4 +8,5 @@ public record UpdateCircleCommand(
     Guid CircleGuid,
     string Name,
     string? Description,
-    string? AvatarUrl) : IRequest<bool>;
+    string? AvatarUrl,
+    string? CoverUrl) : IRequest<bool>;

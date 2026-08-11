@@ -26,6 +26,9 @@ public class CircleConfiguration : IEntityTypeConfiguration<Circle>
         builder.Property(c => c.AvatarUrl)
             .HasMaxLength(500);
 
+        builder.Property(c => c.CoverUrl)
+            .HasMaxLength(500);
+
         builder.Property(c => c.MaxMembers)
             .IsRequired();
 

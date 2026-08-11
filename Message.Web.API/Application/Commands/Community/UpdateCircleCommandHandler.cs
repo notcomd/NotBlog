@@ -15,7 +15,7 @@ public class UpdateCircleCommandHandler(
             if (operatorMember is null || operatorMember.Role == CircleMemberRole.Member)
                 throw new UnauthorizedAccessException("只有圈主或管理员可以更新圈子信息");
 
-            circle.UpdateInfo(command.Name, command.Description, command.AvatarUrl);
+            circle.UpdateInfo(command.Name, command.Description, command.AvatarUrl, command.CoverUrl);
 
             await circleRepository.UpdateAsync(circle);
             await circleRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
