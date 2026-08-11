@@ -19,7 +19,7 @@ public class Circle : Entity<Guid>, IAggregateRoot
     }
 
     /// <summary>创建圈子（圈主自动成为 Owner 成员）</summary>
-    public static Circle Create(Guid ownerGuid, string name, string? description = null, string? avatarUrl = null, int maxMembers = 500)
+    public static Circle Create(Guid ownerGuid, string name, string? description = null, string? avatarUrl = null, string? coverUrl = null, int maxMembers = 500)
     {
         if (ownerGuid == Guid.Empty)
             throw new ArgumentException("圈主ID不能为空", nameof(ownerGuid));
@@ -36,6 +36,7 @@ public class Circle : Entity<Guid>, IAggregateRoot
             Name = name.Trim(),
             Description = description,
             AvatarUrl = avatarUrl,
+            CoverUrl = coverUrl,
             MaxMembers = maxMembers,
             MemberCount = 1,
             Status = CircleStatus.Active
@@ -51,6 +52,7 @@ public class Circle : Entity<Guid>, IAggregateRoot
     public string Name { get; private set; } = null!;
     public string? Description { get; private set; }
     public string? AvatarUrl { get; private set; }
+    public string? CoverUrl { get; private set; }
     public int MaxMembers { get; private set; }
     /// <summary>成员数（冗余计数，与 _members 同步维护）</summary>
     public int MemberCount { get; private set; }
@@ -63,7 +65,7 @@ public class Circle : Entity<Guid>, IAggregateRoot
     public bool IsDissolved => Status == CircleStatus.Dissolved;
 
     /// <summary>更新圈子信息（圈主/管理员）</summary>
-    public void UpdateInfo(string name, string? description, string? avatarUrl)
+    public void UpdateInfo(string name, string? description, string? avatarUrl, string? coverUrl = null)
     {
         EnsureActive();
         if (string.IsNullOrWhiteSpace(name))
@@ -74,6 +76,7 @@ public class Circle : Entity<Guid>, IAggregateRoot
         Name = name.Trim();
         Description = description;
         AvatarUrl = avatarUrl;
+        CoverUrl = coverUrl;
     }
 
     /// <summary>解散圈子（仅圈主）</summary>

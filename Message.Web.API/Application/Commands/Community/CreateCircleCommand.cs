@@ -9,4 +9,5 @@ public record CreateCircleCommand(
     string Name,
     string? Description,
     string? AvatarUrl,
+    string? CoverUrl,
     int? MaxMembers) : IRequest<Guid>;

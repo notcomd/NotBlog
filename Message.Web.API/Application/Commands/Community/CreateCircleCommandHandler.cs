@@ -24,6 +24,7 @@ public class CreateCircleCommandHandler(
                 command.Name,
                 command.Description,
                 command.AvatarUrl,
+                command.CoverUrl,
                 command.MaxMembers ?? 500);
 
             await circleRepository.AddAsync(circle);

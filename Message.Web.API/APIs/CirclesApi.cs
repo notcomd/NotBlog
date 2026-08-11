@@ -114,7 +114,7 @@ public static class CirclesApi
         {
             var circleId = await mediator.SendAsync(new CreateCircleCommand(
                 currentUser.GetUserId(), request.Name, request.Description,
-                request.AvatarUrl, request.MaxMembers), ct);
+                request.AvatarUrl, request.CoverUrl, request.MaxMembers), ct);
             return Results.Ok(ApiResponse<Guid>.Created(circleId, "圈子创建成功"));
         }
         catch (Exception ex)
@@ -201,7 +201,7 @@ public static class CirclesApi
         try
         {
             await mediator.SendAsync(new UpdateCircleCommand(
-                currentUser.GetUserId(), circleGuid, request.Name, request.Description, request.AvatarUrl), ct);
+                currentUser.GetUserId(), circleGuid, request.Name, request.Description, request.AvatarUrl, request.CoverUrl), ct);
             return Results.Ok(ApiResponse.Ok("圈子信息已更新"));
         }
         catch (UnauthorizedAccessException ex)
