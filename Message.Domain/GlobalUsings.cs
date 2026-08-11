@@ -3,6 +3,7 @@
 global using Commons.SeedWork;
 global using Message.Domain.Entities.Chat;
 global using Message.Domain.Entities.Community;
+global using Message.Domain.Entities.User;
 global using Message.Domain.Entities.Group;
 global using Message.Domain.Entities.Tweet;
 global using Message.Domain.Enums;

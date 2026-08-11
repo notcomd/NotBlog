@@ -14,12 +14,9 @@ public static class ServiceCollectionExtensions
         RegisterRepositories(services);
         RegisterServices(services, configuration);
 
-        // 社区事件总线（RabbitMQ）：由 CommunityEventBus:Enabled 控制。
+        // EventBus（RabbitMQ）注册已移至宿主 Program.cs（AddEventBus 需扫描 Web.API 程序集的
+        // 集成事件消费者，且 RabbitMqEventBus 为 Singleton 非 Try 注册、不可重复调用）。
         // IConnectionFactory 由宿主注册（DEBUG：appsettings EventBus 节手动 ConnectionFactory；Release：Aspire AddRabbitMQClient("EventBus")）。
-        if (configuration.GetValue<bool>("CommunityEventBus:Enabled"))
-        {
-            services.AddEventBus(configuration.GetSection("EventBus"), Array.Empty<System.Reflection.Assembly>());
-        }
 
         return services;
     }
@@ -67,6 +64,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICircleInvitationRepository, CircleInvitationRepository>();
         services.AddScoped<ITopicRepository, TopicRepository>();
         services.AddScoped<IUserFollowRepository, UserFollowRepository>();
+
+        // 用户资料（UserInfo）：等级 / 经验 / 硬币 / 背景封面 + 签到记录
+        services.AddScoped<IUserInfoRepository, UserInfoRepository>();
+        services.AddScoped<IUserSignInRepository, UserSignInRepository>();
     }
 
     private static void RegisterServices(IServiceCollection services, IConfiguration? configuration = null)
