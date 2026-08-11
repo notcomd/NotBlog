@@ -1,4 +1,4 @@
-using MessageEntity = Message.Domain.Entities.Message;
+using MessageEntity = Message.Domain.Entities.Chat.Message;
 
 namespace Message.Infrastructure.EntityFramework;
 
@@ -29,11 +29,15 @@ public class MessageDbContext : DbContext, IUnitOfWork
     public DbSet<TweetAuditLog> TweetAuditLogs { get; set; } = null!;
     public DbSet<TweetReport> TweetReports { get; set; } = null!;
 
+    public DbSet<TweetNotification> TweetNotifications { get; set; } = null!;
+
     public DbSet<Circle> Circles { get; set; } = null!;
     public DbSet<CircleMember> CircleMembers { get; set; } = null!;
     public DbSet<CircleInvitation> CircleInvitations { get; set; } = null!;
     public DbSet<Topic> Topics { get; set; } = null!;
     public DbSet<UserFollow> UserFollows { get; set; } = null!;
+    public DbSet<UserInfo> UserInfos { get; set; } = null!;
+    public DbSet<UserSignIn> UserSignIns { get; set; } = null!;
 
 
     public IUnitOfWork UnitOfWork => this;

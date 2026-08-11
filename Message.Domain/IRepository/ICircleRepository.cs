@@ -15,6 +15,12 @@ public interface ICircleRepository : IRepository<Circle, IUnitOfWork>
     /// <summary>获取用户创建的圈子</summary>
     Task<IEnumerable<Circle>> GetByOwnerAsync(Guid ownerGuid);
 
+    /// <summary>活跃圈子列表（R-12 圈子发现；keyword 模糊匹配名称，按创建时间倒序分页）</summary>
+    Task<IEnumerable<Circle>> GetActiveAsync(string? keyword, int page = 1, int pageSize = 20);
+
+    /// <summary>活跃圈子总数（R-12，与 GetActiveAsync 同条件）</summary>
+    Task<int> GetActiveCountAsync(string? keyword);
+
     /// <summary>轻量成员校验（DB 查询，不加载整个圈子）</summary>
     Task<bool> IsMemberAsync(Guid circleGuid, Guid userId);
 

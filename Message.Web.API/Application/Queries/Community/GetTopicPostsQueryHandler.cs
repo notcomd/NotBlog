@@ -3,10 +3,22 @@ namespace Message.Web.API.Application.Queries.Community;
 /// <summary>话题帖子流查询处理程序。</summary>
 public class GetTopicPostsQueryHandler(
     ITweetRepository tweetRepository,
-    ICircleRepository circleRepository) : IRequestHandler<GetTopicPostsQuery, PagedResult<Tweet>>
+    ICircleRepository circleRepository,
+    ITopicRepository topicRepository) : IRequestHandler<GetTopicPostsQuery, PagedResult<Tweet>>
 {
     public async Task<PagedResult<Tweet>> Handler(GetTopicPostsQuery query, CancellationToken cancellationToken)
     {
+        // R-12：话题不存在或已停用时帖子流返回空（历史数据不展示）
+        var topic = await topicRepository.GetByIdAsync(query.TopicGuid);
+        if (topic is null || !topic.IsActive)
+            return new PagedResult<Tweet>
+            {
+                Items = [],
+                TotalCount = 0,
+                Page = query.Page,
+                PageSize = query.PageSize
+            };
+
         var items = (await tweetRepository.GetByTopicAsync(query.TopicGuid, query.Page, query.PageSize)).ToList();
         var total = await tweetRepository.GetTopicPostCountAsync(query.TopicGuid);
 

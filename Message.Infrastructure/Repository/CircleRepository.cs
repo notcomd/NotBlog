@@ -41,6 +41,39 @@ public class CircleRepository(MessageDbContext context) : ICircleRepository
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<Circle>> GetActiveAsync(string? keyword, int page = 1, int pageSize = 20)
+    {
+        if (pageSize < 1) pageSize = 10;
+        if (pageSize > 100) pageSize = 100;
+        var query = DbSet.Where(c => c.Status == CircleStatus.Active);
+        if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            var pattern = $"%{EscapeLike(keyword.Trim())}%";
+            query = query.Where(c => EF.Functions.Like(c.Name, pattern));
+        }
+
+        return await query
+            .OrderByDescending(c => c.CreateTime)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+    }
+
+    public async Task<int> GetActiveCountAsync(string? keyword)
+    {
+        var query = DbSet.Where(c => c.Status == CircleStatus.Active);
+        if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            var pattern = $"%{EscapeLike(keyword.Trim())}%";
+            query = query.Where(c => EF.Functions.Like(c.Name, pattern));
+        }
+        return await query.CountAsync();
+    }
+
+    /// <summary>LIKE 模式转义（% _ \ 为通配/转义符，按原义匹配）</summary>
+    private static string EscapeLike(string input) =>
+        input.Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_");
+
     public async Task<bool> IsMemberAsync(Guid circleGuid, Guid userId)
     {
         return await context.CircleMembers.AnyAsync(

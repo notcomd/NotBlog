@@ -1,6 +1,6 @@
 ﻿using Message.Domain.Entities.Recall;
 
-namespace Message.Domain.Entities;
+namespace Message.Domain.Entities.Chat;
 
 public class Message : Entity<Guid>, IAggregateRoot
 {

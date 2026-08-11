@@ -51,6 +51,16 @@ public class MessageFriendsRepository(MessageDbContext context)
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<Guid>> GetFriendIdsAsync(Guid userId)
+    {
+        return await DbSet
+            .Where(f => f.Status == FriendshipStatus.Accepted
+                        && (f.UserId == userId || f.FriendId == userId))
+            .Select(f => f.UserId == userId ? f.FriendId : f.UserId)
+            .Distinct()
+            .ToListAsync();
+    }
+
     public async Task<IEnumerable<MessageFriends>> GetBlockedUsersAsync(Guid userId)
     {
         return await DbSet

@@ -1,5 +1,5 @@
 
-namespace Message.Domain.Entities;
+namespace Message.Domain.Entities.Chat;
 
 /// <summary>
 /// 会话

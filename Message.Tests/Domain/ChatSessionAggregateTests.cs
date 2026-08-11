@@ -1,4 +1,4 @@
-using Message.Domain.Entities;
+using Message.Domain.Entities.Chat;
 using Message.Domain.Enums;
 using Message.Domain.Events;
 using Commons.SeedWork;

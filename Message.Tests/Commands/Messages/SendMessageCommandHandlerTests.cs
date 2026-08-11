@@ -1,4 +1,4 @@
-using Message.Domain.Entities;
+using Message.Domain.Entities.Chat;
 using Message.Domain.Enums;
 using Message.Domain.IRepository;
 using Message.Domain.IServices;
@@ -12,7 +12,7 @@ using Message.Web.API.Services;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Moq;
-using MessageEntity = Message.Domain.Entities.Message;
+using MessageEntity = Message.Domain.Entities.Chat.Message;
 
 namespace Message.Tests.Commands.Messages;
 

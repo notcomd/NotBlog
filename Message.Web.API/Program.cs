@@ -32,6 +32,10 @@ builder.Services.AddMessageInfrastructure(builder.Configuration);
 builder.Services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<MessageDbContext>());
 builder.Services.AddHttpContextAccessor();
 
+// ═══ EventBus 消费者注册（RabbitMQ）：扫描 Web.API 程序集的集成事件处理器（如 RegisterByUserIntegrationEvent）═══
+// 注：RabbitMqEventBus 为 Singleton 非 Try 注册，只能调用一次（Infrastructure 内不再重复注册）
+builder.Services.AddEventBus(builder.Configuration.GetSection("EventBus"), Assembly.GetExecutingAssembly());
+
 // ═══ Web 应用层服务统一注册（SignalR / JWT 认证 / gRPC 文件客户端 / 推送服务 / CORS） ═══
 builder.Services.AddMessageWebApiServices(builder.Configuration);
 
@@ -72,6 +76,8 @@ app.MapTweetsApi();
 app.MapCirclesApi();
 app.MapTopicsApi();
 app.MapFollowsApi();
+app.MapNotificationsApi();
+app.MapUserInfoApi();
 
 app.MapHub<Message.Web.API.Hubs.MessageHub>("/MessageHub");
 app.MapHub<Message.Web.API.Hubs.CommunityHub>("/CommunityHub");

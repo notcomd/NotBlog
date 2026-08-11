@@ -48,6 +48,18 @@ public class Topic : Entity<Guid>, IAggregateRoot
         PostCount++;
     }
 
+    /// <summary>更新话题名称与简介（R-12：创建者/管理员操作，名称唯一性由仓储层保证）。</summary>
+    public void UpdateInfo(string name, string? description)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("话题名称不能为空", nameof(name));
+        if (name.Length > 30)
+            throw new ArgumentException("话题名称不能超过30个字符", nameof(name));
+
+        Name = name.Trim();
+        Description = description;
+    }
+
     public void Deactivate()
     {
         IsActive = false;

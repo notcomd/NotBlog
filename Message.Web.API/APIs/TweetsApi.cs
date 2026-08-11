@@ -44,6 +44,12 @@ public static class TweetsApi
             .Accepts<CreateTweetRequest>("application/json")
             .Produces<ApiResponse<Guid>>();
 
+        // GET /drafts — 我的草稿列表（字面量路由，先于 /{tweetGuid} 注册）
+        group.MapGet("/drafts", GetMyDraftsAsync)
+            .WithSummary("我的草稿列表")
+            .WithDescription("获取当前用户的推文草稿列表（按最近编辑倒序），支持分页")
+            .Produces<ApiResponse<PagedResult<TweetDto>>>();
+
         // GET /{tweetGuid} — 获取推文详情
         group.MapGet("/{tweetGuid}", GetTweetAsync)
             .WithSummary("获取推文详情")
@@ -275,6 +281,42 @@ public static class TweetsApi
         catch (Exception ex)
         {
             return Results.Json(ApiResponse<TweetDto>.Error($"获取推文详情失败: {ex.Message}"), statusCode: 500);
+        }
+    }
+
+    /// <summary>
+    /// 获取当前用户的草稿列表（查询侧，分页；R-08）。
+    /// </summary>
+    /// <param name="currentUser">当前用户服务</param>
+    /// <param name="mediator">中介者（命令/查询分发）</param>
+    /// <param name="page">页码（从1开始）</param>
+    /// <param name="pageSize">每页条数</param>
+    /// <param name="ct">取消令牌</param>
+    /// <returns>分页草稿列表</returns>
+    private static async Task<IResult> GetMyDraftsAsync(
+        [FromServices] ICurrentUserService currentUser,
+        [FromServices] INotMediator mediator,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            var paged = await mediator.SendAsync(new GetMyDraftsQuery(currentUser.GetUserId(), page, pageSize), ct);
+
+            var result = new PagedResult<TweetDto>
+            {
+                Items = paged.Items.Select(t => MapToDto(t)).ToList(),
+                TotalCount = paged.TotalCount,
+                Page = page,
+                PageSize = pageSize
+            };
+
+            return Results.Ok(ApiResponse<PagedResult<TweetDto>>.Ok(result));
+        }
+        catch (Exception ex)
+        {
+            return Results.Json(ApiResponse<PagedResult<TweetDto>>.Error($"获取草稿列表失败: {ex.Message}"), statusCode: 500);
         }
     }
 

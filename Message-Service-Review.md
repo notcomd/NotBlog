@@ -4,6 +4,25 @@
 > 方法：端点全表核对 + 符号引用追踪 + 设计文档对照 + 单项目构建验证
 > 结论：代码编译通过（0 个 CS 错误）；构建失败仅因 `Message.Web.API.exe` 被运行中的进程占用（文件锁 MSB3021），服务当前在跑
 
+## ✅ 实施进度（2026-08-09 更新）
+
+| 阶段 | 状态 | 内容 |
+|---|---|---|
+| 阶段 0 | ✅ 已实施（d528471c） | R-01 REST 三链路推送、R-02 Feed 可见性、R-03 Followers、R-05 审核真实内容、R-06 浏览量去重、R-07 分页对齐、R-17 死枚举删除 |
+| 阶段 1 | ✅ 已实施（本分支） | R-04 通知读侧（4 端点）、R-08 草稿箱、R-09 在线状态推送（好友维度）、R-10 全量建表脚本 |
+| 阶段 2 | ✅ 已实施（本分支） | R-11 群解散/移出成员站内通知、R-12 圈子发现列表 + 话题更新/停用（按用户指示跳过 IsDiscoverable 数据库字段，圈子列表默认返回全部 Active 圈子） |
+| 阶段 3 | ✅ 已实施（本分支） | R-13 list.md 文档漂移修正（T005/T006/T007 标注已移除+替代方案）、R-14 RecallConfig 死代码删除（方案 A）、R-15 枚举注释标注（MessagePush/MessageOther/Pending/Delivered/Failed）、R-16 维持邮件/本地化占位（代码已有 [预留] 注释，接入 NotEmail 时替换） |
+
+### 阶段 1 实施中发现的 P0 修复（R-10 生成脚本时暴露，本分支一并修复）
+
+Message 服务此前**从未在 PostgreSQL 上成功建表**（本地 messagepostgres 为空库，AppHost 容器库历史遗留），以下缺陷导致 EF Core 模型校验/建表必炸：
+
+1. **`TweetReportConfiguration`：`_evidenceUrls`（List&lt;string&gt;）映射 `nvarchar(max)` 无值转换器** → Npgsql 模型校验失败（服务一查库即崩）。已补 JSON 序列化转换器（泛型 `Property<List<string>>`，表达式树内不能用集合表达式 `[]`，CS9175）。
+2. **5 处 `.HasColumnType("nvarchar(max)")`**（ChatSession×1、Tweet×3、TweetReport×1）→ PG 无 `nvarchar` 类型，建表即 `type "nvarchar" does not exist`。已全部改为 `text`。
+3. **`ChatSessionConfiguration` 过滤索引 `.HasFilter("[GroupId] IS NOT NULL")`** → SQL Server 方括号语法，PG 语法错误。已改为 `"GroupId"`（PG 双引号引用）。
+
+**修复验证**：`schema_gen/efgen.cs`（临时工具，已删除）经 EF Core `GenerateCreateScript()` 生成 `Message.Infrastructure/Sql/MessageSchema.sql`（17 张表 + 46 条索引，与 EntityConfig 严格对照），并在本地 messagepostgres 空库**执行成功**，17 张表全部创建。
+
 ---
 
 ## 1. 现状诊断
@@ -393,28 +412,28 @@ public static bool IsVisibleTo(Tweet tweet, Guid viewerId, IReadOnlySet<Guid>? f
 ## 7. 分阶段实施 checklist
 
 ### 阶段 0：快速止血（1 个 PR，全部 S 级改动）
-- [ ] R-01 REST 三链路推送（同步改 Message.Tests Moq 构造）
-- [ ] R-02 Feed 可见性过滤（仓库层 + Count 同步）
-- [ ] R-03 Followers 接入关注关系（策略 + 4 查询）
-- [ ] R-05 TweetCreatedEventHandler 接真实内容
-- [ ] R-06 浏览量去重 + 移除详情页自动计数
-- [ ] R-07 三处查询过滤下沉 + TotalCount 对齐
-- [ ] R-17 删除 EncryptionAlgorithm 死枚举
+- [x] R-01 REST 三链路推送（同步改 Message.Tests Moq 构造）
+- [x] R-02 Feed 可见性过滤（仓库层 + Count 同步）
+- [x] R-03 Followers 接入关注关系（策略 + 4 查询）
+- [x] R-05 TweetCreatedEventHandler 接真实内容
+- [x] R-06 浏览量去重 + 移除详情页自动计数
+- [x] R-07 三处查询过滤下沉 + TotalCount 对齐
+- [x] R-17 删除 EncryptionAlgorithm 死枚举
 - **验证**：`dotnet build NotBlog.sln`（0 警告 0 错误，先停运行中的 Message 进程）→ `dotnet test Message.Tests` 全绿 → REST/SignalR 手动冒烟
 
 ### 阶段 1：核心缺口补齐（1-2 个 PR）
-- [ ] R-04 通知读侧（4 端点 + DbSet + 删空文件）
-- [ ] R-08 草稿列表端点
-- [ ] R-09 在线状态推送
-- [ ] R-10 建表脚本（TweetSchema.sql 手写 + MessageSchema.sql pg_dump）
+- [x] R-04 通知读侧（4 端点 + DbSet + 删空文件）
+- [x] R-08 草稿列表端点
+- [x] R-09 在线状态推送（好友维度，超出文档原方案）
+- [x] R-10 建表脚本（MessageSchema.sql 由 EF Core GenerateCreateScript 生成，17 表 + 46 索引，空库执行验证通过）
 - **验证**：同上 + 空库部署演练（执行脚本 → 启动 → 全模块冒烟）
 
 ### 阶段 2：增强项（按产品优先级）
-- [ ] R-11 群解散/移出成员通知（第一批）
-- [ ] R-12 圈子发现 + 话题管理（需产品确认 IsDiscoverable）
+- [x] R-11 群解散/移出成员通知（GroupDissolved/GroupMemberRemoved 站内通知，NotificationType 新增 2 值，Type 存 text 无 DB 变更）
+- [x] R-12 圈子发现（GET /api/circles 列表+名称搜索）+ 话题管理（PUT/DELETE /api/topics/{id}，创建者/管理员权限；停用后列表与帖子流不展示）——按用户指示跳过 IsDiscoverable 数据库字段
 
 ### 阶段 3：决策与清理
-- [ ] R-13 list.md 更新 ｜ R-14 RecallConfig 删除（方案 A） ｜ R-15 文档标注 ｜ R-16 接入 NotEmail 时替换
+- [x] R-13 list.md 更新（T005/T006/T007 已移除+替代方案） ｜ R-14 RecallConfig 删除（方案 A） ｜ R-15 枚举注释标注 ｜ R-16 邮件占位维持（接入 NotEmail 时替换）
 
 ## 8. 兼容与废弃时间表
 

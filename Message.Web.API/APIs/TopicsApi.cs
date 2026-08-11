@@ -27,6 +27,19 @@ public static class TopicsApi
             .WithSummary("话题帖子流")
             .Produces<ApiResponse<PagedResult<CommunityPostDto>>>();
 
+        // PUT /{topicGuid} — 更新话题（创建者/管理员；R-12）
+        group.MapPut("/{topicGuid}", UpdateTopicAsync)
+            .WithSummary("更新话题")
+            .WithDescription("更新话题名称与简介，仅创建者本人或管理员可操作")
+            .Accepts<UpdateTopicRequest>("application/json")
+            .Produces<ApiResponse>();
+
+        // DELETE /{topicGuid} — 停用话题（创建者/管理员；R-12）
+        group.MapDelete("/{topicGuid}", DeactivateTopicAsync)
+            .WithSummary("停用话题")
+            .WithDescription("停用后话题不再出现在列表与帖子流中，仅创建者本人或管理员可操作")
+            .Produces<ApiResponse>();
+
         return group;
     }
 
@@ -101,4 +114,58 @@ public static class TopicsApi
             return Results.Json(ApiResponse<PagedResult<CommunityPostDto>>.Error($"获取话题帖子失败: {ex.Message}"), statusCode: 500);
         }
     }
+
+    private static async Task<IResult> UpdateTopicAsync(
+        Guid topicGuid,
+        [FromBody] UpdateTopicRequest request,
+        [FromServices] INotMediator mediator,
+        CancellationToken ct)
+    {
+        try
+        {
+            await mediator.SendAsync(new UpdateTopicCommand(topicGuid, request.Name, request.Description), ct);
+            return Results.Ok(ApiResponse.Ok("话题更新成功"));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return Results.NotFound(ApiResponse.NotFound(ex.Message));
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Results.Json(ApiResponse.Forbidden(ex.Message), statusCode: 403);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.Ok(ApiResponse.BadRequest(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            return Results.Json(ApiResponse.Error($"更新话题失败: {ex.Message}"), statusCode: 500);
+        }
+    }
+
+    private static async Task<IResult> DeactivateTopicAsync(
+        Guid topicGuid,
+        [FromServices] INotMediator mediator,
+        CancellationToken ct)
+    {
+        try
+        {
+            await mediator.SendAsync(new DeactivateTopicCommand(topicGuid), ct);
+            return Results.Ok(ApiResponse.Ok("话题已停用"));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return Results.NotFound(ApiResponse.NotFound(ex.Message));
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Results.Json(ApiResponse.Forbidden(ex.Message), statusCode: 403);
+        }
+        catch (Exception ex)
+        {
+            return Results.Json(ApiResponse.Error($"停用话题失败: {ex.Message}"), statusCode: 500);
+        }
+    }
 }
+

@@ -30,9 +30,13 @@ public class TweetReportConfiguration : IEntityTypeConfiguration<TweetReport>
             .IsRequired()
             .HasConversion<string>();
 
-        builder.Property("_evidenceUrls")
+        // P0 修复（R-10 生成脚本时暴露）：List<string> 必须带值转换器，否则 Npgsql 模型校验直接失败
+        builder.Property<List<string>>("_evidenceUrls")
             .HasColumnName("EvidenceUrls")
-            .HasColumnType("nvarchar(max)");
+            .HasColumnType("text")
+            .HasConversion(
+                v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>());
 
         builder.Property(tr => tr.Status)
             .IsRequired()

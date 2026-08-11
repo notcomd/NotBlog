@@ -28,7 +28,7 @@ public enum MessageType
     MessageFile,
 
     /// <summary>
-    /// 推送消息
+    /// 推送消息（预留：系统公告等场景；发送链路暂不支持，SendMessageCommandHandler 抛 NotSupportedException）
     /// </summary>
     MessagePush,
 
@@ -48,7 +48,7 @@ public enum MessageType
     MessageExpression,
 
     /// <summary>
-    /// 其他消息
+    /// 其他消息（预留：无明确业务场景，发送链路暂不支持）
     /// </summary>
     MessageOther
 }

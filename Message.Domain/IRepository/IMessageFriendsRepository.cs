@@ -13,6 +13,11 @@ public interface IMessageFriendsRepository  : IRepository<MessageFriends, IUnitO
     Task<IEnumerable<MessageFriends>> GetByStatusAsync(Guid userId, FriendshipStatus status);
     Task<IEnumerable<MessageFriends>> GetByFriendGroupAsync(Guid userId, string groupName);
     Task<IEnumerable<MessageFriends>> GetStarredFriendsAsync(Guid userId);
+
+    /// <summary>
+    /// 获取全部好友用户ID（双向 Accepted：我发起的 + 对方发起的；R-09 在线状态推送用）。
+    /// </summary>
+    Task<IEnumerable<Guid>> GetFriendIdsAsync(Guid userId);
     Task<MessageFriends> AddAsync(MessageFriends friendship);
     Task<MessageFriends> UpdateAsync(MessageFriends friendship);
     Task DeleteAsync(Guid friendshipId);

@@ -1,4 +1,4 @@
-using Message.Domain.Entities;
+using Message.Domain.Entities.Chat;
 using Message.Domain.Enums;
 using Message.Domain.IRepository;
 using Message.Domain.IServices;
@@ -25,6 +25,7 @@ public class SessionCommandHandlerTests
     private Mock<IChatSessionRepository> _sessionRepository = null!;
     private Mock<IUnitOfWork> _unitOfWork = null!;
     private Mock<ICurrentUserService> _currentUser = null!;
+    private Mock<IUserInfoRepository> _userInfoRepository = null!;
 
     [SetUp]
     public void Setup()
@@ -34,6 +35,10 @@ public class SessionCommandHandlerTests
         _currentUser = new Mock<ICurrentUserService>();
         _currentUser.Setup(c => c.GetUserId()).Returns(UserId);
         _sessionRepository.SetupGet(r => r.UnitOfWork).Returns(_unitOfWork.Object);
+        // 等级挂钩（设计文档 4.5）：默认无资料按 1 级（群聊上限 30 人），推送路径静默
+        _userInfoRepository = new Mock<IUserInfoRepository>();
+        _userInfoRepository.Setup(r => r.GetByUserIdAsync(It.IsAny<Guid>()))
+            .ReturnsAsync((Message.Domain.Entities.User.UserInfo?)null);
     }
 
     // ---------- CreateSessionCommandHandler ----------
@@ -193,6 +198,7 @@ public class SessionCommandHandlerTests
         var handler = new AddSessionParticipantCommandHandler(
             _sessionRepository.Object,
             _currentUser.Object,
+            _userInfoRepository.Object,
             new Mock<ILogger<AddSessionParticipantCommandHandler>>().Object,
             CacheServicesTestFactory.CreateSessionCache());
 
