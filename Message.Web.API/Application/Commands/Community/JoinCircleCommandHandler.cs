@@ -18,7 +18,8 @@ public class JoinCircleCommandHandler(
             if (invitation is null)
                 throw new KeyNotFoundException("邀请不存在或已失效");
 
-            if (!invitation.IsValid())
+            // 邀请一次性使用：先原子占用（仅 Pending 且未过期可占用成功），并发下第二个请求在此失败
+            if (!await invitationRepository.TryAcceptAtomicallyAsync(invitation.InviteGuid))
                 throw new InvalidOperationException("邀请已失效（已使用、已撤销或已过期）");
 
             var circle = await circleRepository.GetByIdWithMembersAsync(invitation.CircleGuid)

@@ -26,6 +26,15 @@ public interface ICircleInvitationRepository : IRepository<CircleInvitation, IUn
     /// <summary>邀请码是否已被占用（生成时查重）</summary>
     Task<bool> CodeExistsAsync(string code);
 
+    /// <summary>
+    /// 原子占用邀请（仅 Pending 且未过期时置为 Accepted），返回是否占用成功。
+    /// <para>邀请码一次性使用：并发下两个请求同时使用同一邀请时只有一个成功（条件更新，防重复入圈）。</para>
+    /// </summary>
+    Task<bool> TryAcceptAtomicallyAsync(Guid inviteGuid);
+
+    /// <summary>统计指定邀请人在时间窗口内创建的邀请码数量（周额度校验用，仅统计 Type=Code）</summary>
+    Task<int> CountCodesCreatedSinceAsync(Guid inviterGuid, DateTimeOffset since);
+
     Task<CircleInvitation> AddAsync(CircleInvitation invitation);
     Task<CircleInvitation> UpdateAsync(CircleInvitation invitation);
     Task DeleteAsync(Guid inviteGuid);

@@ -67,6 +67,24 @@ public class CircleInvitationRepository(MessageDbContext context) : ICircleInvit
         return await DbSet.AnyAsync(i => i.Code == code);
     }
 
+    public async Task<bool> TryAcceptAtomicallyAsync(Guid inviteGuid)
+    {
+        var now = DateTimeOffset.UtcNow;
+        var rows = await DbSet
+            .Where(i => i.InviteGuid == inviteGuid
+                        && i.Status == CircleInvitationStatus.Pending
+                        && i.ExpireTime > now)
+            .ExecuteUpdateAsync(s => s.SetProperty(i => i.Status, CircleInvitationStatus.Accepted));
+        return rows > 0;
+    }
+
+    public async Task<int> CountCodesCreatedSinceAsync(Guid inviterGuid, DateTimeOffset since)
+    {
+        return await DbSet.CountAsync(i => i.InviterGuid == inviterGuid
+                                           && i.Type == CircleInvitationType.Code
+                                           && i.CreateTime >= since);
+    }
+
     public async Task<CircleInvitation> AddAsync(CircleInvitation invitation)
     {
         var entry = await DbSet.AddAsync(invitation);
