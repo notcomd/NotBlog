@@ -1,9 +1,11 @@
 namespace Message.Web.API.Application.Commands.Tweets;
 /// <summary>
 /// 删除推文命令处理程序。
+/// <para>权限：作者本人 / 全局管理员 / 频道（圈子）帖的圈主或圈管理员（频道内容管理）。</para>
 /// </summary>
 public class DeleteTweetCommandHandler(
     ITweetRepository tweetRepository,
+    ICircleRepository circleRepository,
     ICurrentUserService currentUserService,
     ILogger<DeleteTweetCommandHandler> logger) : IRequestHandler<DeleteTweetCommand, bool>
 {
@@ -18,7 +20,15 @@ public class DeleteTweetCommandHandler(
                 throw new KeyNotFoundException("推文不存在");
 
             if (tweet.AuthorGuid != command.UserId && !currentUserService.IsAdmin())
-                throw new UnauthorizedAccessException("无权删除此推文");
+            {
+                // 频道内容管理：圈子帖允许圈主/圈管理员删除成员帖子
+                if (tweet.CircleGuid is null)
+                    throw new UnauthorizedAccessException("无权删除此推文");
+                var member = await circleRepository.GetMemberAsync(tweet.CircleGuid.Value, command.UserId);
+                if (member is null || member.Status != CircleMemberStatus.Active
+                    || (member.Role != CircleMemberRole.Owner && member.Role != CircleMemberRole.Admin))
+                    throw new UnauthorizedAccessException("无权删除此推文");
+            }
 
             await tweetRepository.DeleteAsync(command.TweetGuid);
             await tweetRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);

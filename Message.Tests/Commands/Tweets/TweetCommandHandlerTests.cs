@@ -1,3 +1,4 @@
+using Message.Domain.Entities.Community;
 using Message.Domain.Entities.Tweet;
 using Message.Domain.Enums;
 using Message.Domain.IRepository;
@@ -133,6 +134,7 @@ public class TweetCommandHandlerTests
 
         var handler = new DeleteTweetCommandHandler(
             _tweetRepository.Object,
+            new Mock<ICircleRepository>().Object,
             currentUser.Object,
             new Mock<ILogger<DeleteTweetCommandHandler>>().Object);
 
@@ -157,11 +159,92 @@ public class TweetCommandHandlerTests
 
         var handler = new DeleteTweetCommandHandler(
             _tweetRepository.Object,
+            new Mock<ICircleRepository>().Object,
             currentUser.Object,
             new Mock<ILogger<DeleteTweetCommandHandler>>().Object);
 
         Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
             await handler.Handler(new DeleteTweetCommand(TweetGuid, Guid.NewGuid()), CancellationToken.None));
+
+        _tweetRepository.Verify(r => r.DeleteAsync(TweetGuid), Times.Never);
+    }
+
+    [Test]
+    public async Task DeleteTweet_圈子帖_圈主删除他人帖子_应成功()
+    {
+        var circleGuid = Guid.NewGuid();
+        var circleOwner = Guid.NewGuid();
+        var tweet = Tweet.Create(UserId, "圈子帖内容", null, null, null, Visibility.Public, circleGuid);
+        _tweetRepository.Setup(r => r.GetByIdAsync(TweetGuid)).ReturnsAsync(tweet);
+        _tweetRepository.Setup(r => r.DeleteAsync(TweetGuid)).Returns(Task.CompletedTask);
+
+        var circleRepository = new Mock<ICircleRepository>();
+        circleRepository.Setup(r => r.GetMemberAsync(circleGuid, circleOwner))
+            .ReturnsAsync(new CircleMember(circleGuid, circleOwner, CircleMemberRole.Owner));
+
+        var currentUser = new Mock<ICurrentUserService>();
+        var handler = new DeleteTweetCommandHandler(
+            _tweetRepository.Object,
+            circleRepository.Object,
+            currentUser.Object,
+            new Mock<ILogger<DeleteTweetCommandHandler>>().Object);
+
+        var result = await handler.Handler(new DeleteTweetCommand(TweetGuid, circleOwner), CancellationToken.None);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.True);
+            _tweetRepository.Verify(r => r.DeleteAsync(TweetGuid), Times.Once);
+            _unitOfWork.Verify(u => u.SaveEntitiesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        });
+    }
+
+    [Test]
+    public async Task DeleteTweet_圈子帖_圈管理员删除他人帖子_应成功()
+    {
+        var circleGuid = Guid.NewGuid();
+        var circleAdmin = Guid.NewGuid();
+        var tweet = Tweet.Create(UserId, "圈子帖内容", null, null, null, Visibility.Public, circleGuid);
+        _tweetRepository.Setup(r => r.GetByIdAsync(TweetGuid)).ReturnsAsync(tweet);
+        _tweetRepository.Setup(r => r.DeleteAsync(TweetGuid)).Returns(Task.CompletedTask);
+
+        var circleRepository = new Mock<ICircleRepository>();
+        circleRepository.Setup(r => r.GetMemberAsync(circleGuid, circleAdmin))
+            .ReturnsAsync(new CircleMember(circleGuid, circleAdmin, CircleMemberRole.Admin));
+
+        var currentUser = new Mock<ICurrentUserService>();
+        var handler = new DeleteTweetCommandHandler(
+            _tweetRepository.Object,
+            circleRepository.Object,
+            currentUser.Object,
+            new Mock<ILogger<DeleteTweetCommandHandler>>().Object);
+
+        var result = await handler.Handler(new DeleteTweetCommand(TweetGuid, circleAdmin), CancellationToken.None);
+
+        Assert.That(result, Is.True);
+    }
+
+    [Test]
+    public async Task DeleteTweet_圈子帖_普通成员删除他人帖子_应拒绝()
+    {
+        var circleGuid = Guid.NewGuid();
+        var plainMember = Guid.NewGuid();
+        var tweet = Tweet.Create(UserId, "圈子帖内容", null, null, null, Visibility.Public, circleGuid);
+        _tweetRepository.Setup(r => r.GetByIdAsync(TweetGuid)).ReturnsAsync(tweet);
+
+        var circleRepository = new Mock<ICircleRepository>();
+        circleRepository.Setup(r => r.GetMemberAsync(circleGuid, plainMember))
+            .ReturnsAsync(new CircleMember(circleGuid, plainMember, CircleMemberRole.Member));
+
+        var currentUser = new Mock<ICurrentUserService>();
+        var handler = new DeleteTweetCommandHandler(
+            _tweetRepository.Object,
+            circleRepository.Object,
+            currentUser.Object,
+            new Mock<ILogger<DeleteTweetCommandHandler>>().Object);
+
+        Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
+            await handler.Handler(new DeleteTweetCommand(TweetGuid, plainMember), CancellationToken.None));
 
         _tweetRepository.Verify(r => r.DeleteAsync(TweetGuid), Times.Never);
     }
