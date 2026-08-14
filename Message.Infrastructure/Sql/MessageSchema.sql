@@ -1,4 +1,4 @@
-﻿-- Message 服务全量建表脚本（由 EF Core 模型 GenerateCreateScript 生成，2026-08；与 EntityConfig 严格对照）
+-- Message 服务全量建表脚本（由 EF Core 模型 GenerateCreateScript 生成，2026-08；与 EntityConfig 严格对照）
 -- 执行方式: psql -h 127.0.0.1 -U postgres -d messagepostgres -f MessageSchema.sql
 
 CREATE TABLE "ChatSessions" (
@@ -7,7 +7,7 @@ CREATE TABLE "ChatSessions" (
     "SessionName" character varying(200),
     "GroupId" uuid,
     "CreatorId" uuid NOT NULL,
-    "Participants" text NOT NULL,
+    "Participants" uuid[] NOT NULL,
     "LastMessageId" uuid,
     "LastMessageContent" character varying(500),
     "LastMessageTime" timestamp with time zone,

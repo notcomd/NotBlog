@@ -37,15 +37,14 @@ public class ChatSessionConfiguration : IEntityTypeConfiguration<ChatSession>
         builder.Property(s => s.LastMessageContent)
             .HasMaxLength(500);
 
+        // 修复（2026-08-15）：Participants 从 text+逗号分隔改为 PostgreSQL uuid[] 数组列。
+        // 原因：仓储查询直接对 Participants 做 Contains/Count 过滤（如 GetByUserIdAsync、
+        // GetPrivateSessionAsync），text 列无法翻译 HashSet.Contains → “could not be translated”。
+        // Npgsql 对 HashSet<Guid> ↔ uuid[] 为原生映射，且能将 Contains 翻译为 @> 操作符、
+        // Count 翻译为 cardinality()。
         builder.Property(s => s.Participants)
             .HasColumnName("Participants")
-            .HasColumnType("text")
-            .HasConversion(
-                v => string.Join(",", v.Select(g => g.ToString())),
-                v => v.Split(',', StringSplitOptions.RemoveEmptyEntries)
-                    .Select(Guid.Parse)
-                    .ToHashSet()
-            );
+            .HasColumnType("uuid[]");
         builder.Ignore(s => s.UnreadCount);
         builder.Ignore(s => s.LastReadTime);
 
