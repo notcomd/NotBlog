@@ -50,6 +50,13 @@ public class UserContextMiddleware
                     .ToArray();
 
                 currentUser.SetUser(userGuid, roles);
+
+                // S-08：保存原始 Bearer token，供 FileStorageGrpcClient 转发到 FileDev gRPC 认证
+                var authHeader = context.Request.Headers.Authorization.ToString();
+                if (authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                {
+                    currentUser.SetAccessToken(authHeader["Bearer ".Length..].Trim());
+                }
             }
         }
 

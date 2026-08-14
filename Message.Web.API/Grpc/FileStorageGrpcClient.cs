@@ -32,15 +32,18 @@ public class FileStorageGrpcClient : IFileStorageGrpcClient
     private readonly GrpcClientFactory _clientFactory;
     private readonly IOptionsSnapshot<FileStorageGrpcOptions> _options;
     private readonly ILogger<FileStorageGrpcClient> _logger;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
     public FileStorageGrpcClient(
         GrpcClientFactory clientFactory,
         IOptionsSnapshot<FileStorageGrpcOptions> options,
-        ILogger<FileStorageGrpcClient> logger)
+        ILogger<FileStorageGrpcClient> logger,
+        IHttpContextAccessor httpContextAccessor)
     {
         _clientFactory = clientFactory;
         _options = options;
         _logger = logger;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public async Task<UploadFileResult> UploadFileAsync(
@@ -425,11 +428,38 @@ public class FileStorageGrpcClient : IFileStorageGrpcClient
 
             var call = CreateClient().DownloadFile(request, BuildCallOptions(ct));
 
+            // ⚠️ 首块预取：gRPC 错误（认证/文件不存在/权限拒绝）在服务端流方法返回前抛出，
+            // 客户端必须 await 首次 MoveNextAsync 才能收到——若把 ReadAllAsync 惰性返回，
+            // 错误会在 HTTP 响应已 200 后的流式写入阶段爆发（客户端收到中断响应而非明确错误）。
+            var enumerator = call.ResponseStream.ReadAllAsync(ct).GetAsyncEnumerator(ct);
+            bool hasFirst;
+            try
+            {
+                hasFirst = await enumerator.MoveNextAsync();
+            }
+            catch
+            {
+                await enumerator.DisposeAsync();
+                throw; // 由外层 catch 映射为 DownloadFileStreamResult(false, ...)
+            }
+
             async IAsyncEnumerable<byte[]> ReadChunks()
             {
-                await foreach (var chunk in call.ResponseStream.ReadAllAsync(ct))
+                try
                 {
-                    yield return chunk.ChunkData.ToByteArray();
+                    if (hasFirst)
+                    {
+                        yield return enumerator.Current.ChunkData.ToByteArray();
+                        hasFirst = false;
+                    }
+                    while (await enumerator.MoveNextAsync())
+                    {
+                        yield return enumerator.Current.ChunkData.ToByteArray();
+                    }
+                }
+                finally
+                {
+                    await enumerator.DisposeAsync();
                 }
             }
 
@@ -461,11 +491,36 @@ public class FileStorageGrpcClient : IFileStorageGrpcClient
 
             var call = CreateClient().DownloadImage(request, BuildCallOptions(ct));
 
+            // ⚠️ 首块预取（同 DownloadFileAsync：gRPC 错误前移，避免惰性流错误在 HTTP 200 后爆发）
+            var enumerator = call.ResponseStream.ReadAllAsync(ct).GetAsyncEnumerator(ct);
+            bool hasFirst;
+            try
+            {
+                hasFirst = await enumerator.MoveNextAsync();
+            }
+            catch
+            {
+                await enumerator.DisposeAsync();
+                throw;
+            }
+
             async IAsyncEnumerable<byte[]> ReadChunks()
             {
-                await foreach (var chunk in call.ResponseStream.ReadAllAsync(ct))
+                try
                 {
-                    yield return chunk.ChunkData.ToByteArray();
+                    if (hasFirst)
+                    {
+                        yield return enumerator.Current.ChunkData.ToByteArray();
+                        hasFirst = false;
+                    }
+                    while (await enumerator.MoveNextAsync())
+                    {
+                        yield return enumerator.Current.ChunkData.ToByteArray();
+                    }
+                }
+                finally
+                {
+                    await enumerator.DisposeAsync();
                 }
             }
 
@@ -521,11 +576,47 @@ public class FileStorageGrpcClient : IFileStorageGrpcClient
     /// <summary>判断 gRPC 状态码是否可重试</summary>
     private static bool IsRetryable(StatusCode statusCode) => RetryableStatusCodes.Contains(statusCode);
 
+    /// <summary>
+    /// 从当前 HttpContext 解析 Bearer token（HTTP 路径取 Authorization 头；SignalR 路径取 query access_token）。
+    /// </summary>
+    private static string? ResolveBearerToken(HttpContext? httpContext)
+    {
+        if (httpContext is null)
+            return null;
+
+        var authHeader = httpContext.Request.Headers.Authorization.ToString();
+        if (authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+            return authHeader["Bearer ".Length..].Trim();
+
+        var queryToken = httpContext.Request.Query["access_token"].FirstOrDefault();
+        return string.IsNullOrWhiteSpace(queryToken) ? null : queryToken;
+    }
+
     /// <summary>构建调用选项（超时 + 取消令牌）</summary>
     private CallOptions BuildCallOptions(CancellationToken ct)
     {
         var timeout = TimeSpan.FromSeconds(Math.Max(1, _options.Value.TimeoutSeconds));
-        return new CallOptions(cancellationToken: ct, deadline: DateTime.UtcNow.Add(timeout));
+
+        // S-08：FileDev gRPC 拦截器要求 Bearer JWT —— 转发当前请求/连接的原始 token。
+        // ⚠️ 必须用 IHttpContextAccessor（Singleton + AsyncLocal）而非 ICurrentUserService：
+        // NotMediator 的 mediator 是 Singleton，SendAsync 内部 CreateScope() 解析 handler——
+        // handler 拿到的是新 scope 的 ICurrentUserService 实例（AccessToken 恒空），
+        // 而 token 由 UserContextMiddleware 设在 HTTP 请求 scope 的实例上（captive scope 断链）。
+        var headers = new Metadata();
+        var token = ResolveBearerToken(_httpContextAccessor.HttpContext);
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            headers.Add("Authorization", $"Bearer {token}");
+        }
+        else
+        {
+            _logger.LogWarning("[FileStorageGrpc] ⚠️ gRPC 调用缺少 Bearer token（HttpContext 中无 Authorization 头/access_token）");
+        }
+
+        return new CallOptions(
+            headers: headers,
+            cancellationToken: ct,
+            deadline: DateTime.UtcNow.Add(timeout));
     }
 
     /// <summary>查询已上传分片索引列表</summary>

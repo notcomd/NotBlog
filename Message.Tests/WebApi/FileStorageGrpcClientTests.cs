@@ -4,6 +4,8 @@ using Google.Protobuf;
 using Grpc.Core;
 using Grpc.Net.ClientFactory;
 using Message.Tests.TestHelpers;
+using Message.Domain.IServices;
+using Microsoft.AspNetCore.Http;
 using Message.Web.API.Dto.Response;
 using Message.Web.API.Grpc;
 using Microsoft.Extensions.Logging;
@@ -24,6 +26,7 @@ public class FileStorageGrpcClientTests
     private static readonly Guid UserId = Guid.NewGuid();
 
     private Mock<FileStorage.FileStorageClient> _grpcClient = null!;
+    private Mock<IHttpContextAccessor> _httpContextAccessor = null!;
     private FileStorageGrpcClient _client = null!;
     private FileStorageGrpcOptions _options = null!;
 
@@ -40,12 +43,15 @@ public class FileStorageGrpcClientTests
         var options = new Mock<IOptionsSnapshot<FileStorageGrpcOptions>>();
         options.Setup(o => o.Value).Returns(() => _options);
 
+        _httpContextAccessor = new Mock<IHttpContextAccessor>();
+
         _grpcClient = new Mock<FileStorage.FileStorageClient>(Mock.Of<CallInvoker>());
 
         _client = new FileStorageGrpcClient(
             new StubGrpcClientFactory(() => _grpcClient.Object),
             options.Object,
-            new Mock<ILogger<FileStorageGrpcClient>>().Object);
+            new Mock<ILogger<FileStorageGrpcClient>>().Object,
+            _httpContextAccessor.Object);
     }
 
     // ─────────────────────────── 上传文件 ───────────────────────────
@@ -425,7 +431,42 @@ public class FileStorageGrpcClientTests
     }
     // ─────────────────────────── 文件信息查询 / 删除 ───────────────────────────
 
+        /// <summary>
+    /// S-08 回归：HttpContext 存在 Bearer token 时，gRPC 调用元数据必须携带 Authorization 头
+    /// （修复 NotMediator CreateScope 导致 ICurrentUserService 断链后，改为从 IHttpContextAccessor 取 token）。
+    /// </summary>
     [Test]
+    public async Task UploadImageAsync_HttpContext存在BearerToken_应附加Authorization元数据()
+    {
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Headers.Authorization = "Bearer test-jwt-token";
+        _httpContextAccessor.Setup(a => a.HttpContext).Returns(httpContext);
+
+        CallOptions? captured = null;
+        _grpcClient
+            .Setup(c => c.UploadImageAsync(It.IsAny<UploadImageRequest>(), It.IsAny<CallOptions>()))
+            .Callback<UploadImageRequest, CallOptions>((_, opts) => captured = opts)
+            .Returns(GrpcTestHelper.Success(new UploadImageResponse
+            {
+                Success = true,
+                FileId = Guid.NewGuid().ToString(),
+                FileUri = "/files/x.jpg",
+                FileMd5 = "md5",
+                FileSize = 2
+            }));
+
+        await _client.UploadImageAsync(UserId, "photo.jpg", new byte[] { 1, 2 });
+
+        Assert.That(captured, Is.Not.Null);
+        var headers = captured!.Value.Headers;
+        Assert.That(headers, Is.Not.Null, "gRPC 调用应携带请求元数据");
+        // ⚠️ Grpc.Core.Metadata 将 Entry.Key 规范为小写（HTTP/2 头大小写不敏感），匹配用 OrdinalIgnoreCase
+        var auth = headers!.SingleOrDefault(h => h.Key.Equals("Authorization", StringComparison.OrdinalIgnoreCase));
+        Assert.That(auth, Is.Not.Null, "gRPC 调用元数据应包含 Authorization 头");
+        Assert.That(auth!.Value, Is.EqualTo("Bearer test-jwt-token"));
+    }
+
+[Test]
     public async Task GetFileInfoAsync_成功响应应映射元数据()
     {
         var fileId = Guid.NewGuid();
@@ -545,6 +586,47 @@ public class FileStorageGrpcClientTests
                 It.Is<DownloadFileRequest>(r => r.FileId == fileId.ToString() && r.UserId == UserId.ToString()),
                 It.IsAny<CallOptions>()), Times.Once);
         });
+    }
+
+    /// <summary>
+    /// 回归：gRPC 下载错误（文件不存在/权限拒绝/认证失败）必须在方法返回前暴露——
+    /// 惰性流错误若延迟到 HTTP 200 后的流式写入阶段，客户端收到的是中断响应而非明确错误。
+    /// </summary>
+    [Test]
+    public async Task DownloadFileAsync_gRPC错误_应返回失败结果并映射错误信息()
+    {
+        var fileId = Guid.NewGuid();
+
+        var reader = new Mock<IAsyncStreamReader<DownloadFileResponse>>();
+        reader.Setup(r => r.MoveNext(It.IsAny<CancellationToken>()))
+            .Returns(Task.FromException<bool>(GrpcTestHelper.RpcError(StatusCode.NotFound, "文件不存在")));
+
+        var call = new AsyncServerStreamingCall<DownloadFileResponse>(
+            reader.Object,
+            Task.FromResult(new Metadata()),
+            () => new Status(StatusCode.NotFound, "文件不存在"),
+            () => new Metadata(),
+            () => { });
+
+        _grpcClient
+            .Setup(c => c.DownloadFile(It.IsAny<DownloadFileRequest>(), It.IsAny<CallOptions>()))
+            .Returns(call);
+
+        var result = await _client.DownloadFileAsync(fileId, UserId);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Success, Is.False, "gRPC 错误应前移为失败结果而非惰性流错误");
+            Assert.That(result.ErrorMessage, Does.Contain("文件不存在"));
+        });
+
+        // 失败结果不应提供可枚举分片（空流占位）
+        var received = new List<byte[]>();
+        await foreach (var chunk in result.Chunks)
+        {
+            received.Add(chunk);
+        }
+        Assert.That(received, Is.Empty);
     }
 
     [Test]

@@ -81,6 +81,7 @@ public class MessageHub : Hub<IMessageClient>
     [HubMethodName("OnConnected")]
     public override async Task OnConnectedAsync()
     {
+        CaptureConnectionToken();
         var userId = GetUserId();
 
         try
@@ -239,6 +240,7 @@ public class MessageHub : Hub<IMessageClient>
     [HubMethodName("SendFileMessage")]
     public async Task SendFileMessage(Guid sessionId, Guid fileId)
     {
+        CaptureConnectionToken();
         var userId = GetUserId();
         if (fileId == Guid.Empty)
             throw new HubException("文件ID不能为空");
@@ -453,6 +455,7 @@ public class MessageHub : Hub<IMessageClient>
     [HubMethodName("InitChunkUpload")]
     public async Task<ChunkUploadInitResult> InitChunkUpload(ChunkUploadInitRequest request)
     {
+        CaptureConnectionToken();
         var userId = GetUserId();
         if (request is null)
             throw new HubException("初始化请求不能为空");
@@ -476,6 +479,7 @@ public class MessageHub : Hub<IMessageClient>
     [HubMethodName("UploadChunk")]
     public async Task<ChunkUploadResult> UploadChunk(ChunkUploadRequest request)
     {
+        CaptureConnectionToken();
         _ = GetUserId();
         if (request is null)
             throw new HubException("分片上传请求不能为空");
@@ -499,6 +503,7 @@ public class MessageHub : Hub<IMessageClient>
     [HubMethodName("GetChunkStatus")]
     public async Task<ChunkStatusResult> GetChunkStatus(ChunkStatusRequest request)
     {
+        CaptureConnectionToken();
         _ = GetUserId();
         if (request is null)
             throw new HubException("状态查询请求不能为空");
@@ -520,6 +525,7 @@ public class MessageHub : Hub<IMessageClient>
     [HubMethodName("MergeChunks")]
     public async Task<MergeChunksResult> MergeChunks(ChunkMergeRequest request)
     {
+        CaptureConnectionToken();
         var userId = GetUserId();
         if (request is null)
             throw new HubException("合并请求不能为空");
@@ -543,6 +549,7 @@ public class MessageHub : Hub<IMessageClient>
     [HubMethodName("CancelChunkUpload")]
     public async Task<CancelChunkUploadResult> CancelChunkUpload(ChunkCancelRequest request)
     {
+        CaptureConnectionToken();
         _ = GetUserId();
         if (request is null)
             throw new HubException("取消请求不能为空");
@@ -565,6 +572,7 @@ public class MessageHub : Hub<IMessageClient>
     [HubMethodName("ResumeChunkUpload")]
     public async Task<ChunkStatusResult> ResumeChunkUpload(ChunkResumeRequest request)
     {
+        CaptureConnectionToken();
         _ = GetUserId();
         if (request is null)
             throw new HubException("断点续传请求不能为空");
@@ -624,6 +632,38 @@ public class MessageHub : Hub<IMessageClient>
 
     /// <summary>用于记录连接是否已加入某会话群组的 Items 键</summary>
     private static string GroupKey(Guid sessionId) => $"joined:{sessionId}";
+
+    /// <summary>
+    /// 捕获当前连接的原始 Bearer token（access_token 查询参数或 Authorization 头），
+    /// 注入 ICurrentUserService 供 FileStorageGrpcClient 转发到 FileDev gRPC 认证（S-08 客户端侧）。
+    /// </summary>
+    private void CaptureConnectionToken()
+    {
+        try
+        {
+            var http = Context.GetHttpContext();
+            if (http is null)
+                return;
+
+            // SignalR JS 客户端经 accessTokenFactory 默认走 access_token 查询参数
+            var token = http.Request.Query["access_token"].FirstOrDefault();
+
+            // 兜底：Authorization 头
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                var authHeader = http.Request.Headers.Authorization.ToString();
+                if (authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                    token = authHeader["Bearer ".Length..].Trim();
+            }
+
+            if (!string.IsNullOrWhiteSpace(token))
+                _currentUserService.SetAccessToken(token);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "捕获连接 token 失败，文件上传将缺少 gRPC 认证头");
+        }
+    }
 
     /// <summary>
     /// 获取当前连接的用户ID（JWT 认证后的 Claim：sub / NameIdentifier / user_guid）。

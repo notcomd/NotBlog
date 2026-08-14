@@ -6,11 +6,16 @@ public class CurrentUserService : ICurrentUserService
     private readonly IHttpContextAccessor _httpContextAccessor;
     private Guid _userId;
     private string[] _roles = [];
+    private string? _accessToken;
 
     public CurrentUserService(IHttpContextAccessor httpContextAccessor)
     {
         _httpContextAccessor = httpContextAccessor;
     }
+
+    public string? AccessToken => _accessToken;
+
+    public void SetAccessToken(string? accessToken) => _accessToken = accessToken;
 
     public bool IsAuthenticated =>
         _userId != Guid.Empty ||
