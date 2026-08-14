@@ -18,14 +18,19 @@ public class FriendCommandHandlerTests
     private static readonly Guid FriendId = Guid.NewGuid();
 
     private Mock<IMessageFriendsRepository> _friendRepository = null!;
+    private Mock<IChatSessionRepository> _sessionRepository = null!;
     private Mock<IUnitOfWork> _unitOfWork = null!;
 
     [SetUp]
     public void Setup()
     {
         _friendRepository = new Mock<IMessageFriendsRepository>();
+        _sessionRepository = new Mock<IChatSessionRepository>();
         _unitOfWork = new Mock<IUnitOfWork>();
         _friendRepository.SetupGet(r => r.UnitOfWork).Returns(_unitOfWork.Object);
+        // 默认：不存在私聊会话（联动逻辑跳过）
+        _sessionRepository.Setup(r => r.GetPrivateSessionAsync(It.IsAny<Guid>(), It.IsAny<Guid>()))
+            .ReturnsAsync((ChatSession?)null);
     }
 
     // ---------- SendFriendRequestCommandHandler ----------
@@ -64,6 +69,7 @@ public class FriendCommandHandlerTests
 
         var handler = new DeleteFriendCommandHandler(
             _friendRepository.Object,
+            _sessionRepository.Object,
             new Mock<ILogger<DeleteFriendCommandHandler>>().Object);
 
         var result = await handler.Handler(new DeleteFriendCommand(UserId, FriendId), CancellationToken.None);
@@ -84,6 +90,7 @@ public class FriendCommandHandlerTests
 
         var handler = new DeleteFriendCommandHandler(
             _friendRepository.Object,
+            _sessionRepository.Object,
             new Mock<ILogger<DeleteFriendCommandHandler>>().Object);
 
         Assert.ThrowsAsync<KeyNotFoundException>(async () =>

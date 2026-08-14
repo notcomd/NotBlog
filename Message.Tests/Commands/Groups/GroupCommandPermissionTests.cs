@@ -1,3 +1,4 @@
+using Message.Domain.Entities.Chat;
 using Message.Domain.Entities.Group;
 using Message.Domain.Enums;
 using Message.Domain.IRepository;
@@ -24,6 +25,7 @@ public class GroupCommandPermissionTests
     private static readonly Guid GroupId = Guid.NewGuid();
 
     private Mock<IGroupRepository> _groupRepository = null!;
+    private Mock<IChatSessionRepository> _sessionRepository = null!;
     private Mock<IUnitOfWork> _unitOfWork = null!;
     private Mock<ICurrentUserService> _currentUser = null!;
 
@@ -31,11 +33,15 @@ public class GroupCommandPermissionTests
     public void Setup()
     {
         _groupRepository = new Mock<IGroupRepository>();
+        _sessionRepository = new Mock<IChatSessionRepository>();
         _unitOfWork = new Mock<IUnitOfWork>();
         _currentUser = new Mock<ICurrentUserService>();
         _groupRepository.SetupGet(r => r.UnitOfWork).Returns(_unitOfWork.Object);
         _groupRepository.Setup(r => r.UpdateAsync(It.IsAny<Group>()))
             .ReturnsAsync((Group g) => g);
+        // 默认：群组无关联会话（联动逻辑跳过）
+        _sessionRepository.Setup(r => r.GetByGroupIdAsync(It.IsAny<Guid>()))
+            .ReturnsAsync((ChatSession?)null);
     }
 
     /// <summary>以指定用户身份构建一个含 Owner/Admin/Member 三角色的群组</summary>
@@ -58,7 +64,7 @@ public class GroupCommandPermissionTests
         BuildGroup(MemberId);
 
         var handler = new DismissGroupCommandHandler(
-            _groupRepository.Object, _currentUser.Object,
+            _groupRepository.Object, _sessionRepository.Object, _currentUser.Object,
             new Mock<ILogger<DismissGroupCommandHandler>>().Object);
 
         Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
@@ -73,7 +79,7 @@ public class GroupCommandPermissionTests
         BuildGroup(AdminId);
 
         var handler = new DismissGroupCommandHandler(
-            _groupRepository.Object, _currentUser.Object,
+            _groupRepository.Object, _sessionRepository.Object, _currentUser.Object,
             new Mock<ILogger<DismissGroupCommandHandler>>().Object);
 
         Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
@@ -86,7 +92,7 @@ public class GroupCommandPermissionTests
         var group = BuildGroup(OwnerId);
 
         var handler = new DismissGroupCommandHandler(
-            _groupRepository.Object, _currentUser.Object,
+            _groupRepository.Object, _sessionRepository.Object, _currentUser.Object,
             new Mock<ILogger<DismissGroupCommandHandler>>().Object);
 
         var result = await handler.Handler(new DismissGroupCommand(GroupId), CancellationToken.None);

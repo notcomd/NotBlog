@@ -13,8 +13,11 @@ public class ChatSessionRepository(MessageDbContext context) : IChatSessionRepos
 
     public async Task<ChatSession?> GetPrivateSessionAsync(Guid userId1, Guid userId2)
     {
+        // 过滤已解散会话（2026-08-15）：删除好友解散会话后，重新加好友应创建全新会话，
+        // 而非复用已解散的旧会话。
         return await context.ChatSessions
             .FirstOrDefaultAsync(s => s.SessionType == SessionType.Private &&
+                                      !s.IsDismissed &&
                                       s.Participants.Contains(userId1) &&
                                       s.Participants.Contains(userId2) &&
                                       s.Participants.Count == 2);
@@ -85,8 +88,10 @@ public class ChatSessionRepository(MessageDbContext context) : IChatSessionRepos
 
     public async Task<bool> PrivateSessionExistsAsync(Guid userId1, Guid userId2)
     {
+        // 与 GetPrivateSessionAsync 一致：已解散会话不视为有效私聊会话
         return await context.ChatSessions
             .AnyAsync(s => s.SessionType == SessionType.Private &&
+                           !s.IsDismissed &&
                            s.Participants.Contains(userId1) &&
                            s.Participants.Contains(userId2));
     }

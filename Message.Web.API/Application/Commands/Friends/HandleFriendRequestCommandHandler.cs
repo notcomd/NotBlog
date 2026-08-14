@@ -1,9 +1,12 @@
 namespace Message.Web.API.Application.Commands.Friends;
 /// <summary>
 /// 处理好友请求命令处理程序。
+/// <para>联动（2026-08-15）：接受好友请求后自动创建双方私聊会话（查重复用；
+/// 已解散的旧会话不算有效，会创建全新会话），客户端无需再单独调用创建会话接口。</para>
 /// </summary>
 public class HandleFriendRequestCommandHandler(
     IMessageFriendsRepository friendRepository,
+    IChatSessionRepository sessionRepository,
     ILogger<HandleFriendRequestCommandHandler> logger) : IRequestHandler<HandleFriendRequestCommand, bool>
 {
     public async Task<bool> Handler(HandleFriendRequestCommand command, CancellationToken cancellationToken)
@@ -16,6 +19,15 @@ public class HandleFriendRequestCommandHandler(
 
             friendship.Accept();
             await friendRepository.UpdateAsync(friendship);
+
+            // 联动：成为好友自动创建私聊会话（双方参与者，查重过滤已解散会话）
+            var existing = await sessionRepository.GetPrivateSessionAsync(command.FriendId, command.UserId);
+            if (existing is null)
+            {
+                var session = ChatSession.CreatePrivateSession(command.FriendId, command.UserId);
+                await sessionRepository.AddAsync(session);
+            }
+
             await friendRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
         }
         else

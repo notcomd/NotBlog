@@ -1,3 +1,4 @@
+using Message.Domain.Entities.Chat;
 using Message.Domain.Entities.Group;
 using Message.Domain.Enums;
 using Message.Domain.IRepository;
@@ -21,6 +22,7 @@ public class CreateGroupCommandHandlerTests
     private static readonly Guid MemberB = Guid.NewGuid();
 
     private Mock<IGroupRepository> _groupRepository = null!;
+    private Mock<IChatSessionRepository> _sessionRepository = null!;
     private Mock<IUnitOfWork> _unitOfWork = null!;
     private Mock<ICurrentUserService> _currentUser = null!;
     private Mock<IUserInfoRepository> _userInfoRepository = null!;
@@ -29,6 +31,9 @@ public class CreateGroupCommandHandlerTests
     public void Setup()
     {
         _groupRepository = new Mock<IGroupRepository>();
+        _sessionRepository = new Mock<IChatSessionRepository>();
+        _sessionRepository.Setup(r => r.AddAsync(It.IsAny<ChatSession>()))
+            .ReturnsAsync((ChatSession s) => s);
         _unitOfWork = new Mock<IUnitOfWork>();
         _currentUser = new Mock<ICurrentUserService>();
         _currentUser.Setup(c => c.GetUserId()).Returns(UserId);
@@ -40,7 +45,7 @@ public class CreateGroupCommandHandlerTests
     }
 
     private CreateGroupCommandHandler CreateHandler() => new(
-        _groupRepository.Object, _currentUser.Object, _userInfoRepository.Object,
+        _groupRepository.Object, _sessionRepository.Object, _currentUser.Object, _userInfoRepository.Object,
         new Mock<ILogger<CreateGroupCommandHandler>>().Object);
 
     [Test]

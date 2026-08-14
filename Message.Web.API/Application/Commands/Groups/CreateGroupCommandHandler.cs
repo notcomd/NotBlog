@@ -2,9 +2,12 @@ namespace Message.Web.API.Application.Commands.Groups;
 /// <summary>
 /// 创建群组命令处理程序。
 /// <para>权限（修复 S-04）：群主（创建者）必须是当前登录用户，禁止伪造他人为群主。</para>
+/// <para>联动（2026-08-15）：创建群组成功后自动创建群聊会话（ChatSession，参与者 = 群主 + 初始成员），
+/// 与群组在同一 DbContext 事务内提交，客户端无需再单独调用创建会话接口。</para>
 /// </summary>
 public class CreateGroupCommandHandler(
     IGroupRepository groupRepository,
+    IChatSessionRepository sessionRepository,
     ICurrentUserService currentUser,
     IUserInfoRepository userInfoRepository,
     ILogger<CreateGroupCommandHandler> logger) : IRequestHandler<CreateGroupCommand, Guid>
@@ -21,6 +24,13 @@ public class CreateGroupCommandHandler(
         var maxMembers = 10 * level + 20;
         var group = new Group(command.UserId, command.GroupName, maxMembers, command.IsPublic);
         await groupRepository.AddAsync(group);
+
+        // 联动：自动创建群聊会话（CreateGroupSession 内部自动并入群主；与群组同事务提交）
+        var session = ChatSession.CreateGroupSession(
+            group.GroupId, command.UserId, group.GroupName,
+            command.InitialMembers ?? new HashSet<Guid>());
+        await sessionRepository.AddAsync(session);
+
         await groupRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
 
         if (command.InitialMembers != null && command.InitialMembers.Any())
@@ -33,6 +43,14 @@ public class CreateGroupCommandHandler(
 
                 groupWithMembers.AddMember(memberId);
                 await groupRepository.UpdateAsync(groupWithMembers);
+
+                // 联动：初始成员同步加入群聊会话
+                if (!session.IsParticipant(memberId))
+                {
+                    session.AddParticipant(memberId);
+                    await sessionRepository.UpdateAsync(session);
+                }
+
                 await groupRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
             }
         }
