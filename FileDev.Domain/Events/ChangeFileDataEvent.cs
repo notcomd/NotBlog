@@ -7,7 +7,7 @@ namespace FileDev.Domain.Events;
 public class ChangeFileDataEvent(Guid fileId,
                                  Guid userId,
                                  string fileName,
-                                 HashSet<string> fileTags,
+                                 List<string> fileTags,
                                  string fileDescription,
                                  FileIdentity fileIdentity,
                                  string fileMd5) :INotifications
@@ -15,7 +15,7 @@ public class ChangeFileDataEvent(Guid fileId,
     public Guid FileId { get; } = fileId;
     public Guid UserId { get; } = userId;
     public string FileName { get; init; } = fileName;
-    public HashSet<string> FileTags { get; init; } = fileTags;
+    public List<string> FileTags { get; init; } = fileTags;
     public string FileDescription { get; init; } = fileDescription;
     public FileIdentity FileIdentity { get; init; } = fileIdentity;
     public string FileMd5 { get; init; } = fileMd5;

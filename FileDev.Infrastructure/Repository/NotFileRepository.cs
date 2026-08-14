@@ -53,7 +53,7 @@ public class NotFileRepository(NotFileDbContext notFileDbContext) : INotFileRepo
     {
         return await _notFileDbContext.NotFiles
             .AsNoTracking()
-            .Where(x => x.FileTags.Intersect(tags).Any() && !x.IsDeleted)
+            .Where(x => x.FileTags.Any(t => tags.Contains(t)) && !x.IsDeleted)
             .ToListAsync();
     }
 

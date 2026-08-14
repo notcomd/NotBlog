@@ -150,7 +150,7 @@ namespace FileDev.Infrastructure.Migrations
                     b.Property<long>("FileSize")
                         .HasColumnType("bigint");
 
-                    b.PrimitiveCollection<HashSet<string>>("FileTags")
+                    b.PrimitiveCollection<List<string>>("FileTags")
                         .IsRequired()
                         .HasColumnType("text[]");
 

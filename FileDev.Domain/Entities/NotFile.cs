@@ -8,7 +8,7 @@ public class NotFile : Entity<int>, IAggregateRoot
 
     public string FileName { get; private set; } = null!;
 
-    public HashSet<string> FileTags { get; private set; }
+    public List<string> FileTags { get; private set; }
 
     public string FileDescription { get; private set; } = string.Empty;
 
@@ -41,7 +41,7 @@ public class NotFile : Entity<int>, IAggregateRoot
         UserId = userId;
         FileName = fileName;
         FileDescription = fileDescription;
-        FileTags = fileTags ?? [];
+        FileTags = fileTags is null ? [] : [.. fileTags];
         FileSize = fileSize;
         FileMd5 = fileMd5;
         FileUri = fileUri;
@@ -70,7 +70,7 @@ public class NotFile : Entity<int>, IAggregateRoot
         if (!string.IsNullOrWhiteSpace(fileName) && !FileName.Equals(fileName.Trim()))
             FileName = fileName.Trim();
 
-        if (tags != null && (!FileTags.SetEquals(tags)))
+        if (tags != null && !new HashSet<string>(FileTags).SetEquals(tags))
             FileTags = [.. tags];
 
         if (!string.IsNullOrWhiteSpace(fileDescription) && !FileDescription.Equals(fileDescription.Trim()))
@@ -97,7 +97,8 @@ public class NotFile : Entity<int>, IAggregateRoot
         if (string.IsNullOrWhiteSpace(tag))
             throw new ArgumentException("标签不能为 null 或空白", nameof(tag));
 
-        FileTags.Add(tag);
+        if (!FileTags.Contains(tag))
+            FileTags.Add(tag);
         UpdateTime = DateTimeOffset.UtcNow;
     }
 

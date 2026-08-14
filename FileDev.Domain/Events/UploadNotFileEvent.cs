@@ -7,7 +7,7 @@ namespace FileDev.Domain.Events;
 public record UploadNotFileEvent(Guid FileId,
                                  Guid UserId,
                                  string FileName,
-                                 HashSet<string>? FileTags,
+                                 List<string>? FileTags,
                                  string FileDescription,
                                  long FileSize,
                                  Uri FileUri,
