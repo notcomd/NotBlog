@@ -332,6 +332,52 @@
             </div>
             <button class="btn-action" onclick="sendTypingIndicator()" style="margin-top:6px;">SendTypingIndicator</button>
         </div>
+
+        <!-- 语音/视频通话（CallHub） -->
+        <div class="section" style="border:1px solid var(--highlight);">
+            <h3>语音/视频通话 (CallHub)</h3>
+            <label>CallHub URL</label>
+            <input id="callHubUrl" type="text" value="https://localhost:9092/CallHub" placeholder="CallHub 地址">
+
+            <div class="row" style="margin-top:8px;">
+                <button class="btn-connect" id="btnCallConnect" onclick="callConnect()">连接 CallHub</button>
+                <button class="btn-disconnect" id="btnCallDisconnect" onclick="callDisconnect()" disabled>断开</button>
+            </div>
+            <div style="margin-top:6px;">
+                <span class="status-dot status-disconnected" id="callStatusDot"></span>
+                <span id="callStatusText" style="font-size:12px;">未连接</span>
+            </div>
+
+            <label style="margin-top:10px;">SessionId</label>
+            <input id="callSessionId" placeholder="会话 Guid（呼叫时留空自动生成）">
+            <div class="row" style="margin-top:6px;">
+                <div><label>类型</label>
+                    <select id="callType">
+                        <option value="0">语音 (Audio)</option>
+                        <option value="1">视频 (Video)</option>
+                    </select>
+                </div>
+                <div><label>自动应答</label>
+                    <select id="callAutoAnswer">
+                        <option value="0">关</option>
+                        <option value="1">开（1 秒后自动接听）</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row" style="margin-top:6px;">
+                <button class="btn-send" onclick="startCall()">StartCall</button>
+                <button class="btn-action" onclick="cancelCall()">Cancel</button>
+            </div>
+            <div class="row" style="margin-top:6px;">
+                <button class="btn-action" onclick="acceptCall()">Accept</button>
+                <button class="btn-action" onclick="rejectCall()">Reject</button>
+            </div>
+            <button class="btn-action" onclick="hangUp()" style="background:var(--error);">HangUp 挂断</button>
+
+            <label style="margin-top:8px;">当前通话 (CallId)</label>
+            <input id="callCurrentId" placeholder="接听/挂断时留空使用当前通话" readonly>
+        </div>
     </div>
 
     <!-- Main: Log + Messages -->
@@ -398,7 +444,7 @@
             log(`正在连接 ${url} ...`, 'log-in');
 
             connection = new signalR.HubConnectionBuilder()
-                .withUrl(url)
+                .withUrl(url, { accessTokenFactory: () => jwtToken.value.trim() || null })
                 .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
                 .configureLogging(signalR.LogLevel.Information)
                 .build();
@@ -577,6 +623,218 @@
                 log('✅ SendTypingIndicator 成功', 'log-ok');
             } catch (err) {
                 log(`❌ SendTypingIndicator 失败: ${err.message}`, 'log-err');
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════
+        // 语音/视频通话（CallHub）测试
+        // ═══════════════════════════════════════════════════════
+        let callConnection = null;
+        let currentCallId = null;
+
+        const callHubUrlEl = document.getElementById('callHubUrl');
+        const btnCallConnect = document.getElementById('btnCallConnect');
+        const btnCallDisconnect = document.getElementById('btnCallDisconnect');
+        const callStatusDot = document.getElementById('callStatusDot');
+        const callStatusText = document.getElementById('callStatusText');
+        const callCurrentIdEl = document.getElementById('callCurrentId');
+
+        function setCallStatus(state) {
+            callStatusDot.className = 'status-dot';
+            if (state === 'connected') {
+                callStatusDot.classList.add('status-connected');
+                callStatusText.textContent = '已连接';
+                btnCallConnect.disabled = true;
+                btnCallDisconnect.disabled = false;
+            } else if (state === 'connecting') {
+                callStatusDot.classList.add('status-connecting');
+                callStatusText.textContent = '连接中...';
+                btnCallConnect.disabled = true;
+                btnCallDisconnect.disabled = true;
+            } else {
+                callStatusDot.classList.add('status-disconnected');
+                callStatusText.textContent = '未连接';
+                btnCallConnect.disabled = false;
+                btnCallDisconnect.disabled = true;
+            }
+        }
+
+        function callLog(msg, cls) {
+            log(`📞 ${msg}`, cls || 'log-in');
+        }
+
+        function callIdForAction() {
+            const id = callCurrentIdEl.value.trim() || currentCallId;
+            if (!id) {
+                callLog('⚠ 无当前通话 CallId，请先 StartCall 或输入 CallId', 'log-err');
+                return null;
+            }
+            return id;
+        }
+
+        async function callConnect() {
+            const url = callHubUrlEl.value.trim();
+            if (!url) return callLog('请输入 CallHub URL', 'log-err');
+
+            setCallStatus('connecting');
+            callLog(`正在连接 ${url} ...`, 'log-out');
+
+            callConnection = new signalR.HubConnectionBuilder()
+                .withUrl(url, { accessTokenFactory: () => jwtToken.value.trim() || null })
+                .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
+                .configureLogging(signalR.LogLevel.Information)
+                .build();
+
+            // ── 通话事件订阅 ──
+            callConnection.on('IncomingCall', (call) => {
+                callLog(`<b>📲 IncomingCall</b> | CallId: ${call.callId} | 类型: ${call.type === 1 ? '视频' : '语音'} | 呼叫方: ${call.callerId} | 成员: ${(call.participants || []).join(',')}`, 'log-in');
+                currentCallId = call.callId;
+                callCurrentIdEl.value = call.callId;
+                if (parseInt(document.getElementById('callAutoAnswer').value) === 1) {
+                    callLog('⏳ 自动应答开启，1 秒后接听...', 'log-out');
+                    setTimeout(() => acceptCall(), 1000);
+                }
+            });
+
+            callConnection.on('CallStarted', (call) => {
+                callLog(`<b>▶ CallStarted</b> | CallId: ${call.callId} | 已接通: ${(call.joinedMembers || []).join(',')}`, 'log-ok');
+                currentCallId = call.callId;
+                callCurrentIdEl.value = call.callId;
+            });
+
+            callConnection.on('CallEnded', (call, reason) => {
+                const reasons = { 0: '呼叫方取消', 1: '被叫拒绝', 2: '超时无应答', 3: '全员离开', 4: '对方挂断', 5: '服务端错误' };
+                callLog(`<b>⏹ CallEnded</b> | CallId: ${call.callId} | 原因: ${reasons[reason] || reason}`, 'log-err');
+                if (currentCallId === call.callId) {
+                    currentCallId = null;
+                    callCurrentIdEl.value = '';
+                }
+            });
+
+            callConnection.on('MemberJoined', (call, memberId) => {
+                callLog(`<b>👤 MemberJoined</b> | CallId: ${call.callId} | 成员: ${memberId} | 已接通: ${(call.joinedMembers || []).join(',')}`, 'log-ok');
+            });
+
+            callConnection.on('MemberLeft', (call, memberId) => {
+                callLog(`<b>🚪 MemberLeft</b> | CallId: ${call.callId} | 成员: ${memberId}`, 'log-out');
+            });
+
+            callConnection.on('MemberRejected', (call, memberId) => {
+                callLog(`<b>✖ MemberRejected</b> | CallId: ${call.callId} | 成员: ${memberId}`, 'log-err');
+            });
+
+            callConnection.on('Signal', (signal) => {
+                callLog(`<b>🔁 Signal</b> | CallId: ${signal.callId} | From: ${signal.fromUserId} | To: ${signal.toUserId || '(广播)'} | Kind: ${signal.kind} | ${(signal.sdp || signal.candidate || '').substring(0, 60)}`, 'log-out');
+            });
+
+            callConnection.onreconnecting((err) => {
+                callLog(`⚠ CallHub 重连中... (${err?.message || ''})`, 'log-err');
+                setCallStatus('connecting');
+            });
+
+            callConnection.onreconnected(() => {
+                callLog('✅ CallHub 重连成功', 'log-ok');
+                setCallStatus('connected');
+            });
+
+            callConnection.onclose((err) => {
+                callLog(`❌ CallHub 连接关闭 (${err?.message || '正常关闭'})`, 'log-err');
+                setCallStatus('disconnected');
+                callConnection = null;
+            });
+
+            try {
+                await callConnection.start();
+                callLog(`✅ CallHub 连接成功 | ID: ${callConnection.connectionId}`, 'log-ok');
+                setCallStatus('connected');
+            } catch (err) {
+                callLog(`❌ CallHub 连接失败: ${err.message}`, 'log-err');
+                setCallStatus('disconnected');
+                callConnection = null;
+            }
+        }
+
+        async function callDisconnect() {
+            if (callConnection) {
+                await callConnection.stop();
+                callConnection = null;
+                callLog('⏏ CallHub 手动断开', 'log-out');
+                setCallStatus('disconnected');
+            }
+        }
+
+        function ensureCallConnected() {
+            if (!callConnection || callConnection.state !== signalR.HubConnectionState.Connected) {
+                callLog('⚠ CallHub 尚未连接，请先连接', 'log-err');
+                return false;
+            }
+            return true;
+        }
+
+        async function startCall() {
+            if (!ensureCallConnected()) return;
+            const sessionId = guidOrRandom(document.getElementById('callSessionId').value);
+            const type = parseInt(document.getElementById('callType').value);
+            callLog(`📤 StartCall → Session: ${sessionId} | 类型: ${type === 1 ? '视频' : '语音'}`, 'log-out');
+            try {
+                const result = await callConnection.invoke('StartCall', sessionId, type);
+                currentCallId = result.callId;
+                callCurrentIdEl.value = result.callId;
+                callLog(`✅ StartCall 成功 | CallId: ${result.callId} | 忙线: ${(result.busyUsers || []).join(',') || '无'} | 离线: ${(result.offlineUsers || []).join(',') || '无'}`, 'log-ok');
+            } catch (err) {
+                callLog(`❌ StartCall 失败: ${err.message}`, 'log-err');
+            }
+        }
+
+        async function cancelCall() {
+            if (!ensureCallConnected()) return;
+            const callId = callIdForAction();
+            if (!callId) return;
+            callLog(`📤 CancelCall → ${callId}`, 'log-out');
+            try {
+                await callConnection.invoke('CancelCall', callId);
+                callLog('✅ CancelCall 成功', 'log-ok');
+            } catch (err) {
+                callLog(`❌ CancelCall 失败: ${err.message}`, 'log-err');
+            }
+        }
+
+        async function acceptCall() {
+            if (!ensureCallConnected()) return;
+            const callId = callIdForAction();
+            if (!callId) return;
+            callLog(`📤 AcceptCall → ${callId}`, 'log-out');
+            try {
+                const call = await callConnection.invoke('AcceptCall', callId);
+                callLog(`✅ AcceptCall 成功 | 已接通成员: ${(call?.joinedMembers || []).join(',')}`, 'log-ok');
+            } catch (err) {
+                callLog(`❌ AcceptCall 失败: ${err.message}`, 'log-err');
+            }
+        }
+
+        async function rejectCall() {
+            if (!ensureCallConnected()) return;
+            const callId = callIdForAction();
+            if (!callId) return;
+            callLog(`📤 RejectCall → ${callId}`, 'log-out');
+            try {
+                await callConnection.invoke('RejectCall', callId);
+                callLog('✅ RejectCall 成功', 'log-ok');
+            } catch (err) {
+                callLog(`❌ RejectCall 失败: ${err.message}`, 'log-err');
+            }
+        }
+
+        async function hangUp() {
+            if (!ensureCallConnected()) return;
+            const callId = callIdForAction();
+            if (!callId) return;
+            callLog(`📤 HangUp → ${callId}`, 'log-out');
+            try {
+                await callConnection.invoke('HangUp', callId);
+                callLog('✅ HangUp 成功', 'log-ok');
+            } catch (err) {
+                callLog(`❌ HangUp 失败: ${err.message}`, 'log-err');
             }
         }
     </script>

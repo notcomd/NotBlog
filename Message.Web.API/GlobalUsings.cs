@@ -10,6 +10,7 @@ global using Message.Domain.IServices;
 global using Commons.SeedWork;
 global using Message.Domain.ValueObjects.Tweet;
 global using Message.Web.API.Dto;
+global using Message.Web.API.Dto.Call;
 global using Message.Web.API.Dto.Request;
 global using Message.Web.API.Dto.Response;
 global using NotMediator;

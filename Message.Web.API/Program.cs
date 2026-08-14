@@ -25,7 +25,12 @@ builder.Services.AddSingleton<RabbitMQ.Client.IConnectionFactory>(_ =>
 #else
 builder.AddRabbitMQClient("EventBus");
 #endif
-builder.Services.AddNpgsql<MessageDbContext>("PostgresSQL");
+// ⚠️ 2026-08-13 修复：AddNpgsql 来自纯 EF Npgsql 包（非 Aspire），参数是连接串字面量而非连接名——
+// 旧写法 "PostgresSQL" 被当作连接串解析（运行时 index 0 报错），从未真正连上数据库
+builder.Services.AddNpgsql<MessageDbContext>(
+    builder.Configuration.GetConnectionString("PostgresSQL")
+    ?? throw new InvalidOperationException(
+        "未配置数据库连接字符串：请设置环境变量 ConnectionStrings__PostgresSQL。"));
 builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
 
 builder.Services.AddMessageInfrastructure(builder.Configuration);
@@ -37,7 +42,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddEventBus(builder.Configuration.GetSection("EventBus"), Assembly.GetExecutingAssembly());
 
 // ═══ Web 应用层服务统一注册（SignalR / JWT 认证 / gRPC 文件客户端 / 推送服务 / CORS） ═══
-builder.Services.AddMessageWebApiServices(builder.Configuration);
+builder.Services.AddMessageWebApiServices(builder.Configuration, builder.Environment);
 
 builder.Services.AddOpenApi();
 
@@ -81,5 +86,6 @@ app.MapUserInfoApi();
 
 app.MapHub<Message.Web.API.Hubs.MessageHub>("/MessageHub");
 app.MapHub<Message.Web.API.Hubs.CommunityHub>("/CommunityHub");
+app.MapHub<Message.Web.API.Hubs.CallHub>("/CallHub");
 
 app.Run();

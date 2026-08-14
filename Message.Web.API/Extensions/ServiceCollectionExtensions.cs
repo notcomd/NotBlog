@@ -23,9 +23,11 @@ public static class ServiceCollectionExtensions
     /// </summary>
     /// <param name="services">服务集合</param>
     /// <param name="configuration">应用配置</param>
+    /// <param name="environment">宿主环境（用于开发环境 CORS 放宽）</param>
     public static IServiceCollection AddMessageWebApiServices(
         this IServiceCollection services,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IHostEnvironment environment)
     {
         // ═══ 实时通信（SignalR）═══
         // 生命周期：SignalR 服务由框架内部管理，Hub 实例为 Transient（每次调用新建），
@@ -35,7 +37,7 @@ public static class ServiceCollectionExtensions
         RegisterAuthentication(services, configuration);
         RegisterFileStorageGrpc(services, configuration);
         RegisterApplicationServices(services);
-        RegisterCors(services, configuration);
+        RegisterCors(services, configuration, environment);
 
         return services;
     }
@@ -48,6 +50,7 @@ public static class ServiceCollectionExtensions
         services.AddJwtAuthentication(configuration.GetSection("JwtOptions"));
 
         // SignalR 的 WebSocket 请求无法携带自定义请求头，需从 query string 读取 access_token
+        // （覆盖全部 Hub 路径：/MessageHub、/CommunityHub、/CallHub）
         services.PostConfigure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
         {
             options.Events = new JwtBearerEvents
@@ -56,7 +59,7 @@ public static class ServiceCollectionExtensions
                 {
                     var accessToken = context.Request.Query["access_token"];
                     if (!string.IsNullOrEmpty(accessToken)
-                        && context.HttpContext.Request.Path.StartsWithSegments("/MessageHub"))
+                        && IsHubPath(context.HttpContext.Request.Path))
                     {
                         context.Token = accessToken;
                     }
@@ -66,6 +69,12 @@ public static class ServiceCollectionExtensions
             };
         });
     }
+
+    /// <summary>判断路径是否为 SignalR Hub 端点（这些端点需从 query 读取 access_token）</summary>
+    private static bool IsHubPath(PathString path)
+        => path.StartsWithSegments("/MessageHub")
+           || path.StartsWithSegments("/CommunityHub")
+           || path.StartsWithSegments("/CallHub");
 
     /// <summary>
     /// 文件存储 gRPC 客户端注册（调用 FileDev.Web.API 的文件上传服务）。
@@ -118,13 +127,21 @@ public static class ServiceCollectionExtensions
         // F-04：覆盖 SignalR 默认的 DefaultUserIdProvider（仅读 NameIdentifier），
         // 改为从 JWT Claim sub / user_guid / NameIdentifier 解析用户 ID，避免 Clients.User 推送落空。
         services.AddSingleton<IUserIdProvider, MessageUserIdProvider>();
+
+        // 通话会话存储与状态机（Singleton：Redis 存储 + IHubContext 推送；连接查询经作用域工厂解析）
+        services.AddSingleton<CallSessionStore>();
     }
 
     /// <summary>
     /// 跨域策略注册（S-15）：白名单来源，禁止 AllowAnyOrigin 与 AllowCredentials 共存。
-    /// SignalR 长连接经 JWT 认证（Authorization header）后同源/白名单即可，无需 AllowCredentials。
+    /// <para>
+    /// 开发环境（Development）：自动放行任意本地回环来源（localhost / 127.0.0.1 / [::1] 任意端口），
+    /// 兼容 MessageHubTester 测试页、Vite 前端等多种本地调试来源，并允许携带凭据；
+    /// 非开发环境：维持白名单（CorsSettings:AllowedOrigins），空白名单拒绝一切跨域。
+    /// </para>
     /// </summary>
-    private static void RegisterCors(IServiceCollection services, IConfiguration configuration)
+    private static void RegisterCors(
+        IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
     {
         var corsOrigins = configuration.GetSection("CorsSettings:AllowedOrigins")
             .Get<string[]>() ?? [];
@@ -133,7 +150,15 @@ public static class ServiceCollectionExtensions
         {
             options.AddDefaultPolicy(policy =>
             {
-                if (corsOrigins.Length == 0)
+                if (environment.IsDevelopment())
+                {
+                    // 本地回环来源任意端口放行 + 允许凭据（SetIsOriginAllowed 与 AllowCredentials 可共存）
+                    policy.SetIsOriginAllowed(IsLoopbackOrigin)
+                          .AllowAnyHeader()
+                          .AllowAnyMethod()
+                          .AllowCredentials();
+                }
+                else if (corsOrigins.Length == 0)
                 {
                     // 白名单为空：仅允许同源（拒绝一切跨域来源，也不允许携带凭据）
                     policy.SetIsOriginAllowed(_ => false);
@@ -147,4 +172,8 @@ public static class ServiceCollectionExtensions
             });
         });
     }
+
+    /// <summary>判断来源是否为本地回环地址（localhost / 127.0.0.1 / [::1]，任意端口）</summary>
+    private static bool IsLoopbackOrigin(string origin)
+        => Uri.TryCreate(origin, UriKind.Absolute, out var uri) && uri.IsLoopback;
 }
