@@ -33,7 +33,10 @@ public class FileAttachment : Entity<Guid>
         if (fileId == Guid.Empty)
             throw new ArgumentException("文件ID不能为空", nameof(fileId));
 
-        AttachmentId = Guid.NewGuid();
+        // 主键保持 Guid.Empty（IsTransient=true）：EF DetectChanges 才能识别为「新增」实体，
+        // INSERT 时由 EF 生成主键。修复（2026-08-15）：此前此处生成 Guid，导致加入聚合导航
+        // 集合的新附件被 EF 判定为「已存在」（Modified）→ SaveChanges 生成 UPDATE 影响 0 行
+        // → DbUpdateConcurrencyException。
         MessageId = messageId;
         FileId = fileId;
         FileName = fileName;
@@ -53,7 +56,6 @@ public class FileAttachment : Entity<Guid>
     /// <returns>文件附件</returns>
     private FileAttachment()
     {
-        AttachmentId = Guid.NewGuid();
         UploadTime = DateTime.UtcNow;
         DownloadCount = 0;
         IsDeleted = false;

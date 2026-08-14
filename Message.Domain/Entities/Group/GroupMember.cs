@@ -18,7 +18,10 @@ public class GroupMember : Entity<Guid>
 
     private GroupMember()
     {
-        MemberId = Guid.CreateVersion7();
+        // 主键保持 Guid.Empty（IsTransient=true）：EF DetectChanges 才能识别为「新增」实体，
+        // INSERT 时由 EF 生成主键。修复（2026-08-15）：此前此处生成 UUIDv7，导致加入聚合导航
+        // 集合的新成员被 EF 判定为「已存在」（Modified）→ SaveChanges 生成 UPDATE 影响 0 行
+        // → DbUpdateConcurrencyException（加入群组失败）。
         JoinTime = DateTime.UtcNow;
     }
 

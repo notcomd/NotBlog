@@ -98,8 +98,13 @@ public class MessageRepository(MessageDbContext context) :  IMessageRepository
 
     public async Task<MessageEntity> UpdateAsync(MessageEntity message)
     {
-        var entry = DbSet.Update(message);
-        return entry.Entity;
+        // 仅对未跟踪实体执行 DbSet.Update；已跟踪实体交由 ChangeTracker 自动检测修改。
+        // 修复（2026-08-15）：DbSet.Update 会递归遍历对象图，把聚合内「新增」子实体
+        // （如 Attachments 附件）从 Added 强制改为 Modified，SaveChanges 时对不存在的行
+        // 生成 UPDATE → 影响 0 行 → DbUpdateConcurrencyException。
+        if (context.Entry(message).State == EntityState.Detached)
+            DbSet.Update(message);
+        return message;
     }
 
     public async Task DeleteAsync(Guid messageId)

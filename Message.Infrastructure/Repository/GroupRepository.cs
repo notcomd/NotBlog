@@ -103,8 +103,13 @@ public class GroupRepository(MessageDbContext context) : IGroupRepository
     {
         try
         {
-            var entry = DbSet.Update(group);
-            return Task.FromResult(entry.Entity);
+            // 仅对未跟踪实体执行 DbSet.Update；已跟踪实体交由 ChangeTracker 自动检测修改。
+            // 修复（2026-08-15）：DbSet.Update 会递归遍历对象图，把聚合内「新增」子实体
+            // （如 AddMember 新建的 GroupMember）从 Added 强制改为 Modified，SaveChanges 时
+            // 对不存在的行生成 UPDATE → 影响 0 行 → DbUpdateConcurrencyException。
+            if (Context.Entry(group).State == EntityState.Detached)
+                DbSet.Update(group);
+            return Task.FromResult(group);
         }
         catch (Exception exception)
         {

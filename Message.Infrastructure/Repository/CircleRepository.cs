@@ -112,8 +112,13 @@ public class CircleRepository(MessageDbContext context) : ICircleRepository
 
     public async Task<Circle> UpdateAsync(Circle circle)
     {
-        var entry = DbSet.Update(circle);
-        return entry.Entity;
+        // 仅对未跟踪实体执行 DbSet.Update；已跟踪实体交由 ChangeTracker 自动检测修改。
+        // 修复（2026-08-15）：DbSet.Update 会递归遍历对象图，把聚合内「新增」子实体（如
+        // AddMember 新建的 CircleMember）从 Added 强制改为 Modified，SaveChanges 时对
+        // 不存在的行生成 UPDATE → 影响 0 行 → DbUpdateConcurrencyException（加入圈子失败）。
+        if (context.Entry(circle).State == EntityState.Detached)
+            DbSet.Update(circle);
+        return circle;
     }
 
     public async Task DeleteAsync(Guid circleGuid)
