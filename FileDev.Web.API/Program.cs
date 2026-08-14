@@ -75,11 +75,13 @@ ImageValidator.Configure(app.Services.GetRequiredService<ILoggerFactory>());
 
 // 启动时自动应用 EF Core 迁移（与 Identity/Markdown 项目的 AddMigration 一致，
 // 用 Database.Migrate 替代 EnsureCreated，避免与 Migration 管理的库结构冲突）
-// using (var scope = app.Services.CreateScope())
-// {
-//     var dbContext = scope.ServiceProvider.GetRequiredService<NotFileDbContext>();
-//     dbContext.Database.Migrate();
-// }
+// 修复：2026-08-13 42P01 FileChunkRecord 不存在 —— 此前该块被注释导致迁移从未应用，
+// 后台清理服务（ChunkCleanupBackgroundService）查询 FileChunkRecord 表时报 relation does not exist。
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<NotFileDbContext>();
+    dbContext.Database.Migrate();
+}
 
 app.UseNotBlogPipeline();
 app.UseAuthentication();
@@ -103,6 +105,7 @@ fileStorageGroup.MapDedupApis();
 // 端点：/api/filestorage/upload_file、/api/filestorage/create_file_group）
 app.MapGroup("/api").FileStrongApis();
 
+app.MapFileDownloadApi();
 app.MapGrpcService<FileStorageServiceGRPC>();
 
 app.Run();
