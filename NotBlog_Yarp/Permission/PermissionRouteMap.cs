@@ -194,31 +194,69 @@ public class PermissionRouteMap
     ///   /{**param}    → (?:/.*)?  （多段，可匹配空剩余，含尾斜杠）
     ///   {**param}     → .*        （多段）
     ///   {param}       → [^/]+     （单段）
+    /// ⚠️ 2026-08-13 修复：旧实现先 Regex.Escape 再正则替换占位符，Escape 会把 * 转义为 \*，
+    ///    导致 catch-all 替换正则永远匹配不上、全部退化为单段 [^/]+（多段路径如
+    ///    /api/circles/{guid}/members 会被错误拒绝）。现改为逐段解析：只转义字面量部分，
+    ///    占位符直接按语义展开。
     /// </summary>
     private bool MatchPattern(string path, string pattern)
     {
-        var regex = _regexCache.GetOrAdd(pattern, p =>
-        {
-            // 1. 先处理 ** 通配符（多段）
-            var regexPattern = Regex.Escape(p)
-                .Replace("\\{", "{")
-                .Replace("\\}", "}");
-
-            // 带斜杠的 catch-all（如 /{**catch-all}）→ 可选路径，允许空剩余
-            regexPattern = Regex.Replace(regexPattern,
-                @"/\{\*\*[^}]+\}", "(?:/.*)?");
-            // 剩余 catch-all（不带前导斜杠）→ 任意剩余
-            regexPattern = Regex.Replace(regexPattern,
-                @"\{\*\*[^}]+\}", ".*");
-            // 2. 再处理普通参数（单段）
-            regexPattern = Regex.Replace(regexPattern,
-                @"\{[^}]+\}", "[^/]+");
-
-            return new Regex("^" + regexPattern + "$",
-                RegexOptions.IgnoreCase | RegexOptions.Compiled);
-        });
-
+        var regex = _regexCache.GetOrAdd(pattern, BuildRegex);
         return regex.IsMatch(path);
+    }
+
+    /// <summary>把路径模式编译为正则：字面量部分转义，占位符按语义展开（线程安全，供缓存使用）</summary>
+    private static Regex BuildRegex(string pattern)
+    {
+        var sb = new System.Text.StringBuilder("^");
+        var index = 0;
+
+        while (index < pattern.Length)
+        {
+            var open = pattern.IndexOf('{', index);
+            if (open < 0)
+            {
+                sb.Append(Regex.Escape(pattern.Substring(index)));
+                break;
+            }
+
+            var close = pattern.IndexOf('}', open);
+            if (close < 0)
+            {
+                sb.Append(Regex.Escape(pattern.Substring(index)));
+                break;
+            }
+
+            // 占位符之前的字面量部分
+            var literal = pattern.Substring(index, open - index);
+
+            var token = pattern.Substring(open, close - open + 1);
+            if (token.StartsWith("{**", StringComparison.Ordinal))
+            {
+                // 多段 catch-all：/xxx/{**catch-all} → /xxx(?:/.*)?（允许空剩余），否则 .*
+                if (literal.EndsWith("/", StringComparison.Ordinal))
+                {
+                    sb.Append(Regex.Escape(literal.Substring(0, literal.Length - 1)));
+                    sb.Append("(?:/.*)?");
+                }
+                else
+                {
+                    sb.Append(Regex.Escape(literal));
+                    sb.Append(".*");
+                }
+            }
+            else
+            {
+                // 单段参数
+                sb.Append(Regex.Escape(literal));
+                sb.Append("[^/]+");
+            }
+
+            index = close + 1;
+        }
+
+        sb.Append("$");
+        return new Regex(sb.ToString(), RegexOptions.IgnoreCase | RegexOptions.Compiled);
     }
 
     private sealed record RouteEntry(string Method, string PathPattern, string PermissionCode);

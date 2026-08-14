@@ -139,7 +139,7 @@ public static class PermissionApi
     // ──────────── 网关映射查询（已有）────────────
 
     /// <summary>
-    /// GET /api/identity/permission/mappings
+    /// GET /api/identity/permission/permission/mappings
     ///
     /// 返回全部 URL→PermissionCode 映射，供网关启动时加载路由表。
     /// 响应格式与 NotBlog_Yarp 的 PermissionOptions.Mappings 完全兼容。
@@ -159,7 +159,7 @@ public static class PermissionApi
     // ──────────── 网关权限检查端点实现 ────────────
 
     /// <summary>
-    /// POST /api/identity/permission/check-and-scope — 权限检查 + 数据范围组合查询
+    /// POST /api/identity/permission/permission/check-and-scope — 权限检查 + 数据范围组合查询
     /// 响应格式与网关 HttpPermissionServiceClient.CombinedResult 匹配：
     /// { hasPermission, dataScope }（dataScope 为 "type|value1,value2,..." 格式）
     /// </summary>
@@ -187,7 +187,7 @@ public static class PermissionApi
     }
 
     /// <summary>
-    /// POST /api/identity/permission/check — 权限检查
+    /// POST /api/identity/permission/permission/check — 权限检查
     /// 响应格式与网关 HttpPermissionServiceClient.CheckResult 匹配：{ hasPermission }
     /// </summary>
     private static async Task<IResult> CheckPermissionAsync(
@@ -210,7 +210,7 @@ public static class PermissionApi
     }
 
     /// <summary>
-    /// GET /api/identity/permission/datascope/{userId} — 获取用户数据范围
+    /// GET /api/identity/permission/permission/datascope/{userId} — 获取用户数据范围
     /// 响应格式与网关 HttpPermissionServiceClient.DataScopeResult 匹配：
     /// { scopeType, values }（scopeType: 0=Own 1=Department 2=All）
     /// </summary>

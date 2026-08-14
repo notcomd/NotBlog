@@ -8,9 +8,9 @@ namespace NotBlog_Yarp.Permission;
 /// 
 /// 通过 HTTP 调用 Identity.Web.API 暴露的权限检查 REST 端点。
 /// 
-/// 预期 Identity 侧端点：
-///   POST /api/identity/permission/check → { userId, permissionCode } → { hasPermission: bool }
-///   GET  /api/identity/permission/datascope/{userId} → { scopeType, values }
+/// 预期 Identity 侧端点（⚠️ 双 permission 段：MapGroup api/identity/permission + 子组 permission）：
+///   POST /api/identity/permission/permission/check → { userId, permissionCode } → { hasPermission: bool }
+///   GET  /api/identity/permission/permission/datascope/{userId} → { scopeType, values }
 ///
 /// 失败降级（F-12）：Identity 不可用/端点缺失时按 PermissionOptions.FailPolicy 处理
 /// （Open = 放行 / Closed = 拒绝），避免权限服务短暂不可用时全站 403。
@@ -36,7 +36,7 @@ public class HttpPermissionServiceClient : IPermissionServiceClient
     {
         try
         {
-            var response = await _http.GetAsync("/api/identity/permission/mappings", ct);
+            var response = await _http.GetAsync("/api/identity/permission/permission/mappings", ct);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -82,7 +82,7 @@ public class HttpPermissionServiceClient : IPermissionServiceClient
         {
             var payload = new { userId = userId.ToString(), permissionCode };
             var response = await _http.PostAsJsonAsync(
-                "/api/identity/permission/check-and-scope", payload, ct);
+                "/api/identity/permission/permission/check-and-scope", payload, ct);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -144,7 +144,7 @@ public class HttpPermissionServiceClient : IPermissionServiceClient
         try
         {
             var payload = new { userId = userId.ToString(), permissionCode };
-            var response = await _http.PostAsJsonAsync("/api/identity/permission/check", payload, ct);
+            var response = await _http.PostAsJsonAsync("/api/identity/permission/permission/check", payload, ct);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -200,7 +200,7 @@ public class HttpPermissionServiceClient : IPermissionServiceClient
         try
         {
             var response = await _http.GetAsync(
-                $"/api/identity/permission/datascope/{userId}", ct);
+                $"/api/identity/permission/permission/datascope/{userId}", ct);
 
             if (!response.IsSuccessStatusCode)
             {

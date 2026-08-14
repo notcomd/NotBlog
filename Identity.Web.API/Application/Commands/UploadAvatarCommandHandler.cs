@@ -79,7 +79,15 @@ public class UploadAvatarCommandHandler
         UploadImageResponse response;
         try
         {
-            response = await _grpcClient.UploadImageAsync(request, cancellationToken: cancellationToken);
+            // S-08：FileDev gRPC 拦截器要求 Bearer JWT —— 转发当前请求的原始 token
+            var headers = new global::Grpc.Core.Metadata();
+            if (!string.IsNullOrWhiteSpace(command.AccessToken))
+            {
+                headers.Add("Authorization", $"Bearer {command.AccessToken}");
+            }
+
+            response = await _grpcClient.UploadImageAsync(
+                request, headers, cancellationToken: cancellationToken);
         }
         catch (Exception ex)
         {

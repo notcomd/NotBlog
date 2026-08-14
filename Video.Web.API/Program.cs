@@ -17,7 +17,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
-builder.Services.AddNpgsql<VideoDbContext>("VideoPostgres");
+// ⚠️ 2026-08-13 修复：AddNpgsql 来自纯 EF Npgsql 包（非 Aspire），参数是连接串字面量而非连接名
+builder.Services.AddNpgsql<VideoDbContext>(
+    builder.Configuration.GetConnectionString("VideoPostgres")
+    ?? throw new InvalidOperationException(
+        "未配置数据库连接字符串：请设置环境变量 ConnectionStrings__VideoPostgres。"));
 
 // CacheMemory (Redis) — Aspire-style registration
 builder.AddCacheMemory("CacheMemory");

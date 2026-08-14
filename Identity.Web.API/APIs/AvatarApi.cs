@@ -62,12 +62,18 @@ public static class AvatarApi
                 imageContent = ms.ToArray();
             }
 
-            // ── 构建命令 ──
+            // ── 构建命令（S-08：携带原始 Bearer token 供 FileDev gRPC 认证）──
+            var authHeader = context.Request.Headers.Authorization.ToString();
+            var accessToken = authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
+                ? authHeader["Bearer ".Length..].Trim()
+                : null;
+
             var command = new UploadAvatarCommand(
                 userId,
                 file.FileName,
                 imageContent,
-                file.ContentType);
+                file.ContentType,
+                accessToken);
 
             // S-14：幂等键由客户端显式传入（X-Idempotency-Key），缺失时回退随机键
             var identifiedCommand = new IdentifiedCommand<UploadAvatarCommand, UploadAvatarResult>(

@@ -5,7 +5,8 @@ public record UploadAvatarCommand(
     Guid UserId,
     string FileName,
     byte[] ImageContent,
-    string ContentType
+    string ContentType,
+    string? AccessToken = null
 ) : IRequest<UploadAvatarResult>, ILoggableCommand
 {
     public string IdProperty => nameof(UserId);
