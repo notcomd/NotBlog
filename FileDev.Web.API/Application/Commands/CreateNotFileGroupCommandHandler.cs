@@ -6,7 +6,7 @@ namespace FileDev.Web.API.Application.Commands;
 public class CreateNotFileGroupCommandHandler(
     INotFileGroupRepository notFileGroupRepository
     )
-    : NotMediator.IRequestHandler<CreateNotFileGroupCommand, bool>
+    :  IRequestHandler<CreateNotFileGroupCommand, bool>
 {
     public async Task<bool> Handler(CreateNotFileGroupCommand request, CancellationToken cancellationToken)
     {

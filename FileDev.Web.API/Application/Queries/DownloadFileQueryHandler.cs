@@ -7,7 +7,7 @@ namespace FileDev.Web.API.Application.Queries;
 public class DownloadFileQueryHandler(
     INotFileService notFileService,
     INotFileStorageService storageService)
-    : NotMediator.IRequestHandler<DownloadFileQuery, FileDownloadResult>
+    :  IRequestHandler<DownloadFileQuery, FileDownloadResult>
 {
     public async Task<FileDownloadResult> Handler(DownloadFileQuery request, CancellationToken cancellationToken)
     {

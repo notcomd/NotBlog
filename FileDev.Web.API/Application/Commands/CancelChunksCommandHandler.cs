@@ -4,7 +4,7 @@ public class CancelChunksCommandHandler(
     IFileChunkManager chunkManager,
     INotFileStorageService storageService,
     ILogger<CancelChunksCommandHandler> logger)
-    : NotMediator.IRequestHandler<CancelChunksCommand, bool>
+    :  IRequestHandler<CancelChunksCommand, bool>
 {
     public async Task<bool> Handler(CancelChunksCommand request, 
     CancellationToken cancellationToken)

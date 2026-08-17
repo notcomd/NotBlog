@@ -49,7 +49,7 @@ public static class FileStrongApi
             var identityCreateCommand = new IdentifiedCommand<CreateNotFileGroupCommand, bool>(
                 FileApiHelpers.GetIdempotencyKey(httpContext), command);
 
-            await servicesDi.NotMediator.SendAsync(identityCreateCommand, cancellationToken);
+            await servicesDi. NotMediator.SendAsync(identityCreateCommand, cancellationToken);
 
             return Results.Json(new { ok = true });
         }

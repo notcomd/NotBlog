@@ -6,7 +6,7 @@ public class NotFileStorageOptions
     public string StoragePath { get; set; } = "FileStorage";
 
     /// <summary>分块文件大小（默认5MB）</summary>
-    public long ChunkFileSize { get; set; } = 5 * 1024 * 1024;
+    public int ChunkFileSize { get; set; } = 5242880;
 
     /// <summary>最大文件大小（默认100MB，与 Kestrel 请求体大小限制保持一致）</summary>
     public long MaxFileSize { get; set; } = 100 * 1024 * 1024;

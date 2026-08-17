@@ -11,7 +11,7 @@ public class UploadFileCommandHandler(
     INotFileService notFileService,
     IOptionsSnapshot<NotFileStorageOptions> configOptions,
     ILogger<UploadFileCommandHandler> logger)
-    : NotMediator.IRequestHandler<UploadFileCommand, NotFile>
+    :  IRequestHandler<UploadFileCommand, NotFile>
 {
     public async Task<NotFile> Handler(UploadFileCommand request, CancellationToken cancellationToken)
     {

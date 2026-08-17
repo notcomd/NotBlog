@@ -16,20 +16,15 @@ namespace FileDev.Web.API.Grpc;
 /// 参数校验、权限/配额检查、存储操作与事务提交全部下沉到应用服务层；
 /// 业务异常由 <see cref="GrpcExceptionMapperInterceptor"/> 统一映射为 gRPC 状态码。
 /// </summary>
-public class FileStorageServiceGRPC : FileStorage.FileStorageBase
+public class FileStorageServiceGRPC(INotMediator mediator,IOptionsSnapshot<NotFileStorageOptions> optionsSnapshot) : FileStorage.FileStorageBase
 {
-    private const int StreamChunkSize = 64 * 1024; // 64KB per chunk
+    
 
-    private readonly INotMediator _mediator;
-    private readonly IOptionsSnapshot<NotFileStorageOptions> _options;
+    private readonly INotMediator _mediator=
+        mediator ?? throw new ArgumentNullException(nameof(mediator));
+    
 
-    public FileStorageServiceGRPC(INotMediator mediator,
-                                  IOptionsSnapshot<NotFileStorageOptions> options)
-    {
-        _mediator = mediator;
-        _options = options;
-    }
-
+    private readonly int StreamChunkSize = optionsSnapshot.Value.ChunkFileSize;
     // ═══════════════════════════════════════════════════
     // 认证辅助（S-08）
     // ═══════════════════════════════════════════════════
@@ -169,7 +164,7 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
                 ExpectedMd5 = request.ExpectedMd5
             },
             context.CancellationToken);
-
+       
         return new UploadFileResponse
         {
             Success = true,
@@ -232,7 +227,7 @@ public class FileStorageServiceGRPC : FileStorage.FileStorageBase
                 UserId = callerId,
                 FileName = request.FileName,
                 TotalSize = request.TotalSize,
-                ChunkSize = (int)_options.Value.ChunkFileSize,
+                ChunkSize = StreamChunkSize,
                 TotalChunks = request.TotalChunks,
                 FileMd5 = request.FileMd5 ?? string.Empty,
                 FileType = MapToDomainFileType(request.FileType),

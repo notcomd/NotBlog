@@ -5,7 +5,7 @@ using FileDev.Domain.IRepository;
 public class DeduplicateFileCommandHandler(
     INotFileRepository notFileRepository,
     ILogger<DeduplicateFileCommandHandler> logger)
-    : NotMediator.IRequestHandler<DeduplicateFileCommand, DeduplicateFileResponse>
+    :  IRequestHandler<DeduplicateFileCommand, DeduplicateFileResponse>
 {
     public async Task<DeduplicateFileResponse> Handler(DeduplicateFileCommand request,
         CancellationToken cancellationToken)

@@ -11,7 +11,7 @@ public class MergeChunksCommandHandler(
     FileDev.Domain.IRepository.INotFileRepository notFileRepository,
     IOptionsSnapshot<NotFileStorageOptions> configOptions,
     ILogger<MergeChunksCommandHandler> logger)
-    : NotMediator.IRequestHandler<MergeChunksCommand, NotFile>
+    :  IRequestHandler<MergeChunksCommand, NotFile>
 {
     public async Task<NotFile> Handler(MergeChunksCommand request, CancellationToken cancellationToken)
     {

@@ -3,7 +3,7 @@ namespace FileDev.Web.API.Application.Queries;
 /// <summary>列出用户文件（内存分页，与既有 gRPC/HTTP 行为一致）</summary>
 public class ListUserFilesQueryHandler(
     INotFileService notFileService)
-    : NotMediator.IRequestHandler<ListUserFilesQuery, UserFileListResult>
+    :  IRequestHandler<ListUserFilesQuery, UserFileListResult>
 {
     public async Task<UserFileListResult> Handler(ListUserFilesQuery request, CancellationToken cancellationToken)
     {

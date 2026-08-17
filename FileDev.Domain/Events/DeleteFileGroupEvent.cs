@@ -1,4 +1,4 @@
-using NotMediator;
+using NotMediator.Abstractions;
 
 namespace FileDev.Domain.Events;
 

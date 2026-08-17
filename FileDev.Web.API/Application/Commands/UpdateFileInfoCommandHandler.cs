@@ -6,7 +6,7 @@ namespace FileDev.Web.API.Application.Commands;
 /// </summary>
 public class UpdateFileInfoCommandHandler(
     INotFileService notFileService)
-    : NotMediator.IRequestHandler<UpdateFileInfoCommand, NotFile>
+    :  IRequestHandler<UpdateFileInfoCommand, NotFile>
 {
     public async Task<NotFile> Handler(UpdateFileInfoCommand request, CancellationToken cancellationToken)
     {

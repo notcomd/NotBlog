@@ -5,7 +5,7 @@ namespace FileDev.Web.API.Application.Queries;
 /// </summary>
 public class GetFileInfoQueryHandler(
     INotFileService notFileService)
-    : NotMediator.IRequestHandler<GetFileInfoQuery, NotFile>
+    :  IRequestHandler<GetFileInfoQuery, NotFile>
 {
     public async Task<NotFile> Handler(GetFileInfoQuery request, CancellationToken cancellationToken)
     {

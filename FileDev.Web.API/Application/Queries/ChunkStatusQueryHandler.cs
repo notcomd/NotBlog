@@ -2,7 +2,7 @@ namespace FileDev.Web.API.Application.Queries;
 
 public class ChunkStatusQueryHandler(
     IFileChunkManager chunkManager)
-    : NotMediator.IRequestHandler<ChunkStatusQuery, ChunkStatusResponse>
+    :  IRequestHandler<ChunkStatusQuery, ChunkStatusResponse>
 {
     public async Task<ChunkStatusResponse> Handler(ChunkStatusQuery request, CancellationToken cancellationToken)
     {

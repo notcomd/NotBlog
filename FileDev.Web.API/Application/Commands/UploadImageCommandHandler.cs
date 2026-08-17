@@ -12,7 +12,7 @@ public class UploadImageCommandHandler(
     FileDev.Domain.IRepository.INotFileRepository notFileRepository,
     IOptionsSnapshot<NotFileStorageOptions> configOptions,
     ILogger<UploadImageCommandHandler> logger)
-    : NotMediator.IRequestHandler<UploadImageCommand, UploadImageResult>
+    :  IRequestHandler<UploadImageCommand, UploadImageResult>
 {
     public async Task<UploadImageResult> Handler(UploadImageCommand request, CancellationToken cancellationToken)
     {

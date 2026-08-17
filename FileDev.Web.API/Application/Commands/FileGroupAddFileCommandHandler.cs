@@ -4,7 +4,7 @@ using FileDev.Domain.IRepository;
 public class FileGroupAddFileCommandHandler(
     INotFileGroupRepository notFileGroupRepository,
     INotFileRepository notFileRepository)
-    : NotMediator.IRequestHandler<FileGroupAddFileCommand, bool>
+    :  IRequestHandler<FileGroupAddFileCommand, bool>
 {
     public async Task<bool> Handler(FileGroupAddFileCommand command, CancellationToken cancellationToken)
     {

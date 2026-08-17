@@ -5,7 +5,7 @@ public class UploadChunkCommandHandler(
     IFileChunkManager chunkManager,
     IOptionsSnapshot<NotFileStorageOptions> configOptions,
     ILogger<UploadChunkCommandHandler> logger)
-    : NotMediator.IRequestHandler<UploadChunkCommand, ChunkUploadResult>
+    :  IRequestHandler<UploadChunkCommand, ChunkUploadResult>
 {
     public async Task<ChunkUploadResult> Handler(UploadChunkCommand request, CancellationToken cancellationToken)
     {

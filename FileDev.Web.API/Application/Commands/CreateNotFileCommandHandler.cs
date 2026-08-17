@@ -5,7 +5,7 @@ using FileDev.Domain.IRepository;
 public class CreateNotFileCommandHandler(INotFileStorageService storageProvider,
                                          IOptionsSnapshot<NotFileStorageOptions> configOptions,
                                          INotFileRepository notFileRepository)
-    : NotMediator.IRequestHandler<CreateNotFileCommand, bool>
+    :  IRequestHandler<CreateNotFileCommand, bool>
 {
     private readonly NotFileStorageOptions _config =
         configOptions.Value ?? throw new ArgumentNullException(nameof(configOptions));
@@ -51,7 +51,7 @@ public class CreateNotFileCommandHandler(INotFileStorageService storageProvider,
             .Build();
 
         await _notFileRepository.InsertFileAsync(notfile);
-
+        await _notFileRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
         // TransactionBehavior 会在 SaveEntitiesAsync 时触发领域事件分发，
         // UploadNotFileEventHandler 自动将文件关联到根组
         return true;

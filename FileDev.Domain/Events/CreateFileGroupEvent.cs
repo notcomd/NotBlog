@@ -1,4 +1,5 @@
 
+using NotMediator.Abstractions;
 namespace FileDev.Domain.Events;
 
 public class CreateFileGroupEvent(Guid fileId, Guid userId, string fileGroupName,

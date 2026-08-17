@@ -1,3 +1,4 @@
+using NotMediator.Abstractions;
 namespace FileDev.Domain.Events;
 
 public class DeleteFileEvent(Guid fileId, Guid userId):INotifications

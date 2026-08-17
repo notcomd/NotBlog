@@ -7,7 +7,7 @@ public abstract class IdentifiedCommandHandler<T, R>(
     INotMediator mediator,
     IRequestManagement requestManagement,
     ILogger<IdentifiedCommandHandler<T, R>> logger)
-    : NotMediator.IRequestHandler<IdentifiedCommand<T, R>, R> where T : IRequest<R>
+    :  IRequestHandler<IdentifiedCommand<T, R>, R> where T : IRequest<R>
 {
     private readonly ILogger<IdentifiedCommandHandler<T, R>> _logger =
         logger ?? throw new ArgumentNullException(nameof(logger));

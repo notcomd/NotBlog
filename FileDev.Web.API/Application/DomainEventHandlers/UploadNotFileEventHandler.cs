@@ -22,6 +22,10 @@ public class UploadNotFileEventHandler(INotFileGroupRepository notFileGroupRepos
         if (rootGroup != null)
         {
             rootGroup.AddFile(notification.FileId);
+            // 修复（2026-08-15）：NotMediator 的事件分发为异步后台（Channel 消费），且 handler
+            // 由根容器解析（与请求事务的 DbContext 非同一实例）——此处对根组的修改不在请求
+            // 事务内，必须显式保存，否则"文件关联根组"的副作用会丢失。
+            await _notFileGroupRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
             _logger.LogInformation("[Domain] 文件已关联到根文件组: FileId={FileId}, GroupId={GroupId}",
                 notification.FileId, rootGroup.NotFileGroupId);
         }

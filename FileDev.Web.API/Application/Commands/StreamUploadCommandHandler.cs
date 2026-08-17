@@ -9,7 +9,7 @@ public class StreamUploadCommandHandler(
     INotFileService notFileService,
     IOptionsSnapshot<NotFileStorageOptions> configOptions,
     ILogger<StreamUploadCommandHandler> logger)
-    : NotMediator.IRequestHandler<StreamUploadCommand, NotFile>
+    :  IRequestHandler<StreamUploadCommand, NotFile>
 {
     public async Task<NotFile> Handler(StreamUploadCommand request, CancellationToken cancellationToken)
     {

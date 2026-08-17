@@ -1,5 +1,6 @@
 using Commons.Extensions;
 using Commons.EntityFramework;
+using FileDev.Web.API.ActionFilter.Behaviors;
 using FileDev.Web.API.Background;
 using FileDev.Web.API.Grpc;
 using Notcomd.Token.JWT.Extensions;
@@ -25,6 +26,14 @@ builder.Services.AddScoped<GrpcJwtAuthInterceptor>();
 builder.Services.AddScoped<GrpcExceptionMapperInterceptor>();
 builder.Services.AddHostedService<ChunkCleanupBackgroundService>();
 builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
+
+// ⚠️ 修复（2026-08-15）：NotMediator 包要求手动注册管道（README），此前 TransactionBehavior/
+// LoggerBehavior 从未注册 → 所有命令无事务、无 SaveChanges 提交 → 文件元数据（NotFile）等
+// 从未落库（仅物理文件写入成功），gRPC 返回成功但数据库 0 记录（"文件上传成功但元数据无法保存"）。
+// 命令执行流程：gRPC → 命令 → LoggerBehavior → TransactionBehavior（BeginTransaction → handler
+// → CommitTransactionAsync[SaveChanges 提交 + 领域事件分发] → Commit）。
+builder.Services.AddScoped(typeof(IPipelineBehavior<,>), typeof(LoggerBehavior<,>));
+builder.Services.AddScoped(typeof(IPipelineBehavior<,>), typeof(TransactionBehavior<,>));
 builder.Services.AddGrpc(options =>
 {
    

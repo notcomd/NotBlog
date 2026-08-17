@@ -8,7 +8,7 @@ namespace FileDev.Web.API.Application.Queries;
 public class GetImageInfoQueryHandler(
     INotFileService notFileService,
     INotFileStorageService storageService)
-    : NotMediator.IRequestHandler<GetImageInfoQuery, ImageInfoResult>
+    :  IRequestHandler<GetImageInfoQuery, ImageInfoResult>
 {
     public async Task<ImageInfoResult> Handler(GetImageInfoQuery request, CancellationToken cancellationToken)
     {

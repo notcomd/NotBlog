@@ -7,7 +7,7 @@ namespace FileDev.Web.API.Application.Commands;
 public class DeleteFileCommandHandler(
     INotFileService notFileService,
     ILogger<DeleteFileCommandHandler> logger)
-    : NotMediator.IRequestHandler<DeleteFileCommand, bool>
+    :  IRequestHandler<DeleteFileCommand, bool>
 {
     public async Task<bool> Handler(DeleteFileCommand request, CancellationToken cancellationToken)
     {

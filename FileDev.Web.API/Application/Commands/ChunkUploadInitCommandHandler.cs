@@ -5,7 +5,7 @@ public class ChunkUploadInitCommandHandler(
     INotFileService notFileService,
     IOptionsSnapshot<NotFileStorageOptions> configOptions,
     ILogger<ChunkUploadInitCommandHandler> logger)
-    : NotMediator.IRequestHandler<ChunkUploadInitCommand, FileChunkRecord>
+    :  IRequestHandler<ChunkUploadInitCommand, FileChunkRecord>
 {
     private readonly NotFileStorageOptions _config =
         configOptions.Value ?? throw new ArgumentNullException(nameof(configOptions));
