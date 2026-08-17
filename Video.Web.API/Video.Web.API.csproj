@@ -11,35 +11,34 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Aspire.RabbitMQ.Client" Version="13.4.6"/>
-        <PackageReference Include="Aspire.StackExchange.Redis.DistributedCaching" Version="13.4.6"/>
-        <PackageReference Include="Google.Protobuf" Version="3.33.0" />
-        <PackageReference Include="Grpc.Net.Client" Version="2.80.0" />
-        <PackageReference Include="Grpc.Net.ClientFactory" Version="2.80.0" />
+        <PackageReference Include="Aspire.RabbitMQ.Client" Version="13.4.6" />
+        <PackageReference Include="Aspire.StackExchange.Redis.DistributedCaching" Version="13.4.6" />
+        <PackageReference Include="Google.Protobuf" Version="3.35.1" />
+        <PackageReference Include="Grpc.Net.Client" Version="2.83.0" />
+        <PackageReference Include="Grpc.Net.ClientFactory" Version="2.83.0" />
         <PackageReference Include="Grpc.Tools" Version="2.83.0">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.9"/>
-        <PackageReference Include="Microsoft.OpenApi" Version="2.7.5"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.9"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.9">
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.11" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.11" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.11">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="NotMediator" Version="1.0.5" />
-        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.2"/>
-        <PackageReference Include="Scalar.AspNetCore" Version="2.16.4"/>
+        <PackageReference Include="NotMediator" Version="1.0.6" />
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
+        <PackageReference Include="Scalar.AspNetCore" Version="2.16.20" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\NotBlog.ServiceDefaults\NotBlog.ServiceDefaults.csproj" />
-        <ProjectReference Include="..\Video.Domain\Video.Domain.csproj"/>
-        <ProjectReference Include="..\Video.Infrastructure\Video.Infrastructure.csproj"/>
-        <ProjectReference Include="..\CacheMemory\CacheMemory.csproj"/>
-        <ProjectReference Include="..\Eventbus\EventBus.csproj"/>
-        <ProjectReference Include="..\JWToken\JWToken.csproj"/>
-        <ProjectReference Include="..\Commons\Commons.csproj"/>
+        <ProjectReference Include="..\Video.Domain\Video.Domain.csproj" />
+        <ProjectReference Include="..\Video.Infrastructure\Video.Infrastructure.csproj" />
+        <ProjectReference Include="..\CacheMemory\CacheMemory.csproj" />
+        <ProjectReference Include="..\Eventbus\EventBus.csproj" />
+        <ProjectReference Include="..\JWToken\JWToken.csproj" />
+        <ProjectReference Include="..\Commons\Commons.csproj" />
     </ItemGroup>
 
     <ItemGroup>

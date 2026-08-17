@@ -1,7 +1,8 @@
 global using CacheMemory.Extensions;
 global using Notcomd.EventBus;
 global using Notcomd.EventBus.Extension;
-global using NotMediator;
+global using NotMediator.Abstractions;
+global using NotMediator.Mediator;
 global using FileDev.Domain.Dto.Request;
 global using FileDev.Domain.Dto.Response;
 global using FileDev.Domain.Entities;

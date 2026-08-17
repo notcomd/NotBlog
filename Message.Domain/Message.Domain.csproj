@@ -8,15 +8,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="NotMediator" Version="1.0.5" />
+        <PackageReference Include="NotMediator" Version="1.0.6" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\Commons\Commons.csproj"/>
+        <ProjectReference Include="..\Commons\Commons.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Dto\"/>
-        <Folder Include="Options\"/>
+        <Folder Include="Dto\" />
+        <Folder Include="Options\" />
     </ItemGroup>
 
 </Project>

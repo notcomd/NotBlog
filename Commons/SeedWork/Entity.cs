@@ -1,5 +1,5 @@
 using Commons.Core;
-using NotMediator;
+using NotMediator.Abstractions;
 
 namespace Commons.SeedWork;
 

@@ -14,4 +14,5 @@ global using Identity.Domain.ValueObjects;
 
 global using Notcomd.Token.JWT.Core;
 global using Notcomd.Token.JWT;
-global using NotMediator;
+global using NotMediator.Mediator;
+global using NotMediator.Abstractions;

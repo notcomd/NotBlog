@@ -7,18 +7,18 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Message.Domain\Message.Domain.csproj"/>
-        <ProjectReference Include="..\Commons\Commons.csproj"/>
-        <ProjectReference Include="..\Eventbus\EventBus.csproj"/>
+        <ProjectReference Include="..\Message.Domain\Message.Domain.csproj" />
+        <ProjectReference Include="..\Commons\Commons.csproj" />
+        <ProjectReference Include="..\Eventbus\EventBus.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.9"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.9"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.9"/>
-        <PackageReference Include="StackExchange.Redis" Version="2.8.24"/>
-        <PackageReference Include="NotMediator" Version="1.0.5"/>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.11" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.11" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.11" />
+        <PackageReference Include="StackExchange.Redis" Version="3.1.13" />
+        <PackageReference Include="NotMediator" Version="1.0.6" />
     </ItemGroup>
 
 </Project>

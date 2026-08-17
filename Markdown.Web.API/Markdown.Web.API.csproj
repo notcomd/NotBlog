@@ -7,42 +7,41 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Remove="Protos\**"/>
+        <Compile Remove="Protos\**" />
     </ItemGroup>
 
     <ItemGroup>
-        <EmbeddedResource Remove="Protos\**"/>
+        <EmbeddedResource Remove="Protos\**" />
     </ItemGroup>
 
     <ItemGroup>
-        <Content Remove="Protos\**"/>
+        <Content Remove="Protos\**" />
     </ItemGroup>
 
     <ItemGroup>
-        <None Remove="Protos\**"/>
+        <None Remove="Protos\**" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Markdown.Domain\Markdown.Domain.csproj"/>
+        <ProjectReference Include="..\Markdown.Domain\Markdown.Domain.csproj" />
         <ProjectReference Include="..\Markdown.Infrastructure\Markdown.Infrastructure.csproj" />
         <ProjectReference Include="..\NotBlog.ServiceDefaults\NotBlog.ServiceDefaults.csproj" />
-        <ProjectReference Include="..\JWToken\JWToken.csproj"/>
-        <ProjectReference Include="..\EventBus\EventBus.csproj"/>
-        <ProjectReference Include="..\Commons\Commons.csproj"/>
+        <ProjectReference Include="..\JWToken\JWToken.csproj" />
+        <ProjectReference Include="..\EventBus\EventBus.csproj" />
+        <ProjectReference Include="..\Commons\Commons.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.10"/>
-        <PackageReference Include="Aspire.RabbitMQ.Client" Version="13.4.6"/>
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.9"/>
-        <PackageReference Include="Microsoft.OpenApi" Version="2.7.5"/>
-        <PackageReference Include="NotMediator" Version="1.0.5" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.9">
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.11" />
+        <PackageReference Include="Aspire.RabbitMQ.Client" Version="13.4.6" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.11" />
+        <PackageReference Include="NotMediator" Version="1.0.6" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.11">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.2"/>
-        <PackageReference Include="Scalar.AspNetCore" Version="2.16.4"/>
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
+        <PackageReference Include="Scalar.AspNetCore" Version="2.16.20" />
     </ItemGroup>
 
 </Project>

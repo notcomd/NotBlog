@@ -7,15 +7,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Remove="Option\**"/>
-        <EmbeddedResource Remove="Option\**"/>
+        <Compile Remove="Option\**" />
+        <EmbeddedResource Remove="Option\**" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="NotMediator" Version="1.0.5" />
+      <PackageReference Include="NotMediator" Version="1.0.6" />
     </ItemGroup>
     <ItemGroup>
-      <ProjectReference Include="..\Commons\Commons.csproj"/>
+      <ProjectReference Include="..\Commons\Commons.csproj" />
     </ItemGroup>
 
 </Project>

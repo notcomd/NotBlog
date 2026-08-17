@@ -12,4 +12,4 @@ global using Message.Domain.IRepository;
 global using Message.Domain.IServices;
 global using Message.Domain.ValueObjects.Message;
 global using Message.Domain.ValueObjects.Tweet;
-global using NotMediator;
+global using NotMediator.Abstractions;

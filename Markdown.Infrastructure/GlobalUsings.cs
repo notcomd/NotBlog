@@ -8,3 +8,5 @@ global using Commons.SeedWork;
 global using Microsoft.Extensions.Logging;
 global using Markdown.Infrastructure.Repository;
 global using Microsoft.Extensions.DependencyInjection;
+global using NotMediator.Abstractions;
+global using NotMediator.Mediator;

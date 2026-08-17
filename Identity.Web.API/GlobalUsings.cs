@@ -20,20 +20,13 @@ global using Identity.Infrastructure.EntityFramework;
 global using Identity.Infrastructure.Services;
 global using Identity.Web.API.APIs;
 global using Identity.Web.API.Extensions;
-
 global using Microsoft.EntityFrameworkCore;
-global using Microsoft.Extensions.Http.Resilience;
-
 global using NotBlog.ServiceDefaults;
-
 global using Notcomd.EventBus.Core;
 global using Notcomd.EventBus.Outbox;
 global using Notcomd.EventBus.Extension;
-global using Notcomd.NotEmail.Core;
 global using Notcomd.NotEmail.Extensions;
 global using Notcomd.Token.JWT.Security;
-global using NotMediator;
-
-global using Polly;
-
+global using NotMediator.Mediator;
+global using NotMediator.Abstractions;
 global using Scalar.AspNetCore;

@@ -1,4 +1,5 @@
-using NotMediator;
+using  NotMediator.Abstractions;
+
 
 namespace Commons.Core;
 

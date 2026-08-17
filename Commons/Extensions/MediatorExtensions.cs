@@ -1,6 +1,6 @@
 using Commons.Core;
 using Microsoft.EntityFrameworkCore;
-using NotMediator;
+using NotMediator.Abstractions;
 
 namespace Commons.Extensions;
 

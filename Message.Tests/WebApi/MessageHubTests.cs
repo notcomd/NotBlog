@@ -14,7 +14,7 @@ using Message.Web.API.Services;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Moq;
-using NotMediator;
+using NotMediator.Abstractions;
 using Message.Tests.TestHelpers;
 using StackExchange.Redis;
 using System.Security.Claims;

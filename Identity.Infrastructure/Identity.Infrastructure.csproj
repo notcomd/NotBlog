@@ -7,18 +7,18 @@
     </PropertyGroup>
 
     <ItemGroup>    
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.9"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="10.0.9"/>
-        <PackageReference Include="NotMediator" Version="1.0.5" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.11" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="10.0.11" />
+        <PackageReference Include="NotMediator" Version="1.0.6" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\CacheMemory\CacheMemory.csproj"/>
-        <ProjectReference Include="..\Commons\Commons.csproj"/>
-        <ProjectReference Include="..\NotEmail\NotEmail.csproj"/>
-        <ProjectReference Include="..\Identity.Domain\Identity.Domain.csproj"/>
-        <ProjectReference Include="..\JWToken\JWToken.csproj"/>
-        <ProjectReference Include="..\Eventbus\EventBus.csproj"/>
+        <ProjectReference Include="..\CacheMemory\CacheMemory.csproj" />
+        <ProjectReference Include="..\Commons\Commons.csproj" />
+        <ProjectReference Include="..\NotEmail\NotEmail.csproj" />
+        <ProjectReference Include="..\Identity.Domain\Identity.Domain.csproj" />
+        <ProjectReference Include="..\JWToken\JWToken.csproj" />
+        <ProjectReference Include="..\Eventbus\EventBus.csproj" />
     </ItemGroup>
 
 </Project>

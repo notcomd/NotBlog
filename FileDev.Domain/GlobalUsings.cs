@@ -1,9 +1,5 @@
 global using FileDev.Domain.Entities;
 global using Commons.SeedWork;
-global using FileDev.Domain.ValueObjects;
-global using FileDev.Domain.Dto;
 global using FileDev.Domain.Events;
-global using FileDev.Domain.IRepository;
 global using FileDev.Domain.Options;
-global using FileDev.Domain.IServices;
-global using NotMediator;
+global using NotMediator.Abstractions;
