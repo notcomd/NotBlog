@@ -66,9 +66,9 @@ public static class MarkdownApi
     /// </summary>
     private static async Task<IResult> CreateAsync(
         [FromBody] CreateMarkdownRequest request,
-        INotMediator notMediator,
-        ICurrentUserService currentUserService,
-        IMarkdownRepository markdownRepository)
+       [FromServices] INotMediator notMediator,
+       [FromServices] ICurrentUserService currentUserService,
+        [FromServices]IMarkdownRepository markdownRepository)
     {
         if (string.IsNullOrWhiteSpace(request.Name))
             return Results.BadRequest(ApiResponse.Error("文章名称不能为空"));
@@ -105,7 +105,7 @@ public static class MarkdownApi
     ///     获取公开 Markdown 文章列表（分页）
     /// </summary>
     private static async Task<IResult> GetAllAsync(
-        IMarkdownRepository markdownRepository,
+       [FromServices] IMarkdownRepository markdownRepository,
         int skip = 0,
         int take = 20)
     {
@@ -122,8 +122,8 @@ public static class MarkdownApi
     /// </summary>
     private static async Task<IResult> GetAsync(
         Guid markDownGuid,
-        IMarkdownRepository markdownRepository,
-        ICurrentUserService currentUserService)
+        [FromServices]IMarkdownRepository markdownRepository,
+       [FromServices] ICurrentUserService currentUserService)
     {
         var markdown = await markdownRepository.FindMarkDownAsync(markDownGuid);
 
@@ -148,9 +148,9 @@ public static class MarkdownApi
     private static async Task<IResult> UpdateAsync(
         Guid markDownGuid,
         [FromBody] UpdateMarkdownRequest request,
-        INotMediator notMediator,
-        ICurrentUserService currentUserService,
-        IMarkdownRepository markdownRepository)
+       [FromServices] INotMediator notMediator,
+       [FromServices] ICurrentUserService currentUserService,
+       [FromServices] IMarkdownRepository markdownRepository)
     {
         if (string.IsNullOrWhiteSpace(request.Name))
             return Results.BadRequest(ApiResponse.Error("文章名称不能为空"));
@@ -187,14 +187,14 @@ public static class MarkdownApi
     /// </summary>
     private static async Task<IResult> DeleteAsync(
         Guid markDownGuid,
-        INotMediator notMediator,
-        ICurrentUserService currentUserService,
-        HttpContext httpContext)
+       [FromServices] INotMediator notMediator,
+       [FromServices] ICurrentUserService currentUserService,
+       [FromServices] HttpContext httpContext)
     {
         var userId = currentUserService.GetUserId();
         var command = new DeleteMarkdownCommand(markDownGuid, userId, MarkdownApiHelpers.GetIdempotencyKey(httpContext));
 
-        var result = await notMediator.SendAsync(command);
+        var result = await  notMediator.SendAsync(command);
 
         return result
             ? Results.Ok(ApiResponse.Ok("文章已删除"))
@@ -209,8 +209,8 @@ public static class MarkdownApi
         int? take,
         string? tag,
         Guid? userGuid,
-        INotMediator notMediator,
-        ICurrentUserService currentUserService)
+       [FromServices] INotMediator notMediator,
+       [FromServices] ICurrentUserService currentUserService)
     {
         var query = new MarkdownListQuery(
             Skip: Math.Max(0, skip ?? 0),
@@ -230,8 +230,8 @@ public static class MarkdownApi
         string? keyword,
         int? skip,
         int? take,
-        INotMediator notMediator,
-        ICurrentUserService currentUserService)
+       [FromServices] INotMediator notMediator,
+       [FromServices] ICurrentUserService currentUserService)
     {
         if (string.IsNullOrWhiteSpace(keyword))
             return Results.BadRequest(ApiResponse.Error("搜索关键字不能为空"));

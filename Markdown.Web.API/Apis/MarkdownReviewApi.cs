@@ -79,10 +79,10 @@ public static class MarkdownReviewApi
     private static async Task<IResult> CreateReviewAsync(
         Guid markDownGuid,
         [FromBody] CreateMarkReviewRequest request,
-        INotMediator notMediator,
-        ICurrentUserService currentUserService,
-        IMarkdownRepository markdownRepository,
-        HttpContext httpContext)
+       [FromServices] INotMediator notMediator,
+        [FromServices]ICurrentUserService currentUserService,
+        [FromServices]IMarkdownRepository markdownRepository,
+        [FromServices]HttpContext httpContext)
     {
         if (string.IsNullOrWhiteSpace(request.Content))
             return Results.BadRequest(ApiResponse.Error("评论内容不能为空"));
@@ -110,7 +110,7 @@ public static class MarkdownReviewApi
             ReviewAuth: reviewAuth.Value,
             IdempotencyKey: MarkdownApiHelpers.GetIdempotencyKey(httpContext));
 
-        var reviewGuid = await notMediator.SendAsync(command);
+        var reviewGuid = await  notMediator.SendAsync(command);
 
         return Results.Created(
             $"/api/markdown/{markDownGuid}/reviews/detail/{reviewGuid}",
@@ -122,8 +122,8 @@ public static class MarkdownReviewApi
     /// </summary>
     private static async Task<IResult> GetReviewsAsync(
         Guid markDownGuid,
-        IMarkdownRepository markdownRepository,
-        ICurrentUserService currentUserService)
+       [FromServices] IMarkdownRepository markdownRepository,
+       [FromServices] ICurrentUserService currentUserService)
     {
         var userId = MarkdownApiHelpers.TryGetCurrentUserId(currentUserService);
 
@@ -147,8 +147,8 @@ public static class MarkdownReviewApi
     /// </summary>
     private static async Task<IResult> GetReviewAsync(
         Guid reviewGuid,
-        IMarkdownRepository markdownRepository,
-        ICurrentUserService currentUserService)
+       [FromServices] IMarkdownRepository markdownRepository,
+        [FromServices]ICurrentUserService currentUserService)
     {
         var review = await markdownRepository.GetReviewByIdAsync(reviewGuid);
 
@@ -179,8 +179,8 @@ public static class MarkdownReviewApi
     /// </summary>
     private static async Task<IResult> GetChildReviewsAsync(
         Guid reviewGuid,
-        IMarkdownRepository markdownRepository,
-        ICurrentUserService currentUserService)
+       [FromServices] IMarkdownRepository markdownRepository,
+        [FromServices]ICurrentUserService currentUserService)
     {
         var userId = MarkdownApiHelpers.TryGetCurrentUserId(currentUserService);
 
@@ -212,9 +212,9 @@ public static class MarkdownReviewApi
     private static async Task<IResult> UpdateReviewAsync(
         Guid reviewGuid,
         [FromBody] UpdateMarkReviewRequest request,
-        INotMediator notMediator,
-        ICurrentUserService currentUserService,
-        HttpContext httpContext)
+       [FromServices] INotMediator notMediator,
+       [FromServices] ICurrentUserService currentUserService,
+       [FromServices] HttpContext httpContext)
     {
         if (string.IsNullOrWhiteSpace(request.Content))
             return Results.BadRequest(ApiResponse.Error("评论内容不能为空"));
@@ -235,9 +235,9 @@ public static class MarkdownReviewApi
     /// </summary>
     private static async Task<IResult> DeleteReviewAsync(
         Guid reviewGuid,
-        INotMediator notMediator,
-        ICurrentUserService currentUserService,
-        HttpContext httpContext)
+       [FromServices] INotMediator notMediator,
+       [FromServices] ICurrentUserService currentUserService,
+       [FromServices] HttpContext httpContext)
     {
         var userId = currentUserService.GetUserId();
         var command = new DeleteMarkReviewCommand(reviewGuid, userId, MarkdownApiHelpers.GetIdempotencyKey(httpContext));
@@ -256,10 +256,10 @@ public static class MarkdownReviewApi
         Guid markDownGuid,
         Guid reviewGuid,
         [FromBody] CreateMarkReviewRequest request,
-        INotMediator notMediator,
-        ICurrentUserService currentUserService,
-        IMarkdownRepository markdownRepository,
-        HttpContext httpContext)
+       [FromServices] INotMediator notMediator,
+       [FromServices] ICurrentUserService currentUserService,
+       [FromServices] IMarkdownRepository markdownRepository,
+       [FromServices] HttpContext httpContext)
     {
         if (string.IsNullOrWhiteSpace(request.Content))
             return Results.BadRequest(ApiResponse.Error("评论内容不能为空"));
@@ -300,10 +300,10 @@ public static class MarkdownReviewApi
     /// </summary>
     private static async Task<IResult> LikeReviewAsync(
         Guid reviewGuid,
-        IMarkdownRepository markdownRepository,
-        ICurrentUserService currentUserService,
-        IEventBus eventBus,
-        ILoggerFactory loggerFactory)
+        [FromServices]IMarkdownRepository markdownRepository,
+        [FromServices]ICurrentUserService currentUserService,
+        [FromServices]IEventBus eventBus,
+        [FromServices]ILoggerFactory loggerFactory)
     {
         var userId = currentUserService.GetUserId();
 
@@ -333,8 +333,8 @@ public static class MarkdownReviewApi
     /// </summary>
     private static async Task<IResult> UnlikeReviewAsync(
         Guid reviewGuid,
-        IMarkdownRepository markdownRepository,
-        ICurrentUserService currentUserService)
+        [FromServices]IMarkdownRepository markdownRepository,
+        [FromServices]ICurrentUserService currentUserService)
     {
         var userId = currentUserService.GetUserId();
 

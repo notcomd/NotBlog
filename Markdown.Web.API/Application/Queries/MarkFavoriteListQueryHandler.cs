@@ -9,7 +9,7 @@ namespace Markdown.Web.API.Application.Queries;
 /// </summary>
 public class MarkFavoriteListQueryHandler(
     MarkDownDbContext dbContext,
-    ILogger<MarkFavoriteListQueryHandler> logger) : NotMediator.IRequestHandler<MarkFavoriteListQuery, List<MarkFavoriteResponse>>
+    ILogger<MarkFavoriteListQueryHandler> logger) :  IRequestHandler<MarkFavoriteListQuery, List<MarkFavoriteResponse>>
 {
     public async Task<List<MarkFavoriteResponse>> Handler(MarkFavoriteListQuery request, CancellationToken cancellationToken)
     {

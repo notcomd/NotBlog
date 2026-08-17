@@ -8,7 +8,7 @@ namespace Markdown.Web.API.Application.Queries;
 /// </summary>
 public class MarkdownSearchQueryHandler(
     MarkDownDbContext dbContext,
-    ILogger<MarkdownSearchQueryHandler> logger) : NotMediator.IRequestHandler<MarkdownSearchQuery, List<MarkdownSummaryResponse>>
+    ILogger<MarkdownSearchQueryHandler> logger) :  IRequestHandler<MarkdownSearchQuery, List<MarkdownSummaryResponse>>
 {
     public async Task<List<MarkdownSummaryResponse>> Handler(MarkdownSearchQuery request, CancellationToken cancellationToken)
     {

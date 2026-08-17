@@ -47,7 +47,7 @@ public static class MarkdownAuditApi
         ICurrentUserService currentUserService)
     {
         var userId = currentUserService.GetUserId();
-        var result = await notMediator.SendAsync(new SubmitMarkdownCommand(markDownGuid, userId));
+        var result = await  notMediator.SendAsync(new SubmitMarkdownCommand(markDownGuid, userId));
 
         return result
             ? Results.Ok(ApiResponse.Ok("文章已提交审核"))
@@ -63,7 +63,7 @@ public static class MarkdownAuditApi
         ICurrentUserService currentUserService)
     {
         var userId = currentUserService.GetUserId();
-        var result = await notMediator.SendAsync(
+        var result = await   notMediator.SendAsync(
             new ApproveMarkdownCommand(markDownGuid, userId, MarkdownApiHelpers.IsAdmin(currentUserService)));
 
         return result
@@ -80,7 +80,7 @@ public static class MarkdownAuditApi
         ICurrentUserService currentUserService)
     {
         var userId = currentUserService.GetUserId();
-        var result = await notMediator.SendAsync(
+        var result = await  notMediator.SendAsync(
             new RejectMarkdownCommand(markDownGuid, userId, MarkdownApiHelpers.IsAdmin(currentUserService)));
 
         return result

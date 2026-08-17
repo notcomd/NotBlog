@@ -5,7 +5,7 @@ namespace Markdown.Web.API.Application.Commands;
 /// </summary>
 public class ApproveMarkdownCommandHandler(
     IMarkdownRepository markdownRepository,
-    ILogger<ApproveMarkdownCommandHandler> logger) : NotMediator.IRequestHandler<ApproveMarkdownCommand, bool>
+    ILogger<ApproveMarkdownCommandHandler> logger) : IRequestHandler<ApproveMarkdownCommand, bool>
 {
     public async Task<bool> Handler(ApproveMarkdownCommand request, CancellationToken cancellationToken)
     {

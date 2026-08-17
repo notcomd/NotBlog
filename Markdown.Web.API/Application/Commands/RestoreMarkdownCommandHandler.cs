@@ -5,7 +5,7 @@ namespace Markdown.Web.API.Application.Commands;
 /// </summary>
 public class RestoreMarkdownCommandHandler(
     IMarkdownRepository markdownRepository,
-    ILogger<RestoreMarkdownCommandHandler> logger) : NotMediator.IRequestHandler<RestoreMarkdownCommand, bool>
+    ILogger<RestoreMarkdownCommandHandler> logger) :  IRequestHandler<RestoreMarkdownCommand, bool>
 {
     public async Task<bool> Handler(RestoreMarkdownCommand request, CancellationToken cancellationToken)
     {

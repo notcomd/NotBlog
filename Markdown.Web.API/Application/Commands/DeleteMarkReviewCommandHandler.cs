@@ -10,7 +10,7 @@ public class DeleteMarkReviewCommandHandler(
     IMarkdownRepository markdownRepository,
     IRequestManagement requestManagement,
     IEventBus eventBus,
-    ILogger<DeleteMarkReviewCommandHandler> logger) : NotMediator.IRequestHandler<DeleteMarkReviewCommand, bool>
+    ILogger<DeleteMarkReviewCommandHandler> logger) :  IRequestHandler<DeleteMarkReviewCommand, bool>
 {
     public async Task<bool> Handler(DeleteMarkReviewCommand request, CancellationToken cancellationToken)
     {

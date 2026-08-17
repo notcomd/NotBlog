@@ -47,10 +47,10 @@ public static class MarkFavoriteApi
     /// </summary>
     private static async Task<IResult> AddFavoriteAsync(
         [FromBody] AddFavoriteRequest request,
-        INotMediator notMediator,
-        ICurrentUserService currentUserService,
-        IMarkdownRepository markdownRepository,
-        HttpContext httpContext)
+        [FromServices]INotMediator notMediator,
+       [FromServices] ICurrentUserService currentUserService,
+      [FromServices]  IMarkdownRepository markdownRepository,
+      [FromServices]  HttpContext httpContext)
     {
         if (request.MarkDownGuid == Guid.Empty)
             return Results.BadRequest(ApiResponse.Error("文章标识不能为空"));
@@ -66,7 +66,7 @@ public static class MarkFavoriteApi
             !markdown.HasPermission(userId))
             return Results.NotFound(ApiResponse<Guid>.NotFound("文章不存在"));
 
-        var favoriteGuid = await notMediator.SendAsync(new AddFavoriteCommand(
+        var favoriteGuid = await  notMediator.SendAsync(new AddFavoriteCommand(
             userId,
             request.MarkDownGuid,
             request.Tags,
@@ -81,12 +81,12 @@ public static class MarkFavoriteApi
     /// </summary>
     private static async Task<IResult> RemoveFavoriteAsync(
         Guid markDownGuid,
-        INotMediator notMediator,
-        ICurrentUserService currentUserService,
-        HttpContext httpContext)
+       [FromServices] INotMediator notMediator,
+      [FromServices]  ICurrentUserService currentUserService,
+      [FromServices]  HttpContext httpContext)
     {
         var userId = currentUserService.GetUserId();
-        var result = await notMediator.SendAsync(new RemoveFavoriteCommand(
+        var result = await  notMediator.SendAsync(new RemoveFavoriteCommand(
             userId,
             markDownGuid,
             MarkdownApiHelpers.GetIdempotencyKey(httpContext)));
@@ -102,15 +102,15 @@ public static class MarkFavoriteApi
     private static async Task<IResult> UpdateTagsAsync(
         Guid markDownGuid,
         [FromBody] UpdateFavoriteTagsRequest request,
-        INotMediator notMediator,
-        ICurrentUserService currentUserService,
-        HttpContext httpContext)
+       [FromServices] INotMediator notMediator,
+       [FromServices] ICurrentUserService currentUserService,
+       [FromServices] HttpContext httpContext)
     {
         if (!MarkdownApiHelpers.TryValidateTags(request.Tags, out var tagError))
             return Results.BadRequest(ApiResponse.Error(tagError ?? "标签校验失败"));
 
         var userId = currentUserService.GetUserId();
-        var result = await notMediator.SendAsync(new UpdateFavoriteTagsCommand(
+        var result = await  notMediator.SendAsync(new UpdateFavoriteTagsCommand(
             userId,
             markDownGuid,
             request.Tags,
@@ -127,12 +127,12 @@ public static class MarkFavoriteApi
     private static async Task<IResult> GetTagsAsync(
         string? keyword,
         int? limit,
-        INotMediator notMediator,
-        ICurrentUserService currentUserService)
+        [FromServices]INotMediator notMediator,
+       [FromServices] ICurrentUserService currentUserService)
     {
         var userId = currentUserService.GetUserId();
 
-        var result = await notMediator.SendAsync(new MarkFavoriteTagsQuery(
+        var result = await  notMediator.SendAsync(new MarkFavoriteTagsQuery(
             userId,
             Keyword: keyword,
             Limit: limit is > 0 and <= 100 ? limit.Value : 50));
@@ -147,8 +147,8 @@ public static class MarkFavoriteApi
         string? tag,
         int? skip,
         int? take,
-        INotMediator notMediator,
-        ICurrentUserService currentUserService)
+       [FromServices] INotMediator notMediator,
+       [FromServices] ICurrentUserService currentUserService)
     {
         var userId = currentUserService.GetUserId();
 

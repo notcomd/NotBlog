@@ -8,7 +8,7 @@ namespace Markdown.Web.API.Application.Queries;
 /// </summary>
 public class MarkFavoriteTagsQueryHandler(
     MarkDownDbContext dbContext,
-    ILogger<MarkFavoriteTagsQueryHandler> logger) : NotMediator.IRequestHandler<MarkFavoriteTagsQuery, List<MarkFavoriteTagResponse>>
+    ILogger<MarkFavoriteTagsQueryHandler> logger) :  IRequestHandler<MarkFavoriteTagsQuery, List<MarkFavoriteTagResponse>>
 {
     public async Task<List<MarkFavoriteTagResponse>> Handler(MarkFavoriteTagsQuery request, CancellationToken cancellationToken)
     {

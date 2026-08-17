@@ -42,7 +42,7 @@ public class MarkDownDbContext(DbContextOptions<MarkDownDbContext> options, INot
     /// </summary>
     public async Task<bool> SaveEntitiesAsync(CancellationToken cancellationToken = default)
     {
-        await _notMediator.DispatchDomainEventsAsync(this);
+        await _notMediator.DispatchDomainEventsAsync(this, cancellationToken);
         await base.SaveChangesAsync(cancellationToken);
         return true;
     }

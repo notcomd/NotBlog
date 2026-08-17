@@ -8,7 +8,7 @@ namespace Markdown.Web.API.Application.Commands;
 public class UpdateMarkReviewCommandHandler(
     IMarkdownRepository markdownRepository,
     IRequestManagement requestManagement,
-    ILogger<UpdateMarkReviewCommandHandler> logger) : NotMediator.IRequestHandler<UpdateMarkReviewCommand, bool>
+    ILogger<UpdateMarkReviewCommandHandler> logger) :  IRequestHandler<UpdateMarkReviewCommand, bool>
 {
     public async Task<bool> Handler(UpdateMarkReviewCommand request, CancellationToken cancellationToken)
     {

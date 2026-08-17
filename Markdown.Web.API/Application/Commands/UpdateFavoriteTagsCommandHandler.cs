@@ -9,7 +9,7 @@ namespace Markdown.Web.API.Application.Commands;
 public class UpdateFavoriteTagsCommandHandler(
     IMarkFavoriteRepository favoriteRepository,
     IRequestManagement requestManagement,
-    ILogger<UpdateFavoriteTagsCommandHandler> logger) : NotMediator.IRequestHandler<UpdateFavoriteTagsCommand, bool>
+    ILogger<UpdateFavoriteTagsCommandHandler> logger) :  IRequestHandler<UpdateFavoriteTagsCommand, bool>
 {
     public async Task<bool> Handler(UpdateFavoriteTagsCommand request, CancellationToken cancellationToken)
     {

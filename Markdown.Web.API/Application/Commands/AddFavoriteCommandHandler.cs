@@ -11,7 +11,7 @@ namespace Markdown.Web.API.Application.Commands;
 public class AddFavoriteCommandHandler(
     IMarkFavoriteRepository favoriteRepository,
     IRequestManagement requestManagement,
-    ILogger<AddFavoriteCommandHandler> logger) : NotMediator.IRequestHandler<AddFavoriteCommand, Guid>
+    ILogger<AddFavoriteCommandHandler> logger) :  IRequestHandler<AddFavoriteCommand, Guid>
 {
     public async Task<Guid> Handler(AddFavoriteCommand request, CancellationToken cancellationToken)
     {

@@ -43,8 +43,8 @@ public static class MarkdownHistoryApi
     /// </summary>
     private static async Task<IResult> GetHistoryAsync(
         Guid markDownGuid,
-        IMarkdownRepository markdownRepository,
-        ICurrentUserService currentUserService)
+        [FromServices]IMarkdownRepository markdownRepository,
+        [FromServices]ICurrentUserService currentUserService)
     {
         // 越权防护：权限校验 + 审核门控双重要求（与 GetAsync 一致），
         // 防止草稿文档的历史版本被匿名读取
@@ -65,8 +65,8 @@ public static class MarkdownHistoryApi
     /// </summary>
     private static async Task<IResult> GetHistoryDetailAsync(
         Guid oldMarkDownGuid,
-        IMarkdownRepository markdownRepository,
-        ICurrentUserService currentUserService)
+        [FromServices]IMarkdownRepository markdownRepository,
+        [FromServices]ICurrentUserService currentUserService)
     {
         var oldVersion = await markdownRepository.GetOldMarkDownByGuidAsync(oldMarkDownGuid);
 
@@ -90,8 +90,8 @@ public static class MarkdownHistoryApi
     /// </summary>
     private static async Task<IResult> DeleteHistoryAsync(
         Guid oldMarkDownGuid,
-        IMarkdownRepository markdownRepository,
-        ICurrentUserService currentUserService)
+        [FromServices]IMarkdownRepository markdownRepository,
+        [FromServices]ICurrentUserService currentUserService)
     {
         var userId = currentUserService.GetUserId();
 
@@ -113,8 +113,8 @@ public static class MarkdownHistoryApi
     private static async Task<IResult> RestoreAsync(
         Guid markDownGuid,
         Guid oldMarkDownGuid,
-        INotMediator notMediator,
-        ICurrentUserService currentUserService)
+        [FromServices]INotMediator notMediator,
+        [FromServices]ICurrentUserService currentUserService)
     {
         var userId = currentUserService.GetUserId();
         var result = await notMediator.SendAsync(new RestoreMarkdownCommand(markDownGuid, oldMarkDownGuid, userId));

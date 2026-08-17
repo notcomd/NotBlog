@@ -10,7 +10,7 @@ namespace Markdown.Web.API.Application.Commands;
 public class CreateMarkdownCommandHandler(
     IMarkdownRepository markdownRepository,
     IEventBus eventBus,
-    ILogger<CreateMarkdownCommandHandler> logger) : NotMediator.IRequestHandler<CreateMarkdownCommand, Guid>
+    ILogger<CreateMarkdownCommandHandler> logger) :  IRequestHandler<CreateMarkdownCommand, Guid>
 {
     public async Task<Guid> Handler(CreateMarkdownCommand request, CancellationToken cancellationToken)
     {

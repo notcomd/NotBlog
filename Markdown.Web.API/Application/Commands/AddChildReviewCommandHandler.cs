@@ -10,7 +10,7 @@ public class AddChildReviewCommandHandler(
     IMarkdownRepository markdownRepository,
     IRequestManagement requestManagement,
     IEventBus eventBus,
-    ILogger<AddChildReviewCommandHandler> logger) : NotMediator.IRequestHandler<AddChildReviewCommand, Guid>
+    ILogger<AddChildReviewCommandHandler> logger) :  IRequestHandler<AddChildReviewCommand, Guid>
 {
     public async Task<Guid> Handler(AddChildReviewCommand request, CancellationToken cancellationToken)
     {

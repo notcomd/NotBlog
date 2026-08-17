@@ -8,7 +8,7 @@ namespace Markdown.Web.API.Application.Commands;
 public class RemoveFavoriteCommandHandler(
     IMarkFavoriteRepository favoriteRepository,
     IRequestManagement requestManagement,
-    ILogger<RemoveFavoriteCommandHandler> logger) : NotMediator.IRequestHandler<RemoveFavoriteCommand, bool>
+    ILogger<RemoveFavoriteCommandHandler> logger) : IRequestHandler<RemoveFavoriteCommand, bool>
 {
     public async Task<bool> Handler(RemoveFavoriteCommand request, CancellationToken cancellationToken)
     {

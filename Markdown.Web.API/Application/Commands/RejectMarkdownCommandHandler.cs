@@ -5,7 +5,7 @@ namespace Markdown.Web.API.Application.Commands;
 /// </summary>
 public class RejectMarkdownCommandHandler(
     IMarkdownRepository markdownRepository,
-    ILogger<RejectMarkdownCommandHandler> logger) : NotMediator.IRequestHandler<RejectMarkdownCommand, bool>
+    ILogger<RejectMarkdownCommandHandler> logger) :  IRequestHandler<RejectMarkdownCommand, bool>
 {
     public async Task<bool> Handler(RejectMarkdownCommand request, CancellationToken cancellationToken)
     {

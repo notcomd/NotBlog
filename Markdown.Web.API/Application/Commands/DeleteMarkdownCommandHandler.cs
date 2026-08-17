@@ -8,7 +8,7 @@ namespace Markdown.Web.API.Application.Commands;
 public class DeleteMarkdownCommandHandler(
     IMarkdownRepository markdownRepository,
     IRequestManagement requestManagement,
-    ILogger<DeleteMarkdownCommandHandler> logger) : NotMediator.IRequestHandler<DeleteMarkdownCommand, bool>
+    ILogger<DeleteMarkdownCommandHandler> logger) :  IRequestHandler<DeleteMarkdownCommand, bool>
 {
     public async Task<bool> Handler(DeleteMarkdownCommand request, CancellationToken cancellationToken)
     {

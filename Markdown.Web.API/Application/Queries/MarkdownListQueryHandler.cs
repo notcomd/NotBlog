@@ -9,7 +9,7 @@ namespace Markdown.Web.API.Application.Queries;
 /// </summary>
 public class MarkdownListQueryHandler(
     MarkDownDbContext dbContext,
-    ILogger<MarkdownListQueryHandler> logger) : NotMediator.IRequestHandler<MarkdownListQuery, List<MarkdownSummaryResponse>>
+    ILogger<MarkdownListQueryHandler> logger) :  IRequestHandler<MarkdownListQuery, List<MarkdownSummaryResponse>>
 {
     public async Task<List<MarkdownSummaryResponse>> Handler(MarkdownListQuery request, CancellationToken cancellationToken)
     {

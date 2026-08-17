@@ -10,7 +10,7 @@ public class CreateMarkReviewCommandHandler(
     IMarkdownRepository markdownRepository,
     IRequestManagement requestManagement,
     IEventBus eventBus,
-    ILogger<CreateMarkReviewCommandHandler> logger) : NotMediator.IRequestHandler<CreateMarkReviewCommand, Guid>
+    ILogger<CreateMarkReviewCommandHandler> logger) :  IRequestHandler<CreateMarkReviewCommand, Guid>
 {
     public async Task<Guid> Handler(CreateMarkReviewCommand request, CancellationToken cancellationToken)
     {
