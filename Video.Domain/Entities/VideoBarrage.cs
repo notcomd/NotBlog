@@ -1,4 +1,3 @@
-using Video.Domain.ValueObjects;
 
 namespace Video.Domain.Entities;
 
@@ -14,11 +13,7 @@ namespace Video.Domain.Entities;
 /// </summary>
 public class VideoBarrage
 {
-    // ── 常量 ──
-    public const int MaxImagesPerBarrage = 4;
-
-    // ── 属性 ──
-
+  
     public Guid VideoBarrageGuid { get; init; }
 
     public Guid VideoGuid { get; init; }
@@ -65,7 +60,6 @@ public class VideoBarrage
         VideoControl = VideoControl.VideoControlBuilder();
         VideoQuote = VideoQuote.VideoQuoteBuilder();
         IsDelete = false;
-        BarrageType = BarrageType.Text;
     }
 
     /// <summary>
@@ -117,11 +111,6 @@ public class VideoBarrage
 
     // ── 行为方法 ──
 
-    public void ChangeByTime()
-    {
-        TimeSpace.ResetUpdateAt(DateTimeOffset.UtcNow);
-    }
-
     public void ChangeByVideoControl(VideoControl videoControl, bool isDelete)
     {
         VideoControl.ChangeByVideoController(videoControl);
@@ -148,14 +137,15 @@ public class VideoBarrage
         TimeSpace.ResetUpdateAt(DateTimeOffset.UtcNow);
     }
 
+
+    public void SoftDelete()=>this.IsDelete=true;
+  
     // ── 内部方法 ──
 
     private void SetImages(List<VideoImage>? images)
     {
         if (images is null || images.Count == 0)
             throw new ArgumentException("弹幕图片列表不能为空", nameof(images));
-        if (images.Count > MaxImagesPerBarrage)
-            throw new ArgumentException($"弹幕图片不能超过 {MaxImagesPerBarrage} 张", nameof(images));
         VideoImages = images.OrderBy(i => i.SortOrder).ToList().AsReadOnly();
     }
 }

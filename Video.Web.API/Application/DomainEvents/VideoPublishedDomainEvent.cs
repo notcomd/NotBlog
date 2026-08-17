@@ -8,4 +8,4 @@ namespace Video.Web.API.Application.DomainEvents;
 public record VideoPublishedDomainEvent(
     Guid VideoGuid,
     string Title,
-    string CoverUrl) : INotifications;
+    Uri CoverUrl) : INotifications;

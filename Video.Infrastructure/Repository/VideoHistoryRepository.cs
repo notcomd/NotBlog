@@ -1,8 +1,4 @@
-using Microsoft.EntityFrameworkCore;
-using Video.Domain.Entities;
-using Video.Domain.IRepository;
 using Commons.SeedWork;
-using Video.Infrastructure.EntityFramework;
 
 namespace Video.Infrastructure.Repository;
 
@@ -112,8 +108,4 @@ public class VideoHistoryRepository(VideoDbContext dbContext) : IVideoHistoryRep
         dbContext.VideoHistories.RemoveRange(oldHistories);
         return oldHistories.Count;
     }
-
-    // Explicit IRepository methods for backward compatibility
-    public async Task AddByVideoHistoryAsync(VideoHistory history) => await AddAsync(history);
-    public async Task UpdateByVideoHistoryAsync(VideoHistory history) => await UpdateAsync(history);
 }

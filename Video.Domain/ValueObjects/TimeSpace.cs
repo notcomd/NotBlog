@@ -1,12 +1,18 @@
 namespace Video.Domain.ValueObjects;
 
-public record TimeSpace(DateTimeOffset _CreateAt, DateTimeOffset _UpdateAt)
+public record TimeSpace
 {
     public DateTimeOffset CreateAt { get; init; }
     public DateTimeOffset UpdateAt { get; private set; }
-    
-    public void ResetUpdateAt(DateTimeOffset updateAts)
+
+    public TimeSpace(DateTimeOffset createAt, DateTimeOffset updateAt)
     {
-        UpdateAt = updateAts;
+        CreateAt = createAt;
+        UpdateAt = updateAt;
+    }
+
+    public void ResetUpdateAt(DateTimeOffset updateAt)
+    {
+        UpdateAt = updateAt;
     }
 }

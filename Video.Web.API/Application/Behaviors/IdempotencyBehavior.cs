@@ -1,5 +1,3 @@
-using System.Text.Json;
-using CacheMemory.Core;
 using NotMediator;
 
 namespace Video.Web.API.Application.Behaviors;

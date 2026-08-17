@@ -1,6 +1,3 @@
-using Video.Domain.Entities;
-using Video.Domain.ValueObjects;
-using Commons.SeedWork;
 namespace Video.Domain.IRepository;
 
 public interface IVideoRepository:IRepository<Videos, IUnitOfWork>

@@ -1,6 +1,3 @@
-using Video.Domain.Events;
-using Commons.SeedWork;
-using Video.Domain.ValueObjects;
 
 namespace Video.Domain.Entities;
 

@@ -1,26 +1,24 @@
-using NotMediator;
-using Video.Domain.Cache;
-using Video.Domain.IRepository;
+
 
 namespace Video.Web.API.Application.Commands;
 
 /// <summary>
 /// 评论点赞命令处理器 — 支持评论 upvote/down/ballot/share 操作。
 /// </summary>
-public class LikeVideoReviewCommandHandler(
+public class QuoteVideoReviewCommandHandler(
     IVideoRepository videoRepository,
     IVideoCacheService cacheService,
-    ILogger<LikeVideoReviewCommandHandler> logger)
-    : IRequestHandler<LikeVideoReviewCommand, LikeVideoReviewResult>
+    ILogger<QuoteVideoReviewCommandHandler> logger)
+    : IRequestHandler<QuoteVideoReviewCommand, QuoteVideoReviewResult>
 {
-    public async Task<LikeVideoReviewResult> Handler(LikeVideoReviewCommand request,
+    public async Task<QuoteVideoReviewResult> Handler(QuoteVideoReviewCommand request,
         CancellationToken cancellationToken)
     {
         var normalized = request.Field.ToLowerInvariant();
         var validFields = new HashSet<string> { "upvote", "down", "ballot", "share" };
 
         if (!validFields.Contains(normalized))
-            return new LikeVideoReviewResult(false, 0,
+            return new QuoteVideoReviewResult(false, 0,
                 $"Invalid field '{request.Field}'. Valid: upvote, down, ballot, share.");
 
         // 写路径必须从仓储加载实体，确保被 DbContext 跟踪后修改可落库
@@ -28,7 +26,7 @@ public class LikeVideoReviewCommandHandler(
 
         var review = video.VideoReviews?.FirstOrDefault(r => r.VideoReviewGuid == request.ReviewGuid);
         if (review is null)
-            return new LikeVideoReviewResult(false, 0, "Review not found.");
+            return new QuoteVideoReviewResult(false, 0, "Review not found.");
 
         var quote = review.VideoQuote;
         if (request.IsLike)
@@ -71,6 +69,6 @@ public class LikeVideoReviewCommandHandler(
         logger.LogInformation("Review like: {ReviewGuid} {Field} IsLike={IsLike} NewCount={Count}",
             request.ReviewGuid, request.Field, request.IsLike, newCount);
 
-        return new LikeVideoReviewResult(true, newCount, null);
+        return new QuoteVideoReviewResult(true, newCount, null);
     }
 }

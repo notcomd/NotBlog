@@ -1,8 +1,3 @@
-using Microsoft.AspNetCore.Mvc;
-using Video.Domain.Entities;
-using Video.Domain.IRepository;
-using Video.Domain.IServices;
-using Video.Web.API.Application.Commands;
 
 namespace Video.Web.API.Apis;
 
@@ -50,16 +45,16 @@ public static class VideoWatchStatsEndpoints
         try
         {
             // S-18.2：观看历史归属的用户由服务端从 JWT 解析，忽略客户端传入的 UserGuid，防伪造上报
-            var callerGuid = currentUser.UserGuid;
+            var callerGuid = currentUser.GetUserId();
             if (callerGuid == Guid.Empty)
                 return Results.Json(
-                    new IVideoResult<string>(VideoResultType.VideoResultUnauthorized, 401,
+                    new VideoResult<string>(VideoResultType.VideoResultUnauthorized, 401,
                         "Unauthorized. Please login first.", null),
                     statusCode: 401);
 
             if (request.Progress is < 0 or > 1)
                 return Results.Json(
-                    new IVideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
+                    new VideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
                         "Progress must be between 0 and 1.", null),
                     statusCode: 400);
 
@@ -74,18 +69,18 @@ public static class VideoWatchStatsEndpoints
 
             if (!result.Success)
                 return Results.Json(
-                    new IVideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
+                    new VideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
                         result.ErrorMessage ?? "Failed to record watch progress.", null),
                     statusCode: 400);
 
-            return Results.Ok(new IVideoResult<object>(VideoResultType.VideoResultOk, 200,
+            return Results.Ok(new VideoResult<object>(VideoResultType.VideoResultOk, 200,
                 "Watch progress recorded.", new { WatchHistoryGuid = result.WatchHistoryGuid }));
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to record watch progress for video {VideoGuid}", videoGuid);
             return Results.Json(
-                new IVideoResult<string>(VideoResultType.VideoResultInternalServerError, 500, ex.Message, null),
+                new VideoResult<string>(VideoResultType.VideoResultInternalServerError, 500, ex.Message, null),
                 statusCode: 500);
         }
     }
@@ -104,10 +99,10 @@ public static class VideoWatchStatsEndpoints
         try
         {
             // S-18.2：用户由服务端从 JWT 解析，忽略客户端传入的 UserGuid
-            var callerGuid = currentUser.UserGuid;
+            var callerGuid = currentUser.GetUserId();
             if (callerGuid == Guid.Empty)
                 return Results.Json(
-                    new IVideoResult<string>(VideoResultType.VideoResultUnauthorized, 401,
+                    new VideoResult<string>(VideoResultType.VideoResultUnauthorized, 401,
                         "Unauthorized. Please login first.", null),
                     statusCode: 401);
 
@@ -120,18 +115,18 @@ public static class VideoWatchStatsEndpoints
 
             if (!result.Success)
                 return Results.Json(
-                    new IVideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
+                    new VideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
                         result.ErrorMessage ?? "Failed to end watch.", null),
                     statusCode: 400);
 
-            return Results.Ok(new IVideoResult<object>(VideoResultType.VideoResultOk, 200,
+            return Results.Ok(new VideoResult<object>(VideoResultType.VideoResultOk, 200,
                 "Watch ended.", new { WatchHistoryGuid = result.WatchHistoryGuid }));
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to end watch for video {VideoGuid}", videoGuid);
             return Results.Json(
-                new IVideoResult<string>(VideoResultType.VideoResultInternalServerError, 500, ex.Message, null),
+                new VideoResult<string>(VideoResultType.VideoResultInternalServerError, 500, ex.Message, null),
                 statusCode: 500);
         }
     }
@@ -151,16 +146,16 @@ public static class VideoWatchStatsEndpoints
             var video = await videoServiceDI.VideoRepository.FindByVideoAsync(videoGuid);
             if (video is null)
                 return Results.Json(
-                    new IVideoResult<string>(VideoResultType.VideoResultNotFound, 404, "Video not found.", null),
+                    new VideoResult<string>(VideoResultType.VideoResultNotFound, 404, "Video not found.", null),
                     statusCode: 404);
 
             // 访问控制（S-07）：私有/定时视频仅作者或被授权者可查看统计
             if (video.VideoControl.AuthorVideo != AuthorVideo.VideoPublic)
             {
-                var callerGuid = currentUser.UserGuid;
+                var callerGuid = currentUser.GetUserId();
                 if (callerGuid == Guid.Empty || video.Affiliated is null || !video.Affiliated.Contains(callerGuid))
                     return Results.Json(
-                        new IVideoResult<string>(VideoResultType.VideoResultUnauthorized, 403,
+                        new VideoResult<string>(VideoResultType.VideoResultUnauthorized, 403,
                             "Video is private or protected.", null),
                         statusCode: 403);
             }
@@ -176,14 +171,14 @@ public static class VideoWatchStatsEndpoints
                 video.VideoQuote.Stars
             };
 
-            return Results.Ok(new IVideoResult<object>(VideoResultType.VideoResultOk, 200,
+            return Results.Ok(new VideoResult<object>(VideoResultType.VideoResultOk, 200,
                 "Success.", stats));
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to get watch stats for video {VideoGuid}", videoGuid);
             return Results.Json(
-                new IVideoResult<string>(VideoResultType.VideoResultInternalServerError, 500, ex.Message, null),
+                new VideoResult<string>(VideoResultType.VideoResultInternalServerError, 500, ex.Message, null),
                 statusCode: 500);
         }
     }

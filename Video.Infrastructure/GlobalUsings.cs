@@ -1,0 +1,19 @@
+// 全局 using 统一管理（2026-08-17 整理）
+global using CacheMemory.Core;
+global using Microsoft.AspNetCore.Http;
+global using Microsoft.EntityFrameworkCore;
+global using Microsoft.EntityFrameworkCore.Metadata.Builders;
+global using Microsoft.Extensions.Configuration;
+global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.Extensions.Logging;
+global using System.Text.Json;
+global using Video.Domain.Cache;
+global using Video.Domain.Entities;
+global using Video.Domain.IRepository;
+global using Video.Domain.IServices;
+global using Video.Domain.Server;
+global using Video.Domain.ValueObjects;
+global using Video.Infrastructure.Cache;
+global using Video.Infrastructure.EntityFramework;
+global using Video.Infrastructure.Repository;
+global using Video.Infrastructure.Service;

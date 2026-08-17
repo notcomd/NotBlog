@@ -1,3 +1,36 @@
-
+// 全局 using 统一管理（2026-08-17 整理）
+global using CacheMemory.Core;
+global using CacheMemory.Extensions;
+global using Commons.Web;
+global using FileDev.Web.API.Grpc;
+global using Grpc.Core;
+global using Grpc.Net.Client;
+global using Microsoft.AspNetCore.Http.HttpResults;
+global using Microsoft.AspNetCore.Mvc;
+global using Microsoft.Extensions.Options;
+global using NotBlog.ServiceDefaults;
 global using NotMediator.Abstractions;
 global using NotMediator.Mediator;
+global using Notcomd.EventBus.Core;
+global using Notcomd.EventBus.Extension;
+global using Notcomd.Token.JWT.Extensions;
+global using Scalar.AspNetCore;
+global using System.Net;
+global using System.Reflection;
+global using System.Text.Json;
+global using Video.Domain.Cache;
+global using Video.Domain.Entities;
+global using Video.Domain.IRepository;
+global using Video.Domain.IServices;
+global using Video.Domain.Server;
+global using Video.Domain.ValueObjects;
+global using Video.Infrastructure;
+global using Video.Infrastructure.EntityFramework;
+global using Video.Infrastructure.Service;
+global using Video.Web.API.Apis;
+global using Video.Web.API.Application.Behaviors;
+global using Video.Web.API.Application.Commands;
+global using Video.Web.API.Application.DomainEvents;
+global using Video.Web.API.Application.IntegrationEvents.Events;
+global using Video.Web.API.Dto.Request;
+global using Video.Web.API.Dto.Response;

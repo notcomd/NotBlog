@@ -1,5 +1,3 @@
-using Video.Domain.Entities;
-using Commons.SeedWork;
 
 namespace Video.Domain.IRepository;
 

@@ -1,5 +1,4 @@
 using NotMediator;
-using Video.Web.API.Application.Behaviors;
 
 namespace Video.Web.API.Application.Commands;
 

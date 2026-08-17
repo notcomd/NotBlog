@@ -1,6 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Video.Domain.Entities;
 
 namespace Video.Infrastructure.DbConfig;
 

@@ -1,6 +1,4 @@
-using Video.Infrastructure.EntityFramework;
 using Microsoft.EntityFrameworkCore;
-using Notcomd.EventBus.Core;
 using NotMediator;
 
 namespace Video.Web.API.Application.Behaviors;

@@ -1,11 +1,3 @@
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
-using Video.Domain.Entities;
-using Video.Domain.IRepository;
-using Video.Domain.IServices;
-using Video.Domain.Server;
-using Video.Web.API.Application.Commands;
-using Video.Web.API.Dto.Request;
 
 namespace Video.Web.API.Apis;
 
@@ -60,45 +52,45 @@ public static class VideoEndpoints
     /// <summary>
     /// 获取所有视频
     /// </summary>
-    private static async Task<Results<Ok<IVideoResult<List<Videos>>>,
-     JsonHttpResult<IVideoResult<List<Videos>>>>>
+    private static async Task<Results<Ok<VideoResult<List<Videos>>>,
+     JsonHttpResult<VideoResult<List<Videos>>>>>
         GetByVideoListAsync([FromServices] VideoServiceDI videoServiceDI)
     {
         var videoModel = await videoServiceDI.VideoRepository.FindByVideoListAsync();
-        return TypedResults.Ok(new IVideoResult<List<Videos>>(VideoResultType.VideoResultOk, 200, "OK", videoModel));
+        return TypedResults.Ok(new VideoResult<List<Videos>>(VideoResultType.VideoResultOk, 200, "OK", videoModel));
     }
 
     /// <summary>
     /// 根据分页获取视频
     /// </summary>
-    private static async Task<Results<Ok<IVideoResult<List<Videos>>>,
-    JsonHttpResult<IVideoResult<List<Videos>>>>>
+    private static async Task<Results<Ok<VideoResult<List<Videos>>>,
+    JsonHttpResult<VideoResult<List<Videos>>>>>
         GetByVideoPage(int index, int pageSize, [FromServices] VideoServiceDI videoServiceDI)
     {
         var videoModel = await videoServiceDI.VideoRepository.PageByVideoAsync(index, pageSize);
-        return TypedResults.Ok(new IVideoResult<List<Videos>>(VideoResultType.VideoResultOk, 200, "OK", videoModel));
+        return TypedResults.Ok(new VideoResult<List<Videos>>(VideoResultType.VideoResultOk, 200, "OK", videoModel));
     }
 
     /// <summary>
     /// 根据视频名称获取视频
     /// </summary>
-    private static async Task<Results<Ok<IVideoResult<Videos>>,
-    JsonHttpResult<IVideoResult<Videos>>>>
+    private static async Task<Results<Ok<VideoResult<Videos>>,
+    JsonHttpResult<VideoResult<Videos>>>>
         GetByVideoNameAsync(string videoName, [FromServices] VideoServiceDI videoServiceDI)
     {
         var videoModel = await videoServiceDI.VideoRepository.FindByVideoName(videoName);
-        return TypedResults.Ok(new IVideoResult<Videos>(VideoResultType.VideoResultOk, 200, "OK", videoModel));
+        return TypedResults.Ok(new VideoResult<Videos>(VideoResultType.VideoResultOk, 200, "OK", videoModel));
     }
 
     /// <summary>
     /// 模糊搜索视频
     /// </summary>
-    private static async Task<Results<Ok<IVideoResult<List<Videos>>>,
-    JsonHttpResult<IVideoResult<List<Videos>>>>>
+    private static async Task<Results<Ok<VideoResult<List<Videos>>>,
+    JsonHttpResult<VideoResult<List<Videos>>>>>
         BlurredByVideoAsync(string videoName, [FromServices] VideoServiceDI videoServiceDI)
     {
         var videoModel = await videoServiceDI.VideoRepository.BlurredByVideoName(videoName);
-        return TypedResults.Ok(new IVideoResult<List<Videos>>(VideoResultType.VideoResultOk, 200, "OK", videoModel));
+        return TypedResults.Ok(new VideoResult<List<Videos>>(VideoResultType.VideoResultOk, 200, "OK", videoModel));
     }
 
     /// <summary>
@@ -113,17 +105,17 @@ public static class VideoEndpoints
         {
             videoServiceDI.Logger.LogError("updateVideo is null");
             return Results.Json(
-                new IVideoResult<string>(VideoResultType.VideoResultBadRequest, 400, "Request body is null.", null),
+                new VideoResult<string>(VideoResultType.VideoResultBadRequest, 400, "Request body is null.", null),
                 statusCode: 400);
         }
 
         var videoModel = await videoServiceDI.VideoRepository.FindByVideoAsync(updateVideo.VideoGuid);
 
         // 作者校验：调用者必须属于视频的 Affiliated 集合（服务端解析的当前用户，不信任客户端传入的 Guid）
-        var callerGuid = currentUser.UserGuid;
+        var callerGuid = currentUser.GetUserId();
         if (callerGuid == Guid.Empty || videoModel.Affiliated is null || !videoModel.Affiliated.Contains(callerGuid))
             return Results.Json(
-                new IVideoResult<string>(VideoResultType.VideoResultUnauthorized, 403,
+                new VideoResult<string>(VideoResultType.VideoResultUnauthorized, 403,
                     "Unauthorized update attempt.", "Warning: do not do this!"),
                 statusCode: 403);
 
@@ -133,7 +125,7 @@ public static class VideoEndpoints
             updateVideo.BriefIntroduction, updateVideo.Tags.ToList());
         await videoServiceDI.VideoRepository.UpdateByVideoAsync(model);
 
-        return Results.Ok(new IVideoResult<string>(VideoResultType.VideoResultOk, 200, "Update successful.", "UP!"));
+        return Results.Ok(new VideoResult<string>(VideoResultType.VideoResultOk, 200, "Update successful.", "UP!"));
     }
 
     /// <summary>
@@ -148,10 +140,10 @@ public static class VideoEndpoints
 
         try
         {
-            var callerGuid = currentUser.UserGuid;
+            var callerGuid = currentUser.GetUserId();
             if (callerGuid == Guid.Empty)
                 return Results.Json(
-                    new IVideoResult<string>(VideoResultType.VideoResultUnauthorized, 401,
+                    new VideoResult<string>(VideoResultType.VideoResultUnauthorized, 401,
                         "Unauthorized. Please login first.", null),
                     statusCode: 401);
 
@@ -160,7 +152,7 @@ public static class VideoEndpoints
 
             if (!deleted)
                 return Results.Json(
-                    new IVideoResult<string>(VideoResultType.VideoResultForbidden, 403,
+                    new VideoResult<string>(VideoResultType.VideoResultForbidden, 403,
                         "You are not authorized to delete this video, or it does not exist.", null),
                     statusCode: 403);
 
@@ -173,14 +165,14 @@ public static class VideoEndpoints
             // 视频不存在时该仓储方法抛 AggregateException。
             logger.LogWarning(ex, "Video {VideoGuid} not found for deletion", videoGuid);
             return Results.Json(
-                new IVideoResult<string>(VideoResultType.VideoResultNotFound, 404, "Video not found.", null),
+                new VideoResult<string>(VideoResultType.VideoResultNotFound, 404, "Video not found.", null),
                 statusCode: 404);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to delete video {VideoGuid}", videoGuid);
             return Results.Json(
-                new IVideoResult<string>(VideoResultType.VideoResultInternalServerError, 500, ex.Message, null),
+                new VideoResult<string>(VideoResultType.VideoResultInternalServerError, 500, ex.Message, null),
                 statusCode: 500);
         }
     }
@@ -199,10 +191,10 @@ public static class VideoEndpoints
         try
         {
             // S-18.2：点赞用户由服务端从 JWT 解析，忽略客户端传入的 UserGuid，防伪造上报
-            var callerGuid = currentUser.UserGuid;
+            var callerGuid = currentUser.GetUserId();
             if (callerGuid == Guid.Empty)
                 return Results.Json(
-                    new IVideoResult<string>(VideoResultType.VideoResultUnauthorized, 401,
+                    new VideoResult<string>(VideoResultType.VideoResultUnauthorized, 401,
                         "Unauthorized. Please login first.", null),
                     statusCode: 401);
 
@@ -211,7 +203,7 @@ public static class VideoEndpoints
 
             if (!validFields.Contains(request.Field))
                 return Results.Json(
-                    new IVideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
+                    new VideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
                         $"Invalid field '{request.Field}'. Valid: upvote, down, ballot, share.", null),
                     statusCode: 400);
 
@@ -222,25 +214,25 @@ public static class VideoEndpoints
                 Field: request.Field,
                 IsLike: request.IsLike);
 
-            var result = await videoServiceDI. NotMediator.SendAsync(command);
+            var result = await videoServiceDI.NotMediator.SendAsync(command);
 
             if (!result.Success)
                 return Results.Json(
-                    new IVideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
+                    new VideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
                         result.ErrorMessage ?? "Failed to like video.", null),
                     statusCode: 400);
 
             logger.LogInformation("Video {VideoGuid}: {Field} like operation, NewCount={Count}",
                 videoGuid, request.Field, result.NewCount);
 
-            return Results.Ok(new IVideoResult<object>(VideoResultType.VideoResultOk, 200,
+            return Results.Ok(new VideoResult<object>(VideoResultType.VideoResultOk, 200,
                 "Video like updated.", new { Field = request.Field, NewCount = result.NewCount }));
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to like video {VideoGuid}", videoGuid);
             return Results.Json(
-                new IVideoResult<string>(VideoResultType.VideoResultInternalServerError, 500, ex.Message, null),
+                new VideoResult<string>(VideoResultType.VideoResultInternalServerError, 500, ex.Message, null),
                 statusCode: 500);
         }
     }

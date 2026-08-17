@@ -1,6 +1,4 @@
 using NotMediator;
-using Notcomd.EventBus.Core;
-using Video.Web.API.Application.IntegrationEvents.Events;
 
 namespace Video.Web.API.Application.DomainEvents;
 

@@ -1,9 +1,3 @@
-using System.Text.Json;
-using CacheMemory.Core;
-using Microsoft.Extensions.Logging;
-using Video.Domain.Cache;
-using Video.Domain.Entities;
-using Video.Domain.ValueObjects;
 
 namespace Video.Infrastructure.Cache;
 

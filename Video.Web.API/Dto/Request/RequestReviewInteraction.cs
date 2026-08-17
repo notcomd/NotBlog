@@ -12,7 +12,7 @@ public class RequestReviewInteraction
     /// <summary>用于修改的互动字段</summary>
     public string Field { get; init;} = string.Empty;
 
-    /// <summary>是否增加</summarysummary>
+    /// <summary>是否增加</summary>
     public bool IsIncrement { get; init; } = true;
 
     public bool IsValid(out string? error)

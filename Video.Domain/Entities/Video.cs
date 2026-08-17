@@ -1,6 +1,3 @@
-using Commons.SeedWork;
-using Video.Domain.ValueObjects;
-using Video.Domain.Events;
 
 namespace Video.Domain.Entities;
 
@@ -117,27 +114,6 @@ public class Videos : Entity<int>, IAggregateRoot
         if (VideoControl.VideoProtectedTime!.StartTime >= timeOffset)
             throw new ArgumentException("结束时间不能小于开始时间");
         VideoControl.VideoProtectedTime!.SetEndTime(timeOffset);
-    }
-
-    /// <summary>
-    /// 更新视频信息
-    /// </summary>
-    /// <param name="videoName">视频名称</param>
-    /// <param name="briefIntroduction">视频简介</param>
-    /// <param name="videoCover">视频封面</param>
-    /// <param name="videoFileUri">视频文件Uri</param>
-    /// <param name="videoTags">视频标签</param>
-    /// <param name="videoControl">视频控制权限</param>
-    public void UpDataVideo(string videoName, string briefIntroduction, Uri videoCover, Uri videoFileUri,
-        List<string> videoTags, VideoControl videoControl)
-    {
-        VideoName = videoName;
-        BriefIntroduction = briefIntroduction;
-        VideoCover = videoCover;
-        VideoFileUri = videoFileUri;
-        AddVideoTags(videoTags);
-        VideoControl.ChangeByVideoController(videoControl);
-        TimeSpace.ResetUpdateAt(DateTimeOffset.UtcNow);
     }
 
     /// <summary>

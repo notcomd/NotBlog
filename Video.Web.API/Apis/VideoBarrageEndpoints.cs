@@ -1,11 +1,3 @@
-using System.Net;
-using Microsoft.AspNetCore.Mvc;
-using Video.Domain.Entities;
-using Video.Domain.IServices;
-using Video.Domain.ValueObjects;
-using Video.Web.API.Application.Commands;
-using Video.Web.API.Dto.Request;
-using Video.Web.API.Dto.Response;
 
 namespace Video.Web.API.Apis;
 
@@ -29,9 +21,21 @@ public static class VideoBarrageEndpoints
             .WithName("GetBarrages")
             .WithDescription("Get barrages for a video");
 
+        group.MapDelete("/{videoGuid:guid}/{barrageGuid:guid}", DeleteBarrageAsync)
+            .WithName("DeleteBarrage")
+            .WithDescription("Delete a specific barrage from a video")
+            .RequireAuthorization();
+
         return group;
     }
 
+    /// <summary>
+    /// 添加视频弹幕（命令操作 — CQRS + 幂等性）
+    /// </summary>
+    /// <param name="request">弹幕添加请求</param>
+    /// <param name="videoServiceDI">视频服务依赖</param>
+    /// <param name="currentUser">当前用户服务</param>
+    /// <returns></returns>
     private static async Task<IResult> AddBarrageAsync(
        [FromForm] RequestAddBarrage request,
         [FromServices] VideoServiceDI videoServiceDI,
@@ -42,10 +46,10 @@ public static class VideoBarrageEndpoints
         try
         {
             // S-18.2：弹幕归属用户由服务端从 JWT 解析，忽略客户端传入的 UserGuid，防伪造上报
-            var callerGuid = currentUser.UserGuid;
+            var callerGuid = currentUser.GetUserId();
             if (callerGuid == Guid.Empty)
                 return Results.Json(
-                    new IVideoResult<string>(VideoResultType.VideoResultUnauthorized, 401,
+                    new VideoResult<string>(VideoResultType.VideoResultUnauthorized, 401,
                         "Unauthorized. Please login first.", null),
                     statusCode: 401);
 
@@ -54,21 +58,21 @@ public static class VideoBarrageEndpoints
 
             if (!hasText && !hasImages)
                 return Results.Json(
-                    new IVideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
+                    new VideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
                         "弹幕必须包含文本或图片内容", null),
                     statusCode: 400);
 
             // S-17：弹幕文本长度上限（100 字符），防止超大弹幕拖垮渲染
             if (hasText && request.VideoBarrageBody!.Length > 100)
                 return Results.Json(
-                    new IVideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
+                    new VideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
                         "弹幕文本长度不能超过 100 个字符", null),
                     statusCode: 400);
 
             var video = await videoServiceDI.VideoService.GetByVideoAsync(request.VideoGuid);
             if (video is null)
                 return Results.Json(
-                    new IVideoResult<string>(VideoResultType.VideoResultNotFound, 404, "Video not found.", null),
+                    new VideoResult<string>(VideoResultType.VideoResultNotFound, 404, "Video not found.", null),
                     statusCode: 404);
 
             var domainImages = request.VideoImages?
@@ -91,24 +95,30 @@ public static class VideoBarrageEndpoints
             logger.LogInformation("Barrage added to video {VideoGuid} by user {UserGuid}",
                 request.VideoGuid, callerGuid);
 
-            return Results.Ok(new IVideoResult<string>(VideoResultType.VideoResultOk, 200,
+            return Results.Ok(new VideoResult<string>(VideoResultType.VideoResultOk, 200,
                 "Barrage published successfully.", barrageGuid.ToString()));
         }
         catch (ArgumentException ex)
         {
             return Results.Json(
-                new IVideoResult<string>(VideoResultType.VideoResultBadRequest, 400, ex.Message, null),
+                new VideoResult<string>(VideoResultType.VideoResultBadRequest, 400, ex.Message, null),
                 statusCode: 400);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to add barrage to video {VideoGuid}", request.VideoGuid);
             return Results.Json(
-                new IVideoResult<string>(VideoResultType.VideoResultInternalServerError, 500, ex.Message, null),
+                new VideoResult<string>(VideoResultType.VideoResultInternalServerError, 500, ex.Message, null),
                 statusCode: 500);
         }
     }
 
+    /// <summary>
+    /// 获取视频弹幕列表（查询操作 — CQRS）
+    /// </summary>
+    /// <param name="videoGuid">视频 GUID</param>
+    /// <param name="videoServiceDI">视频服务依赖</param>
+    /// <returns></returns>
     private static async Task<IResult> GetBarragesAsync(
         Guid videoGuid,
         [FromServices] VideoServiceDI videoServiceDI)
@@ -120,7 +130,7 @@ public static class VideoBarrageEndpoints
             var video = await videoServiceDI.VideoService.GetByVideoAsync(videoGuid);
             if (video is null)
                 return Results.Json(
-                    new IVideoResult<List<BarrageResponse>>(VideoResultType.VideoResultNotFound, 404,
+                    new VideoResult<List<BarrageResponse>>(VideoResultType.VideoResultNotFound, 404,
                         "Video not found.", null),
                     statusCode: 404);
 
@@ -139,15 +149,68 @@ public static class VideoBarrageEndpoints
                 })
                 .ToList() ?? [];
 
-            return Results.Ok(new IVideoResult<List<BarrageResponse>>(VideoResultType.VideoResultOk, 200,
+            return Results.Ok(new VideoResult<List<BarrageResponse>>(VideoResultType.VideoResultOk, 200,
                 "Success.", barrages));
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to get barrages for video {VideoGuid}", videoGuid);
             return Results.Json(
-                new IVideoResult<List<BarrageResponse>>(VideoResultType.VideoResultInternalServerError, 500,
+                new VideoResult<List<BarrageResponse>>(VideoResultType.VideoResultInternalServerError, 500,
                     ex.Message, null),
+                statusCode: 500);
+        }
+    }
+
+    /// <summary>
+    /// 删除视频弹幕（命令操作 — CQRS + 幂等性）
+    /// </summary>
+    /// <param name="videoGuid">视频 GUID</param>
+    /// <param name="barrageGuid">弹幕 GUID</param>
+    /// <param name="videoServiceDI">视频服务依赖</param>
+    /// <param name="currentUser">当前用户服务</param>
+    /// <returns></returns>
+    private static async Task<IResult> DeleteBarrageAsync(
+        Guid videoGuid,
+        Guid barrageGuid,
+        [FromServices] VideoServiceDI videoServiceDI,
+        [FromServices] ICurrentUserService currentUser)
+    {
+        var logger = videoServiceDI.Logger;
+
+        try
+        {
+            var callerGuid = currentUser.GetUserId();
+            if (callerGuid == Guid.Empty)
+                return Results.Json(
+                    new VideoResult<string>(VideoResultType.VideoResultUnauthorized, 401,
+                        "Unauthorized. Please login first.", null),
+                    statusCode: 401);
+
+            var command = new DeleteVideoBarrageCommand(
+                VideoGuid: videoGuid,
+                VideoBarrageGuid: barrageGuid
+                );
+
+            var result = await videoServiceDI.NotMediator.SendAsync(command);
+
+            if (result)
+                return Results.Json(
+                    new VideoResult<string>(VideoResultType.VideoResultInternalServerError, 500,
+                        "Delete failed.", null),
+                    statusCode: 500);
+
+            logger.LogInformation("Barrage {BarrageGuid} deleted from video {VideoGuid} by user {UserGuid}",
+                barrageGuid, videoGuid, callerGuid);
+
+            return Results.Ok(new VideoResult<string>(VideoResultType.VideoResultOk, 200,
+                "Barrage deleted successfully.", barrageGuid.ToString()));
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to delete barrage {BarrageGuid} from video {VideoGuid}", barrageGuid, videoGuid);
+            return Results.Json(
+                new VideoResult<string>(VideoResultType.VideoResultInternalServerError, 500, ex.Message, null),
                 statusCode: 500);
         }
     }

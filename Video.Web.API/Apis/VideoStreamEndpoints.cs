@@ -1,9 +1,3 @@
-using CacheMemory.Core;
-using Video.Domain.Cache;
-using Video.Domain.Entities;
-using Video.Domain.IRepository;
-using Video.Domain.IServices;
-using Video.Domain.Server;
 
 namespace Video.Web.API.Apis;
 
@@ -47,7 +41,7 @@ public static class VideoStreamEndpoints
         // 访问控制（S-07）：私有/定时视频仅作者或被授权者可访问
         if (video.VideoControl.AuthorVideo != AuthorVideo.VideoPublic)
         {
-            var callerGuid = currentUser.UserGuid;
+            var callerGuid = currentUser.GetUserId();
             if (callerGuid == Guid.Empty || video.Affiliated is null || !video.Affiliated.Contains(callerGuid))
                 return Results.Json(new { error = "Video is private or protected" }, statusCode: 403);
         }
@@ -84,7 +78,7 @@ public static class VideoStreamEndpoints
         // 连续 Range 请求 5 分钟内只计 1 次观看；异常不阻断流响应。
         try
         {
-            var dedupKey = VideoCacheKeys.VideoWatchWindow(video.VideoGuid, currentUser.UserGuid);
+            var dedupKey = VideoCacheKeys.VideoWatchWindow(video.VideoGuid, currentUser.GetUserId());
             var shouldCount = await redis.StringSetIfNotExistsAsync(
                 dedupKey, "1", VideoCacheKeys.VideoWatchWindowTtl);
             if (shouldCount)

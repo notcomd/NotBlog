@@ -1,4 +1,3 @@
-using Notcomd.EventBus.Core;
 
 namespace Video.Web.API.Application.IntegrationEvents.Events;
 
@@ -9,4 +8,4 @@ namespace Video.Web.API.Application.IntegrationEvents.Events;
 public record VideoPublishedIntegrationEvent(
     Guid VideoGuid,
     string Title,
-    string CoverUrl) : IntegrationEvent;
+    Uri CoverUrl) : IntegrationEvent;

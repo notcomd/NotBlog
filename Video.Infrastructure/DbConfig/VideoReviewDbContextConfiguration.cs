@@ -1,6 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Video.Domain.Entities;
 
 namespace Video.Infrastructure.DbConfig;
 
@@ -24,15 +21,12 @@ public class VideoReviewDbContextConfiguration : IEntityTypeConfiguration<VideoR
             x.Property(s => s.AuthorVideo).HasColumnName("AuthorVideo");
             x.Property(s => s.VideoDelete).HasColumnName("VideoDelete");
             x.Property(s => s.VideoDisplay).HasColumnName("VideoDisplay");
-            //x.Property(s => s.VideoProtectedTime).HasColumnName("VideoProtectedTime");
             x.OwnsOne(en => en.VideoProtectedTime, x =>
             {
                 x.ToJson();
                 x.Property(s => s.StartTime).HasColumnName("StartTime");
                 x.Property(s => s.EndTime).HasColumnName("EndTime");
-                //x.WithOwner().HasForeignKey("VideoReviewGuid");
             });
-            //x.WithOwner().HasForeignKey("VideoReviewGuid");
         });
         builder.OwnsOne(en => en.VideoQuote, x =>
         {
@@ -43,7 +37,6 @@ public class VideoReviewDbContextConfiguration : IEntityTypeConfiguration<VideoR
             x.Property(s => s.Down).HasColumnName("c_Down");
             x.Property(s => s.Ballot).HasColumnName("c_Ballot");
             x.Property(s => s.Share).HasColumnName("c_Share");
-            //x.WithOwner().HasForeignKey("VideoReviewGuid");
         });
         builder.OwnsOne(en => en.TimeSpace, x =>
         {

@@ -1,8 +1,3 @@
-using Microsoft.Extensions.Logging;
-using Video.Domain.Cache;
-using Video.Domain.Entities;
-using Video.Domain.IRepository;
-using Video.Domain.Server;
 
 namespace Video.Infrastructure.Service;
 
@@ -26,22 +21,6 @@ public class VideoService : IVideoService
         ILogger<IVideoRepository> logger) : this(videoRepository, logger)
     {
         _cacheService = cacheService;
-    }
-
-    public async Task<List<Videos>> GetByVideosAllAsync()
-    {
-        if (_cacheService is not null)
-        {
-            var cached = await _cacheService.GetVideoListAsync(VideoCacheKeys.VideoListAll);
-            if (cached is { Count: > 0 }) return cached;
-        }
-
-        var result = await _videoRepository.FindByVideoListAsync();
-
-        if (_cacheService is not null)
-            _ = _cacheService.SetVideoListAsync(VideoCacheKeys.VideoListAll, result);
-
-        return result;
     }
 
     public async Task<Videos> GetByVideoAsync(Guid videoGuid)

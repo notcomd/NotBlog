@@ -40,7 +40,6 @@ public record VideoQuote
     // 原子减少（确保不会减为负数）
     public void DownUpvote()   => AtomicDecrement(ref _upvote);
     public void DownStars()    => AtomicDecrement(ref _stars);
-    //public void DownWatch()    => AtomicDecrement(ref _watch);
     public void DownDown()     => AtomicDecrement(ref _down);
     public void DownBallot()   => AtomicDecrement(ref _ballot);
     public void DownShare()    => AtomicDecrement(ref _share);

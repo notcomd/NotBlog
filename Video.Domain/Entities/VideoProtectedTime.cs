@@ -34,12 +34,12 @@ public record VideoProtectedTime
         EndTime = endTime;
     }
 
-    public static VideoProtectedTime Crate(DateTimeOffset startTime, DateTimeOffset endTime)
+    public static VideoProtectedTime Create(DateTimeOffset startTime, DateTimeOffset endTime)
     {
         return new VideoProtectedTime(startTime, endTime);
     }
 
-    public static VideoProtectedTime? Crate(DateTimeOffset? startTime, DateTimeOffset? endTime)
+    public static VideoProtectedTime? Create(DateTimeOffset? startTime, DateTimeOffset? endTime)
     {
         if (startTime == DateTimeOffset.MinValue && endTime == DateTimeOffset.MinValue) return null;
 

@@ -1,10 +1,4 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using Video.Domain.Entities;
-using Video.Domain.IRepository;
 using Commons.SeedWork;
-using Video.Domain.ValueObjects;
-using Video.Infrastructure.EntityFramework;
 
 namespace Video.Infrastructure.Repository;
 
@@ -19,6 +13,7 @@ public class VideoRepository(ILogger<IVideoRepository> videoLogger, VideoDbConte
         var videoModel = await videoDbContext.Videos
             .Include(en => en.VideoQuote)
             .Include(en => en.VideoControl)
+            .Include(en => en.VideoBarrageList!.Where(en => !en.IsDelete))
             .ToListAsync();
         return videoModel;
     }
@@ -38,7 +33,7 @@ public class VideoRepository(ILogger<IVideoRepository> videoLogger, VideoDbConte
             .Include(en => en.VideoQuote)
             .Include(en => en.VideoControl)
             .Include(en => en.VideoReviews)
-            .Include(en => en.VideoBarrageList)
+            .Include(en => en.VideoBarrageList!.Where(en => !en.IsDelete))
             .SingleOrDefaultAsync(en => en.VideoGuid == findVideoGuid);
         if (videoModel is null) throw new AggregateException($"[{DateTimeOffset.UtcNow}]无法查询到相关信息");
         videoLogger.LogWarning($"[{DateTimeOffset.UtcNow}]查询数据{findVideoGuid}完成");
@@ -103,6 +98,7 @@ public class VideoRepository(ILogger<IVideoRepository> videoLogger, VideoDbConte
     {
         var videoModel = await videoDbContext.Videos
             .Include(en => en.VideoQuote)
+            .Include(en=>en.VideoBarrageList!.Where(en => !en.IsDelete))
             .Include(en => en.VideoControl)
             .Where(en => !en.VideoControl.VideoDelete
                 && en.VideoControl.AuthorVideo == AuthorVideo.VideoPublic
@@ -138,6 +134,11 @@ public class VideoRepository(ILogger<IVideoRepository> videoLogger, VideoDbConte
     }
 
 
+    /// <summary>
+    /// 根据视频名称模糊查询视频列表
+    /// </summary>
+    /// <param name="videoName"></param>
+    /// <returns></returns>
     public async Task<List<Videos>> BlurredByVideoName(string videoName)
     {
         var videoModel = await videoDbContext.Videos

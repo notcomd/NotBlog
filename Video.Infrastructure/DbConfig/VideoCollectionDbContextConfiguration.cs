@@ -1,6 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Video.Domain.Entities;
 
 namespace Video.Infrastructure.DbConfig;
 
@@ -31,7 +28,6 @@ public class VideoCollectionDbContextConfiguration : IEntityTypeConfiguration<Vi
             x.Property(s => s.AuthorVideo).HasColumnName("AuthorVideo");
             x.Property(s => s.VideoDelete).HasColumnName("VideoDelete");
             x.Property(s => s.VideoDisplay).HasColumnName("VideoDisplay");
-            //x.Property(s => s.VideoProtectedTime).HasColumnName("VideoProtectedTime");
             x.OwnsOne(en => en.VideoProtectedTime, x =>
             {
                 x.Property(s => s.StartTime).HasColumnName("StartTime");

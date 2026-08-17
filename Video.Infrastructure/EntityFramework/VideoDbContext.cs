@@ -1,8 +1,6 @@
 using Commons.Extensions;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using NotMediator.Abstractions;
-using Video.Domain.Entities;
 using Commons.SeedWork;
 
 namespace Video.Infrastructure.EntityFramework;

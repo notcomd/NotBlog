@@ -1,14 +1,4 @@
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
 using NotMediator;
-using Video.Domain.Cache;
-using Video.Domain.Entities;
-using Video.Domain.IRepository;
-using Video.Domain.IServices;
-using Video.Domain.Server;
-using Video.Web.API.Dto.Request;
-using Video.Web.API.Dto.Response;
-using Video.Web.API.Application.Commands;
 
 namespace Video.Web.API.Apis;
 
@@ -25,7 +15,7 @@ public static class VideoReviewEndpoints
         if (video.VideoControl.AuthorVideo == AuthorVideo.VideoPublic)
             return false;
 
-        var callerGuid = currentUser.UserGuid;
+        var callerGuid = currentUser.GetUserId();
         return callerGuid == Guid.Empty || video.Affiliated is null || !video.Affiliated.Contains(callerGuid);
     }
 
@@ -71,20 +61,20 @@ public static class VideoReviewEndpoints
         {
             if (string.IsNullOrWhiteSpace(request.Body) && (request.VideoImages is null || request.VideoImages.Count == 0))
                 return Results.Json(
-                    new IVideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
+                    new VideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
                         "Comment body or images are required.", null),
                     statusCode: 400);
 
             if (request.VideoImages is { Count: > 9 })
                 return Results.Json(
-                    new IVideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
+                    new VideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
                         "Maximum 9 images per comment.", null),
                     statusCode: 400);
 
             var video = await videoService.GetByVideoAsync(request.VideoGuid);
             if (video is null)
                 return Results.Json(
-                    new IVideoResult<string>(VideoResultType.VideoResultNotFound, 404, "Video not found.", null),
+                    new VideoResult<string>(VideoResultType.VideoResultNotFound, 404, "Video not found.", null),
                     statusCode: 404);
 
             var command = new AddVideoReviewCommand(
@@ -100,20 +90,20 @@ public static class VideoReviewEndpoints
             logger.LogInformation("Review added to video {VideoGuid} by user {UserGuid}",
                 request.VideoGuid, request.UserGuid);
 
-            return Results.Ok(new IVideoResult<string>(VideoResultType.VideoResultOk, 200,
+            return Results.Ok(new VideoResult<string>(VideoResultType.VideoResultOk, 200,
                 "Review added successfully.", "OK"));
         }
         catch (AggregateException)
         {
             return Results.Json(
-                new IVideoResult<string>(VideoResultType.VideoResultNotFound, 404, "Video not found.", null),
+                new VideoResult<string>(VideoResultType.VideoResultNotFound, 404, "Video not found.", null),
                 statusCode: 404);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to add review to video {VideoGuid}", request.VideoGuid);
             return Results.Json(
-                new IVideoResult<string>(VideoResultType.VideoResultInternalServerError, 500, ex.Message, null),
+                new VideoResult<string>(VideoResultType.VideoResultInternalServerError, 500, ex.Message, null),
                 statusCode: 500);
         }
     }
@@ -136,13 +126,13 @@ public static class VideoReviewEndpoints
             var video = await videoService.GetByVideoAsync(videoGuid);
             if (video is null)
                 return Results.Json(
-                    new IVideoResult<List<VideoReviewResponse>>(VideoResultType.VideoResultNotFound, 404,
+                    new VideoResult<List<VideoReviewResponse>>(VideoResultType.VideoResultNotFound, 404,
                         "Video not found.", null),
                     statusCode: 404);
 
             if (IsAccessForbidden(video, currentUser))
                 return Results.Json(
-                    new IVideoResult<List<VideoReviewResponse>>(VideoResultType.VideoResultUnauthorized, 403,
+                    new VideoResult<List<VideoReviewResponse>>(VideoResultType.VideoResultUnauthorized, 403,
                         "Video is private or protected.", null),
                     statusCode: 403);
 
@@ -169,14 +159,14 @@ public static class VideoReviewEndpoints
                     r.VideoQuote.Upvote, r.VideoQuote.Stars, r.VideoQuote.Watch))
                 .ToList();
 
-            return Results.Ok(new IVideoResult<List<VideoReviewResponse>>(VideoResultType.VideoResultOk, 200,
+            return Results.Ok(new VideoResult<List<VideoReviewResponse>>(VideoResultType.VideoResultOk, 200,
                 "Success.", response));
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to get reviews for video {VideoGuid}", videoGuid);
             return Results.Json(
-                new IVideoResult<List<VideoReviewResponse>>(VideoResultType.VideoResultInternalServerError, 500,
+                new VideoResult<List<VideoReviewResponse>>(VideoResultType.VideoResultInternalServerError, 500,
                     ex.Message, null),
                 statusCode: 500);
         }
@@ -201,13 +191,13 @@ public static class VideoReviewEndpoints
             var video = await videoService.GetByVideoAsync(videoGuid);
             if (video is null)
                 return Results.Json(
-                    new IVideoResult<List<VideoReviewResponse>>(VideoResultType.VideoResultNotFound, 404,
+                    new VideoResult<List<VideoReviewResponse>>(VideoResultType.VideoResultNotFound, 404,
                         "Video not found.", null),
                     statusCode: 404);
 
             if (IsAccessForbidden(video, currentUser))
                 return Results.Json(
-                    new IVideoResult<List<VideoReviewResponse>>(VideoResultType.VideoResultUnauthorized, 403,
+                    new VideoResult<List<VideoReviewResponse>>(VideoResultType.VideoResultUnauthorized, 403,
                         "Video is private or protected.", null),
                     statusCode: 403);
 
@@ -235,14 +225,14 @@ public static class VideoReviewEndpoints
                     r.VideoQuote.Upvote, r.VideoQuote.Stars, r.VideoQuote.Watch))
                 .ToList();
 
-            return Results.Ok(new IVideoResult<List<VideoReviewResponse>>(VideoResultType.VideoResultOk, 200,
+            return Results.Ok(new VideoResult<List<VideoReviewResponse>>(VideoResultType.VideoResultOk, 200,
                 "Success.", response));
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to get replies for review {ReviewGuid}", reviewGuid);
             return Results.Json(
-                new IVideoResult<List<VideoReviewResponse>>(VideoResultType.VideoResultInternalServerError, 500,
+                new VideoResult<List<VideoReviewResponse>>(VideoResultType.VideoResultInternalServerError, 500,
                     ex.Message, null),
                 statusCode: 500);
         }
@@ -262,10 +252,10 @@ public static class VideoReviewEndpoints
         {
             if (!request.IsValid(out var error))
                 return Results.Json(
-                    new IVideoResult<string>(VideoResultType.VideoResultBadRequest, 400, error!, null),
+                    new VideoResult<string>(VideoResultType.VideoResultBadRequest, 400, error!, null),
                     statusCode: 400);
 
-            var command = new LikeVideoReviewCommand(
+            var command = new QuoteVideoReviewCommand(
                 RequestId: Guid.CreateVersion7(),
                 VideoGuid: request.VideoGuid,
                 UserGuid: Guid.Empty, // 可从认证上下文获取
@@ -277,21 +267,21 @@ public static class VideoReviewEndpoints
 
             if (!result.Success)
                 return Results.Json(
-                    new IVideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
+                    new VideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
                         result.ErrorMessage ?? "Failed to like review.", null),
                     statusCode: 400);
 
             logger.LogInformation("Review {ReviewGuid}: {Field} like operation completed, NewCount={Count}",
                 reviewGuid, request.Field, result.NewCount);
 
-            return Results.Ok(new IVideoResult<object>(VideoResultType.VideoResultOk, 200,
+            return Results.Ok(new VideoResult<object>(VideoResultType.VideoResultOk, 200,
                 $"Review like '{request.Field}' updated.", new { NewCount = result.NewCount }));
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to like review {ReviewGuid}", reviewGuid);
             return Results.Json(
-                new IVideoResult<string>(VideoResultType.VideoResultInternalServerError, 500, ex.Message, null),
+                new VideoResult<string>(VideoResultType.VideoResultInternalServerError, 500, ex.Message, null),
                 statusCode: 500);
         }
     }
@@ -313,20 +303,20 @@ public static class VideoReviewEndpoints
             var video = await videoService.GetByVideoAsync(videoGuid);
             if (video is null)
                 return Results.Json(
-                    new IVideoResult<object>(VideoResultType.VideoResultNotFound, 404,
+                    new VideoResult<object>(VideoResultType.VideoResultNotFound, 404,
                         "Video not found.", null),
                     statusCode: 404);
 
             if (IsAccessForbidden(video, currentUser))
                 return Results.Json(
-                    new IVideoResult<object>(VideoResultType.VideoResultUnauthorized, 403,
+                    new VideoResult<object>(VideoResultType.VideoResultUnauthorized, 403,
                         "Video is private or protected.", null),
                     statusCode: 403);
 
             var review = video.VideoReviews?.FirstOrDefault(r => r.VideoReviewGuid == reviewGuid);
             if (review is null)
                 return Results.Json(
-                    new IVideoResult<object>(VideoResultType.VideoResultNotFound, 404,
+                    new VideoResult<object>(VideoResultType.VideoResultNotFound, 404,
                         "Review not found.", null),
                     statusCode: 404);
 
@@ -341,14 +331,14 @@ public static class VideoReviewEndpoints
                 review.VideoQuote.Share
             };
 
-            return Results.Ok(new IVideoResult<object>(VideoResultType.VideoResultOk, 200,
+            return Results.Ok(new VideoResult<object>(VideoResultType.VideoResultOk, 200,
                 "Success.", interaction));
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to get interaction for review {ReviewGuid}", reviewGuid);
             return Results.Json(
-                new IVideoResult<object>(VideoResultType.VideoResultInternalServerError, 500,
+                new VideoResult<object>(VideoResultType.VideoResultInternalServerError, 500,
                     ex.Message, null),
                 statusCode: 500);
         }

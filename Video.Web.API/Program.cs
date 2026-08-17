@@ -1,18 +1,3 @@
-using System.Reflection;
-using CacheMemory.Extensions;
-using Commons.Web;
-using NotBlog.ServiceDefaults;
-using Notcomd.EventBus.Extension;
-using Notcomd.Token.JWT.Extensions;
-using NotMediator.Abstractions;
-using NotMediator.Mediator;
-using Scalar.AspNetCore;
-using Video.Domain.IServices;
-using Video.Infrastructure;
-using Video.Infrastructure.EntityFramework;
-using Video.Web.API.Apis;
-using Video.Web.API.Application.Commands;
-using Video.Web.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,6 +35,7 @@ builder.Services.AddJwtAuthentication(builder.Configuration.GetSection("JwtOptio
 builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+builder.Services.AddScoped<VideoServiceDI>();
 
 // NotMediator with pipeline behaviors
 builder.Services.AddNotMediator(typeof(Program).Assembly);

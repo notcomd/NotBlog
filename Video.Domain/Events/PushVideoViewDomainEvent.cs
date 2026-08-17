@@ -1,4 +1,3 @@
-using NotMediator.Abstractions;
 
 namespace Video.Domain.Events;
 

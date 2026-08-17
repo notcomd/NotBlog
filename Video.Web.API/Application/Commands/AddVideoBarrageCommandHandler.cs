@@ -1,7 +1,4 @@
 using NotMediator;
-using Video.Domain.Cache;
-using Video.Domain.IRepository;
-using Video.Domain.Entities;
 
 namespace Video.Web.API.Application.Commands;
 

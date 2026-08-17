@@ -1,5 +1,4 @@
 
-using Video.Domain.Entities;
 
 namespace Video.Domain.ValueObjects;
 
@@ -12,7 +11,7 @@ public record VideoControl
         AuthorVideo = AuthorVideo.VideoPublic;
         BarrageControl = BarrageControl.BarrageOn;
         TimeSpace = new(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
-        VideoProtectedTime = VideoProtectedTime.Crate(null, null);
+        VideoProtectedTime = VideoProtectedTime.Create(null, null);
     }
     
     public static VideoControl VideoControlBuilder()
@@ -69,7 +68,7 @@ public record VideoControl
 
     public void SetProtectedTime(DateTimeOffset startTime, DateTimeOffset endTime)
     {
-        VideoProtectedTime = VideoProtectedTime.Crate(startTime, endTime);
+        VideoProtectedTime = VideoProtectedTime.Create(startTime, endTime);
     }
 
 

@@ -1,13 +1,3 @@
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Video.Domain.Cache;
-using Video.Domain.IRepository;
-using Video.Domain.Server;
-using Video.Domain.ValueObjects;
-using Video.Infrastructure.Cache;
-using Video.Infrastructure.Repository;
-using Video.Infrastructure.Service;
 
 namespace Video.Infrastructure;
 
@@ -19,9 +9,6 @@ public static class VideoInfrastructureExtensions
         services.AddScoped<IVideoRepository, VideoRepository>();
         services.AddScoped<IVideoCollectionRepository, VideoCollectionRepository>();
         services.AddScoped<IVideoHistoryRepository, VideoHistoryRepository>();
-
-        // Domain Services — I-prefix interfaces with Infrastructure implementations
-        services.AddScoped<IVideoCollectionService, VideoCollectionService>();
 
         services.AddScoped<IVideoService>(sp =>
         {
@@ -36,13 +23,6 @@ public static class VideoInfrastructureExtensions
         // Cache Service
         services.AddScoped<IVideoCacheService, VideoCacheService>();
 
-        // Infrastructure Services
-        services.AddHttpClient<FileDevClient>(client =>
-        {
-            client.BaseAddress = new Uri("http://localhost:5000");
-            client.Timeout = TimeSpan.FromMinutes(30);
-        });
-
         return services;
     }
 
@@ -50,12 +30,6 @@ public static class VideoInfrastructureExtensions
         this IServiceCollection services, string fileDevBaseUrl)
     {
         services.AddVideoInfrastructure();
-
-        services.AddHttpClient<FileDevClient>(client =>
-        {
-            client.BaseAddress = new Uri(fileDevBaseUrl);
-            client.Timeout = TimeSpan.FromMinutes(30);
-        });
 
         return services;
     }

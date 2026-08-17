@@ -1,11 +1,4 @@
-using FileDev.Web.API.Grpc;
-using Grpc.Core;
-using Grpc.Net.Client;
-using Microsoft.Extensions.Options;
 using NotMediator;
-using Video.Domain.Entities;
-using Video.Domain.IRepository;
-using Video.Domain.Cache;
 
 namespace Video.Web.API.Application.Commands;
 
@@ -86,8 +79,8 @@ public class UploadVideoViaGrpcCommandHandler(
             var videoFileUri = new Uri(videoUploadResponse.FileUri, UriKind.RelativeOrAbsolute);
 
             var videoAuthorizes = new HashSet<Guid> { command.UserId };
-            var video = new Videos(videoAuthorizes, command.VideoName, coverUri,
-                videoFileUri, command.BriefIntroduction, command.Tags);
+            var video = new Videos(videoAuthorizes.ToList(), command.VideoName, coverUri,
+                videoFileUri, command.BriefIntroduction, command.Tags.ToList());
             video.VideoControlChangeByVideoController(command.VideoControl);
 
             await videoRepository.AddByVideoAsync(video);
@@ -95,7 +88,7 @@ public class UploadVideoViaGrpcCommandHandler(
 
             // 4. 触发视频发布领域事件
             video.AddDomainEvent(new DomainEvents.VideoPublishedDomainEvent(
-                video.VideoGuid, command.VideoName, coverUri.ToString()));
+                video.VideoGuid, command.VideoName, coverUri));
 
             await videoRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
 

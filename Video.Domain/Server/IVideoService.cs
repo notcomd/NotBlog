@@ -1,4 +1,3 @@
-using Video.Domain.Entities;
 
 namespace Video.Domain.Server;
 
@@ -8,7 +7,6 @@ namespace Video.Domain.Server;
 /// </summary>
 public interface IVideoService
 {
-    Task<List<Videos>> GetByVideosAllAsync();
     Task<Videos> GetByVideoAsync(Guid videoGuid);
     Task<Videos> GetByVideoAsync(string videoName);
     Task<List<Videos>> PagesByVideosAsync(int index, int size);

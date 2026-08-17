@@ -1,10 +1,4 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using Video.Domain.Entities;
-using Video.Domain.IRepository;
 using Commons.SeedWork;
-using Video.Domain.ValueObjects;
-using Video.Infrastructure.EntityFramework;
 
 namespace Video.Infrastructure.Repository;
 
@@ -69,9 +63,9 @@ public class VideoCollectionRepository(VideoDbContext videoDbContext, ILogger<IV
     }
 
 
-    public Task UpdateByVideoCollectionAsync(VideoCollection updataVideoCollection)
+    public Task UpdateByVideoCollectionAsync(VideoCollection updateVideoCollection)
     {
-        videoDbContext.VideoCollections.Update(updataVideoCollection);
+        videoDbContext.VideoCollections.Update(updateVideoCollection);
         return Task.CompletedTask;
     }
 
@@ -101,16 +95,6 @@ public class VideoCollectionRepository(VideoDbContext videoDbContext, ILogger<IV
             .ExecuteUpdateAsync(en1 =>
                 en1.SetProperty(en => en.VideoQuote, videoQuote)
             );
-    }
-
-    public async Task<List<VideoCollection>> ColmonByVideoCollectionAsync(string missing_name)
-    {
-        var videoCollection = await videoDbContext.VideoCollections
-            .Where(en => en.VideoCollectionName.Contains(missing_name))
-            .ToListAsync();
-        if (videoCollection is null) throw new ArgumentNullException($"[{DateTimeOffset.UtcNow}]数据为空");
-        logger.LogInformation($"[{DateTimeOffset.UtcNow}]查询完成{missing_name}");
-        return videoCollection;
     }
 
     // ── Standard Delete Operations ──

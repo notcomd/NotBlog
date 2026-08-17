@@ -1,9 +1,5 @@
 
-using Video.Domain.Server;
-using Video.Domain.IRepository;
-using Video.Domain.Cache;
 using NotMediator;
-using Video.Infrastructure.Service;
 
 namespace Video.Web.API.Apis;
 
@@ -16,6 +12,5 @@ public record VideoServiceDI(
     INotMediator NotMediator,
     IVideoCollectionRepository VideoCollectionRepository,
     IVideoHistoryRepository? VideoHistoryRepository,
-    ILogger<VideoServiceDI> Logger,
-    FileDevClient FileDevClient
+    ILogger<VideoServiceDI> Logger
 );

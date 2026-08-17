@@ -1,5 +1,3 @@
-using Commons.SeedWork;
-using Video.Domain.ValueObjects;
 
 namespace Video.Domain.Entities;
 
@@ -87,76 +85,7 @@ public class VideoReview : Entity<int>
         Content = ReviewContent.CreateDefault(videoReviewBody, videoImages);
     }
 
-    /// <summary>
-    /// 创建纯文本评论。
-    /// </summary>
-    public static VideoReview CreateTextReview(Guid videoGuid, Guid userGuid,
-        string body, Guid? rootGuid = null)
-    {
-        var review = new VideoReview
-        {
-            VideoGuid = videoGuid,
-            UserGuid = userGuid,
-            RootReview = rootGuid
-        };
-        review.Content = ReviewContent.CreateText(body);
-        return review;
-    }
-
-    /// <summary>
-    /// 创建图片评论。
-    /// </summary>
-    public static VideoReview CreateImageReview(Guid videoGuid, Guid userGuid,
-        List<VideoImage> images, string? caption = null, Guid? rootGuid = null)
-    {
-        var review = new VideoReview
-        {
-            VideoGuid = videoGuid,
-            UserGuid = userGuid,
-            RootReview = rootGuid
-        };
-        review.Content = ReviewContent.CreateImage(images, caption);
-        return review;
-    }
-
-    /// <summary>
-    /// 创建视频评论。
-    /// </summary>
-    public static VideoReview CreateVideoReview(Guid videoGuid, Guid userGuid,
-        List<VideoImage> videoItems, string? description = null, Guid? rootGuid = null)
-    {
-        var review = new VideoReview
-        {
-            VideoGuid = videoGuid,
-            UserGuid = userGuid,
-            RootReview = rootGuid
-        };
-        review.Content = ReviewContent.CreateVideo(videoItems, description);
-        return review;
-    }
-
-    /// <summary>
-    /// 创建富文本评论。
-    /// </summary>
-    public static VideoReview CreateRichTextReview(Guid videoGuid, Guid userGuid,
-        string richTextBody, Guid? rootGuid = null)
-    {
-        var review = new VideoReview
-        {
-            VideoGuid = videoGuid,
-            UserGuid = userGuid,
-            RootReview = rootGuid
-        };
-        review.Content = ReviewContent.CreateRichText(richTextBody);
-        return review;
-    }
-
     // ── 行为方法 ──
-
-    public void AddByRootReview(Guid rootGuid)
-    {
-        RootReview = rootGuid;
-    }
 
     /// <summary>更新内容为纯文本</summary>
     public void UpdateContentToText(string body)
@@ -199,84 +128,5 @@ public class VideoReview : Entity<int>
             return (false, $"Unknown content type: '{ContentType}'.");
 
         return (true, null);
-    }
-
-    // ── Builder ──
-
-    public class VideoReviewBuilder
-    {
-        private Guid _videoGuid;
-        private Guid _userGuid;
-        private Guid? _rootGuid;
-        private string? _contentType;           // 新增
-        private string? _videoReviewBody;
-        private List<VideoImage>? _videoImages;
-
-        public VideoReviewBuilder WithVideoGuid(Guid videoGuid)
-        {
-            _videoGuid = videoGuid;
-            return this;
-        }
-
-        public VideoReviewBuilder WithUserGuid(Guid userGuid)
-        {
-            _userGuid = userGuid;
-            return this;
-        }
-
-        public VideoReviewBuilder WithRootGuid(Guid? rootGuid)
-        {
-            _rootGuid = rootGuid;
-            return this;
-        }
-
-        /// <summary>
-        /// [新增] 指定内容类型。设置后将使用对应工厂方法创建。
-        /// 若不设置则使用 CreateDefault 自动推断。
-        /// </summary>
-        public VideoReviewBuilder WithContentType(string contentType)
-        {
-            _contentType = contentType;
-            return this;
-        }
-
-        public VideoReviewBuilder WithVideoReviewBody(string? videoReviewBody)
-        {
-            _videoReviewBody = videoReviewBody;
-            return this;
-        }
-
-        public VideoReviewBuilder WithVideoImages(List<VideoImage>? videoImages)
-        {
-            _videoImages = videoImages;
-            return this;
-        }
-
-        public VideoReview Build()
-        {
-            // 如果指定了内容类型，使用对应工厂方法
-            if (_contentType is not null)
-            {
-                return _contentType.ToLowerInvariant() switch
-                {
-                    ReviewContentType.Text => CreateTextReview(
-                        _videoGuid, _userGuid, _videoReviewBody ?? string.Empty, _rootGuid),
-                    ReviewContentType.Image => CreateImageReview(
-                        _videoGuid, _userGuid, _videoImages ?? [],
-                        _videoReviewBody, _rootGuid),
-                    ReviewContentType.Video => CreateVideoReview(
-                        _videoGuid, _userGuid, _videoImages ?? [],
-                        _videoReviewBody, _rootGuid),
-                    ReviewContentType.RichText => CreateRichTextReview(
-                        _videoGuid, _userGuid, _videoReviewBody ?? string.Empty, _rootGuid),
-                    _ => new VideoReview(_videoGuid, _userGuid, _rootGuid,
-                        _videoReviewBody, _videoImages)
-                };
-            }
-
-            // 向后兼容：使用默认推断
-            return new VideoReview(_videoGuid, _userGuid, _rootGuid,
-                _videoReviewBody, _videoImages);
-        }
     }
 }
