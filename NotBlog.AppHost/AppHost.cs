@@ -4,32 +4,38 @@ using Projects;
 var builder = DistributedApplication.CreateBuilder(args);
 
 // ═══════════════════════════════════════════════════════════════════
-// 基础设施资源（本机服务连接串）
-// 说明（本地模式）：当前网络环境无法从 Docker Hub/国内镜像源拉取大镜像，
-// 故改为连接本机已运行的 PostgreSQL(127.0.0.1:5432, postgres 免密) /
-// Redis(127.0.0.1:6379) / RabbitMQ(127.0.0.1:5672, guest/guest)。
-// 数据库（identity/notfile/message/video/markdownpostgres）已在本地建好；
-// 如需恢复容器模式，将下方替换回 AddPostgres/AddRedis/AddRabbitMQ 即可。
+// 基础设施资源（Aspire 托管容器：PostgreSQL / Redis / RabbitMQ）
+// 说明（2026-08-17 容器模式）：由 Aspire 拉起容器资源（Docker Desktop / Podman），
+// 各服务经 WithReference 注入连接串（ConnectionStrings__<name>），注入名与各服务
+// GetConnectionString(...) 的 key 精确对齐；RabbitMQ 固定宿主端口 5672（Message/FileDev
+// 的 DEBUG 手动配置节仍指向 localhost/127.0.0.1:5672 guest/guest，零改动兼容——Aspire
+// AddRabbitMQ 默认凭据即 guest/guest）。
+// ⚠️ 镜像拉取：默认 docker.io 官方镜像；如网络受限，用 .WithImage(...) 换国内镜像源
+// （如 docker.m.daocloud.io/library/postgres:17.4）。
+// ⚠️ 数据：容器是全新空库（非本机 PG 的旧数据）——Identity 启动时 Migrate + 权限数据需重新灌入、
+// Message 需执行 Infrastructure/Sql/MessageSchema.sql（其余服务有 EF Migrations 自动建表）；
+// .WithDataVolume() 保证容器重启后数据不丢。
 // ═══════════════════════════════════════════════════════════════════
 
-// 注意：Aspire 13.4 中 AddConnectionString(name, string) 已不存在（该签名现被解析为
-// AddConnectionString(name, environmentVariableName)，会把字符串当作环境变量名），
-// 必须使用 AddConnectionString(name, ReferenceExpression.Create($"...")) 显式传值。
-// 本地 PostgreSQL 为 trust 免密认证，Password 为占位值，用于满足各服务 S-01 凭据外置校验。
+// PostgreSQL：单实例多库。AddDatabase(注入连接名, PG库名)——连接名保持各服务期望值。
+var postgres = builder.AddPostgres("postgres")
+    .WithDataVolume();
+var identityDb = postgres.AddDatabase("IdentityPostgres", "identitypostgres");      // Identity.Web.API（GetConnectionString("IdentityPostgres")）
+var notfileDb = postgres.AddDatabase("NotFilePostgres", "notfilepostgres");         // FileDev.Web.API（经环境变量 DbContextConnect 注入）
+var messageDb = postgres.AddDatabase("PostgresSQL", "messagepostgres");             // Message.Web.API（GetConnectionString("PostgresSQL")——注意连接名不是 MessagePostgres）
+var videoDb = postgres.AddDatabase("VideoPostgres", "videopostgres");               // Video.Web.API（GetConnectionString("VideoPostgres")）
+var markDb = postgres.AddDatabase("MarkDownPostgres", "markdownpostgres");          // Markdown.Web.API（GetConnectionString("MarkDownPostgres")）
 
-// PostgreSQL：本机实例，按模块拆库；数据库名即各服务期望的连接串名称（F-03 命名约定保持不变）。
-var identityDb = builder.AddConnectionString("IdentityPostgres", ReferenceExpression.Create($"Host=127.0.0.1;Port=5432;Database=identitypostgres;Username=postgres;Password=postgres"));  // Identity.Web.API（RELEASE 读 ConnectionStrings:IdentityPostgres）
-var notfileDb = builder.AddConnectionString("NotFilePostgres", ReferenceExpression.Create($"Host=127.0.0.1;Port=5432;Database=notfilepostgres;Username=postgres;Password=postgres"));    // FileDev.Web.API（经环境变量 DbContextConnect 注入）
-var messageDb = builder.AddConnectionString("MessagePostgres", ReferenceExpression.Create($"Host=127.0.0.1;Port=5432;Database=messagepostgres;Username=postgres;Password=postgres"));    // Message.Web.API（经 connectionName 映射为 "PostgresSQL"）
-var videoDb = builder.AddConnectionString("VideoPostgres", ReferenceExpression.Create($"Host=127.0.0.1;Port=5432;Database=videopostgres;Username=postgres;Password=postgres"));          // Video.Web.API（AddNpgsql("VideoPostgres")）
-var markDb = builder.AddConnectionString("MarkDownPostgres", ReferenceExpression.Create($"Host=127.0.0.1;Port=5432;Database=markdownpostgres;Username=postgres;Password=postgres"));     // Markdown.Web.API（AddNpgsql("MarkDownPostgres")）
+// Redis：单实例。Identity/Message 读连接名 "Redis"，Video/FileDev 经 WithReference(connectionName:"CacheMemory") 注入。
+var redis = builder.AddRedis("Redis")
+    .WithDataVolume();
 
-// Redis：本机实例。不同模块期望的连接名不同（Identity/Message 用 "Redis"，Video/FileDev 用 "CacheMemory"），
-// 通过 WithReference(connectionName:) 将同一实例按各自期望的名称注入。
-var redis = builder.AddConnectionString("Redis", ReferenceExpression.Create($"127.0.0.1:6379"));
-
-// RabbitMQ：本机实例（guest/guest），命名 EventBus，与各服务 AddRabbitMQClient("EventBus") 对齐。
-var rabbitmq = builder.AddConnectionString("EventBus", ReferenceExpression.Create($"amqp://guest:guest@127.0.0.1:5672"));
+// RabbitMQ：单实例（guest/guest，与 Message/FileDev DEBUG 手动配置节默认值一致）。
+// 固定宿主端口 5672：手动配置节（localhost:5672 / 127.0.0.1:5672）无需改动即可连通；
+// ⚠️ 要求本机 5672 空闲（停掉本机 RabbitMQ 实例，否则端口绑定冲突）。
+var rabbitmq = builder.AddRabbitMQ("EventBus")
+    .WithEndpoint(port: 5672, targetPort: 5672, name: "tcp")
+    .WithDataVolume();
 
 // ═══════════════════════════════════════════════════════════════════
 // 业务服务（项目）
@@ -69,8 +75,9 @@ if (!string.IsNullOrEmpty(gatewayInternalApiKey))
 // Message：消息服务。数据库期望连接名 "PostgresSQL"（非 MessagePostgres），缓存用 "Redis"；
 // 经服务发现（WithReference(filedev)）调用 FileDev 的文件上传 gRPC 服务。
 var message = builder.AddProject<Message_Web_API>("message-web-api")
-    .WithReference(messageDb, connectionName: "PostgresSQL")
+    .WithReference(messageDb)
     .WithReference(redis)
+    .WithReference(rabbitmq)
     .WithReference(filedev);
 
 // Markdown：数据库 AddNpgsql("MarkDownPostgres")；RabbitMQ AddRabbitMQClient("EventBus")（RELEASE）。
@@ -84,7 +91,7 @@ var video = builder.AddProject<Video_Web_API>("video-web-api")
     .WithReference(videoDb)
     .WithReference(redis, connectionName: "CacheMemory")
     .WithReference(rabbitmq)
-    .WithEnvironment("FileDev__BaseUrl", "http://filedev-web-api");
+    .WithEnvironment("FileDev_BaseUrl", "http://filedev-web-api");
 
 // YARP 网关：接入服务发现（WithReference 注入各服务的 services__<name>__http/https 端点），
 // appsettings.json 中集群地址与 IdentityService:BaseUrl 改用虚拟主机名（https://<service-name>）。
@@ -98,5 +105,14 @@ var gateway = builder.AddProject<NotBlog_Yarp>("notblog-yarp-gateway")
 // V4：网关内部调用凭证（与 Identity 侧保持一致；未配置时网关启动将失败）
 if (!string.IsNullOrEmpty(gatewayInternalApiKey))
     gateway.WithEnvironment("GATEWAY_INTERNAL_API_KEY", gatewayInternalApiKey);
+
+// ═══════════════════════════════════════════════════════════════════
+// Docker Compose 部署目标（2026-08-17 添加）
+// aspire add docker 已引入 Aspire.Hosting.Docker 13.4.6；此环境资源使
+// aspire publish / aspire deploy 可生成 docker-compose.yaml + .env 部署工件。
+// 单 compute environment（compose 即唯一部署目标），无需 WithComputeEnvironment。
+// 生成物：aspire publish -o <dir> → docker-compose.yaml / .env / 各服务 Dockerfile。
+// ═══════════════════════════════════════════════════════════════════
+builder.AddDockerComposeEnvironment("docker-compose");
 
 builder.Build().Run();

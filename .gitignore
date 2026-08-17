@@ -35,3 +35,6 @@ secrets.json
 # 测试结果目录
 TestResults/
 *.trx
+
+# Aspire 部署工件（docker-compose.yaml / .env 等生成物，由 aspire publish 重新生成）
+aspire-output/

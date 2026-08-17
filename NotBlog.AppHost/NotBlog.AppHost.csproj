@@ -13,15 +13,16 @@
       <ProjectReference Include="..\Identity.Web.API\Identity.Web.API.csproj" />
       <ProjectReference Include="..\Markdown.Web.API\Markdown.Web.API.csproj" />
       <ProjectReference Include="..\Message.Web.API\Message.Web.API.csproj" />
-        <ProjectReference Include="..\NotBlog_Yarp\NotBlog_Yarp.csproj"/>
+        <ProjectReference Include="..\NotBlog_Yarp\NotBlog_Yarp.csproj" />
       <ProjectReference Include="..\Video.Web.API\Video.Web.API.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Aspire.Hosting.AppHost" Version="13.4.6"/>
-        <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="13.4.6"/>
-        <PackageReference Include="Aspire.Hosting.RabbitMQ" Version="13.4.6"/>
-        <PackageReference Include="Aspire.Hosting.Redis" Version="13.4.6"/>
+        <PackageReference Include="Aspire.Hosting.AppHost" Version="13.4.6" />
+        <PackageReference Include="Aspire.Hosting.Docker" Version="13.4.6" />
+        <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="13.4.6" />
+        <PackageReference Include="Aspire.Hosting.RabbitMQ" Version="13.4.6" />
+        <PackageReference Include="Aspire.Hosting.Redis" Version="13.4.6" />
     </ItemGroup>
 
 </Project>
