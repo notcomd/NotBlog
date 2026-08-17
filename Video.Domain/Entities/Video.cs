@@ -11,7 +11,7 @@ public class Videos : Entity<int>, IAggregateRoot
 {
     public Guid VideoGuid { get; init; }
 
-    public HashSet<Guid> Affiliated { get; private set; }
+    public List<Guid> Affiliated { get; private set; }
 
     public Uri VideoCover { get; private set; } = null!;
 
@@ -19,7 +19,7 @@ public class Videos : Entity<int>, IAggregateRoot
 
     public string BriefIntroduction { get; private set; } = null!;
 
-    public HashSet<string> VideoTags { get; private set; }
+    public List<string> VideoTags { get; private set; }
 
     public Uri VideoFileUri { get; private set; } = null!;
 
@@ -48,8 +48,8 @@ public class Videos : Entity<int>, IAggregateRoot
         TimeSpace = new TimeSpace(DateTime.UtcNow, DateTime.UtcNow);
     }
 
-    public Videos(HashSet<Guid> affiliatedAuthorizes, string videoName, Uri videoCover
-        , Uri videoFileUri, string briefIntroduction, HashSet<string> videoTags) : this()
+    public Videos(List<Guid> affiliatedAuthorizes, string videoName, Uri videoCover
+        , Uri videoFileUri, string briefIntroduction, List<string> videoTags) : this()
     {
         AddByUser(affiliatedAuthorizes);
         VideoName = videoName;
@@ -61,7 +61,7 @@ public class Videos : Entity<int>, IAggregateRoot
     }
 
 
-    private void AddByUser(HashSet<Guid> affiliated)
+    private void AddByUser(List<Guid> affiliated)
     {
         Affiliated = affiliated ?? throw new ArgumentNullException($"{affiliated}不为空");
         TimeSpace.ResetUpdateAt(DateTimeOffset.UtcNow);
@@ -101,7 +101,7 @@ public class Videos : Entity<int>, IAggregateRoot
     /// 添加视频标签
     /// </summary>
     /// <param name="videoTags">视频标签</param>
-    private void AddVideoTags(HashSet<string> videoTags)
+    private void AddVideoTags(List<string> videoTags)
     {
         VideoTags = videoTags ?? throw new ArgumentNullException($"{videoTags}不为空");
         TimeSpace.ResetUpdateAt(DateTimeOffset.UtcNow);
@@ -129,7 +129,7 @@ public class Videos : Entity<int>, IAggregateRoot
     /// <param name="videoTags">视频标签</param>
     /// <param name="videoControl">视频控制权限</param>
     public void UpDataVideo(string videoName, string briefIntroduction, Uri videoCover, Uri videoFileUri,
-        HashSet<string> videoTags, VideoControl videoControl)
+        List<string> videoTags, VideoControl videoControl)
     {
         VideoName = videoName;
         BriefIntroduction = briefIntroduction;

@@ -48,7 +48,7 @@
   &lt;Assembly Path="C:\Users\29617\.nuget\packages\npgsql.entityframeworkcore.postgresql\8.0.4\lib\net8.0\Npgsql.EntityFrameworkCore.PostgreSQL.dll" /&gt;&#xD;
   &lt;Assembly Path="C:\Users\29617\.nuget\packages\microsoft.extensions.dependencyinjection.abstractions\9.0.4\lib\net9.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll" /&gt;&#xD;
   &lt;Assembly Path="C:\Users\29617\.nuget\packages\npgsql\9.0.3\lib\net8.0\Npgsql.dll" /&gt;&#xD;
-  &lt;Assembly Path="C:\Users\notco\.nuget\packages\notmediator\1.0.5\lib\net9.0\NotMediator.dll" /&gt;&#xD;
+  &lt;Assembly Path="C:\Users\notco\.nuget\packages\notmediator\1.0.5\lib\net9.0\ dll" /&gt;&#xD;
   &lt;Assembly Path="C:\Users\notco\.nuget\packages\microsoft.aspnetcore.http.abstractions\2.3.11\lib\netstandard2.0\Microsoft.AspNetCore.Http.Abstractions.dll" /&gt;&#xD;
 &lt;/AssemblyExplorer&gt;</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/CreateUnitTestDialog/TestProjectMapping/=B26DD4F5_002DE99A_002D4351_002D939C_002D35D158CB61C5/@EntryIndexedValue">Identity.Domain.Tests</s:String>

@@ -130,7 +130,7 @@ public static class VideoEndpoints
         // 修正参数错赋：VideoFileUri 与 VideoCover 各自独立赋值，不能把封面当视频文件 Uri
         var model = new Videos(videoModel.Affiliated, updateVideo.VideoName, updateVideo.VideoCover,
             updateVideo.VideoFileUri,
-            updateVideo.BriefIntroduction, updateVideo.Tags);
+            updateVideo.BriefIntroduction, updateVideo.Tags.ToList());
         await videoServiceDI.VideoRepository.UpdateByVideoAsync(model);
 
         return Results.Ok(new IVideoResult<string>(VideoResultType.VideoResultOk, 200, "Update successful.", "UP!"));
