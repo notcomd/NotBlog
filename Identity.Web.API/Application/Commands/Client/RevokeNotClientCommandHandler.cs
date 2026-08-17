@@ -6,7 +6,7 @@ namespace Identity.Web.API.Application.Commands.Client;
 public class RevokeNotClientCommandHandler(
     INotClientRepository clientRepository,
     ILogger<RevokeNotClientCommandHandler> logger)
-    : NotMediator.IRequestHandler<RevokeNotClientCommand, bool>
+    :  IRequestHandler<RevokeNotClientCommand, bool>
 {
     public async Task<bool> Handler(RevokeNotClientCommand command, CancellationToken ct)
     {

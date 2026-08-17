@@ -7,8 +7,8 @@ public class NotClientEntityTypeConfiguration : IEntityTypeConfiguration<NotClie
         builder.ToTable("NotClient");
 
         builder.Ignore(b => b.DomainEvents);
-
-        builder.Property(x => x.Id).UseHiLo("NotClientseq");
+        builder.Ignore(o=>o.Id);
+      //  builder.Property(x => x.Id).UseHiLo("NotClientseq");
 
         // 主键
         builder.HasKey(xn => xn.NotClientId);

@@ -5,7 +5,8 @@ public class UserExternalLoginEntityTypeConfiguration : IEntityTypeConfiguration
     public void Configure(EntityTypeBuilder<UserExternalLogin> builder)
     {
         builder.ToTable("UserExternalLogins");
-
+        builder.Ignore(b => b.DomainEvents);
+        builder.Ignore(o=>o.Id);
         builder.HasKey(e => e.LoginId);
 
         // 托管 EF 值生成（Guid v7 在实体层生成，不依赖 DB 默认值）

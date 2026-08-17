@@ -7,6 +7,7 @@ public class RoleGroupEntityTypeConfiguration : IEntityTypeConfiguration<RoleGro
         builder.ToTable("RoleGroups");
 
         builder.HasKey(g => g.RoleGroupGuid);
+        builder.Ignore(o=>o.Id);
 
         builder.Property(g => g.RoleGroupGuid).HasDefaultValueSql("gen_random_uuid()");
 

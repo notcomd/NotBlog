@@ -9,8 +9,9 @@ public class UserSafetyEntityTypeConfiguration : IEntityTypeConfiguration<UserSa
         builder.Ignore(b => b.DomainEvents);
         // builder.Property(o => o.DomainEvents);
 
-        builder.Property(x => x.Id).UseHiLo("UserSafarseq");
+        builder.Ignore(o=>o.Id);
 
+        builder.HasKey(x => x.UserSafetyGuid);
         builder.Property(x => x.UserGuid).HasColumnName("user_guid")
             .IsRequired();
     }

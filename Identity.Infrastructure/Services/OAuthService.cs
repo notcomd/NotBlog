@@ -299,7 +299,7 @@ public class OAuthService(
                 user.UserGuid,
                 user.UserEmail,
                 user.UserName,
-                user.ImageCover,
+                user.AvatarUrl,
                 user.UserRoleGuid.ToArray()
             ),
             isNewUser

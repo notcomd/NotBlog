@@ -5,9 +5,10 @@ public class UserAccessFailEntityTypeConfiguration : IEntityTypeConfiguration<Us
     public void Configure(EntityTypeBuilder<UserAccessFail> builder)
     {
         builder.ToTable("UserAccessFail");
-
+        builder.HasKey(x => x.UserAccessFailGuid);
         builder.Ignore(b => b.DomainEvents);
+        builder.Ignore(o=>o.Id);
 
-        builder.Property(o => o.Id).UseHiLo("UserAccessFailseq");
+        //builder.Property(o => o.Id).UseHiLo("UserAccessFailseq");
     }
 }

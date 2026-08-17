@@ -18,7 +18,7 @@ public enum RoleAuthority
     User = 2,
 
     /// <summary>
-    ///     游客
+    /// 游客
     /// </summary>
     Guest = 3,
 

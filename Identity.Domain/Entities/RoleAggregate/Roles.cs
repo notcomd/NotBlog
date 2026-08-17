@@ -6,7 +6,7 @@ namespace Identity.Domain.Entities.RoleAggregate;
 /// 与 RoleGroup 的关系：通过 RoleGroupGuids（Guid 列表）引用所属角色组 ID，
 /// 不再直接持有 RoleGroup 对象引用，避免聚合根间双向循环依赖。
 /// </summary>
-public class Roles : Entity<int>, IAggregateRoot
+public class Roles : Entity<Guid>, IAggregateRoot
 {
     protected Roles()
     {

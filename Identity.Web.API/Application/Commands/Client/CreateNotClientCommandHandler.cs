@@ -6,7 +6,7 @@ namespace Identity.Web.API.Application.Commands.Client;
 public class CreateNotClientCommandHandler(
     INotClientRepository clientRepository,
     ILogger<CreateNotClientCommandHandler> logger)
-    : NotMediator.IRequestHandler<CreateNotClientCommand, CreateNotClientResult>
+    :  IRequestHandler<CreateNotClientCommand, CreateNotClientResult>
 {
     /// <summary>Token 端点认证方式白名单（RFC 6749 §2.3.1 / RFC 7591）</summary>
     private static readonly HashSet<string> AllowedAuthMethods = new(StringComparer.OrdinalIgnoreCase)

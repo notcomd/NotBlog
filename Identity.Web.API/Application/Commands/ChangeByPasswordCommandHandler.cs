@@ -6,7 +6,7 @@ namespace Identity.Web.API.Application.Commands;
 public class ChangeByPasswordCommandHandler(
     IUserRepository userRepository,
     IIdentityCacheService identityCacheService)
-    : NotMediator.IRequestHandler<ChangeByPasswordCommand, bool>
+    :  IRequestHandler<ChangeByPasswordCommand, bool>
 {
     public async Task<bool> Handler(ChangeByPasswordCommand request, CancellationToken cancellationToken)
     {

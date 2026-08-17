@@ -4,7 +4,7 @@ public class PermissionEntityTypeConfigurtion : IEntityTypeConfiguration<Permiss
     {
         builder.ToTable("Permissions");
         builder.Ignore(b => b.DomainEvents);
-
+        builder.Ignore(o=>o.Id);        
         builder.HasKey(x => x.PermissionId);
 
 

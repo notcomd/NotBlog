@@ -6,7 +6,7 @@ namespace Identity.Web.API.Application.Commands.Client;
 public class UpdateNotClientCommandHandler(
     INotClientRepository clientRepository,
     ILogger<UpdateNotClientCommandHandler> logger)
-    : NotMediator.IRequestHandler<UpdateNotClientCommand, bool>
+    :  IRequestHandler<UpdateNotClientCommand, bool>
 {
     public async Task<bool> Handler(UpdateNotClientCommand command, CancellationToken ct)
     {

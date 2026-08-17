@@ -13,7 +13,7 @@ public class UserLoginHistoryEntityTypeConfiguration : IEntityTypeConfiguration<
 
         builder.Ignore(b => b.DomainEvents);
 
-        builder.Property(o => o.Id).UseHiLo("UserLoginHistoryseq");
+        builder.Ignore(o=>o.Id);
 
         builder.HasKey(x => x.LoginGuid);
 

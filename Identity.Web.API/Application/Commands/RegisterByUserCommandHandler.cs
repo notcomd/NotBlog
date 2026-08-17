@@ -12,7 +12,7 @@ public class RegisterByUserCommandHandler(
     IIdentityCacheService identityCacheService,
     IOutboxStore outboxStore
 )
-    : NotMediator.IRequestHandler<RegisterByUserCommand, bool>
+    : IRequestHandler<RegisterByUserCommand, bool>
 {
 
     //private readonly string cacheKey = "RegisterByUserCommandHandler";

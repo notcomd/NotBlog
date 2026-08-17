@@ -8,7 +8,8 @@ public class UserEntityTypeConfiguration : IEntityTypeConfiguration<User>
 
         builder.Ignore(b => b.DomainEvents);
 
-        builder.Property(o => o.Id).UseHiLo("Userseq");
+        builder.Ignore(o=>o.Id);
+        //builder.Property(o => o.Id).UseHiLo("Userseq");
 
         builder.OwnsOne(o => o.UserAddress);
 
@@ -27,7 +28,7 @@ public class UserEntityTypeConfiguration : IEntityTypeConfiguration<User>
 
         builder.Property(x => x.PasswordHash).HasColumnName("password_hash").IsRequired().HasMaxLength(100);
 
-        builder.Property(x => x.ImageCover).HasColumnName("image_cover").IsRequired(false);
+        builder.Property(x => x.AvatarUrl).HasColumnName("avatar_url").IsRequired(false);
 
         builder.Property(x => x.CreateDatetime).HasColumnName("create_datetime").IsRequired();
 

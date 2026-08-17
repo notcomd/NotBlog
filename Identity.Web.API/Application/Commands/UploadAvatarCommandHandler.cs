@@ -4,7 +4,7 @@ using Identity.Web.API.Grpc;
 namespace Identity.Web.API.Application.Commands;
 
 public class UploadAvatarCommandHandler
-    : NotMediator.IRequestHandler<UploadAvatarCommand, UploadAvatarResult>
+    : IRequestHandler<UploadAvatarCommand, UploadAvatarResult>
 {
     private readonly FileStorage.FileStorageClient _grpcClient;
     private readonly ILogger<UploadAvatarCommandHandler> _logger;

@@ -3,7 +3,7 @@ using Notcomd.Token.JWT.Security;
 
 namespace Identity.Domain.Entities.UserAggregate;
 
-public class User : Entity<int>, IAggregateRoot
+public class User : Entity<Guid>, IAggregateRoot
 {
     protected User()
     {
@@ -24,7 +24,7 @@ public class User : Entity<int>, IAggregateRoot
     public List<Guid> UserRoleGuid { get; private set; }
 
     /// <summary>
-    /// 用户作者ID
+    /// 用户权限ID
     /// </summary>
     public List<Guid> AuthorGuids { get; private set; }
 
@@ -36,7 +36,7 @@ public class User : Entity<int>, IAggregateRoot
     /// <summary>
     /// 用户头像
     /// </summary>
-    public Uri? ImageCover { get; private set; }
+    public Uri? AvatarUrl { get; private set; }
 
     /// <summary>
     /// 用户邮箱
@@ -109,7 +109,7 @@ public class User : Entity<int>, IAggregateRoot
             UserName = userEmail,
             UserEmail = userEmail,
             PasswordHash = await HashH256Tool.CreateHash256Async(passwordHash, salt),
-            ImageCover = imageCover,
+            AvatarUrl = imageCover,
             UserAccessFail = UserAccessFail.CreateUserAccessFail(userGuid) ??
                              throw new ArgumentNullException(nameof(UserAccessFail)),
             UserSafety = UserSafety.CreateByUserSafety(userGuid, stamp, Convert.ToBase64String(salt)) ??
@@ -157,7 +157,7 @@ public class User : Entity<int>, IAggregateRoot
             UserEmail = phoneNumber.PhoneCode,
             PhoneNumber = phoneNumber,
             PasswordHash = await HashH256Tool.CreateHash256Async(passwordHash, salt),
-            ImageCover = imageCover,
+            AvatarUrl = imageCover,
             UserAccessFail = UserAccessFail.CreateUserAccessFail(userGuid) ??
                              throw new ArgumentNullException(nameof(UserAccessFail)),
             UserSafety = UserSafety.CreateByUserSafety(userGuid, stamp, Convert.ToBase64String(salt)) ??

@@ -11,8 +11,8 @@ public class RoleEntityTypeConfiguration : IEntityTypeConfiguration<Roles>
         builder.Property(r => r.RoleGuid).HasDefaultValueSql("gen_random_uuid()");
 
         builder.Ignore(r => r.DomainEvents);
-        builder.Ignore(r => r.UserGuid);
-
+       // builder.Ignore(r => r.UserGuid);
+        builder.Ignore(o=>o.Id);
         builder.Property(r => r.RoleAuthority).HasConversion<string>().HasMaxLength(50);
 
         builder.Property(r => r.RoleStatus).HasConversion<string>().HasMaxLength(50);

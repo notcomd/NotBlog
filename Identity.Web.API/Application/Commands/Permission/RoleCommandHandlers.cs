@@ -3,7 +3,7 @@ namespace Identity.Web.API.Application.Commands;
 public class CreateRoleCommandHandler(
     IUserRoleRepository userRoleRepository,
     ILogger<CreateRoleCommandHandler> logger)
-    : NotMediator.IRequestHandler<CreateRoleCommand, CreateRoleResult>
+    : IRequestHandler<CreateRoleCommand, CreateRoleResult>
 {
     public async Task<CreateRoleResult> Handler(
         CreateRoleCommand command, CancellationToken ct)
@@ -26,7 +26,7 @@ public class CreateRoleCommandHandler(
 public class UpdateRoleCommandHandler(
     IUserRoleRepository userRoleRepository,
     ILogger<UpdateRoleCommandHandler> logger)
-    : NotMediator.IRequestHandler<UpdateRoleCommand, bool>
+    : IRequestHandler<UpdateRoleCommand, bool>
 {
     public async Task<bool> Handler(
         UpdateRoleCommand command, CancellationToken ct)
@@ -56,7 +56,7 @@ public class UpdateRoleCommandHandler(
 public class DeleteRoleCommandHandler(
     IUserRoleRepository userRoleRepository,
     ILogger<DeleteRoleCommandHandler> logger)
-    : NotMediator.IRequestHandler<DeleteRoleCommand, bool>
+    : IRequestHandler<DeleteRoleCommand, bool>
 {
     public async Task<bool> Handler(
         DeleteRoleCommand command, CancellationToken ct)

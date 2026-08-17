@@ -3,7 +3,7 @@ namespace Identity.Web.API.Application.Commands;
 public class CreatePermissionCommandHandler(
     IPermissionRepository permissionRepository,
     ILogger<CreatePermissionCommandHandler> logger)
-    : NotMediator.IRequestHandler<CreatePermissionCommand, CreatePermissionResult>
+    :  IRequestHandler<CreatePermissionCommand, CreatePermissionResult>
 {
     public async Task<CreatePermissionResult> Handler(
         CreatePermissionCommand command, CancellationToken ct)
@@ -32,7 +32,7 @@ public class CreatePermissionCommandHandler(
 public class UpdatePermissionCommandHandler(
     IPermissionRepository permissionRepository,
     ILogger<UpdatePermissionCommandHandler> logger)
-    : NotMediator.IRequestHandler<UpdatePermissionCommand, bool>
+    :  IRequestHandler<UpdatePermissionCommand, bool>
 {
     public async Task<bool> Handler(
         UpdatePermissionCommand command, CancellationToken ct)
@@ -62,7 +62,7 @@ public class UpdatePermissionCommandHandler(
 public class DeletePermissionCommandHandler(
     IPermissionRepository permissionRepository,
     ILogger<DeletePermissionCommandHandler> logger)
-    : NotMediator.IRequestHandler<DeletePermissionCommand, bool>
+    :  IRequestHandler<DeletePermissionCommand, bool>
 {
     public async Task<bool> Handler(
         DeletePermissionCommand command, CancellationToken ct)

@@ -1,4 +1,4 @@
-namespace Identity.Domain.Entities.PermissionAggregate;
+namespace Identity.Domain.ValueObjects;
 
 /// <summary>
 /// 数据范围值对象 — 定义用户对业务数据的可见范围
