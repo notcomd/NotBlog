@@ -7,27 +7,11 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Identity.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class IdentityDb : Migration
+    public partial class identity : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateSequence(
-                name: "NotClientseq",
-                incrementBy: 10);
-
-            migrationBuilder.CreateSequence(
-                name: "UserAccessFailseq",
-                incrementBy: 10);
-
-            migrationBuilder.CreateSequence(
-                name: "UserSafarseq",
-                incrementBy: 10);
-
-            migrationBuilder.CreateSequence(
-                name: "Userseq",
-                incrementBy: 10);
-
             migrationBuilder.CreateTable(
                 name: "ClientRequest",
                 columns: table => new
@@ -66,12 +50,31 @@ namespace Identity.Infrastructure.Migrations
                     allowed_cors_origins = table.Column<HashSet<string>>(type: "text[]", nullable: true),
                     status = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    updated_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    Id = table.Column<int>(type: "integer", nullable: false)
+                    updated_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_NotClient", x => x.client_guid);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "OutboxMessages",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
+                    EventType = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    EventData = table.Column<string>(type: "jsonb", nullable: false),
+                    CorrelationId = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
+                    ProcessCount = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                    LastError = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    Status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    SentAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    NextRetryAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OutboxMessages", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -86,8 +89,7 @@ namespace Identity.Infrastructure.Migrations
                     ApiMethod = table.Column<string>(type: "text", nullable: true),
                     ApiUrl = table.Column<string>(type: "text", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Id = table.Column<int>(type: "integer", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -101,10 +103,9 @@ namespace Identity.Infrastructure.Migrations
                     RoleGroupGuid = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
                     RoleGroupName = table.Column<string>(type: "text", nullable: false),
                     RoleGroupCode = table.Column<string>(type: "text", nullable: false),
-                    role_guids = table.Column<HashSet<Guid>>(type: "uuid[]", nullable: false),
+                    role_guids = table.Column<List<Guid>>(type: "uuid[]", nullable: false),
                     CreatedRoleGroup = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    Id = table.Column<int>(type: "integer", nullable: false)
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -116,6 +117,7 @@ namespace Identity.Infrastructure.Migrations
                 columns: table => new
                 {
                     RoleGuid = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
+                    UserGuid = table.Column<HashSet<Guid>>(type: "uuid[]", nullable: false),
                     RoleName = table.Column<string>(type: "text", nullable: false),
                     Attribute = table.Column<string>(type: "text", nullable: true),
                     RoleCode = table.Column<string>(type: "text", nullable: false),
@@ -123,8 +125,7 @@ namespace Identity.Infrastructure.Migrations
                     RoleStatus = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     CreateRole = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    role_group_guids = table.Column<HashSet<Guid>>(type: "uuid[]", nullable: false),
-                    Id = table.Column<int>(type: "integer", nullable: false)
+                    role_group_guids = table.Column<List<Guid>>(type: "uuid[]", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -136,10 +137,10 @@ namespace Identity.Infrastructure.Migrations
                 columns: table => new
                 {
                     user_guid = table.Column<Guid>(type: "uuid", nullable: false),
-                    user_role_guid = table.Column<HashSet<Guid>>(type: "uuid[]", nullable: false),
-                    AuthorGuids = table.Column<HashSet<Guid>>(type: "uuid[]", nullable: false),
+                    user_role_guid = table.Column<List<Guid>>(type: "uuid[]", nullable: false),
+                    AuthorGuids = table.Column<List<Guid>>(type: "uuid[]", nullable: false),
                     user_name = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    image_cover = table.Column<string>(type: "text", nullable: true),
+                    avatar_url = table.Column<string>(type: "text", nullable: true),
                     UserEmail = table.Column<string>(type: "text", nullable: false),
                     password_hash = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     PhoneNumber_AddressRegion = table.Column<long>(type: "bigint", nullable: true),
@@ -150,8 +151,7 @@ namespace Identity.Infrastructure.Migrations
                     UserAddress_District = table.Column<string>(type: "text", nullable: true),
                     UserAddress_Street = table.Column<string>(type: "text", nullable: true),
                     UserAddress_Detail = table.Column<string>(type: "text", nullable: true),
-                    create_datetime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    Id = table.Column<int>(type: "integer", nullable: false)
+                    create_datetime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -177,6 +177,23 @@ namespace Identity.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_UserExternalLogins", x => x.LoginId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserLoginHistory",
+                columns: table => new
+                {
+                    LoginGuid = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserGuid = table.Column<Guid>(type: "uuid", nullable: false),
+                    PhoneNumber_AddressRegion = table.Column<long>(type: "bigint", nullable: false),
+                    PhoneNumber_PhoneCode = table.Column<string>(type: "text", nullable: false),
+                    Email = table.Column<string>(type: "text", nullable: true),
+                    CreateDataTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    LoginMessage = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserLoginHistory", x => x.LoginGuid);
                 });
 
             migrationBuilder.CreateTable(
@@ -231,7 +248,6 @@ namespace Identity.Infrastructure.Migrations
                 name: "UserAccessFail",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false),
                     UserAccessFailGuid = table.Column<Guid>(type: "uuid", nullable: false),
                     UserGuid = table.Column<Guid>(type: "uuid", nullable: false),
                     LockOutEnd = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
@@ -239,7 +255,7 @@ namespace Identity.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserAccessFail", x => x.Id);
+                    table.PrimaryKey("PK_UserAccessFail", x => x.UserAccessFailGuid);
                     table.ForeignKey(
                         name: "FK_UserAccessFail_User_UserGuid",
                         column: x => x.UserGuid,
@@ -252,7 +268,6 @@ namespace Identity.Infrastructure.Migrations
                 name: "UserSafety",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false),
                     UserSafetyGuid = table.Column<Guid>(type: "uuid", nullable: false),
                     user_guid = table.Column<Guid>(type: "uuid", nullable: false),
                     SecurityStamp = table.Column<string>(type: "text", nullable: true),
@@ -263,7 +278,7 @@ namespace Identity.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserSafety", x => x.Id);
+                    table.PrimaryKey("PK_UserSafety", x => x.UserSafetyGuid);
                     table.ForeignKey(
                         name: "FK_UserSafety_User_user_guid",
                         column: x => x.user_guid,
@@ -279,6 +294,16 @@ namespace Identity.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_OutboxMessages_SentAt",
+                table: "OutboxMessages",
+                column: "SentAt");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OutboxMessages_Status_CreatedAt",
+                table: "OutboxMessages",
+                columns: new[] { "Status", "CreatedAt" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_RoleGroupPermissions_RoleGroupGuid",
                 table: "RoleGroupPermissions",
                 column: "RoleGroupGuid");
@@ -287,6 +312,12 @@ namespace Identity.Infrastructure.Migrations
                 name: "IX_RolePermissions_RoleGuid",
                 table: "RolePermissions",
                 column: "RoleGuid");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_User_UserEmail",
+                table: "User",
+                column: "UserEmail",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserAccessFail_UserGuid",
@@ -322,6 +353,9 @@ namespace Identity.Infrastructure.Migrations
                 name: "NotClient");
 
             migrationBuilder.DropTable(
+                name: "OutboxMessages");
+
+            migrationBuilder.DropTable(
                 name: "RoleGroupPermissions");
 
             migrationBuilder.DropTable(
@@ -332,6 +366,9 @@ namespace Identity.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "UserExternalLogins");
+
+            migrationBuilder.DropTable(
+                name: "UserLoginHistory");
 
             migrationBuilder.DropTable(
                 name: "UserSafety");
@@ -347,18 +384,6 @@ namespace Identity.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "User");
-
-            migrationBuilder.DropSequence(
-                name: "NotClientseq");
-
-            migrationBuilder.DropSequence(
-                name: "UserAccessFailseq");
-
-            migrationBuilder.DropSequence(
-                name: "UserSafarseq");
-
-            migrationBuilder.DropSequence(
-                name: "Userseq");
         }
     }
 }

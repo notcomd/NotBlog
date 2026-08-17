@@ -23,21 +23,6 @@ namespace Identity.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.HasSequence("NotClientseq")
-                .IncrementsBy(10);
-
-            modelBuilder.HasSequence("UserAccessFailseq")
-                .IncrementsBy(10);
-
-            modelBuilder.HasSequence("UserLoginHistoryseq")
-                .IncrementsBy(10);
-
-            modelBuilder.HasSequence("UserSafarseq")
-                .IncrementsBy(10);
-
-            modelBuilder.HasSequence("Userseq")
-                .IncrementsBy(10);
-
             modelBuilder.Entity("Identity.Domain.Entities.ClientAggregate.NotClient", b =>
                 {
                     b.Property<Guid>("NotClientId")
@@ -107,11 +92,6 @@ namespace Identity.Infrastructure.Migrations
                         .HasColumnType("character varying(500)")
                         .HasColumnName("homepage_uri");
 
-                    b.Property<int>("Id")
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<int>("Id"), "NotClientseq");
-
                     b.PrimitiveCollection<HashSet<string>>("PostLogoutRedirectUris")
                         .IsRequired()
                         .HasColumnType("text[]")
@@ -179,9 +159,6 @@ namespace Identity.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("Id")
-                        .HasColumnType("integer");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
@@ -214,9 +191,6 @@ namespace Identity.Infrastructure.Migrations
 
                     b.Property<DateTimeOffset>("CreatedRoleGroup")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("Id")
-                        .HasColumnType("integer");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
@@ -252,9 +226,6 @@ namespace Identity.Infrastructure.Migrations
                     b.Property<DateTimeOffset>("CreateRole")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("Id")
-                        .HasColumnType("integer");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
@@ -281,6 +252,10 @@ namespace Identity.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.PrimitiveCollection<HashSet<Guid>>("UserGuid")
+                        .IsRequired()
+                        .HasColumnType("uuid[]");
+
                     b.HasKey("RoleGuid");
 
                     b.ToTable("Roles", (string)null);
@@ -297,18 +272,13 @@ namespace Identity.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("uuid[]");
 
+                    b.Property<string>("AvatarUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("avatar_url");
+
                     b.Property<DateTimeOffset>("CreateDatetime")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("create_datetime");
-
-                    b.Property<int>("Id")
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<int>("Id"), "Userseq");
-
-                    b.Property<string>("ImageCover")
-                        .HasColumnType("text")
-                        .HasColumnName("image_cover");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -341,11 +311,9 @@ namespace Identity.Infrastructure.Migrations
 
             modelBuilder.Entity("Identity.Domain.Entities.UserAggregate.UserAccessFail", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("UserAccessFailGuid")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<int>("Id"), "UserAccessFailseq");
+                        .HasColumnType("uuid");
 
                     b.Property<int>("AccessFaildCount")
                         .HasColumnType("integer");
@@ -353,13 +321,10 @@ namespace Identity.Infrastructure.Migrations
                     b.Property<DateTimeOffset?>("LockOutEnd")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("UserAccessFailGuid")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid>("UserGuid")
                         .HasColumnType("uuid");
 
-                    b.HasKey("Id");
+                    b.HasKey("UserAccessFailGuid");
 
                     b.HasIndex("UserGuid")
                         .IsUnique();
@@ -379,11 +344,6 @@ namespace Identity.Infrastructure.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("text");
 
-                    b.Property<int>("Id")
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<int>("Id"), "UserLoginHistoryseq");
-
                     b.Property<string>("LoginMessage")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
@@ -398,11 +358,9 @@ namespace Identity.Infrastructure.Migrations
 
             modelBuilder.Entity("Identity.Domain.Entities.UserAggregate.UserSafety", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("UserSafetyGuid")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<int>("Id"), "UserSafarseq");
+                        .HasColumnType("uuid");
 
                     b.Property<int>("BlackOrWhite")
                         .HasColumnType("integer");
@@ -420,13 +378,10 @@ namespace Identity.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("user_guid");
 
-                    b.Property<Guid>("UserSafetyGuid")
-                        .HasColumnType("uuid");
-
                     b.Property<int>("UserStatus")
                         .HasColumnType("integer");
 
-                    b.HasKey("Id");
+                    b.HasKey("UserSafetyGuid");
 
                     b.HasIndex("UserGuid")
                         .IsUnique();
