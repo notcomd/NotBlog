@@ -2,5 +2,5 @@
 
 public class DbContextOption
 {
-    public string DbContextConnect { get; set; } = null!;
+    public string DbContextConnection { get; set; } = null!;
 }

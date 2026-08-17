@@ -26,6 +26,7 @@ builder.Services.AddScoped<GrpcJwtAuthInterceptor>();
 builder.Services.AddScoped<GrpcExceptionMapperInterceptor>();
 builder.Services.AddHostedService<ChunkCleanupBackgroundService>();
 builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
+builder.Services.RemoveAbstractHandlerRegistrations(); // 移除抽象泛型基类 handler（NotMediator 自动注册未过滤抽象类，2026-08-17）
 
 // ⚠️ 修复（2026-08-15）：NotMediator 包要求手动注册管道（README），此前 TransactionBehavior/
 // LoggerBehavior 从未注册 → 所有命令无事务、无 SaveChanges 提交 → 文件元数据（NotFile）等

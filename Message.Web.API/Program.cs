@@ -31,11 +31,14 @@ builder.AddRabbitMQClient("EventBus");
 #if DEBUG
 
 builder.Services.AddNpgsql<MessageDbContext>(
+    builder.Configuration.GetSection("DbContextOption").GetValue<string>("DbContextConnection")
+    ?? throw new InvalidOperationException(
+        "未配置数据库连接字符串：请设置环境变量 DbContextOption__DbContextConnection。"));
+#else
+builder.Services.AddNpgsql<MessageDbContext>(
     builder.Configuration.GetConnectionString("PostgresSQL")
     ?? throw new InvalidOperationException(
         "未配置数据库连接字符串：请设置环境变量 ConnectionStrings__PostgresSQL。"));
-#else
-builder.Services.AddNpgsq<MessageDbContext>("PostgreSQL");
 #endif
 
 

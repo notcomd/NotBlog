@@ -32,7 +32,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="NotMediator" Version="1.0.6" />
+        <PackageReference Include="NotMediator" Version="2.0.1" />
         <PackageReference Include="Scalar.AspNetCore" Version="2.16.20" />
     </ItemGroup>
 
@@ -45,5 +45,12 @@
         <ProjectReference Include="..\Identity.Infrastructure\Identity.Infrastructure.csproj" />
         <ProjectReference Include="..\JWToken\JWToken.csproj" />
     </ItemGroup>
+
+  <ItemGroup>
+    <!-- 启动 Banner（ASCII 字符画，随输出目录复制） -->
+    <Content Include="Resources\banner.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 
 </Project>

@@ -24,7 +24,7 @@ public class User : Entity<Guid>, IAggregateRoot
     public List<Guid> UserRoleGuid { get; private set; }
 
     /// <summary>
-    /// 用户权限ID
+    /// 外部登入关联
     /// </summary>
     public List<Guid> AuthorGuids { get; private set; }
 

@@ -3,6 +3,7 @@ using Commons.Web;
 using Markdown.Infrastructure;
 using Markdown.Web.API.Apis;
 using Markdown.Web.API.Extensions;
+using Markdown.Web.API.Resources;
 using Markdown.Web.API.Services;
 using NotBlog.ServiceDefaults;
 using Notcomd.Token.JWT.Extensions;
@@ -84,6 +85,8 @@ builder.Services.AddHostedService<ClientRequestCleanupService>();
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
+ResourcesBanner.PrintStartupBanner();
 
 app.MapDefaultEndpoints();
 

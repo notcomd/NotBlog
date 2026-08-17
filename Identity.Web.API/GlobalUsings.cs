@@ -30,3 +30,7 @@ global using Notcomd.Token.JWT.Security;
 global using NotMediator.Mediator;
 global using NotMediator.Abstractions;
 global using Scalar.AspNetCore;
+global using Identity.Infrastructure.Idempotent;
+global using System.Security.Claims;
+global using Identity.Web.API.Application.IntegrationEvents.Events;
+global using Commons.EntityFramework;

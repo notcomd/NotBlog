@@ -57,7 +57,7 @@ var filedev = builder.AddProject<FileDev_Web_API>("filedev-web-api")
     .WithEnvironment("DbContextConnect", notfileDb);
 
 // Identity：账号服务。
-// - 数据库：RELEASE 读 ConnectionStrings:IdentityPostgres；DEBUG 读 DbContextOption:DbContextConnect（同样注入容器连接串）；
+// - 数据库：RELEASE 读 ConnectionStrings:IdentityPostgres；DEBUG 读 DbContextOption:DbContextConnection（同样注入容器连接串）；
 // - 缓存：AddCacheMemory("Redis")；RabbitMQ：AddRabbitMQClient("EventBus")；
 // - gRPC 调用 FileDev：FileStorageGrpc:Address 改用服务发现名，配合 WithReference(filedev) 解析真实端点。
 var identity = builder.AddProject<Identity_Web_API>("identity-web-api")
@@ -66,7 +66,7 @@ var identity = builder.AddProject<Identity_Web_API>("identity-web-api")
     .WithReference(rabbitmq)
     .WithReference(filedev)
     .WithEnvironment("FileStorageGrpc__Address", "https://filedev-web-api")
-    .WithEnvironment("DbContextOption__DbContextConnect", identityDb);
+    .WithEnvironment("DbContextOption__DbContextConnection", identityDb);
 
 // V4：网关内部调用凭证（未配置时不注入，Identity 侧保持 fail-closed）
 if (!string.IsNullOrEmpty(gatewayInternalApiKey))
@@ -78,7 +78,8 @@ var message = builder.AddProject<Message_Web_API>("message-web-api")
     .WithReference(messageDb)
     .WithReference(redis)
     .WithReference(rabbitmq)
-    .WithReference(filedev);
+    .WithReference(filedev)
+    .WithEnvironment("DbContextOption__DbContextConnection", messageDb);
 
 // Markdown：数据库 AddNpgsql("MarkDownPostgres")；RabbitMQ AddRabbitMQClient("EventBus")（RELEASE）。
 var markdown = builder.AddProject<Markdown_Web_API>("markdown-web-api")

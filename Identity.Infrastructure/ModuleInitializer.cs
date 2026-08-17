@@ -1,7 +1,4 @@
-using Commons.Core;
-using Identity.Infrastructure.Idempotent;
-using Identity.Infrastructure.Services;
-using Identity.Domain.IService;
+
 namespace Identity.Infrastructure;
 
 public class ModuleInitializer : IModuleInitializer

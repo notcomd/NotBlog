@@ -28,7 +28,7 @@ public static class AddIdentityServer
         {
             var data = configuration.Get<DbContextOption>() ??
                        throw new ArgumentNullException("配置项为空", nameof(configuration));
-            opt.UseNpgsql(data.DbContextConnect);
+            opt.UseNpgsql(data.DbContextConnection);
         });
         return serviceCollection;
     }

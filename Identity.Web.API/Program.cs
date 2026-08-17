@@ -1,7 +1,6 @@
-using System.Security.Claims;
-using Identity.Web.API;
-using Identity.Web.API.Application.IntegrationEvents.Events;
-using Commons.EntityFramework;
+
+
+using Identity.Web.API.Resources;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +22,7 @@ var outlookTokenService = new OutlookTokenService(
         : notEmailCfg["ClientId"]!,
     notEmailCfg["TenantId"] ?? "consumers",
     string.IsNullOrWhiteSpace(notEmailCfg["CachePath"]) ? null : notEmailCfg["CachePath"]);
+
 builder.Services.AddSingleton(outlookTokenService);
 
 builder.Services.AddNotEmail(opt =>
@@ -35,26 +35,29 @@ builder.Services.AddNotEmail(opt =>
 
 
 #if DEBUG
-
+Console.WriteLine("现在处于DEBUG，验证！");
 // 凭据外置（S-01）：数据库口令从环境变量 IDENTITY_DB_PASSWORD 读取
 builder.Services.AddNotBlogServices(
     DbConnectionStringResolver.Resolve(
-        builder.Configuration.GetSection("DbContextOption").GetValue<string>("DbContextConnect"),
+        builder.Configuration.GetSection("DbContextOption").GetValue<string>("DbContextConnection"),
         "IDENTITY_DB_PASSWORD"),
     [..ReflectionHelper.GetAllReferencedAssemblies()]);
 
 #else
+
 builder.Services.AddNotBlogServices(
     builder.Configuration.GetConnectionString("IdentityPostgres")
     ?? throw new InvalidOperationException(
         "未配置数据库连接字符串：请设置环境变量 ConnectionStrings__IdentityPostgres。"),
     [..ReflectionHelper.GetAllReferencedAssemblies()]);
+
 #endif
 builder.Services.AddIdentityService(builder.Configuration.GetSection("JwtOptions"));
 
 builder.Services.AddMigration<IdentityDbContext, IdentityDbSeeder>();
 
 builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
+builder.Services.RemoveAbstractHandlerRegistrations(); // 移除抽象泛型基类 handler（NotMediator 自动注册未过滤抽象类，2026-08-17）
 
 builder.Services.AddScoped<IdentityService>();
 
@@ -211,6 +214,10 @@ builder.Services.PostConfigure<OAuthOptions>(opt =>
 // OAuthService 内部自行实现 GitHub 用户获取（GetGitHubUserInfoAsync）。
 
 var app = builder.Build();
+
+// 启动 Banner（ASCII 字符画）：原样输出到控制台，避免 logger 前缀破坏对齐；文件缺失/读取失败不影响启动
+ResourcesBanner.PrintStartupBanner();
+
 
 app.MapDefaultEndpoints();
 

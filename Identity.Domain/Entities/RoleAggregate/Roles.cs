@@ -11,7 +11,7 @@ public class Roles : Entity<Guid>, IAggregateRoot
     protected Roles()
     {
         RoleGuid = Guid.CreateVersion7();
-        UserGuid = new HashSet<Guid>();
+        UserGuid = new List<Guid>();
         Permissions = new List<Permission>();
         RoleGroupGuids = new List<Guid>();
         CreateRole = DateTimeOffset.UtcNow;
@@ -41,7 +41,7 @@ public class Roles : Entity<Guid>, IAggregateRoot
 
     public Guid RoleGuid { get; private set; }
 
-    public HashSet<Guid> UserGuid { get; private set; }
+    public List<Guid> UserGuid { get; private set; }
 
     public string RoleName { get; private set; } = null!;
 
@@ -69,7 +69,9 @@ public class Roles : Entity<Guid>, IAggregateRoot
 
     public void AddUserGuid(Guid userGuid)
     {
-        if (!UserGuid.Add(userGuid))
+        if (!UserGuid.Contains(userGuid))
+            UserGuid.Add(userGuid);
+        else
             throw new InvalidOperationException("UserGuid already exists");
     }
 
