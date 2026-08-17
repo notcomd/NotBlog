@@ -1,7 +1,7 @@
 using Commons.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using NotMediator;
+using NotMediator.Abstractions;
 using Video.Domain.Entities;
 using Commons.SeedWork;
 
@@ -30,13 +30,13 @@ public class VideoDbContext(DbContextOptions<VideoDbContext> options, INotMediat
 
     public new async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        await _notMediator.DispatchDomainEventsAsync(this);
+        await _notMediator.DispatchDomainEventsAsync(this, cancellationToken);
         return await base.SaveChangesAsync(cancellationToken);
     }
 
     public async Task<bool> SaveEntitiesAsync(CancellationToken cancellationToken = default)
     {
-        await _notMediator.DispatchDomainEventsAsync(this);
+        await _notMediator.DispatchDomainEventsAsync(this, cancellationToken);
         return await base.SaveChangesAsync(cancellationToken) > 0;
     }
 

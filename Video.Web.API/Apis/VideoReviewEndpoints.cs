@@ -60,10 +60,10 @@ public static class VideoReviewEndpoints
 
     private static async Task<IResult> AddVideoReviewAsync(
         RequestAddReview request,
-        IVideoService videoService,
-        INotMediator notMediator,
-        IVideoRepository videoRepository,
-        ILoggerFactory loggerFactory)
+        [FromServices] IVideoService videoService,
+        [FromServices] INotMediator notMediator,
+        [FromServices] IVideoRepository videoRepository,
+        [FromServices] ILoggerFactory loggerFactory)
     {
         var logger = loggerFactory.CreateLogger("VideoReviewEndpoint");
 
@@ -188,10 +188,10 @@ public static class VideoReviewEndpoints
     private static async Task<IResult> GetReviewRepliesAsync(
         Guid reviewGuid,
         Guid videoGuid,
-        IVideoService videoService,
-        IVideoCacheService? cacheService,
-        ILoggerFactory loggerFactory,
-        ICurrentUserService currentUser)
+        [FromServices] IVideoService videoService,
+        [FromServices] IVideoCacheService? cacheService,
+        [FromServices] ILoggerFactory loggerFactory,
+        [FromServices] ICurrentUserService currentUser)
     {
         var logger = loggerFactory.CreateLogger("VideoReviewEndpoint");
 
@@ -302,9 +302,9 @@ public static class VideoReviewEndpoints
     private static async Task<IResult> GetReviewInteractionAsync(
         Guid reviewGuid,
         Guid videoGuid,
-        IVideoService videoService,
-        ILoggerFactory loggerFactory,
-        ICurrentUserService currentUser)
+        [FromServices] IVideoService videoService,
+        [FromServices] ILoggerFactory loggerFactory,
+        [FromServices] ICurrentUserService currentUser)
     {
         var logger = loggerFactory.CreateLogger("VideoReviewEndpoint");
 

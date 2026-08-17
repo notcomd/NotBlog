@@ -1,5 +1,5 @@
 using CacheMemory.Core;
-using NotMediator;
+using NotMediator.Abstractions;
 using Video.Domain.Cache;
 using Video.Domain.Entities;
 using Video.Domain.IRepository;

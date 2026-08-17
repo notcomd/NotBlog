@@ -70,7 +70,7 @@ public static class VideoWatchStatsEndpoints
                 Progress: request.Progress,
                 LastPositionSeconds: request.LastPositionSeconds);
 
-            var result = await videoServiceDI.NotMediator.SendAsync(command);
+            var result = await videoServiceDI. NotMediator.SendAsync(command);
 
             if (!result.Success)
                 return Results.Json(

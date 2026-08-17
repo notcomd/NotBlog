@@ -108,7 +108,7 @@ public static class VideoCollectionEndpoints
                 UserGuid: currentUser.UserGuid,
                 CollectionGuid: collectionGuid);
 
-            var result = await videoServiceDI.NotMediator.SendAsync(command);
+            var result = await videoServiceDI. NotMediator.SendAsync(command);
 
             if (!result.Success)
                 return Results.Json(

@@ -222,7 +222,7 @@ public static class VideoEndpoints
                 Field: request.Field,
                 IsLike: request.IsLike);
 
-            var result = await videoServiceDI.NotMediator.SendAsync(command);
+            var result = await videoServiceDI. NotMediator.SendAsync(command);
 
             if (!result.Success)
                 return Results.Json(
