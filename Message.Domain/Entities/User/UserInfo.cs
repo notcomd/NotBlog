@@ -30,8 +30,30 @@ public class UserInfo : Entity<Guid>, IAggregateRoot
         };
     }
 
+    public static UserInfo Create(Guid userId, string email, string? nickName = null, Uri? avatarUrl = null)
+    {
+        if (userId == Guid.Empty)
+            throw new ArgumentException("用户ID不能为空", nameof(userId));
+        if (string.IsNullOrWhiteSpace(email))
+            throw new ArgumentException("用户邮箱不能为空", nameof(email));
+
+        return new UserInfo
+        {
+            UserId = userId,
+            Email = email,
+            NickName = nickName,
+            AvatarUrl = avatarUrl,
+            Level = 1,
+            Coins = 0
+        };
+    }
+
     /// <summary>对应用户 ID（Identity sub claim）</summary>
     public Guid UserId { get; init; }
+
+    public string Email { get; init;} = null!;
+
+    public string? NickName { get; private set; }
 
     /// <summary>用户等级（默认 1，升级规则后续按活跃度/经验值接入）</summary>
     public int Level { get; private set; }
@@ -43,21 +65,34 @@ public class UserInfo : Entity<Guid>, IAggregateRoot
     public long Experience { get; private set; }
 
     /// <summary>背景封面 URL（区别于头像；FileDev 上传后存 URI，可空）</summary>
-    public string? BackgroundCoverUrl { get; private set; }
+    public Uri? BackgroundCoverUrl { get; private set; }
+
+    public Uri? AvatarUrl { get; private set; }
 
     public DateTimeOffset CreateTime { get; init; }
 
     public DateTimeOffset UpdateTime { get; private set; }
 
     /// <summary>更新背景封面（空白视为清除）</summary>
-    public void UpdateBackgroundCover(string? url)
+    public void UpdateBackgroundCover(Uri? url)
     {
-        if (!string.IsNullOrWhiteSpace(url) && url.Length > 2048)
+        if (url != null && url.ToString().Length > 2048)
             throw new ArgumentException("背景封面URL不能超过2048个字符", nameof(url));
 
-        BackgroundCoverUrl = string.IsNullOrWhiteSpace(url) ? null : url;
+        BackgroundCoverUrl = string.IsNullOrWhiteSpace(url?.ToString()) ? null : url;
         UpdateTime = DateTimeOffset.UtcNow;
     }
+
+
+    public void UpdateAvatar(Uri? url)
+    {
+        if (url != null && url.ToString().Length > 2048)
+            throw new ArgumentException("头像URL不能超过2048个字符", nameof(url));
+
+        AvatarUrl = string.IsNullOrWhiteSpace(url?.ToString()) ? null : url;
+        UpdateTime = DateTimeOffset.UtcNow;
+    }
+
 
     /// <summary>增加硬币（数量必须大于 0）</summary>
     public void AddCoins(long amount)

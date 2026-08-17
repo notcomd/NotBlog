@@ -8,9 +8,9 @@ namespace Message.Web.API.Application.IntegrationEvents.EventHandlers;
 public class RegisterByUserIntegrationEventHandler(
     IUserInfoRepository userInfoRepository,
     ILogger<RegisterByUserIntegrationEventHandler> logger)
-    : JsonIntegrationEventHandler<RegisterByUserIntegrationEvent>
+    : JsonIntegrationEventHandler<RegisterByUserMessageIntegrationEvent>
 {
-    public override async Task Handler(RegisterByUserIntegrationEvent @event)
+    public override async Task Handler(RegisterByUserMessageIntegrationEvent @event)
     {
         try
         {
@@ -21,7 +21,7 @@ public class RegisterByUserIntegrationEventHandler(
                 return;
             }
 
-            var userInfo = UserInfo.Create(@event.UserId);
+            var userInfo = UserInfo.Create(@event.UserId, @event.Email, @event.NickName, @event.AvatarUrl);
             await userInfoRepository.AddAsync(userInfo);
             await userInfoRepository.UnitOfWork.SaveEntitiesAsync();
 
@@ -38,8 +38,8 @@ public class RegisterByUserIntegrationEventHandler(
 /// 用户注册集成事件数据副本（字段与 Identity 发布侧一致；跨服务不共享程序集，各自维护）。
 /// <para>routing key = 类型名 RegisterByUserIntegrationEvent（发布侧无 [EventBusName]，与 handler 类特性对齐）。</para>
 /// </summary>
-[EventBusName("RegisterByUserIntegrationEvent")]
-public record RegisterByUserIntegrationEvent(Guid UserId) : IntegrationEvent
+[EventBusName("RegisterByUserMessageIntegrationEvent")]
+public record RegisterByUserMessageIntegrationEvent(Guid UserId, string Email, string? NickName = null, Uri? AvatarUrl = null) : IntegrationEvent
 {
     /// <summary>注册时间（默认当前时间）</summary>
     public DateTime RegisterTime { get; init; } = DateTime.UtcNow;

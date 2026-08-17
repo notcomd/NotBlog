@@ -3,7 +3,9 @@ using Message.Domain.Enums;
 using Message.Domain.IRepository;
 using Commons.SeedWork;
 using Message.Web.API.Application.Commands.Community;
+using Message.Domain.Options;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 
 namespace Message.Tests.Commands.Community;
@@ -59,8 +61,14 @@ public class GenerateCircleInvitationCommandHandlerTests
     }
 
     private GenerateCircleInvitationCommandHandler CreateHandler()
-        => new(_circleRepository.Object, _invitationRepository.Object,
+    {
+        var options = new Mock<IOptionsSnapshot<GenerateCirecleInvitationOption>>();
+        options.Setup(o => o.Value).Returns(new GenerateCirecleInvitationOption());
+
+        return new(_circleRepository.Object, _invitationRepository.Object,
+            options.Object,
             new Mock<ILogger<GenerateCircleInvitationCommandHandler>>().Object);
+    }
 
     // ---------- 邀请码额度 ----------
 

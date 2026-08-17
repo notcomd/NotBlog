@@ -37,7 +37,7 @@ public class SignInCommandHandler(
 
         try
         {
-            await signInRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
+            await userInfoRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
         }
         catch (DbUpdateException)
         {

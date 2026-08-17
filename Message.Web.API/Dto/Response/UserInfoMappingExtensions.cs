@@ -6,10 +6,13 @@ public static class UserInfoMappingExtensions
     public static UserInfoDto ToDto(this UserInfo userInfo) => new()
     {
         UserId = userInfo.UserId,
+        NickName = userInfo.NickName,
+        Email = userInfo.Email,
         Level = userInfo.Level,
         Coins = userInfo.Coins,
         Experience = userInfo.Experience,
         BackgroundCoverUrl = userInfo.BackgroundCoverUrl,
+        AvatarUrl = userInfo.AvatarUrl,
         UpdateTime = userInfo.UpdateTime
     };
 }

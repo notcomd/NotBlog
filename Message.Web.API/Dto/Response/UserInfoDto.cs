@@ -4,8 +4,14 @@ namespace Message.Web.API.Dto.Response;
 public record UserInfoDto
 {
     public Guid UserId { get; init; }
+
+    public string? NickName { get; init; }
+
+    public string Email { get; init; }= null!;
+
     /// <summary>用户等级</summary>
     public int Level { get; init; }
+
     /// <summary>硬币余额</summary>
     public long Coins { get; init; }
 
@@ -14,7 +20,11 @@ public record UserInfoDto
 
     /// <summary>今日是否已签到</summary>
     public bool SignedInToday { get; init; }
+
     /// <summary>背景封面 URL（可空）</summary>
-    public string? BackgroundCoverUrl { get; init; }
+    public Uri? BackgroundCoverUrl { get; init; }
+
+    public Uri? AvatarUrl { get; init; }
+    
     public DateTimeOffset UpdateTime { get; init; }
 }

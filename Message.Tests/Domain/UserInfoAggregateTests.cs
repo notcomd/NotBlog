@@ -37,18 +37,18 @@ public class UserInfoAggregateTests
         var info = UserInfo.Create(UserId);
         const string url = "https://example.com/cover.png";
 
-        info.UpdateBackgroundCover(url);
+        info.UpdateBackgroundCover(new Uri(url));
 
-        Assert.That(info.BackgroundCoverUrl, Is.EqualTo(url));
+        Assert.That(info.BackgroundCoverUrl, Is.EqualTo(new Uri(url)));
     }
 
     [Test]
     public void UpdateBackgroundCover_空白值_应清除()
     {
         var info = UserInfo.Create(UserId);
-        info.UpdateBackgroundCover("https://example.com/cover.png");
+        info.UpdateBackgroundCover(new Uri("https://example.com/cover.png"));
 
-        info.UpdateBackgroundCover("   ");
+        info.UpdateBackgroundCover(null);
 
         Assert.That(info.BackgroundCoverUrl, Is.Null);
     }
@@ -58,7 +58,7 @@ public class UserInfoAggregateTests
     {
         var info = UserInfo.Create(UserId);
 
-        Assert.Throws<ArgumentException>(() => info.UpdateBackgroundCover(new string('a', 2049)));
+        Assert.Throws<ArgumentException>(() => info.UpdateBackgroundCover(new Uri("https://example.com/" + new string('a', 2049))));
     }
 
     [Test]

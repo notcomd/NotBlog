@@ -1,20 +1,24 @@
 
+using Google.Protobuf.WellKnownTypes;
+using Microsoft.Extensions.Options;
+
 namespace Message.Web.API.Application.Commands.Community;
 /// <summary>生成圈子邀请命令处理程序。</summary>
 public class GenerateCircleInvitationCommandHandler(
     ICircleRepository circleRepository,
     ICircleInvitationRepository invitationRepository,
+    IOptionsSnapshot<GenerateCirecleInvitationOption> optionsSnapshot,
     ILogger<GenerateCircleInvitationCommandHandler> logger) : IRequestHandler<GenerateCircleInvitationCommand, CircleInvitationResult>
 {
     // 邀请码字符集：去除易混淆字符 0/O/1/I
-    private const string CodeChars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-    private const int CodeLength = 6;
-    private const int MaxCodeAttempts = 10;
+    private readonly string CodeChars = optionsSnapshot.Value.CodeChars;
+    private readonly int CodeLength = optionsSnapshot.Value.CodeLength;
+    private readonly int MaxCodeAttempts = optionsSnapshot.Value.MaxCodeAttempts;
 
     // 邀请码周额度（滚动 7 天窗口）：圈主不限制，管理员每周 2 个，普通用户每周 1 个
-    private static readonly TimeSpan QuotaWindow = TimeSpan.FromDays(7);
-    private const int AdminWeeklyCodeQuota = 2;
-    private const int MemberWeeklyCodeQuota = 1;
+    private  readonly TimeSpan QuotaWindow = optionsSnapshot.Value.QuotaWindow;
+    private readonly int AdminWeeklyCodeQuota = optionsSnapshot.Value.AdminWeeklyCodeQuota;
+    private readonly int MemberWeeklyCodeQuota = optionsSnapshot.Value.MemberWeeklyCodeQuota;
 
     public async Task<CircleInvitationResult> Handler(GenerateCircleInvitationCommand command, CancellationToken cancellationToken)
     {

@@ -37,7 +37,7 @@ public class RedisCacheService
         CancellationToken cancellationToken = default)
     {
         var json = JsonSerializer.Serialize(value);
-        await _database.StringSetAsync(cacheKey, json, expiration);
+        await _database.StringSetAsync(cacheKey, json, expiration, When.Exists);
         _logger.LogDebug("缓存已设置: Key={Key}, Expiration={Expiration}", cacheKey, expiration);
     }
 

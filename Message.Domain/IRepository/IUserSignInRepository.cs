@@ -5,7 +5,7 @@ namespace Message.Domain.IRepository;
 /// </summary>
 public interface IUserSignInRepository
 {
-    IUnitOfWork UnitOfWork { get; }
+    //IUnitOfWork UnitOfWork { get; }
 
     /// <summary>查询指定用户指定日期的签到记录（不存在返回 null）</summary>
     Task<UserSignIn?> GetAsync(Guid userId, DateOnly date);

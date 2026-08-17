@@ -329,12 +329,15 @@ public static class CirclesApi
     private static async Task<IResult> JoinCircleAsync(
         [FromBody] JoinCircleRequest request,
         [FromServices] ICurrentUserService currentUser,
+        [FromServices] ICircleInvitationRepository circleInvitation,
         [FromServices] INotMediator mediator,
         CancellationToken ct)
     {
         try
         {
-            var circleId = await mediator.SendAsync(new JoinCircleCommand(currentUser.GetUserId(), request.Code, request.Token), ct);
+            var circleId =  await mediator.SendAsync(new JoinCircleCommand(currentUser.GetUserId(), request.Code, request.Token), ct);
+            var data=await circleInvitation.GetByCodeAsync(request.Code?? throw new ArgumentNullException("null"));
+            await mediator.SendAsync(new RemoveCircleMemberCommand(data!.InviteGuid,currentUser.GetUserId(),circleId),ct);
             return Results.Ok(ApiResponse<Guid>.Ok(circleId, "加入圈子成功"));
         }
         catch (UnauthorizedAccessException ex)

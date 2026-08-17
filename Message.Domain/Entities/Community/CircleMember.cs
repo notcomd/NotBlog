@@ -30,11 +30,15 @@ public class CircleMember : Entity<Guid>
     }
 
     public Guid CircleGuid { get; private set; }
+
     public Guid UserGuid { get; private set; }
+
     public CircleMemberRole Role { get; private set; }
     /// <summary>圈内昵称（可空）</summary>
     public string? Nickname { get; private set; }
+
     public CircleMemberStatus Status { get; private set; }
+    
     public DateTimeOffset JoinTime { get; private set; }
 
     public void SetRole(CircleMemberRole role)
