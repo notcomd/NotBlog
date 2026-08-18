@@ -29,6 +29,9 @@ public class VideoBarrage
     /// <summary>图片列表（纯图片/混合模式下有效），最多 4 张</summary>
     public IReadOnlyCollection<VideoImage>? VideoImages { get; private set; }
 
+    /// <summary>
+    /// 时间戳信息（创建/更新时间）
+    /// </summary>
     public TimeSpace TimeSpace { get; private set; }
 
     public bool IsDelete { get; private set; }

@@ -34,3 +34,5 @@ global using Video.Web.API.Application.DomainEvents;
 global using Video.Web.API.Application.IntegrationEvents.Events;
 global using Video.Web.API.Dto.Request;
 global using Video.Web.API.Dto.Response;
+global using Aspire.Npgsql.EntityFrameworkCore.PostgreSQL;
+global using Video.Domain.Options;

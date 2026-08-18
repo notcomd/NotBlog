@@ -11,8 +11,9 @@ public class NotFileGroupEntityConfiguration : IEntityTypeConfiguration<NotFileG
     {
         builder.Ignore(en => en.DomainEvents);
         builder.ToTable("NotFileGroup");
-        builder.Property(x => x.Id).UseHiLo("NotFileGroupseq");
-        builder.HasKey(x => x.Id);
+        //builder.Property(x => x.Id).UseHiLo("NotFileGroupseq");
+        builder.Ignore(x=>x.Id);
+        builder.HasKey(x => x.NotFileGroupId);
 
         
         builder.HasOne(x => x.Parent)

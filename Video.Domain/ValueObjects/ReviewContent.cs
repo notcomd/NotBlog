@@ -29,6 +29,8 @@ public class ReviewContent : ValueObject
 
     // ── 构造器 ──
 
+    public ReviewContent(){}
+
     private ReviewContent(string contentType, string? body, List<VideoImage>? mediaItems)
     {
         ContentType = ReviewContentType.Normalize(contentType);

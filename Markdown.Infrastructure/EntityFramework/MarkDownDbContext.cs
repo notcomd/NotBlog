@@ -28,7 +28,7 @@ public class MarkDownDbContext(DbContextOptions<MarkDownDbContext> options, INot
 
 
     /// <summary>
-    ///     保存更改并分发领域事件
+    /// 保存更改并分发领域事件
     /// </summary>
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {

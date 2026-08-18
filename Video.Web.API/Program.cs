@@ -3,11 +3,23 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
-// ⚠️ 2026-08-13 修复：AddNpgsql 来自纯 EF Npgsql 包（非 Aspire），参数是连接串字面量而非连接名
-builder.Services.AddNpgsql<VideoDbContext>(
-    builder.Configuration.GetConnectionString("VideoPostgres")
-    ?? throw new InvalidOperationException(
-        "未配置数据库连接字符串：请设置环境变量 ConnectionStrings__VideoPostgres。"));
+/// 数据库（Aspire 版 AddNpgsqlDbContext，connectionName 语义，2026-08-17 切换）：
+/// 从 ConnectionStrings:VideoPostgres 读连接串注册 VideoDbContext，自动健康检查/遥测。
+/// 单服务模式（无该连接串）时从 DbContextOption:DbContextConnection 桥接。
+if (builder.Configuration.GetConnectionString("VideoPostgres") is null)
+{
+    Console.WriteLine("单个服务执行！");
+    builder.Configuration["ConnectionStrings:VideoPostgres"] =
+        builder.Configuration.GetSection("DbContextOption").GetValue<string>("DbContextConnection")
+        ?? throw new ArgumentNullException("数据库连接字符未配置");
+}
+else
+{
+    Console.WriteLine("Aspire服务执行！");
+}
+
+/// 模块自动初始化（仓储/领域服务注册；原 AddNotBlogServices 拆分，DbContext 改用 Aspire 注册）
+builder.AddNpgsqlDbContext<VideoDbContext>("VideoPostgres");
 
 // CacheMemory (Redis) — Aspire-style registration
 builder.AddCacheMemory("CacheMemory");

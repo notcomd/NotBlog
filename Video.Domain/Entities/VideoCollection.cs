@@ -4,7 +4,7 @@ namespace Video.Domain.Entities;
 /// <summary>
 /// 视频收藏
 /// </summary>
-public class VideoCollection : Entity<int>, IAggregateRoot
+public class VideoCollection : Entity<Guid>, IAggregateRoot
 {
 
     public Guid VideoCollectionGuid { get; init; } = Guid.CreateVersion7();

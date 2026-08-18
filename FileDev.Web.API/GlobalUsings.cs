@@ -23,3 +23,4 @@ global using Microsoft.AspNetCore.Http.Features;
 global using NotBlog.ServiceDefaults;
 global using RabbitMQ.Client;
 global using Scalar.AspNetCore;
+global using Aspire.Npgsql.EntityFrameworkCore.PostgreSQL;

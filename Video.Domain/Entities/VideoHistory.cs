@@ -10,7 +10,7 @@ namespace Video.Domain.Entities;
 /// - 不持有视频/用户导航属性，避免 JOIN 查询
 /// - 支持批量写入（每个观看会话一条记录）
 /// </summary>
-public class VideoHistory : Entity<int>, IAggregateRoot
+public class VideoHistory : Entity<Guid>, IAggregateRoot
 {
     /// <summary>历史记录唯一标识</summary>
     public Guid VideoHistoryGuid { get; init; }

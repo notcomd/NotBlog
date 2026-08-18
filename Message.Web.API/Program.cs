@@ -28,20 +28,19 @@ builder.AddRabbitMQClient("EventBus");
 // ⚠️ 2026-08-13 修复：AddNpgsql 来自纯 EF Npgsql 包（非 Aspire），参数是连接串字面量而非连接名——
 // 旧写法 "PostgresSQL" 被当作连接串解析（运行时 index 0 报错），从未真正连上数据库
 
-#if DEBUG
+if (builder.Configuration.GetConnectionString("MessagePostgres") is null)
+{
+    Console.WriteLine("单个服务执行！");
+    builder.Configuration["ConnectionStrings:MessagePostgres"] =
+        builder.Configuration.GetSection("DbContextOption").GetValue<string>("DbContextConnection")
+        ?? throw new ArgumentNullException("数据库连接字符未配置");
+}
+else
+{
+    Console.WriteLine("Aspire服务执行！");
+}
 
-builder.Services.AddNpgsql<MessageDbContext>(
-    builder.Configuration.GetSection("DbContextOption").GetValue<string>("DbContextConnection")
-    ?? throw new InvalidOperationException(
-        "未配置数据库连接字符串：请设置环境变量 DbContextOption__DbContextConnection。"));
-#else
-builder.Services.AddNpgsql<MessageDbContext>(
-    builder.Configuration.GetConnectionString("PostgresSQL")
-    ?? throw new InvalidOperationException(
-        "未配置数据库连接字符串：请设置环境变量 ConnectionStrings__PostgresSQL。"));
-#endif
-
-
+builder.AddNpgsqlDbContext<MessageDbContext>("MessagePostgres");
 
 builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
 

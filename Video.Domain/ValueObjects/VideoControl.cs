@@ -10,7 +10,7 @@ public record VideoControl
         VideoDisplay = false;
         AuthorVideo = AuthorVideo.VideoPublic;
         BarrageControl = BarrageControl.BarrageOn;
-        TimeSpace = new(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
+        TimeSpace = new();
         VideoProtectedTime = VideoProtectedTime.Create(null, null);
     }
     

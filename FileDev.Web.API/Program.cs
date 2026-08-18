@@ -1,20 +1,40 @@
 using Commons.Extensions;
-using Commons.EntityFramework;
 using FileDev.Web.API.ActionFilter.Behaviors;
 using FileDev.Web.API.Background;
 using FileDev.Web.API.Grpc;
 using Notcomd.Token.JWT.Extensions;
 using Microsoft.EntityFrameworkCore;
+using OpenTelemetry.Resources;
+using FileDev.Web.API.Resources;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
 
-builder.Services.AddNotBlogServices(
-    
-        builder.Configuration.GetValue<string>("DbContextConnect")!
-     );
+// 数据库（Aspire 版 AddNpgsqlDbContext，connectionName 语义，2026-08-17 切换）：
+// 从 ConnectionStrings:NotFilePostgres 读连接串注册 NotFileDbContext，自动健康检查/遥测。
+// 单服务模式（无该连接串）时从 DbContextOption:DbContextConnection 桥接。
+if (builder.Configuration.GetConnectionString("NotFilePostgres") is null)
+{
+    Console.WriteLine("单个服务执行！");
+    builder.Configuration["ConnectionStrings:NotFilePostgres"] =
+        builder.Configuration.GetSection("DbContextOption").GetValue<string>("DbContextConnection")
+        ?? throw new ArgumentNullException("数据库连接字符未配置");
+}
+else
+{
+    Console.WriteLine("Aspire服务执行！");
+}
+
+// 模块自动初始化（仓储/领域服务注册；原 AddNotBlogServices 拆分，DbContext 改用 Aspire 注册）
+builder.Services.AddAutoAddInstance(ReflectionHelper.GetAllReferencedAssemblies());
+
+// DbContext 注册（Aspire 版：连接名语义 + 自动健康检查/OpenTelemetry）
+builder.AddNpgsqlDbContext<NotFileDbContext>("NotFilePostgres");
+
+
+
 
 builder.Services.AddCacheMemory(builder.Configuration);
 builder.Services.AddJwtAuthentication(builder.Configuration.GetSection("JwtOptions"));
@@ -37,11 +57,11 @@ builder.Services.AddScoped(typeof(IPipelineBehavior<,>), typeof(LoggerBehavior<,
 builder.Services.AddScoped(typeof(IPipelineBehavior<,>), typeof(TransactionBehavior<,>));
 builder.Services.AddGrpc(options =>
 {
-   
+
     options.MaxReceiveMessageSize = 64 * 1024 * 1024;
     options.MaxSendMessageSize = 64 * 1024 * 1024;
     options.EnableDetailedErrors = builder.Environment.IsDevelopment();
-    
+
     // 异常映射拦截器注册在最外层，确保能捕获服务方法及内层拦截器抛出的业务异常
     options.Interceptors.Add<GrpcExceptionMapperInterceptor>();
     options.Interceptors.Add<GrpcJwtAuthInterceptor>();
@@ -79,6 +99,8 @@ builder.WebHost.ConfigureKestrel(options => { options.Limits.MaxRequestBodySize 
 
 
 var app = builder.Build();
+
+ResourcesBanner.PrintStartupBanner();
 
 // 静态工具类注入日志工厂（ImageValidator 为静态类，无法走构造注入）
 ImageValidator.Configure(app.Services.GetRequiredService<ILoggerFactory>());

@@ -22,7 +22,7 @@ var postgres = builder.AddPostgres("postgres")
     .WithDataVolume();
 var identityDb = postgres.AddDatabase("IdentityPostgres", "identitypostgres");      // Identity.Web.API（GetConnectionString("IdentityPostgres")）
 var notfileDb = postgres.AddDatabase("NotFilePostgres", "notfilepostgres");         // FileDev.Web.API（经环境变量 DbContextConnect 注入）
-var messageDb = postgres.AddDatabase("PostgresSQL", "messagepostgres");             // Message.Web.API（GetConnectionString("PostgresSQL")——注意连接名不是 MessagePostgres）
+var messageDb = postgres.AddDatabase("MessagePostgres", "messagepostgres");             // Message.Web.API（GetConnectionString("PostgresSQL")——注意连接名不是 MessagePostgres）
 var videoDb = postgres.AddDatabase("VideoPostgres", "videopostgres");               // Video.Web.API（GetConnectionString("VideoPostgres")）
 var markDb = postgres.AddDatabase("MarkDownPostgres", "markdownpostgres");          // Markdown.Web.API（GetConnectionString("MarkDownPostgres")）
 

@@ -1,4 +1,4 @@
-namespace Video.Domain.ValueObjects;
+namespace Video.Domain.Options;
 
 /// <summary>
 /// ReviewContent 的可配置选项。

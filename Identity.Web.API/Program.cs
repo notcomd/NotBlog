@@ -1,6 +1,7 @@
 
 
 using Identity.Web.API.Resources;
+using Aspire.Npgsql.EntityFrameworkCore.PostgreSQL;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,24 +35,26 @@ builder.Services.AddNotEmail(opt =>
 });
 
 
-#if DEBUG
-Console.WriteLine("现在处于DEBUG，验证！");
-// 凭据外置（S-01）：数据库口令从环境变量 IDENTITY_DB_PASSWORD 读取
-builder.Services.AddNotBlogServices(
-    DbConnectionStringResolver.Resolve(
-        builder.Configuration.GetSection("DbContextOption").GetValue<string>("DbContextConnection"),
-        "IDENTITY_DB_PASSWORD"),
-    [..ReflectionHelper.GetAllReferencedAssemblies()]);
+// 数据库（Aspire 版 AddNpgsqlDbContext，connectionName 语义，2026-08-17 切换）：
+// 从 ConnectionStrings:IdentityPostgres 读连接串注册 IdentityDbContext，自动健康检查/遥测。
+// 单服务模式（无该连接串）时从 DbContextOption:DbContextConnection 桥接。
+if (builder.Configuration.GetConnectionString("IdentityPostgres") is null)
+{
+    Console.WriteLine("单个服务执行！");
+    builder.Configuration["ConnectionStrings:IdentityPostgres"] =
+        builder.Configuration.GetSection("DbContextOption").GetValue<string>("DbContextConnection")
+        ?? throw new ArgumentNullException("数据库连接字符未配置");
+}
+else
+{
+    Console.WriteLine("Aspire服务执行！");
+}
 
-#else
+// 模块自动初始化（仓储/领域服务注册；原 AddNotBlogServices 拆分，DbContext 改用 Aspire 注册）
+builder.Services.AddAutoAddInstance([.. ReflectionHelper.GetAllReferencedAssemblies()]);
 
-builder.Services.AddNotBlogServices(
-    builder.Configuration.GetConnectionString("IdentityPostgres")
-    ?? throw new InvalidOperationException(
-        "未配置数据库连接字符串：请设置环境变量 ConnectionStrings__IdentityPostgres。"),
-    [..ReflectionHelper.GetAllReferencedAssemblies()]);
-
-#endif
+// DbContext 注册（Aspire 版：连接名语义 + 自动健康检查/OpenTelemetry）
+builder.AddNpgsqlDbContext<IdentityDbContext>("IdentityPostgres");
 builder.Services.AddIdentityService(builder.Configuration.GetSection("JwtOptions"));
 
 builder.Services.AddMigration<IdentityDbContext, IdentityDbSeeder>();
@@ -89,7 +92,7 @@ builder.Services.AddProblemDetails();
 
 // ═══ EventBus 注册（通过 IConfiguration 配置驱动） ═══
 // IConnectionFactory 来源：Aspire AddRabbitMQClient("EventBus") 或手动注册
- 
+
 // var hostName = eventBusCfg["HostName"] ?? "localhost";
 // var userName = eventBusCfg["UserName"] ?? "guest";
 // var password = eventBusCfg["Password"] ?? "guest";

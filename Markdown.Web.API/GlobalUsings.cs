@@ -18,3 +18,4 @@ global using Markdown.Web.API.Application.Queries;
 global using Markdown.Web.API.Dto.Request;
 global using Markdown.Web.API.Dto.Response;
 global using Microsoft.AspNetCore.Mvc;
+global using Markdown.Domain.Options;

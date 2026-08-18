@@ -5,7 +5,7 @@ namespace Video.Domain.Entities;
 /// </summary>
 /// <param name="StartTime">有效开始时间</param>
 /// <param name="EndTime">有效结束时间</param>
-public record VideoProtectedTime
+public class  VideoProtectedTime
 {
     private VideoProtectedTime(DateTimeOffset startTime, DateTimeOffset endTime)
     {
@@ -13,6 +13,7 @@ public record VideoProtectedTime
         StartTime = startTime;
         EndTime = endTime;
     }
+
 
     public VideoProtectedTime()
     {

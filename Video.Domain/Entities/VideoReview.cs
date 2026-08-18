@@ -10,7 +10,7 @@ namespace Video.Domain.Entities;
 /// - ContentType 字符串字段用于数据库持久化和快速查询
 /// - 工厂方法覆盖所有内容类型，扩展新类型只需修改 ReviewContent
 /// </summary>
-public class VideoReview : Entity<int>
+public class VideoReview : Entity<Guid>
 {
     public Guid VideoReviewGuid { get; init; }
 

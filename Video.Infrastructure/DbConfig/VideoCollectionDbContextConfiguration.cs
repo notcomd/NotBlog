@@ -14,32 +14,37 @@ public class VideoCollectionDbContextConfiguration : IEntityTypeConfiguration<Vi
         builder.OwnsOne(en => en.VideoQuote, x =>
         {
             x.ToJson();
-            x.Property(s => s.Upvote).HasColumnName("c_Upvote");
-            x.Property(s => s.Stars).HasColumnName("c_Stars");
-            x.Property(s => s.Watch).HasColumnName("c_Watch");
-            x.Property(s => s.Down).HasColumnName("c_Down");
-            x.Property(s => s.Ballot).HasColumnName("c_Ballot");
-            x.Property(s => s.Share).HasColumnName("c_Share");
+            x.Property(s => s.Upvote).HasJsonPropertyName("c_Upvote");
+            x.Property(s => s.Stars).HasJsonPropertyName("c_Stars");
+            x.Property(s => s.Watch).HasJsonPropertyName("c_Watch");
+            x.Property(s => s.Down).HasJsonPropertyName("c_Down");
+            x.Property(s => s.Ballot).HasJsonPropertyName("c_Ballot");
+            x.Property(s => s.Share).HasJsonPropertyName("c_Share");
         });
 
         builder.OwnsOne(en => en.VideoControl, x =>
         {
             x.ToJson();
-            x.Property(s => s.AuthorVideo).HasColumnName("AuthorVideo");
-            x.Property(s => s.VideoDelete).HasColumnName("VideoDelete");
-            x.Property(s => s.VideoDisplay).HasColumnName("VideoDisplay");
+            x.Property(s => s.AuthorVideo).HasJsonPropertyName("AuthorVideo");
+            x.Property(s => s.VideoDelete).HasJsonPropertyName("VideoDelete");
+            x.Property(s => s.VideoDisplay).HasJsonPropertyName("VideoDisplay");
             x.OwnsOne(en => en.VideoProtectedTime, x =>
             {
-                x.Property(s => s.StartTime).HasColumnName("StartTime");
-                x.Property(s => s.EndTime).HasColumnName("EndTime");
+                x.Property(s => s.StartTime).HasJsonPropertyName("VideoProtectedStartTime");
+                x.Property(s => s.EndTime).HasJsonPropertyName("VideoProtectedEndTime");
+            });
+            x.OwnsOne(en=>en.TimeSpace, x =>
+            {
+                x.Property(s => s.CreateAt).HasJsonPropertyName("VideoControlCreateTime");
+                x.Property(s => s.UpdateAt).HasJsonPropertyName("VideoControlUpdateTime");
             });
         });
 
         builder.OwnsOne(en => en.TimeSpace, x =>
         {
             x.ToJson();
-            x.Property(s => s.UpdateAt).HasColumnName("UpdateTime");
-            x.Property(s => s.CreateAt).HasColumnName("CreateTime");
+            x.Property(s => s.UpdateAt).HasJsonPropertyName("UpdateTime");
+            x.Property(s => s.CreateAt).HasJsonPropertyName("CreateTime");
         });
     }
 }

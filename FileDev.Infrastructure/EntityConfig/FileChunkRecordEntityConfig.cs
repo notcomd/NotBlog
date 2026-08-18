@@ -11,6 +11,8 @@ public class FileChunkRecordEntityConfig : IEntityTypeConfiguration<FileChunkRec
     {
         builder.Ignore(e => e.DomainEvents);
 
+        builder.Ignore(x=>x.Id);
+
         builder.ToTable("FileChunkRecord");
 
         builder.HasKey(e => e.RecordId);

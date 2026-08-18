@@ -4,7 +4,7 @@ namespace Video.Domain.Entities;
 /// <summary>
 /// 视频实体
 /// </summary>
-public class Videos : Entity<int>, IAggregateRoot
+public class Videos : Entity<Guid>, IAggregateRoot
 {
     public Guid VideoGuid { get; init; }
 

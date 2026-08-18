@@ -17,3 +17,4 @@ global using Video.Infrastructure.Cache;
 global using Video.Infrastructure.EntityFramework;
 global using Video.Infrastructure.Repository;
 global using Video.Infrastructure.Service;
+global using Video.Domain.Options;

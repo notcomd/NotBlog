@@ -5,3 +5,4 @@ global using Video.Domain.Entities;
 global using Video.Domain.Events;
 global using Notcomd.Token.JWT.Security;
 global using Video.Domain.ValueObjects;
+global using Video.Domain.Options;

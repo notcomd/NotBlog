@@ -33,6 +33,15 @@ public class CurrentUserService : ICurrentUserService
             .FindFirst(ClaimTypes.Role)?.Value;
     }
 
+    public bool IsAdmin()
+    {
+        var roleClaim = _httpContextAccessor.HttpContext?.User?
+            .FindAll(ClaimTypes.Role)
+            .SelectMany(c => c.Value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            .Any(r => r.Equals("Admin", StringComparison.OrdinalIgnoreCase) || r.Equals("Root", StringComparison.OrdinalIgnoreCase));
+
+        return roleClaim ?? false;
+    }
     public string? GetClaim(string claimType)
     {
         return _httpContextAccessor.HttpContext?.User?

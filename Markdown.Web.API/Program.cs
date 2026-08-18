@@ -18,20 +18,21 @@ builder.AddServiceDefaults();
 // 密钥凭据外置（JwtOptions:PrivateKey 或环境变量 JWT_PRIVATE_KEY，见 JWToken/AuthenticationExtensions）
 builder.Services.AddJwtAuthentication(builder.Configuration.GetSection("JwtOptions"));
 
-// 凭据外置（S-01）：数据库口令从环境变量 MARKDOWN_DB_PASSWORD 读取并补全连接串
-var markdownConn = builder.Configuration.GetConnectionString("MarkDownPostgres");
-if (markdownConn is not null && !markdownConn.Contains("Password=", StringComparison.OrdinalIgnoreCase))
+
+if (builder.Configuration.GetConnectionString("MarkDownPostgres") is null)
 {
-    var markdownPassword = Environment.GetEnvironmentVariable("MARKDOWN_DB_PASSWORD");
-    if (string.IsNullOrWhiteSpace(markdownPassword))
-        throw new InvalidOperationException(
-            "数据库连接串 MarkDownPostgres 未包含 Password，且环境变量 MARKDOWN_DB_PASSWORD 未设置，无法启动。");
+    Console.WriteLine("单个服务执行！");
     builder.Configuration["ConnectionStrings:MarkDownPostgres"] =
-        markdownConn.TrimEnd(';') + $";Password={markdownPassword};";
+        builder.Configuration.GetSection("DbContextOption").GetValue<string>("DbContextConnection")
+        ?? throw new ArgumentNullException("数据库连接字符未配置");
+}
+else
+{
+    Console.WriteLine("Aspire服务执行！");
 }
 
-// 配置 PostgreSQL DbContext
-builder.Services.AddNpgsql<MarkDownDbContext>(builder.Configuration.GetConnectionString("MarkDownPostgres")!);
+builder.AddNpgsqlDbContext<MarkDownDbContext>("MarkDownPostgres");
+
 
 // 配置 Markdown 基础设施（仓储等）
 builder.Services.AddMarkdownInfrastructure();
@@ -77,7 +78,7 @@ builder.Services.AddExceptionHandler<MarkdownApiExceptionHandler>();
 
 // 当前用户服务
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<Markdown.Domain.IServices.ICurrentUserService, Markdown.Web.API.Services.CurrentUserService>();
+builder.Services.AddScoped<ICurrentUserService,CurrentUserService>();
 
 // ClientRequest 幂等记录过期清理（每日执行，保留 7 天）
 builder.Services.AddHostedService<ClientRequestCleanupService>();
