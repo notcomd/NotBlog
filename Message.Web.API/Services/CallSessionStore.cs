@@ -34,13 +34,13 @@ public sealed class CallSessionStore
     /// <summary>响铃超时：超时无人应答由服务端惰性终结</summary>
     private static readonly TimeSpan RingingTimeout = TimeSpan.FromSeconds(30);
 
-    private readonly RedisCacheService _cache;
+    private readonly  MessageCacheService _cache;
     private readonly IHubContext<CallHub, ICallClient> _hub;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<CallSessionStore> _logger;
 
     public CallSessionStore(
-        RedisCacheService cache,
+         MessageCacheService cache,
         IHubContext<CallHub, ICallClient> hub,
         IServiceScopeFactory scopeFactory,
         ILogger<CallSessionStore> logger)

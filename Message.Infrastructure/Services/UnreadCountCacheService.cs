@@ -1,17 +1,17 @@
 namespace Message.Infrastructure.Services;
 
-public class UnreadCountCacheService 
+public class UnreadCountCacheService
 {
     private const string UnreadCountPrefix = "message:user:unread:";
     private static readonly TimeSpan UnreadCountTtl = TimeSpan.FromHours(1);
-    private readonly IDatabase _database;
+    private readonly IRedisCacheService _database;
     private readonly ILogger<UnreadCountCacheService> _logger;
 
     public UnreadCountCacheService(
-        IConnectionMultiplexer redis,
+        IRedisCacheService database,
         ILogger<UnreadCountCacheService> logger)
     {
-        _database = redis.GetDatabase();
+        _database = database;
         _logger = logger;
     }
 
@@ -19,8 +19,8 @@ public class UnreadCountCacheService
         CancellationToken cancellationToken = default)
     {
         var key = $"{UnreadCountPrefix}{userId}";
-        await _database.HashIncrementAsync(key, sessionId.ToString());
-        await _database.KeyExpireAsync(key, UnreadCountTtl);
+        await _database.HashIncrementAsync(key, sessionId.ToString(), 1, cancellationToken);
+        await _database.KeyExpireAsync(key, UnreadCountTtl, cancellationToken);
         _logger.LogDebug("用户 {UserId} 会话 {SessionId} 未读数已增加", userId, sessionId);
     }
 
@@ -28,11 +28,11 @@ public class UnreadCountCacheService
         CancellationToken cancellationToken = default)
     {
         var key = $"{UnreadCountPrefix}{userId}";
-        var current = await _database.HashGetAsync(key, sessionId.ToString());
+        var current = await _database.HashGetAsync(key, sessionId.ToString(), cancellationToken);
 
-        if (!current.IsNullOrEmpty && long.Parse(current!) > 0)
+        if (!string.IsNullOrEmpty(current) && long.Parse(current) > 0)
         {
-            await _database.HashDecrementAsync(key, sessionId.ToString());
+            await _database.HashIncrementAsync(key, sessionId.ToString(), -1, cancellationToken);
             _logger.LogDebug("用户 {UserId} 会话 {SessionId} 未读数已减少", userId, sessionId);
         }
     }
@@ -41,9 +41,9 @@ public class UnreadCountCacheService
         CancellationToken cancellationToken = default)
     {
         var key = $"{UnreadCountPrefix}{userId}";
-        var value = await _database.HashGetAsync(key, sessionId.ToString());
+        var value = await _database.HashGetAsync(key, sessionId.ToString(), cancellationToken);
 
-        if (value.IsNullOrEmpty)
+        if (string.IsNullOrEmpty(value))
             return 0;
 
         return (int)long.Parse(value!);
@@ -53,12 +53,12 @@ public class UnreadCountCacheService
         CancellationToken cancellationToken = default)
     {
         var key = $"{UnreadCountPrefix}{userId}";
-        var entries = await _database.HashGetAllAsync(key);
+        var entries = await _database.HashGetAllAsync(key, cancellationToken);
 
         var result = new Dictionary<Guid, int>();
         foreach (var entry in entries)
         {
-            if (Guid.TryParse((string?)entry.Name, out var sessionId))
+            if (Guid.TryParse(entry.Key, out var sessionId))
             {
                 result[sessionId] = (int)long.Parse(entry.Value!);
             }
@@ -70,14 +70,14 @@ public class UnreadCountCacheService
     public async Task ClearUnreadCountAsync(Guid userId, Guid sessionId, CancellationToken cancellationToken = default)
     {
         var key = $"{UnreadCountPrefix}{userId}";
-        await _database.HashDeleteAsync(key, sessionId.ToString());
+        await _database.HashDeleteAsync(key, sessionId.ToString(),cancellationToken);
         _logger.LogDebug("用户 {UserId} 会话 {SessionId} 未读数已清零", userId, sessionId);
     }
 
     public async Task<int> GetTotalUnreadCountAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         var key = $"{UnreadCountPrefix}{userId}";
-        var entries = await _database.HashGetAllAsync(key);
+        var entries = await _database.HashGetAllAsync(key, cancellationToken);
 
         long total = 0;
         foreach (var entry in entries)
@@ -95,8 +95,10 @@ public class UnreadCountCacheService
     public async Task<int?> TryGetTotalUnreadCountAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         var totalKey = $"{UnreadCountPrefix}{userId}:total";
-        var value = await _database.StringGetAsync(totalKey);
-        return value.IsNullOrEmpty ? null : (int)long.Parse(value!);
+        var value = await _database.StringGetAsync(totalKey, cancellationToken);
+        if (string.IsNullOrEmpty(value) || !int.TryParse(value, out var count))
+            return null;
+        return count;
     }
 
     /// <summary>
@@ -105,7 +107,7 @@ public class UnreadCountCacheService
     public async Task SetTotalUnreadCountAsync(Guid userId, int count, CancellationToken cancellationToken = default)
     {
         var totalKey = $"{UnreadCountPrefix}{userId}:total";
-        await _database.StringSetAsync(totalKey, count.ToString(), UnreadCountTtl);
+        await _database.StringSetAsync(totalKey, count.ToString(), UnreadCountTtl, cancellationToken);
         _logger.LogDebug("用户 {UserId} 未读总数已写入缓存：{Count}", userId, count);
     }
 
@@ -117,7 +119,8 @@ public class UnreadCountCacheService
     {
         var key = $"{UnreadCountPrefix}{userId}";
         var totalKey = $"{UnreadCountPrefix}{userId}:total";
-        await _database.KeyDeleteAsync(new RedisKey[] { key, totalKey });
+        await _database.KeyDeleteAsync(key, cancellationToken);
+        await _database.KeyDeleteAsync(totalKey, cancellationToken);
         _logger.LogDebug("用户 {UserId} 未读计数缓存已失效", userId);
     }
 }

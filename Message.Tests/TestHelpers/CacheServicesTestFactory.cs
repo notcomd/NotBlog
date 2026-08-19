@@ -30,6 +30,6 @@ internal static class CacheServicesTestFactory
     public static SessionCacheService CreateSessionCache(Mock<IDatabase>? database = null)
         => new(CreateRedisMock(database).Object, new Mock<ILogger<SessionCacheService>>().Object);
 
-    public static RedisCacheService CreateRedisCache(Mock<IDatabase>? database = null)
-        => new(CreateRedisMock(database).Object, new Mock<ILogger<RedisCacheService>>().Object);
+    public static  MessageCacheService CreateRedisCache(Mock<IDatabase>? database = null)
+        => new(CreateRedisMock(database).Object, new Mock<ILogger< MessageCacheService>>().Object);
 }

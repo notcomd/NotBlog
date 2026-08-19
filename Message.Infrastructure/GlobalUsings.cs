@@ -29,3 +29,7 @@ global using NotMediator.Mediator;
 global using StackExchange.Redis;
 global using System.Security.Claims;
 global using System.Text.Json;
+global using CacheMemory.Core;
+global using CacheMemory.Extensions;
+global using CacheMemory.Providers;
+global using CacheMemory.Service;

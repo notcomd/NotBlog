@@ -36,6 +36,7 @@
       <ProjectReference Include="..\JWToken\JWToken.csproj" />
       <ProjectReference Include="..\Message.Infrastructure\Message.Infrastructure.csproj" />
       <ProjectReference Include="..\NotBlog.ServiceDefaults\NotBlog.ServiceDefaults.csproj" />
+      <ProjectReference Include="..\CacheMemory\CacheMemory.csproj" />
     </ItemGroup>
 
     <ItemGroup>

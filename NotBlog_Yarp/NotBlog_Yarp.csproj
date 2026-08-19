@@ -11,10 +11,15 @@
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.11" />
         <PackageReference Include="Microsoft.Extensions.ServiceDiscovery.Yarp" Version="10.9.0" />
         <PackageReference Include="Yarp.ReverseProxy" Version="2.3.0" />
+        <PackageReference Include="Aspire.RabbitMQ.Client" Version="13.4.6" />
+        <PackageReference Include="Aspire.StackExchange.Redis.DistributedCaching" Version="13.4.6" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\NotBlog.ServiceDefaults\NotBlog.ServiceDefaults.csproj" />
+        <ProjectReference Include="..\JWToken\JWToken.csproj" />
+        <ProjectReference Include="..\Eventbus\Eventbus.csproj" />
+        <ProjectReference Include="..\CacheMemory\CacheMemory.csproj" />
     </ItemGroup>
 
 </Project>

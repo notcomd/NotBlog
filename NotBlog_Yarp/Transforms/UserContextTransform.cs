@@ -1,7 +1,5 @@
 using System.Security.Claims;
-using NotBlog_Yarp.Middlewares;
 using Yarp.ReverseProxy.Transforms;
-using Yarp.ReverseProxy.Transforms.Builder;
 
 namespace NotBlog_Yarp.Transforms;
 
@@ -58,11 +56,17 @@ public class UserContextTransformProvider : ITransformProvider
                 context.ProxyRequest.Headers.Add("X-User-Roles", string.Join(",", roles));
 
                 // 注入 DataScope（由 PermissionFilterMiddleware 存入 Items）
+                // PermissionCheckResult.DataScope 为 Dictionary<string, HashSet<string>>，
+                // 序列化为 "type|v1,v2,..." 格式注入 X-Data-Scope Header
                 if (context.HttpContext.Items.TryGetValue(
                         PermissionFilterMiddleware.DataScopeItemKey, out var scopeObj) &&
-                    scopeObj is string scopeValue && !string.IsNullOrEmpty(scopeValue))
+                    scopeObj is Dictionary<string, HashSet<string>> scopeDict &&
+                    scopeDict.Count > 0)
                 {
-                    context.ProxyRequest.Headers.Add("X-Data-Scope", scopeValue);
+                    var scopeValue = string.Join("|",
+                        scopeDict.Select(kv => $"{kv.Key}|{string.Join(",", kv.Value)}"));
+                    if (!string.IsNullOrEmpty(scopeValue))
+                        context.ProxyRequest.Headers.Add("X-Data-Scope", scopeValue);
                 }
 
                 _logger.LogDebug(

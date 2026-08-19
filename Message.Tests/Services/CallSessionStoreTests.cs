@@ -87,9 +87,9 @@ public class CallSessionStoreTests
         var scopeFactory = new Mock<IServiceScopeFactory>();
         scopeFactory.Setup(x => x.CreateScope()).Returns(scope.Object);
 
-        var redisCache = new RedisCacheService(
+        var redisCache = new  MessageCacheService(
             CacheServicesTestFactory.CreateRedisMock(_db).Object,
-            new Mock<ILogger<RedisCacheService>>().Object);
+            new Mock<ILogger< MessageCacheService>>().Object);
 
         _storeUnderTest = new CallSessionStore(
             redisCache,

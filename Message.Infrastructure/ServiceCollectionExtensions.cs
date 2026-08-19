@@ -83,7 +83,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IEmailSender, DefaultEmailSender>();
         services.AddScoped<ILocalizationService, DefaultLocalizationService>();
 
-        services.TryAddSingleton<RedisCacheService>();
+        services.TryAddSingleton<MessageCacheService>();
         services.TryAddSingleton<SessionCacheService>();
         services.TryAddSingleton<UnreadCountCacheService>();
         services.TryAddSingleton<UserStatusCacheService>();

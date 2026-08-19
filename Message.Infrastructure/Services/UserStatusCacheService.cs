@@ -1,19 +1,20 @@
+using CacheMemory.Core;
 
 namespace Message.Infrastructure.Services;
 
-public class UserStatusCacheService 
+public class UserStatusCacheService
 {
     private const string UserStatusPrefix = "message:user:status:";
     private const string OnlineUsersKey = "message:online:users";
     private static readonly TimeSpan StatusTtl = TimeSpan.FromMinutes(5);
-    private readonly IDatabase _database;
+    private readonly IRedisCacheService _cache;
     private readonly ILogger<UserStatusCacheService> _logger;
 
     public UserStatusCacheService(
-        IConnectionMultiplexer redis,
+        IRedisCacheService cache,
         ILogger<UserStatusCacheService> logger)
     {
-        _database = redis.GetDatabase();
+        _cache = cache;
         _logger = logger;
     }
 
@@ -22,8 +23,8 @@ public class UserStatusCacheService
         var key = $"{UserStatusPrefix}{userId}";
         var status = new UserStatus { IsOnline = true, LastOnlineTime = DateTime.UtcNow };
 
-        await _database.StringSetAsync(key, JsonSerializer.Serialize(status), StatusTtl);
-        await _database.SetAddAsync(OnlineUsersKey, userId.ToString());
+        await _cache.StringSetAsync(key, JsonSerializer.Serialize(status), StatusTtl, cancellationToken);
+        await _cache.SetAddAsync(OnlineUsersKey, userId.ToString(), cancellationToken);
 
         _logger.LogDebug("用户 {UserId} 状态已缓存为在线", userId);
     }
@@ -33,28 +34,28 @@ public class UserStatusCacheService
         var key = $"{UserStatusPrefix}{userId}";
         var status = new UserStatus { IsOnline = false, LastOnlineTime = DateTime.UtcNow };
 
-        await _database.StringSetAsync(key, JsonSerializer.Serialize(status), StatusTtl);
-        await _database.SetRemoveAsync(OnlineUsersKey, userId.ToString());
+        await _cache.StringSetAsync(key, JsonSerializer.Serialize(status), StatusTtl, cancellationToken);
+        await _cache.SetRemoveAsync(OnlineUsersKey, userId.ToString(), cancellationToken);
 
         _logger.LogDebug("用户 {UserId} 状态已缓存为离线", userId);
     }
 
     public async Task<bool> IsUserOnlineAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        return await _database.SetContainsAsync(OnlineUsersKey, userId.ToString());
+        return await _cache.SetContainsAsync(OnlineUsersKey, userId.ToString(), cancellationToken);
     }
 
     public async Task<DateTime?> GetLastOnlineTimeAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         var key = $"{UserStatusPrefix}{userId}";
-        var value = await _database.StringGetAsync(key);
+        var value = await _cache.StringGetAsync(key, cancellationToken);
 
-        if (value.IsNullOrEmpty)
+        if (string.IsNullOrEmpty(value))
             return null;
 
         try
         {
-            var status = JsonSerializer.Deserialize<UserStatus>((string)value!);
+            var status = JsonSerializer.Deserialize<UserStatus>(value);
             return status?.LastOnlineTime;
         }
         catch
@@ -65,7 +66,7 @@ public class UserStatusCacheService
 
     public async Task<int> GetOnlineUserCountAsync(CancellationToken cancellationToken = default)
     {
-        var count = await _database.SetLengthAsync(OnlineUsersKey);
+        var count = await _cache.SetLengthAsync(OnlineUsersKey, cancellationToken);
         return (int)count;
     }
 

@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace NotBlog_Yarp.Permission;
+namespace NotBlog_Yarp.Options;
 
 /// <summary>
 /// 权限路由配置选项
@@ -44,6 +44,16 @@ public class PermissionOptions
     /// <summary>未映射路径是否放行（DefaultPolicy == "Allow"）</summary>
     public bool DefaultAllow => string.Equals(DefaultPolicy, "Allow", StringComparison.OrdinalIgnoreCase);
 
+    /// <summary>
+    /// 权限映射后台刷新间隔（秒）。
+    /// 默认 300 秒（5 分钟）。设为 0 则禁用后台轮询（仅启动时加载一次）。
+    /// 仅在 IdentityService:BaseUrl 已配置（生产模式）时生效。
+    /// </summary>
+    public int RefreshIntervalSeconds { get; init; } = 300;
+
+    /// <summary>是否启用后台刷新（RefreshIntervalSeconds > 0）</summary>
+    public bool RefreshEnabled => RefreshIntervalSeconds > 0;
+
     /// <summary>开发用户配置（仅 ConfigPermissionServiceClient 使用）</summary>
     public Dictionary<string, DevUser>? DevUsers { get; init; }
 
@@ -62,12 +72,5 @@ public class PermissionOptions
         public string Code { get; init; } = string.Empty;
     }
 
-    public sealed class DevUser
-    {
-        /// <summary>该用户拥有的所有权限编码</summary>
-        public HashSet<string> Permissions { get; init; } = new();
 
-        /// <summary>数据范围（格式: "type|value1,value2,..."）</summary>
-        public string DataScope { get; init; } = "0|";
-    }
 }

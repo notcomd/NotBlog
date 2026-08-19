@@ -368,7 +368,7 @@ public static class MessagesApi
     }
 
     /// <summary>
-    /// 获取消息详情（查询侧，Q-05：经 RedisCacheService 缓存，TTL 30min）。
+    /// 获取消息详情（查询侧，Q-05：经  MessageCacheService 缓存，TTL 30min）。
     /// 缓存 Key 带用户维度：仅缓存本人有权查看的消息，且命中时无跨用户缓存绕过权限的风险（S-05）。
     /// </summary>
     /// <param name="id">消息ID（路由参数）</param>
@@ -381,7 +381,7 @@ public static class MessagesApi
         Guid id,
         [FromServices] INotMediator mediator,
         [FromServices] ICurrentUserService currentUser,
-        [FromServices] RedisCacheService redisCache,
+        [FromServices]  MessageCacheService redisCache,
         CancellationToken ct)
     {
         try

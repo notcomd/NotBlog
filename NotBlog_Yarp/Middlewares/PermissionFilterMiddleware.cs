@@ -1,7 +1,6 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
-using NotBlog_Yarp.Permission;
 
 namespace NotBlog_Yarp.Middlewares;
 

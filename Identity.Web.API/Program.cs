@@ -55,6 +55,9 @@ builder.Services.AddAutoAddInstance([.. ReflectionHelper.GetAllReferencedAssembl
 
 // DbContext 注册（Aspire 版：连接名语义 + 自动健康检查/OpenTelemetry）
 builder.AddNpgsqlDbContext<IdentityDbContext>("IdentityPostgres");
+
+
+
 builder.Services.AddIdentityService(builder.Configuration.GetSection("JwtOptions"));
 
 builder.Services.AddMigration<IdentityDbContext, IdentityDbSeeder>();

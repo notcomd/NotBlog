@@ -51,7 +51,12 @@ public class ConfigPermissionServiceClient : IPermissionServiceClient
         return Task.FromResult(false);
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
     public Task<string> GetDataScopeAsync(Guid userId, CancellationToken ct = default)
     {
         if (userId == Guid.Empty)
@@ -60,12 +65,12 @@ public class ConfigPermissionServiceClient : IPermissionServiceClient
         var devUsers = _options.CurrentValue.DevUsers;
         if (devUsers is not null &&
             devUsers.TryGetValue(userId.ToString(), out var userConfig) &&
-            !string.IsNullOrWhiteSpace(userConfig.DataScope))
+            userConfig.DataScope is not null && userConfig.DataScope.Count > 0)
         {
             _logger.LogDebug(
                 "[ConfigPermissionClient] DataScope UserId={UserId} Scope={Scope}",
                 userId, userConfig.DataScope);
-            return Task.FromResult(userConfig.DataScope);
+            return Task.FromResult(string.Join("|", userConfig.DataScope.Select(kv => $"{kv.Key}|{string.Join(',', kv.Value)}")));
         }
 
         return Task.FromResult("0|");

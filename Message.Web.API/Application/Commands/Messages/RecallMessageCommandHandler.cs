@@ -6,7 +6,7 @@ namespace Message.Web.API.Application.Commands.Messages;
 public class RecallMessageCommandHandler(
     IMessageRepository messageRepository,
     ILogger<RecallMessageCommandHandler> logger,
-    RedisCacheService redisCache,
+     MessageCacheService redisCache,
     MessageDeliveryService delivery,
     IChatSessionRepository sessionRepository) : IRequestHandler<RecallMessageCommand, bool>
 {

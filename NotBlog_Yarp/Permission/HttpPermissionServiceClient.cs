@@ -1,4 +1,3 @@
-using System.Net.Http.Json;
 using Microsoft.Extensions.Options;
 
 namespace NotBlog_Yarp.Permission;
@@ -111,8 +110,9 @@ public class HttpPermissionServiceClient : IPermissionServiceClient
 
             if (result?.HasPermission != true)
                 return PermissionCheckResult.Denied();
-
-            return PermissionCheckResult.Granted(result.DataScope ?? "0|");
+            var dataScopeDict = new Dictionary<string, HashSet<string>>();
+            ToDictionary(result?.DataScope ?? "0|", out dataScopeDict);
+            return PermissionCheckResult.Granted(dataScopeDict);
         }
         catch (HttpRequestException ex)
         {
@@ -249,7 +249,9 @@ public class HttpPermissionServiceClient : IPermissionServiceClient
         if (_options.Value.FailOpen)
         {
             _logger.LogWarning("[HttpPermissionClient] 权限服务不可用，按 FailPolicy=Open 放行（fail-open 降级）");
-            return PermissionCheckResult.Granted("0|");
+            var dataScopeDict = new Dictionary<string, HashSet<string>>() { { "0", new HashSet<string>() } };
+            return PermissionCheckResult.Granted(dataScopeDict);
+           // return PermissionCheckResult.Granted("0|");
         }
         return PermissionCheckResult.Denied();
     }
@@ -288,5 +290,22 @@ public class HttpPermissionServiceClient : IPermissionServiceClient
                 : string.Empty;
             return $"{ScopeType}|{valuesStr}";
         }
+    }
+    private void ToDictionary(string dataScope, out Dictionary<string, HashSet<string>> result)
+    {
+        result = new Dictionary<string, HashSet<string>>();
+        if (string.IsNullOrWhiteSpace(dataScope))
+            return;
+
+        var parts = dataScope.Split('|', 2);
+        if (parts.Length < 1)
+            return;
+
+        var scopeType = parts[0];
+        var values = parts.Length > 1 && !string.IsNullOrWhiteSpace(parts[1])
+            ? parts[1].Split(',', StringSplitOptions.RemoveEmptyEntries)
+            : Array.Empty<string>();
+
+        result[scopeType] = new HashSet<string>(values);
     }
 }

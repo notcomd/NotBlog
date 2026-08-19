@@ -7,7 +7,7 @@ public class RecordTweetViewCommandHandler(
     ITweetRepository tweetRepository,
     ICircleRepository circleRepository,
     ILogger<RecordTweetViewCommandHandler> logger,
-    RedisCacheService redisCache) : IRequestHandler<RecordTweetViewCommand, bool>
+     MessageCacheService redisCache) : IRequestHandler<RecordTweetViewCommand, bool>
 {
     /// <summary>同用户浏览去重窗口（24 小时）</summary>
     private static readonly TimeSpan ViewDedupWindow = TimeSpan.FromHours(24);

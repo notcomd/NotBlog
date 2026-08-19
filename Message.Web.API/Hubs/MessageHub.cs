@@ -33,7 +33,7 @@ public class MessageHub : Hub<IMessageClient>
     private readonly UserStatusCacheService _userStatusCache;
     private readonly UnreadCountCacheService _unreadCountCache;
     private readonly SessionCacheService _sessionCache;
-    private readonly RedisCacheService _redisCache;
+    private readonly  MessageCacheService _redisCache;
     private readonly INotMediator _mediator;
     private readonly IMessageFriendsRepository _friendsRepository;
 
@@ -50,7 +50,7 @@ public class MessageHub : Hub<IMessageClient>
         UserStatusCacheService userStatusCache,
         UnreadCountCacheService unreadCountCache,
         SessionCacheService sessionCache,
-        RedisCacheService redisCache,
+         MessageCacheService redisCache,
         INotMediator mediator,
         IMessageFriendsRepository friendsRepository)
     {

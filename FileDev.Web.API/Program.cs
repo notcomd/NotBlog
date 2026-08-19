@@ -11,7 +11,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
+builder.AddCacheMemory("Redis");
 
+builder.AddRabbitMQClient("EventBus");
+builder.Services.AddEventBus(builder.Configuration.GetConnectionString("EventBus")?? 
+    throw new ArgumentNullException(" the FileDev for RabbitMQ is null!"),
+    Assembly.GetEntryAssembly()??throw new AppDomainUnloadedException("load assembly error"));
 // 数据库（Aspire 版 AddNpgsqlDbContext，connectionName 语义，2026-08-17 切换）：
 // 从 ConnectionStrings:NotFilePostgres 读连接串注册 NotFileDbContext，自动健康检查/遥测。
 // 单服务模式（无该连接串）时从 DbContextOption:DbContextConnection 桥接。
@@ -35,8 +40,6 @@ builder.AddNpgsqlDbContext<NotFileDbContext>("NotFilePostgres");
 
 
 
-
-builder.Services.AddCacheMemory(builder.Configuration);
 builder.Services.AddJwtAuthentication(builder.Configuration.GetSection("JwtOptions"));
 builder.Services.AddAuthorization();
 
@@ -46,7 +49,7 @@ builder.Services.AddScoped<GrpcJwtAuthInterceptor>();
 builder.Services.AddScoped<GrpcExceptionMapperInterceptor>();
 builder.Services.AddHostedService<ChunkCleanupBackgroundService>();
 builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
-builder.Services.RemoveAbstractHandlerRegistrations(); // 移除抽象泛型基类 handler（NotMediator 自动注册未过滤抽象类，2026-08-17）
+//builder.Services.RemoveAbstractHandlerRegistrations(); // 移除抽象泛型基类 handler（NotMediator 自动注册未过滤抽象类，2026-08-17）
 
 // ⚠️ 修复（2026-08-15）：NotMediator 包要求手动注册管道（README），此前 TransactionBehavior/
 // LoggerBehavior 从未注册 → 所有命令无事务、无 SaveChanges 提交 → 文件元数据（NotFile）等
@@ -74,15 +77,15 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<FileCheckTypeMiddleware>();
 
 // ═══ EventBus 注册 ═══
-var eventBusCfg = builder.Configuration.GetSection("EventBus");
-builder.Services.AddSingleton<IConnectionFactory>(_ => new ConnectionFactory
-{
-    HostName = eventBusCfg["HostName"] ?? "localhost",
-    UserName = eventBusCfg["UserName"] ?? "guest",
-    Password = eventBusCfg["Password"] ?? "guest",
-    Port = int.TryParse(eventBusCfg["Port"], out var p) ? p : 5672
-});
-builder.Services.AddEventBus(eventBusCfg, Assembly.GetExecutingAssembly());
+// var eventBusCfg = builder.Configuration.GetSection("EventBus");
+// builder.Services.AddSingleton<IConnectionFactory>(_ => new ConnectionFactory
+// {
+//     HostName = eventBusCfg["HostName"] ?? "localhost",
+//     UserName = eventBusCfg["UserName"] ?? "guest",
+//     Password = eventBusCfg["Password"] ?? "guest",
+//     Port = int.TryParse(eventBusCfg["Port"], out var p) ? p : 5672
+// });
+builder.Services.AddEventBus(builder.Configuration.GetSection("EventBus"), Assembly.GetExecutingAssembly());
 
 
 

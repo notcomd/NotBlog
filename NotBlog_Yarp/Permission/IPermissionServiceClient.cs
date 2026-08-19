@@ -9,13 +9,13 @@ public sealed record PermissionCheckResult
     public bool HasPermission { get; init; }
 
     /// <summary>数据范围序列化值（格式: "type|value1,value2,..."），默认 "0|"</summary>
-    public string DataScope { get; init; } = "0|";
+    public Dictionary<string, HashSet<string>> DataScope { get; init; } = new() { { "0", new HashSet<string>() } };
 
     /// <summary>权限被拒绝</summary>
     public static PermissionCheckResult Denied() => new() { HasPermission = false };
 
     /// <summary>权限通过 + 指定 DataScope</summary>
-    public static PermissionCheckResult Granted(string dataScope) => new()
+    public static PermissionCheckResult Granted(Dictionary<string, HashSet<string>> dataScope) => new()
     {
         HasPermission = true,
         DataScope = dataScope
@@ -25,7 +25,7 @@ public sealed record PermissionCheckResult
     public static PermissionCheckResult GrantedOwn() => new()
     {
         HasPermission = true,
-        DataScope = "0|"
+        DataScope = new Dictionary<string, HashSet<string>>() { { "0", new HashSet<string>() } }
     };
 }
 
@@ -61,16 +61,31 @@ public interface IPermissionServiceClient
     /// 组合查询：同时检查权限和获取数据范围，减少一次网络往返
     /// 默认实现回退到两次独立调用；子类可覆写为单次调用
     /// </summary>
-    async Task<PermissionCheckResult> CheckAndGetScopeAsync(
-        Guid userId, string permissionCode, CancellationToken ct = default)
-    {
-        var hasPermission = await CheckPermissionAsync(userId, permissionCode, ct);
-        if (!hasPermission)
-            return PermissionCheckResult.Denied();
+   async Task<PermissionCheckResult> CheckAndGetScopeAsync(
+    Guid userId, string permissionCode, CancellationToken ct = default)
+{
+    var hasPermission = await CheckPermissionAsync(userId, permissionCode, ct);
+    if (!hasPermission)
+        return PermissionCheckResult.Denied();
 
-        var dataScope = await GetDataScopeAsync(userId, ct);
-        return PermissionCheckResult.Granted(dataScope);
+    var dataScope = await GetDataScopeAsync(userId, ct);
+    if (string.IsNullOrWhiteSpace(dataScope))
+        return PermissionCheckResult.Denied();
+
+    var parts = dataScope.Split('|', 2);
+    if (parts.Length < 2 || string.IsNullOrEmpty(parts[0]))
+    {
+        // 格式无效，根据业务可返回 Denied 或 GrantedOwn，或记录日志
+        return PermissionCheckResult.Denied(); // 或 GrantedOwn()
     }
+
+    var values = parts[1].Split(',', StringSplitOptions.RemoveEmptyEntries);
+    var scopeDict = new Dictionary<string, HashSet<string>>
+    {
+        { parts[0], new HashSet<string>(values) }
+    };
+    return PermissionCheckResult.Granted(scopeDict);
+}
 
     /// <summary>
     /// 获取全部 URL→PermissionCode 路由映射（网关注入时调用）

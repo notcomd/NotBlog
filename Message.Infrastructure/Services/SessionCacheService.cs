@@ -1,18 +1,19 @@
+using CacheMemory.Core;
 
 namespace Message.Infrastructure.Services;
 
-public class SessionCacheService 
+public class SessionCacheService
 {
     private const string SessionPrefix = "message:session:";
     private static readonly TimeSpan SessionTtl = TimeSpan.FromMinutes(30);
-    private readonly IDatabase _database;
+    private readonly IRedisCacheService _cache;
     private readonly ILogger<SessionCacheService> _logger;
 
     public SessionCacheService(
-        IConnectionMultiplexer redis,
+        IRedisCacheService cache,
         ILogger<SessionCacheService> logger)
     {
-        _database = redis.GetDatabase();
+        _cache = cache;
         _logger = logger;
     }
 
@@ -20,21 +21,21 @@ public class SessionCacheService
         CancellationToken cancellationToken = default)
     {
         var key = $"{SessionPrefix}{sessionId}";
-        await _database.StringSetAsync(key, JsonSerializer.Serialize(sessionInfo), SessionTtl);
+        await _cache.StringSetAsync(key, JsonSerializer.Serialize(sessionInfo), SessionTtl, cancellationToken);
         _logger.LogDebug("会话 {SessionId} 已缓存", sessionId);
     }
 
     public async Task<T?> GetSessionAsync<T>(Guid sessionId, CancellationToken cancellationToken = default)
     {
         var key = $"{SessionPrefix}{sessionId}";
-        var value = await _database.StringGetAsync(key);
+        var value = await _cache.StringGetAsync(key, cancellationToken);
 
-        if (value.IsNullOrEmpty)
+        if (string.IsNullOrEmpty(value))
             return default;
 
         try
         {
-            return JsonSerializer.Deserialize<T>((string)value!);
+            return JsonSerializer.Deserialize<T>(value);
         }
         catch (JsonException ex)
         {
@@ -46,7 +47,7 @@ public class SessionCacheService
     public async Task InvalidateSessionAsync(Guid sessionId, CancellationToken cancellationToken = default)
     {
         var key = $"{SessionPrefix}{sessionId}";
-        await _database.KeyDeleteAsync(key);
+        await _cache.KeyDeleteAsync(key, cancellationToken);
         _logger.LogDebug("会话 {SessionId} 缓存已失效", sessionId);
     }
 
@@ -60,7 +61,7 @@ public class SessionCacheService
             Content = content,
             Time = DateTime.UtcNow
         };
-        await _database.StringSetAsync(key, JsonSerializer.Serialize(lastMessage), SessionTtl);
+        await _cache.StringSetAsync(key, JsonSerializer.Serialize(lastMessage), SessionTtl, cancellationToken);
         _logger.LogDebug("会话 {SessionId} 最后消息已更新", sessionId);
     }
 

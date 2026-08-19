@@ -1,3 +1,4 @@
+using System.Data.Common;
 using CacheMemory.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -396,6 +397,7 @@ public class RedisCacheService : IRedisCacheService
         CancellationToken ct = default)
         => await _retryPolicy.ExecuteAsync(async () =>
         {
+            
             var db = await GetDatabaseAsync(ct).ConfigureAwait(false);
             return await db.HashIncrementAsync(key, field, value).ConfigureAwait(false);
         }, ct).ConfigureAwait(false);

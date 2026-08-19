@@ -36,7 +36,8 @@ public class PermissionRouteMap
 
     /// <summary>
     /// 清空全部 URL→PermissionCode 映射条目（保留 PublicPaths 和 BypassPaths）
-    /// 用于从 Identity 重新加载映射时替换旧数据
+    /// 用于从 Identity 重新加载映射时替换旧数据。
+    /// 注意：此方法存在 Clear→Add 的空窗口，推荐使用 <see cref="ReplaceAll"/> 替代。
     /// </summary>
     public void ClearMappings()
     {
@@ -44,6 +45,29 @@ public class PermissionRouteMap
         {
             _entries.Clear();
             _regexCache.Clear();
+        }
+    }
+
+    /// <summary>
+    /// 原子替换全部映射条目（保留 PublicPaths 和 BypassPaths）。
+    /// 先构建新列表再锁内一次性替换，避免 Clear→Add 期间的空映射窗口
+    /// （高并发下并发请求不会因空表而 403）。
+    /// </summary>
+    /// <param name="entries">新的映射条目集合</param>
+    public void ReplaceAll(IEnumerable<(string Method, string PathPattern, string PermissionCode)> entries)
+    {
+        ArgumentNullException.ThrowIfNull(entries);
+
+        var newEntries = entries
+            .Select(e => new RouteEntry(e.Method.ToUpperInvariant(), e.PathPattern, e.PermissionCode))
+            .ToList();
+
+        lock (_lock)
+        {
+            _entries.Clear();
+            _entries.AddRange(newEntries);
+            _regexCache.Clear();
+            // 正则在首次 MatchPattern 时由 ConcurrentDictionary.GetOrAdd 延迟编译，无需预构建
         }
     }
 

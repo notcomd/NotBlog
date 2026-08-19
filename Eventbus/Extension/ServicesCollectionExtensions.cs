@@ -7,7 +7,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Notcomd.EventBus.EventBus;
-using RabbitMQ.Client;
 using Notcomd.EventBus.Outbox;
 using Notcomd.EventBus.Rpc;
 
@@ -48,8 +47,11 @@ public static class ServicesCollectionExtensions
         // 同步 IntegrationEventRabbitMqOptions（向后兼容）
         services.Configure<IntegrationEventRabbitMqOptions>(configuration);
 
+        // var queueName=configuration.GetSection("").Get<EventBusOptions>();
+
         // 获取选项值用于注册
-        var options = configuration.Get<EventBusOptions>() ?? new EventBusOptions();
+        var options = configuration.GetSection("EventBus").Get<EventBusOptions>() ??
+            new EventBusOptions { SubscriptionClientName = "defult" };
         var queueName = options.SubscriptionClientName;
 
         return services.AddEventBusInternal(queueName, ScanHandlers(assemblies));

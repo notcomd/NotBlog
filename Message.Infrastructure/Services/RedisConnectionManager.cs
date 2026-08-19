@@ -1,26 +1,27 @@
+using CacheMemory.Core;
+using System.Text.Json;
 
 namespace Message.Infrastructure.Services;
 
 public class RedisConnectionManager : IConnectionManager, IConnectionCommandService
 {
-    private const string UserConnectionsPrefix = "message:user:";
-    private const string ConnectionUserPrefix = "message:connection:";
-    private const string UserStatusPrefix = "message:user:status:";
-    private const string OnlineUsersKey = "message:online:users";
+    private readonly string UserConnectionsPrefix = "message:user:";
+    private readonly string ConnectionUserPrefix = "message:connection:";
+    private readonly string UserStatusPrefix = "message:user:status:";
+    private readonly string OnlineUsersKey = "message:online:users";
 
     private static readonly TimeSpan ConnectionTtl = TimeSpan.FromHours(24);
     private static readonly TimeSpan StatusTtl = TimeSpan.FromMinutes(5);
-    private readonly IDatabase _database;
+
+    private readonly IRedisCacheService _cache;
     private readonly ILogger<RedisConnectionManager> _logger;
-    private readonly IConnectionMultiplexer _redis;
 
     public RedisConnectionManager(
-        IConnectionMultiplexer redis,
+        IRedisCacheService cache,
         ILogger<RedisConnectionManager> logger)
     {
-        _redis = redis;
-        _database = redis.GetDatabase();
-        _logger = logger;
+        _cache = cache ?? throw new ArgumentNullException(nameof(cache));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     public async Task AddConnectionAsync(Guid userId, string connectionId)
@@ -28,17 +29,18 @@ public class RedisConnectionManager : IConnectionManager, IConnectionCommandServ
         var userConnectionsKey = $"{UserConnectionsPrefix}{userId}:connections";
         var connectionUserKey = $"{ConnectionUserPrefix}{connectionId}:user";
 
-        var tasks = new List<Task>
-        {
-            _database.SetAddAsync(userConnectionsKey, connectionId),
-            _database.KeyExpireAsync(userConnectionsKey, ConnectionTtl),
-            _database.StringSetAsync(connectionUserKey, userId.ToString()),
-            _database.KeyExpireAsync(connectionUserKey, ConnectionTtl)
-        };
+        await _cache.SetAddAsync(userConnectionsKey, connectionId);
+        await _cache.KeyExpireAsync(userConnectionsKey, ConnectionTtl);
 
-        await Task.WhenAll(tasks);
+        await _cache.StringSetAsync(
+            connectionUserKey,
+            userId.ToString(),
+            ConnectionTtl);
 
-        _logger.LogDebug("用户 {UserId} 添加连接 {ConnectionId}", userId, connectionId);
+        _logger.LogDebug(
+            "用户 {UserId} 添加连接 {ConnectionId}",
+            userId,
+            connectionId);
     }
 
     public async Task RemoveConnectionAsync(Guid userId, string connectionId)
@@ -46,87 +48,92 @@ public class RedisConnectionManager : IConnectionManager, IConnectionCommandServ
         var userConnectionsKey = $"{UserConnectionsPrefix}{userId}:connections";
         var connectionUserKey = $"{ConnectionUserPrefix}{connectionId}:user";
 
-        var tasks = new List<Task>
-        {
-            _database.SetRemoveAsync(userConnectionsKey, connectionId),
-            _database.KeyDeleteAsync(connectionUserKey)
-        };
+        await _cache.SetRemoveAsync(userConnectionsKey, connectionId);
+        await _cache.KeyDeleteAsync(connectionUserKey);
 
-        await Task.WhenAll(tasks);
+        var remainingConnections = await _cache.SetLengthAsync(userConnectionsKey);
 
-        var remainingConnections = await _database.SetLengthAsync(userConnectionsKey);
         if (remainingConnections == 0)
         {
-            await _database.SetRemoveAsync(OnlineUsersKey, userId.ToString());
+            await _cache.SetRemoveAsync(
+                OnlineUsersKey,
+                userId.ToString());
         }
 
-        _logger.LogDebug("用户 {UserId} 移除连接 {ConnectionId}", userId, connectionId);
+        _logger.LogDebug(
+            "用户 {UserId} 移除连接 {ConnectionId}",
+            userId,
+            connectionId);
     }
 
     public async Task<IEnumerable<string>> GetConnectionsAsync(Guid userId)
     {
-        var userConnectionsKey = $"{UserConnectionsPrefix}{userId}:connections";
-        var connections = await _database.SetMembersAsync(userConnectionsKey);
-        return connections.Select(c => c.ToString());
+        var key = $"{UserConnectionsPrefix}{userId}:connections";
+        return await _cache.SetMembersAsync(key);
     }
 
     public async Task<bool> HasOtherConnectionsAsync(Guid userId)
     {
-        var userConnectionsKey = $"{UserConnectionsPrefix}{userId}:connections";
-        var count = await _database.SetLengthAsync(userConnectionsKey);
-        return count > 0;
+        var key = $"{UserConnectionsPrefix}{userId}:connections";
+        return await _cache.SetLengthAsync(key) > 0;
     }
 
     public async Task SetUserOnlineAsync(Guid userId)
     {
-        var userStatusKey = $"{UserStatusPrefix}{userId}";
+        var statusKey = $"{UserStatusPrefix}{userId}";
         var status = new UserStatus
         {
             IsOnline = true,
             LastOnlineTime = DateTime.UtcNow
         };
 
-        await _database.StringSetAsync(
-            userStatusKey,
+        await _cache.StringSetAsync(
+            statusKey,
             JsonSerializer.Serialize(status),
             StatusTtl);
 
-        await _database.SetAddAsync(OnlineUsersKey, userId.ToString());
+        await _cache.SetAddAsync(
+            OnlineUsersKey,
+            userId.ToString());
 
         _logger.LogInformation("用户 {UserId} 已上线", userId);
     }
 
     public async Task SetUserOfflineAsync(Guid userId)
     {
-        var userStatusKey = $"{UserStatusPrefix}{userId}";
+        var statusKey = $"{UserStatusPrefix}{userId}";
         var status = new UserStatus
         {
             IsOnline = false,
             LastOnlineTime = DateTime.UtcNow
         };
 
-        await _database.StringSetAsync(
-            userStatusKey,
+        await _cache.StringSetAsync(
+            statusKey,
             JsonSerializer.Serialize(status),
             StatusTtl);
 
-        await _database.SetRemoveAsync(OnlineUsersKey, userId.ToString());
+        await _cache.SetRemoveAsync(
+            OnlineUsersKey,
+            userId.ToString());
 
         _logger.LogInformation("用户 {UserId} 已离线", userId);
     }
 
-    public async Task<bool> IsUserOnlineAsync(Guid userId)
+    public Task<bool> IsUserOnlineAsync(Guid userId)
     {
-        return await _database.SetContainsAsync(OnlineUsersKey, userId.ToString());
+        return _cache.SetContainsAsync(
+            OnlineUsersKey,
+            userId.ToString());
     }
 
     public async Task<int> GetOnlineCountAsync()
     {
-        var count = await _database.SetLengthAsync(OnlineUsersKey);
-        return (int)count;
+        var count = await _cache.SetLengthAsync(OnlineUsersKey);
+        return checked((int)count);
     }
 
-    private record UserStatus
+    private sealed record UserStatus
     {
         public bool IsOnline { get; init; }
         public DateTime LastOnlineTime { get; init; }

@@ -21,8 +21,8 @@ var builder = DistributedApplication.CreateBuilder(args);
 var postgres = builder.AddPostgres("postgres")
     .WithDataVolume();
 var identityDb = postgres.AddDatabase("IdentityPostgres", "identitypostgres");      // Identity.Web.API（GetConnectionString("IdentityPostgres")）
-var notfileDb = postgres.AddDatabase("NotFilePostgres", "notfilepostgres");         // FileDev.Web.API（经环境变量 DbContextConnect 注入）
-var messageDb = postgres.AddDatabase("MessagePostgres", "messagepostgres");             // Message.Web.API（GetConnectionString("PostgresSQL")——注意连接名不是 MessagePostgres）
+var notfileDb = postgres.AddDatabase("NotFilePostgres", "notfilepostgres");         // FileDev.Web.API（GetconnectionString("FileDevPostgres")）
+var messageDb = postgres.AddDatabase("MessagePostgres", "messagepostgres");         // Message.Web.API（GetConnectionString("MessagePostgres")）
 var videoDb = postgres.AddDatabase("VideoPostgres", "videopostgres");               // Video.Web.API（GetConnectionString("VideoPostgres")）
 var markDb = postgres.AddDatabase("MarkDownPostgres", "markdownpostgres");          // Markdown.Web.API（GetConnectionString("MarkDownPostgres")）
 
@@ -36,6 +36,8 @@ var redis = builder.AddRedis("Redis")
 var rabbitmq = builder.AddRabbitMQ("EventBus")
     .WithEndpoint(port: 5672, targetPort: 5672, name: "tcp")
     .WithDataVolume();
+
+
 
 // ═══════════════════════════════════════════════════════════════════
 // 业务服务（项目）
@@ -52,9 +54,9 @@ var gatewayInternalApiKey = builder.Configuration["GatewayInternal:ApiKey"];
 // - RabbitMQ：手动从 EventBus 配置节创建连接（appsettings 默认 127.0.0.1:5672 guest/guest，与容器默认一致）。
 var filedev = builder.AddProject<FileDev_Web_API>("filedev-web-api")
     .WithReference(notfileDb)
-    .WithReference(redis, connectionName: "CacheMemory")
+    .WithReference(redis)
     .WithReference(rabbitmq)
-    .WithEnvironment("DbContextConnect", notfileDb);
+    .WaitFor(postgres);
 
 // Identity：账号服务。
 // - 数据库：RELEASE 读 ConnectionStrings:IdentityPostgres；DEBUG 读 DbContextOption:DbContextConnection（同样注入容器连接串）；
@@ -65,8 +67,7 @@ var identity = builder.AddProject<Identity_Web_API>("identity-web-api")
     .WithReference(redis)
     .WithReference(rabbitmq)
     .WithReference(filedev)
-    .WithEnvironment("FileStorageGrpc__Address", "https://filedev-web-api")
-    .WithEnvironment("DbContextOption__DbContextConnection", identityDb);
+    .WaitFor(postgres);
 
 // V4：网关内部调用凭证（未配置时不注入，Identity 侧保持 fail-closed）
 if (!string.IsNullOrEmpty(gatewayInternalApiKey))
@@ -77,22 +78,25 @@ if (!string.IsNullOrEmpty(gatewayInternalApiKey))
 var message = builder.AddProject<Message_Web_API>("message-web-api")
     .WithReference(messageDb)
     .WithReference(redis)
-    .WithReference(rabbitmq)
     .WithReference(filedev)
-    .WithEnvironment("DbContextOption__DbContextConnection", messageDb);
+    .WithReference(rabbitmq)
+    .WaitFor(postgres); // 等待数据库和 RabbitMQ 容器就绪（RELEASE）
 
 // Markdown：数据库 AddNpgsql("MarkDownPostgres")；RabbitMQ AddRabbitMQClient("EventBus")（RELEASE）。
 var markdown = builder.AddProject<Markdown_Web_API>("markdown-web-api")
     .WithReference(markDb)
-    .WithReference(rabbitmq);
+    .WithReference(rabbitmq)
+    .WithReference(redis)
+    .WaitFor(postgres); // 等待数据库、RabbitMQ 和 Redis 容器就绪（RELEASE）
 
 // Video：数据库 AddNpgsql("VideoPostgres")；缓存 AddCacheMemory("CacheMemory")；
 // RabbitMQ AddRabbitMQClient("EventBus")（RELEASE）；FileDev:BaseUrl 改用服务发现名（FileDevProxy HttpClient 已启用服务发现）。
 var video = builder.AddProject<Video_Web_API>("video-web-api")
     .WithReference(videoDb)
-    .WithReference(redis, connectionName: "CacheMemory")
+    .WithReference(redis)
     .WithReference(rabbitmq)
-    .WithEnvironment("FileDev_BaseUrl", "http://filedev-web-api");
+    .WithReference(filedev)
+    .WaitFor(postgres);
 
 // YARP 网关：接入服务发现（WithReference 注入各服务的 services__<name>__http/https 端点），
 // appsettings.json 中集群地址与 IdentityService:BaseUrl 改用虚拟主机名（https://<service-name>）。

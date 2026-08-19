@@ -81,8 +81,21 @@ public static class AuthenticationExtensions
             "JWT 签名密钥未配置：请在环境变量 JWT_PRIVATE_KEY（或配置 JwtOptions:PrivateKey）中设置。");
     }
 
+    private static string ResolveEnvironmentPrivateKey(string? environmentKey)
+    {
+        if (!string.IsNullOrWhiteSpace(environmentKey))
+            return environmentKey;
+
+        var envKey = Environment.GetEnvironmentVariable(environmentKey);
+        if (!string.IsNullOrWhiteSpace(envKey))
+            return envKey;
+
+        throw new InvalidOperationException(
+            "JWT 签名密钥未配置：请在环境变量  JwtOptions:PrivateKey）中设置。");
+    }
+
     /// <summary>
-    /// 注册 JWT 服务（不注册认证中间件，适用于微服务客户端场景）
+    /// 注册 JWT 服务（不注册认证中间件，适用于微服务客户端场景）JWT_PRIVATE_KEY（或配置
     /// </summary>
     public static IServiceCollection AddJwtTokenService(this IServiceCollection services)
     {

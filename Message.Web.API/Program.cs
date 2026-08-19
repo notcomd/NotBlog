@@ -1,4 +1,5 @@
 using System.Reflection;
+using CacheMemory.Extensions;
 using Message.Infrastructure;
 using NotBlog.ServiceDefaults;
 using Scalar.AspNetCore;
@@ -7,24 +8,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
-builder.AddRedisDistributedCache("Redis");
+builder.AddCacheMemory("Redis");
 
-// ═══ EventBus（RabbitMQ）：社区事件总线 ═══
-// DEBUG：手动 ConnectionFactory（appsettings EventBus 节）；Release：Aspire 服务发现 AddRabbitMQClient("EventBus")
-#if DEBUG
-builder.Services.AddSingleton<RabbitMQ.Client.IConnectionFactory>(_ =>
-{
-    var eventBusCfg = builder.Configuration.GetSection("EventBus");
-    return new RabbitMQ.Client.ConnectionFactory
-    {
-        HostName = eventBusCfg["HostName"] ?? "localhost",
-        UserName = eventBusCfg["UserName"] ?? "guest",
-        Password = eventBusCfg["Password"] ?? "guest"
-    };
-});
-#else
 builder.AddRabbitMQClient("EventBus");
-#endif
+builder.Services.AddEventBus(builder.Configuration.GetConnectionString("EventBus")??
+    throw new ArgumentNullException("The Message for RabbitMQ connectionString is null!"),
+    Assembly.GetExecutingAssembly());
 // ⚠️ 2026-08-13 修复：AddNpgsql 来自纯 EF Npgsql 包（非 Aspire），参数是连接串字面量而非连接名——
 // 旧写法 "PostgresSQL" 被当作连接串解析（运行时 index 0 报错），从未真正连上数据库
 
@@ -95,8 +84,8 @@ app.MapFollowsApi();
 app.MapNotificationsApi();
 app.MapUserInfoApi();
 
-app.MapHub<Message.Web.API.Hubs.MessageHub>("/MessageHub");
-app.MapHub<Message.Web.API.Hubs.CommunityHub>("/CommunityHub");
-app.MapHub<Message.Web.API.Hubs.CallHub>("/CallHub");
+app.MapHub<MessageHub>("/MessageHub");
+app.MapHub<CommunityHub>("/CommunityHub");
+app.MapHub<CallHub>("/CallHub");
 
 app.Run();
