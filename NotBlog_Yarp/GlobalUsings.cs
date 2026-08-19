@@ -7,3 +7,5 @@ global using NotBlog_Yarp.Permission;
 global using NotBlog_Yarp.Transforms;
 global using Notcomd.Token.JWT.Extensions;
 global using Yarp.ReverseProxy.Transforms.Builder;
+global using Notcomd.EventBus.Core;
+global using Notcomd.EventBus.Extension;

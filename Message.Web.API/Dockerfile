@@ -6,7 +6,7 @@
 #   docker build -f Message.Web.API/Dockerfile -t notblog/message-web-api .
 # ══════════════════════════════════════════════════════════════
 
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0.400-noble-amd64 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
@@ -40,8 +40,8 @@ RUN dotnet publish "Message.Web.API/Message.Web.API.csproj" \
     -o /app/publish
 
 # ── 运行时阶段 ──
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
+FROM mcr.microsoft.com/dotnet/aspnet:10.0.11-noble-amd64 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
-EXPOSE 8080
+EXPOSE 8084
 ENTRYPOINT ["dotnet", "Message.Web.API.dll"]

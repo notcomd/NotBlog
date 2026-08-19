@@ -14,8 +14,7 @@ builder.AddRabbitMQClient("EventBus");
 builder.Services.AddEventBus(builder.Configuration.GetConnectionString("EventBus")??
     throw new ArgumentNullException("The Message for RabbitMQ connectionString is null!"),
     Assembly.GetExecutingAssembly());
-// ⚠️ 2026-08-13 修复：AddNpgsql 来自纯 EF Npgsql 包（非 Aspire），参数是连接串字面量而非连接名——
-// 旧写法 "PostgresSQL" 被当作连接串解析（运行时 index 0 报错），从未真正连上数据库
+
 
 if (builder.Configuration.GetConnectionString("MessagePostgres") is null)
 {

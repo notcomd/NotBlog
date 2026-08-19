@@ -2,7 +2,7 @@
   docker-compose-dashboard:
     image: "mcr.microsoft.com/dotnet/aspire-dashboard"
     ports:
-      - "18888"
+      - "18888:18888"
     expose:
       - "18889"
       - "18890"
@@ -27,7 +27,7 @@
       - "aspire"
     restart: "always"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -51,7 +51,7 @@
       - "aspire"
     restart: "always"
     healthcheck:
-      test: ["CMD-SHELL", "redis-cli -a $$REDIS_PASSWORD ping"]
+      test: [ "CMD-SHELL", "redis-cli -a $$REDIS_PASSWORD ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -71,12 +71,22 @@
       - "aspire"
     restart: "always"
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      test: [ "CMD", "rabbitmq-diagnostics", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
   filedev-web-api:
-    image: "${FILEDEV_WEB_API_IMAGE}"
+    build:
+      context: ../FileDev.Web.API
+      dockerfile: Dockerfile
+    depends_on:
+      # ✅ 新增依赖
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      eventbus:
+        condition: service_healthy
     environment:
       JWT_PRIVATE_KEY: "${JWT_PRIVATE_KEY}"
       OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
@@ -107,10 +117,22 @@
       OTEL_SERVICE_NAME: "filedev-web-api"
     expose:
       - "${FILEDEV_WEB_API_PORT}"
+    ports:
+      - "${FILEDEV_WEB_API_PORT}:9093"
     networks:
       - "aspire"
   identity-web-api:
-    image: "${IDENTITY_WEB_API_IMAGE}"
+    build:
+      context: ./Identity.Web.API
+      dockerfile: Dockerfile
+    depends_on:
+      # ✅ 新增依赖
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      eventbus:
+        condition: service_healthy
     environment:
       JWT_PRIVATE_KEY: "${JWT_PRIVATE_KEY}"
       OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
@@ -144,11 +166,22 @@
       OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
       OTEL_SERVICE_NAME: "identity-web-api"
     expose:
-      - "${IDENTITY_WEB_API_PORT}"
+      - "5052:${IDENTITY_WEB_API_PORT}"
+    ports: -"${IDENTITY_WEB_API_PORT}:9091"
     networks:
       - "aspire"
   message-web-api:
-    image: "${MESSAGE_WEB_API_IMAGE}"
+    build:
+      context: ./Message.Web.API
+      dockerfile: Dockerfile
+    depends_on:
+      # ✅ 新增依赖
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      eventbus:
+        condition: service_healthy
     environment:
       JWT_PRIVATE_KEY: "${JWT_PRIVATE_KEY}"
       OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
@@ -181,10 +214,22 @@
       OTEL_SERVICE_NAME: "message-web-api"
     expose:
       - "${MESSAGE_WEB_API_PORT}"
+    ports: 
+      - "${MESSAGE_WEB_API_PORT}:9092"
     networks:
       - "aspire"
   markdown-web-api:
-    image: "${MARKDOWN_WEB_API_IMAGE}"
+    build:
+      context: ./Markdown.Web.API
+      dockerfile: Dockerfile
+    depends_on:
+      # ✅ 新增依赖
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      eventbus:
+        condition: service_healthy
     environment:
       JWT_PRIVATE_KEY: "${JWT_PRIVATE_KEY}"
       OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
@@ -209,10 +254,21 @@
       OTEL_SERVICE_NAME: "markdown-web-api"
     expose:
       - "${MARKDOWN_WEB_API_PORT}"
+    ports: -"${MARKDOWN_WEB_API_PORT}:9094"
     networks:
       - "aspire"
   video-web-api:
-    image: "${VIDEO_WEB_API_IMAGE}"
+    build:
+      context: ./Video.Web.API
+      dockerfile: Dockerfile
+    depends_on:
+      # ✅ 新增依赖
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      eventbus:
+        condition: service_healthy
     environment:
       JWT_PRIVATE_KEY: "${JWT_PRIVATE_KEY}"
       OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
@@ -243,10 +299,22 @@
       OTEL_SERVICE_NAME: "video-web-api"
     expose:
       - "${VIDEO_WEB_API_PORT}"
+    ports:
+      -"${VIDEO_WEB_API_PORT}:9095"
     networks:
       - "aspire"
   notblog-yarp-gateway:
-    image: "${NOTBLOG_YARP_GATEWAY_IMAGE}"
+    build:
+      context: ./NotBlog_Yarp
+      dockerfile: Dockerfile
+    depends_on:
+      # ✅ 新增依赖
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      eventbus:
+        condition: service_healthy
     environment:
       JWT_PRIVATE_KEY: "${JWT_PRIVATE_KEY}"
       GATEWAY_INTERNAL_API_KEY: "${GATEWAY_INTERNAL_API_KEY}"
@@ -279,7 +347,7 @@
     networks:
       - "aspire"
     ports:
-      - "${NOTBLOG_YARP_GATEWAY_PORT}"
+      - "${NOTBLOG_YARP_GATEWAY_PORT}:9090"
 networks:
   aspire:
     driver: "bridge"

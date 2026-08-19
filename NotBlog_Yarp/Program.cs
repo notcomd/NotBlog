@@ -11,7 +11,8 @@ builder.AddServiceDefaults();
 builder.AddCacheMemory("Redis");
 
 builder.AddRabbitMQClient("EventBus");
-builder.Services.AddEventBus(builder.Configuration.GetSection("EventBus"), Assembly.GetEntryAssembly());
+builder.Services.AddEventBus(builder.Configuration.GetConnectionString("EventBus") ?? throw new ArgumentNullException("the NotBlog_Yarp for RabbitMQ  connectionsting is null! "),
+     Assembly.GetEntryAssembly() ?? throw new ArgumentNullException("无法获取程序集"));
 
 builder.Services.AddJwtAuthentication(builder.Configuration.GetSection("JwtOptions"));
 builder.Services.AddAuthorization();

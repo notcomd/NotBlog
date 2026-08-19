@@ -6,7 +6,7 @@
 #   docker build -f FileDev.Web.API/Dockerfile -t notblog/filedev-web-api .
 # ══════════════════════════════════════════════════════════════
 
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0.400-noble-amd64 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
@@ -40,8 +40,8 @@ RUN dotnet publish "FileDev.Web.API/FileDev.Web.API.csproj" \
     -o /app/publish
 
 # ── 运行时阶段 ──
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
+FROM mcr.microsoft.com/dotnet/aspnet:10.0.11-noble-amd64 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
-EXPOSE 8080
+EXPOSE 8081
 ENTRYPOINT ["dotnet", "FileDev.Web.API.dll"]
