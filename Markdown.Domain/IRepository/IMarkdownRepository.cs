@@ -120,4 +120,12 @@ public interface IMarkdownRepository : IRepository<MarkDown, IUnitOfWork>
     ///     评论浏览量 +1（线程安全），返回最新浏览数（F-10.5）
     /// </summary>
     Task<long> IncreaseReviewViewAsync(Guid reviewGuid);
+
+    // ===== 文档交互计数（文件化重构后新增，收藏命令事务内调用） =====
+
+    /// <summary>
+    ///     更新文档收藏计数（收藏 +1 / 取消收藏 -1，下限钳制 0）。
+    ///     不单独提交，由调用方与收藏记录变更在同一 SaveChanges 内提交，保证计数与记录原子一致
+    /// </summary>
+    Task UpdateFavoriteCountAsync(Guid markDownGuid, long delta);
 }

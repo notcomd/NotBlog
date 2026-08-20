@@ -1,16 +1,18 @@
 namespace Markdown.Domain.Entities;
 
 /// <summary>
-///     MarkReview 引用统计（值对象）
-///     使用线程安全的方式管理点赞、回复、评论、分享、浏览计数
+///     MarkDown 文档交互统计（值对象）
+///     保存文档级浏览、点赞、收藏、分享、硬币与热度数据，用于计算文档热点。
+///     使用线程安全的方式管理计数。
 /// </summary>
 public class MarkQuote
 {
-    private long _commentSome;
     private long _loveSome;
-    private long _reviewSome;
+    private long _favoriteSome;
     private long _shareSome;
+    private long _coinSome;
     private long _viewSome;
+    private double _heatScore;
 
     /// <summary>
     ///     私有构造函数，供 EF Core 使用
@@ -22,20 +24,22 @@ public class MarkQuote
     /// <summary>
     ///     创建 MarkQuote 实例
     /// </summary>
-    public MarkQuote(long loveSome = 0, long reviewSome = 0, long commentSome = 0,
-        long shareSome = 0, long viewSome = 0)
+    public MarkQuote(long loveSome = 0, long favoriteSome = 0, long shareSome = 0,
+        long coinSome = 0, long viewSome = 0, double heatScore = 0)
     {
         if (loveSome < 0) throw new ArgumentOutOfRangeException(nameof(loveSome), "点赞数不能为负数");
-        if (reviewSome < 0) throw new ArgumentOutOfRangeException(nameof(reviewSome), "回复数不能为负数");
-        if (commentSome < 0) throw new ArgumentOutOfRangeException(nameof(commentSome), "评论数不能为负数");
+        if (favoriteSome < 0) throw new ArgumentOutOfRangeException(nameof(favoriteSome), "收藏数不能为负数");
         if (shareSome < 0) throw new ArgumentOutOfRangeException(nameof(shareSome), "分享数不能为负数");
+        if (coinSome < 0) throw new ArgumentOutOfRangeException(nameof(coinSome), "硬币数不能为负数");
         if (viewSome < 0) throw new ArgumentOutOfRangeException(nameof(viewSome), "浏览数不能为负数");
+        if (heatScore < 0) throw new ArgumentOutOfRangeException(nameof(heatScore), "热度分不能为负数");
 
         _loveSome = loveSome;
-        _reviewSome = reviewSome;
-        _commentSome = commentSome;
+        _favoriteSome = favoriteSome;
         _shareSome = shareSome;
+        _coinSome = coinSome;
         _viewSome = viewSome;
+        _heatScore = heatScore;
     }
 
     /// <summary>
@@ -44,14 +48,9 @@ public class MarkQuote
     public long LoveSome => Interlocked.Read(ref _loveSome);
 
     /// <summary>
-    ///     回复数量
+    ///     收藏数量
     /// </summary>
-    public long ReviewSome => Interlocked.Read(ref _reviewSome);
-
-    /// <summary>
-    ///     评论数量
-    /// </summary>
-    public long CommentSome => Interlocked.Read(ref _commentSome);
+    public long FavoriteSome => Interlocked.Read(ref _favoriteSome);
 
     /// <summary>
     ///     分享数量
@@ -59,15 +58,23 @@ public class MarkQuote
     public long ShareSome => Interlocked.Read(ref _shareSome);
 
     /// <summary>
+    ///     硬币（打赏）数量
+    /// </summary>
+    public long CoinSome => Interlocked.Read(ref _coinSome);
+
+    /// <summary>
     ///     浏览数量
     /// </summary>
     public long ViewSome => Interlocked.Read(ref _viewSome);
 
     /// <summary>
+    ///     热度分（由热点算法计算，定时任务/写侧维护）
+    /// </summary>
+    public double HeatScore => Volatile.Read(ref _heatScore);
+
+    /// <summary>
     ///     增加点赞数（线程安全）
     /// </summary>
-    /// <param name="count">增加的数量，默认为 1</param>
-    /// <returns>新的点赞总数</returns>
     public long AddLove(long count = 1)
     {
         if (count < 0) throw new ArgumentOutOfRangeException(nameof(count), "增加的数量不能为负数");
@@ -75,17 +82,14 @@ public class MarkQuote
     }
 
     /// <summary>
-    ///     减少点赞数（线程安全）
+    ///     减少点赞数（线程安全，下限钳制为 0）
     /// </summary>
-    /// <param name="count">减少的数量，默认为 1</param>
-    /// <returns>新的点赞总数</returns>
     public long RemoveLove(long count = 1)
     {
         if (count < 0) throw new ArgumentOutOfRangeException(nameof(count), "减少的数量不能为负数");
         var newValue = Interlocked.Add(ref _loveSome, -count);
         if (newValue < 0)
         {
-            // 如果结果为负数，重置为 0
             Interlocked.Exchange(ref _loveSome, 0);
             return 0;
         }
@@ -94,32 +98,33 @@ public class MarkQuote
     }
 
     /// <summary>
-    ///   增加回复数（线程安全）
+    ///     增加收藏数（线程安全）
     /// </summary>
-    /// <param name="count">增加的数量，默认为 1</param>
-    /// <returns>新的回复总数</returns>
-    public long AddReview(long count = 1)
+    public long AddFavorite(long count = 1)
     {
         if (count < 0) throw new ArgumentOutOfRangeException(nameof(count), "增加的数量不能为负数");
-        return Interlocked.Add(ref _reviewSome, count);
+        return Interlocked.Add(ref _favoriteSome, count);
     }
 
     /// <summary>
-    /// 增加评论数（线程安全）
+    ///     减少收藏数（线程安全，下限钳制为 0）
     /// </summary>
-    /// <param name="count">增加的数量，默认为 1</param>
-    /// <returns>新的评论总数</returns>
-    public long AddComment(long count = 1)
+    public long RemoveFavorite(long count = 1)
     {
-        if (count < 0) throw new ArgumentOutOfRangeException(nameof(count), "增加的数量不能为负数");
-        return Interlocked.Add(ref _commentSome, count);
+        if (count < 0) throw new ArgumentOutOfRangeException(nameof(count), "减少的数量不能为负数");
+        var newValue = Interlocked.Add(ref _favoriteSome, -count);
+        if (newValue < 0)
+        {
+            Interlocked.Exchange(ref _favoriteSome, 0);
+            return 0;
+        }
+
+        return newValue;
     }
 
     /// <summary>
-    /// 增加分享数（线程安全）
+    ///     增加分享数（线程安全）
     /// </summary>
-    /// <param name="count">增加的数量，默认为 1</param>
-    /// <returns>新的分享总数</returns>
     public long AddShare(long count = 1)
     {
         if (count < 0) throw new ArgumentOutOfRangeException(nameof(count), "增加的数量不能为负数");
@@ -127,10 +132,17 @@ public class MarkQuote
     }
 
     /// <summary>
+    ///     增加硬币数（线程安全）
+    /// </summary>
+    public long AddCoin(long count = 1)
+    {
+        if (count < 0) throw new ArgumentOutOfRangeException(nameof(count), "增加的数量不能为负数");
+        return Interlocked.Add(ref _coinSome, count);
+    }
+
+    /// <summary>
     ///     增加浏览数（线程安全）
     /// </summary>
-    /// <param name="count">增加的数量，默认为 1</param>
-    /// <returns>新的浏览总数</returns>
     public long AddView(long count = 1)
     {
         if (count < 0) throw new ArgumentOutOfRangeException(nameof(count), "增加的数量不能为负数");
@@ -138,12 +150,20 @@ public class MarkQuote
     }
 
     /// <summary>
-    ///  获取总互动数（点赞 + 回复 + 评论 + 分享）
+    ///     设置热度分（由热点计算服务调用）
     /// </summary>
-    /// <returns>总互动数</returns>
+    public void SetHeatScore(double score)
+    {
+        if (score < 0) throw new ArgumentOutOfRangeException(nameof(score), "热度分不能为负数");
+        Volatile.Write(ref _heatScore, score);
+    }
+
+    /// <summary>
+    ///     获取总互动数（点赞 + 收藏 + 分享 + 硬币，浏览不计入互动）
+    /// </summary>
     public long GetTotalInteractions()
     {
-        return LoveSome + ReviewSome + CommentSome + ShareSome;
+        return LoveSome + FavoriteSome + ShareSome + CoinSome;
     }
 
     /// <summary>
@@ -151,15 +171,16 @@ public class MarkQuote
     /// </summary>
     public override bool Equals(object? obj)
     {
-        if (obj is null || !(obj is MarkQuote))
+        if (obj is null || obj is not MarkQuote)
             return false;
 
         var other = (MarkQuote)obj;
         return LoveSome == other.LoveSome &&
-               ReviewSome == other.ReviewSome &&
-               CommentSome == other.CommentSome &&
+               FavoriteSome == other.FavoriteSome &&
                ShareSome == other.ShareSome &&
-               ViewSome == other.ViewSome;
+               CoinSome == other.CoinSome &&
+               ViewSome == other.ViewSome &&
+               HeatScore.Equals(other.HeatScore);
     }
 
     /// <summary>
@@ -167,7 +188,7 @@ public class MarkQuote
     /// </summary>
     public override int GetHashCode()
     {
-        return HashCode.Combine(LoveSome, ReviewSome, CommentSome, ShareSome, ViewSome);
+        return HashCode.Combine(LoveSome, FavoriteSome, ShareSome, CoinSome, ViewSome, HeatScore);
     }
 
     /// <summary>
@@ -176,6 +197,6 @@ public class MarkQuote
     public override string ToString()
     {
         return
-            $"MarkQuote(Love:{LoveSome}, Review:{ReviewSome}, Comment:{CommentSome}, Share:{ShareSome}, View:{ViewSome})";
+            $"MarkQuote(Love:{LoveSome}, Favorite:{FavoriteSome}, Share:{ShareSome}, Coin:{CoinSome}, View:{ViewSome}, Heat:{HeatScore})";
     }
 }

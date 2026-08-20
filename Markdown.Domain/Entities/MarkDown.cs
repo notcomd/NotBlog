@@ -1,7 +1,7 @@
 namespace Markdown.Domain.Entities;
 
 /// <summary>
-///     文档
+///     文档（仅保存文件元数据，正文内容以文件形式存储于文件存储后端）
 /// </summary>
 public class MarkDown : Entity<int>, IAggregateRoot
 {
@@ -11,17 +11,22 @@ public class MarkDown : Entity<int>, IAggregateRoot
         MarkDownTagboard = [];
         MarkReviews = [];
         OldMarkDowns = [];
+        MarkQuote = new MarkQuote();
         CreateAt = DateTimeOffset.UtcNow;
         UpdateAt = DateTimeOffset.UtcNow;
     }
 
     // 私有全参数构造函数，供 Builder 调用
-    private MarkDown(Guid markUserGuid, string markDownName, string markDownContent, string markDownHash,
+    private MarkDown(Guid markUserGuid, string markDownName, string fileId, string fileUri,
+        long fileSize, string fileExt, string markDownHash,
         Guid markReviewGuid, HashSet<string> markDownTagboard, MarkDownAuth markDownAuth) : this()
     {
         MarkUserGuid = markUserGuid;
         MarkDownName = markDownName;
-        MarkDownContent = markDownContent;
+        FileId = fileId;
+        FileUri = fileUri;
+        FileSize = fileSize;
+        FileExt = fileExt;
         MarkDownHash = markDownHash;
         MarkReviewGuid = markReviewGuid;
         MarkDownTagboard = markDownTagboard;
@@ -29,10 +34,13 @@ public class MarkDown : Entity<int>, IAggregateRoot
         IsDelete = false;
     }
 
-    // 公有简化构造函数，使用默认值调用私有构造函数
-    public MarkDown(Guid markUserGuid, string markDownName, string markDownContent, string markDownHash)
-        : this(markUserGuid, markDownName, markDownContent, markDownHash, Guid.Empty, [],
-            MarkDownAuth.PublicMark)
+    /// <summary>
+    ///     公有简化构造函数，使用默认值调用私有构造函数
+    /// </summary>
+    public MarkDown(Guid markUserGuid, string markDownName, string fileId, string fileUri,
+        long fileSize, string fileExt, string markDownHash)
+        : this(markUserGuid, markDownName, fileId, fileUri, fileSize, fileExt, markDownHash,
+            Guid.Empty, [], MarkDownAuth.PublicMark)
     {
     }
 
@@ -48,9 +56,30 @@ public class MarkDown : Entity<int>, IAggregateRoot
 
     public MarkDownAuth MarkDownAuth { get; private set; } = MarkDownAuth.PublicMark;
 
+    /// <summary>
+    ///     当前正文文件 SHA-256 哈希
+    /// </summary>
     public string MarkDownHash { get; private set; } = null!;
 
-    public string MarkDownContent { get; private set; } = null!;
+    /// <summary>
+    ///     正文文件标识（文件存储后端 ID，如 FileDev file_id）
+    /// </summary>
+    public string FileId { get; private set; } = null!;
+
+    /// <summary>
+    ///     正文文件访问 URI（内部定位用，不对外暴露）
+    /// </summary>
+    public string FileUri { get; private set; } = null!;
+
+    /// <summary>
+    ///     正文文件字节数
+    /// </summary>
+    public long FileSize { get; private set; }
+
+    /// <summary>
+    ///     正文文件扩展名（如 .md / .markdown）
+    /// </summary>
+    public string FileExt { get; private set; } = null!;
 
     public bool IsDelete { get; private set; }
 
@@ -63,15 +92,57 @@ public class MarkDown : Entity<int>, IAggregateRoot
 
     public DateTimeOffset UpdateAt { get; private set; }
 
+    /// <summary>
+    ///     文档交互统计（浏览/点赞/收藏/分享/硬币/热度，值对象）
+    /// </summary>
+    public MarkQuote MarkQuote { get; private set; }
+
     public ICollection<MarkReview> MarkReviews { get; private set; }
 
     public ICollection<OldMarkDown> OldMarkDowns { get; private set; }
 
+    // ==================== 文档交互计数（委托 MarkQuote） ====================
+
+    /// <summary>
+    ///     文档点赞 +1（配合 MarkDocumentLike 唯一约束防重）
+    /// </summary>
+    public long AddLove(long count = 1) => MarkQuote.AddLove(count);
+
+    /// <summary>
+    ///     文档取消点赞 -1（下限钳制 0）
+    /// </summary>
+    public long RemoveLove(long count = 1) => MarkQuote.RemoveLove(count);
+
+    /// <summary>
+    ///     文档收藏 +1（配合 MarkFavorite 唯一约束防重，收藏命令事务内调用）
+    /// </summary>
+    public long AddFavorite(long count = 1) => MarkQuote.AddFavorite(count);
+
+    /// <summary>
+    ///     文档取消收藏 -1（下限钳制 0）
+    /// </summary>
+    public long RemoveFavorite(long count = 1) => MarkQuote.RemoveFavorite(count);
+
+    /// <summary>
+    ///     文档分享 +1
+    /// </summary>
+    public long AddShare(long count = 1) => MarkQuote.AddShare(count);
+
+    /// <summary>
+    ///     文档打赏硬币 +1（配合 MarkCoin 记录）
+    /// </summary>
+    public long AddCoin(long count = 1) => MarkQuote.AddCoin(count);
+
+    /// <summary>
+    ///     文档浏览 +1（配合 Redis Set 防刷）
+    /// </summary>
+    public long AddView(long count = 1) => MarkQuote.AddView(count);
+
+    // ==================== 评论聚合操作 ====================
+
     /// <summary>
     ///     添加评论到文档（聚合根统一入口）
     /// </summary>
-    /// <param name="markReview">要添加的评论</param>
-    /// <returns>当前文档实例（支持链式调用）</returns>
     public Task<MarkDown> AddByMarkReviewAsync(MarkReview markReview)
     {
         ArgumentNullException.ThrowIfNull(markReview);
@@ -84,7 +155,6 @@ public class MarkDown : Entity<int>, IAggregateRoot
     ///     仅标记 IsDelete 保留记录与评论树结构（可审计、可追溯），
     ///     已删除评论在所有对外查询中不可见；注意：删除整棵子树而非仅单条评论
     /// </summary>
-    /// <param name="reviewGuid">要删除的评论 GUID</param>
     public void SoftDeleteReview(Guid reviewGuid)
     {
         var review = FindReview(reviewGuid);
@@ -118,9 +188,6 @@ public class MarkDown : Entity<int>, IAggregateRoot
     /// <summary>
     ///     添加子评论到父评论（聚合根统一入口，维护聚合内一致性）
     /// </summary>
-    /// <param name="parentReviewGuid">父评论 GUID</param>
-    /// <param name="childReview">子评论</param>
-    /// <returns>子评论实例</returns>
     public MarkReview AddChildReview(Guid parentReviewGuid, MarkReview childReview)
     {
         ArgumentNullException.ThrowIfNull(childReview);
@@ -130,7 +197,7 @@ public class MarkDown : Entity<int>, IAggregateRoot
 
         childReview.SetParentReviewGuid(parentReviewGuid);
         parentReview.MarkReviews.Add(childReview);
-        parentReview.MarkQuote.AddReview();
+        parentReview.ReviewQuote.AddReply();
         MarkReviews.Add(childReview);
 
         UpdateAt = DateTimeOffset.UtcNow;
@@ -140,32 +207,33 @@ public class MarkDown : Entity<int>, IAggregateRoot
     /// <summary>
     ///     在聚合内查找指定评论
     /// </summary>
-    /// <param name="reviewGuid">评论 GUID</param>
-    /// <returns>找到的评论，如果不存在返回 null</returns>
     public MarkReview? FindReview(Guid reviewGuid)
     {
         return MarkReviews.FirstOrDefault(r => r.MarkReviewGuid == reviewGuid);
     }
 
     /// <summary>
-    ///     更新文档内容（同时创建历史版本）
+    ///     更新文档（文件化：元数据 + 文件引用变更；正文文件由应用层先行保存）
     /// </summary>
-    /// <param name="markDownName">新名称</param>
-    /// <param name="markDownContent">新内容</param>
-    /// <param name="markDownHash">新哈希值</param>
-    /// <returns>当前文档实例（支持链式调用）</returns>
-    public Task<MarkDown> UpdateByMarkDownAsync(string markDownName, string markDownContent, string markDownHash)
+    public Task<MarkDown> UpdateByMarkDownAsync(string markDownName, string fileId, string fileUri,
+        long fileSize, string fileExt, string markDownHash)
     {
         if (string.IsNullOrWhiteSpace(markDownName))
             throw new ArgumentNullException(nameof(markDownName));
-        if (string.IsNullOrWhiteSpace(markDownContent))
-            throw new ArgumentNullException(nameof(markDownContent));
+        if (string.IsNullOrWhiteSpace(fileId))
+            throw new ArgumentNullException(nameof(fileId));
+        if (string.IsNullOrWhiteSpace(fileUri))
+            throw new ArgumentNullException(nameof(fileUri));
+        if (string.IsNullOrWhiteSpace(fileExt))
+            throw new ArgumentNullException(nameof(fileExt));
         if (string.IsNullOrWhiteSpace(markDownHash))
             throw new ArgumentNullException(nameof(markDownHash));
 
-        // 如果内容发生变化，应该先创建历史版本记录（由应用层负责）
         MarkDownName = markDownName;
-        MarkDownContent = markDownContent;
+        FileId = fileId;
+        FileUri = fileUri;
+        FileSize = fileSize;
+        FileExt = fileExt;
         MarkDownHash = markDownHash;
         UpdateAt = DateTimeOffset.UtcNow;
 
@@ -234,7 +302,6 @@ public class MarkDown : Entity<int>, IAggregateRoot
     /// <summary>
     ///     添加标签到标签板
     /// </summary>
-    /// <param name="tag">要添加的标签</param>
     public void AddTag(string tag)
     {
         if (!string.IsNullOrWhiteSpace(tag) && !MarkDownTagboard.Contains(tag))
@@ -247,7 +314,6 @@ public class MarkDown : Entity<int>, IAggregateRoot
     /// <summary>
     ///     批量添加标签到标签板
     /// </summary>
-    /// <param name="tags">要添加的标签集合</param>
     public void AddTags(IEnumerable<string> tags)
     {
         foreach (var tag in tags.Where(t => !string.IsNullOrWhiteSpace(t)))
@@ -261,8 +327,6 @@ public class MarkDown : Entity<int>, IAggregateRoot
     /// <summary>
     ///     移除标签
     /// </summary>
-    /// <param name="tag">要移除的标签</param>
-    /// <returns>如果成功移除返回 true，标签不存在返回 false</returns>
     public bool RemoveTag(string tag)
     {
         if (MarkDownTagboard.Remove(tag))
@@ -289,8 +353,6 @@ public class MarkDown : Entity<int>, IAggregateRoot
     /// <summary>
     ///     检查是否包含指定标签
     /// </summary>
-    /// <param name="tag">要检查的标签</param>
-    /// <returns>如果包含返回 true</returns>
     public bool HasTag(string tag)
     {
         return MarkDownTagboard.Contains(tag);
@@ -299,8 +361,6 @@ public class MarkDown : Entity<int>, IAggregateRoot
     /// <summary>
     /// 验证用户是否有权限操作此文档
     /// </summary>
-    /// <param name="userGuid">用户 GUID</param>
-    /// <returns>如果有权限返回 true</returns>
     public bool HasPermission(Guid userGuid)
     {
         // 文档所有者始终有权限
@@ -322,12 +382,17 @@ public class MarkDown : Entity<int>, IAggregateRoot
     /// <summary>
     ///     创建历史版本快照并纳入聚合管理（用于更新前保存旧版本）。
     ///     快照自动加入 OldMarkDowns 集合，由 EF Core 级联持久化；
+    ///     正文内容不再直接获取自实体属性（文档只存元数据），
+    ///     由应用层先从文件存储读取旧内容后作为参数传入；
     ///     内容去重：当前内容已存在于历史版本时不再重复快照，
     ///     避免反复更新/还原同一内容导致历史版本无限膨胀（P1-8）
     /// </summary>
+    /// <param name="content">旧版本文档内容（应用层从文件流读取）</param>
     /// <returns>新创建的 OldMarkDown 实例；内容已存在历史记录时返回 null</returns>
-    public OldMarkDown? CreateHistorySnapshot()
+    public OldMarkDown? CreateHistorySnapshot(string content)
     {
+        ArgumentNullException.ThrowIfNull(content);
+
         // 快照权限应与当前文档一致，避免私有文档的历史版本被标记为公开
         if (OldMarkDowns.Any(o => !o.IsDelete && o.OldMarkDownHash == MarkDownHash))
             return null;
@@ -335,7 +400,7 @@ public class MarkDown : Entity<int>, IAggregateRoot
         var oldVersion = new OldMarkDown(
             MarkDownGuid,
             MarkUserGuid,
-            MarkDownContent,
+            content,
             MarkDownHash,
             MarkDownAuth
         );
@@ -345,18 +410,26 @@ public class MarkDown : Entity<int>, IAggregateRoot
     }
 
     /// <summary>
-    /// 从历史版本还原
+    ///     从历史版本还原（文件化：历史版本内容由应用层重新保存为文件后更新元数据引用）
     /// </summary>
     /// <param name="oldMarkDown">要还原的历史版本</param>
+    /// <param name="fileId">还原内容的新文件标识</param>
+    /// <param name="fileUri">还原内容的新文件 URI</param>
+    /// <param name="fileSize">还原内容的新文件字节数</param>
+    /// <param name="fileExt">还原内容的新文件扩展名</param>
     /// <returns>当前文档实例（支持链式调用）</returns>
-    public Task<MarkDown> RestoreFromHistory(OldMarkDown oldMarkDown)
+    public Task<MarkDown> RestoreFromHistory(OldMarkDown oldMarkDown, string fileId, string fileUri,
+        long fileSize, string fileExt)
     {
         ArgumentNullException.ThrowIfNull(oldMarkDown);
 
-        // 使用历史版本的内容更新当前文档，保留原文档名称（还原不改变名称）
+        // 使用历史版本的内容更新当前文档（名称不变），文件由应用层已保存
         return UpdateByMarkDownAsync(
             MarkDownName,
-            oldMarkDown.OldMarkDownContent,
+            fileId,
+            fileUri,
+            fileSize,
+            fileExt,
             oldMarkDown.OldMarkDownHash
         );
     }
@@ -366,7 +439,10 @@ public class MarkDown : Entity<int>, IAggregateRoot
     /// </summary>
     public class MarkDownBuilder
     {
-        private readonly string _markDownContent;
+        private readonly string _fileId;
+        private readonly string _fileUri;
+        private readonly long _fileSize;
+        private readonly string _fileExt;
         private readonly string _markDownHash;
         private readonly string _markDownName;
         private readonly Guid _markUserGuid;
@@ -374,11 +450,15 @@ public class MarkDown : Entity<int>, IAggregateRoot
         private MarkDownAuth _markDownAuth = MarkDownAuth.PublicMark;
         private Guid _markReviewGuid;
 
-        public MarkDownBuilder(Guid markUserGuid, string markDownName, string markDownContent, string markDownHash)
+        public MarkDownBuilder(Guid markUserGuid, string markDownName, string fileId, string fileUri,
+            long fileSize, string fileExt, string markDownHash)
         {
             _markUserGuid = markUserGuid;
             _markDownName = markDownName;
-            _markDownContent = markDownContent;
+            _fileId = fileId;
+            _fileUri = fileUri;
+            _fileSize = fileSize;
+            _fileExt = fileExt;
             _markDownHash = markDownHash;
         }
 
@@ -413,7 +493,10 @@ public class MarkDown : Entity<int>, IAggregateRoot
             return new MarkDown(
                 _markUserGuid,
                 _markDownName,
-                _markDownContent,
+                _fileId,
+                _fileUri,
+                _fileSize,
+                _fileExt,
                 _markDownHash,
                 _markReviewGuid,
                 _tags,

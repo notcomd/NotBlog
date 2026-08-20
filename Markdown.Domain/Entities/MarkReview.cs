@@ -9,7 +9,7 @@ public class MarkReview : Entity<int>
         MarkReviewAuth = MarkReviewAuth.ReviewAuthPublic;
         MarkReviews = new List<MarkReview>();
         ReviewImages = new List<ReviewImage>();
-        MarkQuote = new MarkQuote();
+        ReviewQuote = new ReviewQuote();
     }
 
 
@@ -50,7 +50,10 @@ public class MarkReview : Entity<int>
 
     public ICollection<ReviewImage>? ReviewImages { get; private set; }
 
-    public MarkQuote MarkQuote { get; private set; }
+    /// <summary>
+    ///     评论交互统计（点赞/查看/回复数/踩，值对象）
+    /// </summary>
+    public ReviewQuote ReviewQuote { get; private set; }
 
     public bool IsDelete { get; private set; }
 
@@ -63,7 +66,6 @@ public class MarkReview : Entity<int>
     /// <summary>
     ///     更新评论内容
     /// </summary>
-    /// <param name="content">新的评论内容</param>
     public void UpdateContent(string content)
     {
         MarkReviewContent = content ?? throw new ArgumentNullException(nameof(content));
