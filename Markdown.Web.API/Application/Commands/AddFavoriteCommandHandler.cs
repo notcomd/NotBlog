@@ -11,6 +11,7 @@ namespace Markdown.Web.API.Application.Commands;
 public class AddFavoriteCommandHandler(
     IMarkFavoriteRepository favoriteRepository,
     IMarkdownRepository markdownRepository,
+    IMarkdownHotBoardService hotBoardService,
     IRequestManagement requestManagement,
     ILogger<AddFavoriteCommandHandler> logger) :  IRequestHandler<AddFavoriteCommand, Guid>
 {
@@ -65,6 +66,9 @@ public class AddFavoriteCommandHandler(
             // 同步记录标签库使用（标签复用建议：常用标签排序）
             await favoriteRepository.RecordTagUsagesAsync(request.UserId, tags);
             await favoriteRepository.UnitOfWork.SaveChangesAsync(cancellationToken);
+
+            // 热度分实时刷新（失败不影响收藏，定时重建兜底）
+            await hotBoardService.UpdateScoreAsync(request.MarkDownGuid);
 
             return favoriteGuid;
         });

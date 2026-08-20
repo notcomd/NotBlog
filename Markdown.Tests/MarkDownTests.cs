@@ -255,6 +255,36 @@ public class MarkDownTests
         Assert.That(md.MarkQuote.ViewSome, Is.EqualTo(5));
     }
 
+    // ==================== 热点分重算 ====================
+
+    [Test]
+    public void 重算热点分写回MarkQuote()
+    {
+        var md = CreateDefault();
+        md.AddLove(10);
+        md.AddView(100);
+
+        var now = DateTimeOffset.UtcNow;
+        var score = md.RecalculateHotScore(now);
+
+        Assert.That(score, Is.EqualTo(md.MarkQuote.HeatScore), "重算返回值应与 MarkQuote.HeatScore 一致");
+        Assert.That(score, Is.GreaterThan(0));
+    }
+
+    [Test]
+    public void 热度分随计数增加而提高()
+    {
+        var md = CreateDefault();
+        var now = DateTimeOffset.UtcNow;
+        var baseScore = md.RecalculateHotScore(now);
+
+        md.AddLove(5);
+        md.AddCoin(2);
+        var higherScore = md.RecalculateHotScore(now);
+
+        Assert.That(higherScore, Is.GreaterThan(baseScore));
+    }
+
     // ==================== 权限 ====================
 
     [Test]

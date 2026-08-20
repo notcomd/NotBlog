@@ -1,4 +1,5 @@
 using System.Reflection;
+using CacheMemory.Extensions;
 using Commons.Web;
 using FileDev.Web.API.Grpc;
 using Markdown.Infrastructure;
@@ -113,7 +114,14 @@ if (builder.Configuration["MarkdownContent:Provider"] == "Local")
 else
 {
     builder.Services.AddSingleton<IMarkdownContentStore, FileDevMarkdownContentStore>();
+
+    // 热点榜 Redis 缓存（Aspire 环境注入 ConnectionStrings:Redis；Local 模式不注册，热点服务自动降级 DB）
+    builder.AddCacheMemory("Redis");
 }
+
+// 热点榜服务 + 定时重建（Redis 缺失时自动降级 DB 实时计算）
+builder.Services.AddScoped<IMarkdownHotBoardService, MarkdownHotBoardService>();
+builder.Services.AddHostedService<MarkdownHeatRebuildBackgroundService>();
 
 // ClientRequest 幂等记录过期清理（每日执行，保留 7 天）
 builder.Services.AddHostedService<ClientRequestCleanupService>();

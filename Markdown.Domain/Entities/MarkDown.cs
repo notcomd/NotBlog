@@ -138,6 +138,17 @@ public class MarkDown : Entity<int>, IAggregateRoot
     /// </summary>
     public long AddView(long count = 1) => MarkQuote.AddView(count);
 
+    /// <summary>
+    ///     重算热点分并写回 MarkQuote.HeatScore（公式见 MarkdownHeatFormula），返回新热度分。
+    ///     由写侧钩子（交互端点）与定时重建任务调用
+    /// </summary>
+    public double RecalculateHotScore(DateTimeOffset now)
+    {
+        var score = MarkdownHeatFormula.Calculate(MarkQuote, CreateAt, now);
+        MarkQuote.SetHeatScore(score);
+        return score;
+    }
+
     // ==================== 评论聚合操作 ====================
 
     /// <summary>

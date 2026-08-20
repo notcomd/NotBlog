@@ -94,6 +94,10 @@ public static class MarkdownApi
             .Produces<ApiResponse<List<MarkdownSummaryResponse>>>(StatusCodes.Status200OK)
             .Produces<ApiResponse>(StatusCodes.Status400BadRequest);
 
+        // GET: 热点榜（Redis ZSet 直读，miss 单飞重建；Redis 故障降级 DB 计算）
+        markdownGroup.MapGet("/hot", GetHotBoardAsync)
+            .Produces<ApiResponse<List<MarkdownHotResponse>>>(StatusCodes.Status200OK);
+
         // ===== 子资源：审核 / 评论 / 历史版本 =====
         MarkdownAuditApi.MapMarkdownAuditApi(markdownGroup);
         MarkdownReviewApi.MapMarkdownReviewApi(markdownGroup);
@@ -169,12 +173,38 @@ public static class MarkdownApi
     }
 
     /// <summary>
-    ///     文档浏览 +1（公开文档可匿名浏览；私有/未过审文档仅作者可见时允许）
+    ///     热点榜 TopN（Redis ZSet 直读；miss 单飞重建；Redis 故障降级 DB 实时计算）
+    /// </summary>
+    private static async Task<IResult> GetHotBoardAsync(
+        int take,
+        [FromServices]IMarkdownHotBoardService hotBoardService)
+    {
+        var takeClamped = Math.Clamp(take <= 0 ? 20 : take, 1, 100);
+        var items = await hotBoardService.GetHotBoardAsync(takeClamped);
+
+        var response = items
+            .Select(i => new MarkdownHotResponse
+            {
+                MarkDownGuid = i.MarkDownGuid,
+                Name = i.Name,
+                HeatScore = i.HeatScore,
+                CreateAt = i.CreateAt
+            })
+            .ToList();
+
+        return Results.Ok(ApiResponse<List<MarkdownHotResponse>>.Ok(response));
+    }
+
+    /// <summary>
+    ///     文档浏览 +1（公开文档可匿名浏览；私有/未过审文档仅作者可见时允许）。
+    ///     已登录用户 24h 窗口 Redis Set 防刷（匿名无标识不防刷；Redis 不可用时跳过防刷）
     /// </summary>
     private static async Task<IResult> AddViewAsync(
         Guid markDownGuid,
         [FromServices]IMarkdownRepository markdownRepository,
-        [FromServices]ICurrentUserService currentUserService)
+        [FromServices]IMarkdownHotBoardService hotBoardService,
+        [FromServices]ICurrentUserService currentUserService,
+        [FromServices]IServiceProvider serviceProvider)
     {
         var markdown = await markdownRepository.FindMarkDownAsync(markDownGuid);
         if (markdown is null || markdown.IsDelete)
@@ -185,7 +215,31 @@ public static class MarkdownApi
             (!markdown.IsApproved && markdown.MarkUserGuid != viewerGuid))
             return Results.NotFound(ApiResponse<long>.NotFound("文章不存在"));
 
+        // 防刷（阶段 3）：已登录用户 24h 窗口去重；新 Set 自动设 TTL 防膨胀
+        var userId = MarkdownApiHelpers.TryGetCurrentUserId(currentUserService);
+        if (userId.HasValue)
+        {
+            var redis = serviceProvider.GetService<CacheMemory.Core.IRedisCacheService>();
+            if (redis is not null)
+            {
+                var dedupKey = $"markdown:viewed:{markDownGuid:N}";
+                var isFirstView = await redis.SetAddAsync(dedupKey, userId.Value.ToString("N"));
+                if (isFirstView)
+                {
+                    await redis.KeyExpireAsync(dedupKey, TimeSpan.FromHours(24));
+                }
+                else
+                {
+                    // 重复浏览：返回当前计数，不递增
+                    return Results.Ok(ApiResponse<long>.Ok(markdown.MarkQuote.ViewSome));
+                }
+            }
+        }
+
         var count = await markdownRepository.IncreaseDocumentViewAsync(markDownGuid);
+
+        // 热度分实时刷新（失败不影响浏览计数，定时重建兜底）
+        await hotBoardService.UpdateScoreAsync(markDownGuid);
         return Results.Ok(ApiResponse<long>.Ok(count));
     }
 
@@ -195,6 +249,7 @@ public static class MarkdownApi
     private static async Task<IResult> LikeDocumentAsync(
         Guid markDownGuid,
         [FromServices]IMarkdownRepository markdownRepository,
+        [FromServices]IMarkdownHotBoardService hotBoardService,
         [FromServices]ICurrentUserService currentUserService)
     {
         var userId = currentUserService.GetUserId();
@@ -207,6 +262,9 @@ public static class MarkdownApi
             return Results.NotFound(ApiResponse<long>.NotFound("文章不存在"));
 
         var count = await markdownRepository.LikeDocumentAsync(markDownGuid, userId);
+
+        // 热度分实时刷新（失败不影响点赞，定时重建兜底）
+        await hotBoardService.UpdateScoreAsync(markDownGuid);
         return Results.Ok(ApiResponse<long>.Ok(count, "点赞成功"));
     }
 
@@ -216,6 +274,7 @@ public static class MarkdownApi
     private static async Task<IResult> UnlikeDocumentAsync(
         Guid markDownGuid,
         [FromServices]IMarkdownRepository markdownRepository,
+        [FromServices]IMarkdownHotBoardService hotBoardService,
         [FromServices]ICurrentUserService currentUserService)
     {
         var userId = currentUserService.GetUserId();
@@ -228,6 +287,9 @@ public static class MarkdownApi
             return Results.NotFound(ApiResponse<long>.NotFound("文章不存在"));
 
         var count = await markdownRepository.RemoveLikeDocumentAsync(markDownGuid, userId);
+
+        // 热度分实时刷新（失败不影响取消点赞，定时重建兜底）
+        await hotBoardService.UpdateScoreAsync(markDownGuid);
         return Results.Ok(ApiResponse<long>.Ok(count, "已取消点赞"));
     }
 
@@ -237,6 +299,7 @@ public static class MarkdownApi
     private static async Task<IResult> ShareDocumentAsync(
         Guid markDownGuid,
         [FromServices]IMarkdownRepository markdownRepository,
+        [FromServices]IMarkdownHotBoardService hotBoardService,
         [FromServices]ICurrentUserService currentUserService)
     {
         var userId = currentUserService.GetUserId();
@@ -249,6 +312,9 @@ public static class MarkdownApi
             return Results.NotFound(ApiResponse<long>.NotFound("文章不存在"));
 
         var count = await markdownRepository.AddDocumentShareAsync(markDownGuid);
+
+        // 热度分实时刷新（失败不影响分享，定时重建兜底）
+        await hotBoardService.UpdateScoreAsync(markDownGuid);
         return Results.Ok(ApiResponse<long>.Ok(count, "分享成功"));
     }
 
@@ -259,6 +325,7 @@ public static class MarkdownApi
         Guid markDownGuid,
         [FromBody] CoinMarkdownRequest request,
         [FromServices]IMarkdownRepository markdownRepository,
+        [FromServices]IMarkdownHotBoardService hotBoardService,
         [FromServices]ICurrentUserService currentUserService)
     {
         var userId = currentUserService.GetUserId();
@@ -274,6 +341,9 @@ public static class MarkdownApi
             return Results.NotFound(ApiResponse<long>.NotFound("文章不存在"));
 
         var count = await markdownRepository.CoinDocumentAsync(markDownGuid, userId, request.Amount);
+
+        // 热度分实时刷新（失败不影响打赏，定时重建兜底）
+        await hotBoardService.UpdateScoreAsync(markDownGuid);
         return Results.Ok(ApiResponse<long>.Ok(count, "打赏成功"));
     }
 

@@ -29,6 +29,7 @@
         <ProjectReference Include="..\JWToken\JWToken.csproj" />
         <ProjectReference Include="..\Eventbus\EventBus.csproj" />
         <ProjectReference Include="..\Commons\Commons.csproj" />
+        <ProjectReference Include="..\CacheMemory\CacheMemory.csproj" />
     </ItemGroup>
 
     <ItemGroup>
