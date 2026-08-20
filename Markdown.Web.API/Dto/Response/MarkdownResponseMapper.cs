@@ -8,6 +8,7 @@ public static class MarkdownResponseMapper
     public static MarkdownResponse MapToMarkdownResponse(MarkDown markdown) => new()
     {
         MarkDownGuid = markdown.MarkDownGuid,
+        MarkUserGuid = markdown.MarkUserGuid,
         Name = markdown.MarkDownName,
         Hash = markdown.MarkDownHash,
         FileId = markdown.FileId,

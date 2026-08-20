@@ -6,6 +6,7 @@ namespace Markdown.Web.API.Dto.Response;
 public class MarkdownResponse
 {
     public Guid MarkDownGuid { get; set; }
+    public Guid MarkUserGuid { get; set; }
     public string Name { get; set; } = null!;
     public string Hash { get; set; } = null!;
     public string FileId { get; set; } = null!;
