@@ -11,6 +11,7 @@ public class MarkdownResponse
     public string FileId { get; set; } = null!;
     public long FileSize { get; set; }
     public string FileExt { get; set; } = null!;
+    public string? CoverUrl { get; set; }
     public List<string> Tags { get; set; } = new();
     public string Auth { get; set; } = null!;
     public DateTimeOffset CreateAt { get; set; }

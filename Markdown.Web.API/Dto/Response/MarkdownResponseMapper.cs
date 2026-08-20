@@ -13,6 +13,7 @@ public static class MarkdownResponseMapper
         FileId = markdown.FileId,
         FileSize = markdown.FileSize,
         FileExt = markdown.FileExt,
+        CoverUrl = markdown.CoverUrl,
         Tags = [.. markdown.MarkDownTagboard],
         Auth = markdown.MarkDownAuth.ToString(),
         CreateAt = markdown.CreateAt,

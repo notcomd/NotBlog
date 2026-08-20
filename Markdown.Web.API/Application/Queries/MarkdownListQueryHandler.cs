@@ -77,6 +77,7 @@ public class MarkdownListQueryHandler(
                 MarkDownGuid = m.MarkDownGuid,
                 Name = m.MarkDownName,
                 Tags = [.. m.MarkDownTagboard],
+                CoverUrl = m.CoverUrl,
                 Auth = m.MarkDownAuth.ToString(),
                 Status = m.Status.ToString(),
                 CreateAt = m.CreateAt,

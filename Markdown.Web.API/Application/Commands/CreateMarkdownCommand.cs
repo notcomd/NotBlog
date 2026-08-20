@@ -9,5 +9,6 @@ public record CreateMarkdownCommand(
     string MarkDownContent,
     string? MarkDownHash = null,
     IEnumerable<string>? Tags = null,
-    MarkDownAuth MarkDownAuth = MarkDownAuth.PublicMark
+    MarkDownAuth MarkDownAuth = MarkDownAuth.PublicMark,
+    string? CoverUrl = null
 ) : IRequest<Guid>, ICommandRequest;

@@ -130,7 +130,8 @@ public static class MarkdownApi
             request.Name,
             request.Content,
             Tags: request.Tags,
-            MarkDownAuth: auth.Value);
+            MarkDownAuth: auth.Value,
+            CoverUrl: request.CoverUrl);
 
         // P1-4：命令直接返回新文章 Guid，避免全量加载用户文章再按名称匹配（低效且同名歧义）
         var markDownGuid = await notMediator.SendAsync(command);
@@ -163,6 +164,7 @@ public static class MarkdownApi
                 MarkDownGuid = m.MarkDownGuid,
                 Name = m.MarkDownName,
                 Tags = [.. m.MarkDownTagboard],
+                CoverUrl = m.CoverUrl,
                 Auth = m.MarkDownAuth.ToString(),
                 Status = m.Status.ToString(),
                 CreateAt = m.CreateAt,
@@ -423,7 +425,8 @@ public static class MarkdownApi
             userId,
             request.Name,
             request.Content,
-            Tags: request.Tags);
+            Tags: request.Tags,
+            CoverUrl: request.CoverUrl);
 
         var result = await notMediator.SendAsync(command);
 

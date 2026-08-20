@@ -20,6 +20,7 @@ public class MarkDownEntityConfiguration : IEntityTypeConfiguration<MarkDown>
         builder.Property(x => x.FileSize).IsRequired().HasDefaultValue(0L);
         builder.Property(x => x.FileExt).HasMaxLength(32).IsRequired();
         builder.Property(x => x.MarkDownHash).HasMaxLength(64).IsRequired();
+        builder.Property(x => x.CoverUrl).HasMaxLength(2048);
 
         // 文档交互统计 MarkQuote（值对象，6 列）
         builder.OwnsOne(x => x.MarkQuote, quoteBuilder =>
@@ -42,11 +43,11 @@ public class MarkDownEntityConfiguration : IEntityTypeConfiguration<MarkDown>
             .HasForeignKey(en => en.MarkDownGuid)
             .HasPrincipalKey(en => en.MarkDownGuid);
 
-        // HashSet 集合映射为 JSON 列
+        // 标签集合映射为 JSON 列（List<string>，与实体类型一致）
         builder.Property(x => x.MarkDownTagboard)
             .HasConversion(
                 v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
-                v => System.Text.Json.JsonSerializer.Deserialize<HashSet<string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new HashSet<string>())
+                v => System.Text.Json.JsonSerializer.Deserialize<List<string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<string>())
             .HasColumnType("text");
     }
 }

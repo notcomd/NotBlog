@@ -18,8 +18,8 @@ public class MarkDown : Entity<int>, IAggregateRoot
 
     // 私有全参数构造函数，供 Builder 调用
     private MarkDown(Guid markUserGuid, string markDownName, string fileId, string fileUri,
-        long fileSize, string fileExt, string markDownHash,
-        Guid markReviewGuid, HashSet<string> markDownTagboard, MarkDownAuth markDownAuth) : this()
+        long fileSize, string fileExt, string markDownHash, string? coverUrl,
+        Guid markReviewGuid, List<string> markDownTagboard, MarkDownAuth markDownAuth) : this()
     {
         MarkUserGuid = markUserGuid;
         MarkDownName = markDownName;
@@ -28,6 +28,7 @@ public class MarkDown : Entity<int>, IAggregateRoot
         FileSize = fileSize;
         FileExt = fileExt;
         MarkDownHash = markDownHash;
+        CoverUrl = coverUrl;
         MarkReviewGuid = markReviewGuid;
         MarkDownTagboard = markDownTagboard;
         MarkDownAuth = markDownAuth;
@@ -39,7 +40,7 @@ public class MarkDown : Entity<int>, IAggregateRoot
     /// </summary>
     public MarkDown(Guid markUserGuid, string markDownName, string fileId, string fileUri,
         long fileSize, string fileExt, string markDownHash)
-        : this(markUserGuid, markDownName, fileId, fileUri, fileSize, fileExt, markDownHash,
+        : this(markUserGuid, markDownName, fileId, fileUri, fileSize, fileExt, markDownHash, null,
             Guid.Empty, [], MarkDownAuth.PublicMark)
     {
     }
@@ -52,7 +53,7 @@ public class MarkDown : Entity<int>, IAggregateRoot
 
     public string MarkDownName { get; private set; } = null!;
 
-    public HashSet<string> MarkDownTagboard { get; private set; }
+    public List<string> MarkDownTagboard { get; private set; }
 
     public MarkDownAuth MarkDownAuth { get; private set; } = MarkDownAuth.PublicMark;
 
@@ -80,6 +81,23 @@ public class MarkDown : Entity<int>, IAggregateRoot
     ///     正文文件扩展名（如 .md / .markdown）
     /// </summary>
     public string FileExt { get; private set; } = null!;
+
+    /// <summary>
+    ///     封面图片 URL（可空；FileDev 文件 URI，列表/详情展示用）
+    /// </summary>
+    public string? CoverUrl { get; private set; }
+
+    /// <summary>
+    ///     更新封面（null=不修改，空串=清除）
+    /// </summary>
+    public void UpdateCoverUrl(string? coverUrl)
+    {
+        if (coverUrl == CoverUrl)
+            return;
+
+        CoverUrl = string.IsNullOrWhiteSpace(coverUrl) ? null : coverUrl;
+        UpdateAt = DateTimeOffset.UtcNow;
+    }
 
     public bool IsDelete { get; private set; }
 
@@ -457,7 +475,8 @@ public class MarkDown : Entity<int>, IAggregateRoot
         private readonly string _markDownHash;
         private readonly string _markDownName;
         private readonly Guid _markUserGuid;
-        private readonly HashSet<string> _tags = [];
+        private readonly List<string> _tags = [];
+        private string? _coverUrl;
         private MarkDownAuth _markDownAuth = MarkDownAuth.PublicMark;
         private Guid _markReviewGuid;
 
@@ -481,15 +500,21 @@ public class MarkDown : Entity<int>, IAggregateRoot
 
         public MarkDownBuilder WithTag(string tag)
         {
-            if (!string.IsNullOrWhiteSpace(tag))
+            if (!string.IsNullOrWhiteSpace(tag) && !_tags.Contains(tag))
                 _tags.Add(tag);
             return this;
         }
 
         public MarkDownBuilder WithTags(IEnumerable<string> tags)
         {
-            foreach (var tag in tags.Where(t => !string.IsNullOrWhiteSpace(t)))
+            foreach (var tag in tags.Where(t => !string.IsNullOrWhiteSpace(t) && !_tags.Contains(t)))
                 _tags.Add(tag);
+            return this;
+        }
+
+        public MarkDownBuilder WithCoverUrl(string? coverUrl)
+        {
+            _coverUrl = string.IsNullOrWhiteSpace(coverUrl) ? null : coverUrl;
             return this;
         }
 
@@ -509,6 +534,7 @@ public class MarkDown : Entity<int>, IAggregateRoot
                 _fileSize,
                 _fileExt,
                 _markDownHash,
+                _coverUrl,
                 _markReviewGuid,
                 _tags,
                 _markDownAuth);

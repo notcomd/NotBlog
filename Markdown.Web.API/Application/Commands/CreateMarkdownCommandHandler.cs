@@ -35,8 +35,9 @@ public class CreateMarkdownCommandHandler(
             builder.WithTags(request.Tags);
         }
 
-        // 5. 设置文档权限
+        // 5. 设置文档权限与封面
         builder.WithMarkDownAuth(request.MarkDownAuth);
+        builder.WithCoverUrl(request.CoverUrl);
 
         var markdownEntity = builder.Build();
 

@@ -28,4 +28,10 @@ public class CreateMarkdownRequest
     /// 文章权限类型（可选，默认为 PublicMark）
     /// </summary>
     public string? Auth { get; set; }
+
+    /// <summary>
+    /// 封面图片 URL（可选；FileDev 文件 URI，列表/详情展示用）
+    /// </summary>
+    [StringLength(2048, ErrorMessage = "封面 URL 长度不能超过 2048 个字符")]
+    public string? CoverUrl { get; set; }
 }

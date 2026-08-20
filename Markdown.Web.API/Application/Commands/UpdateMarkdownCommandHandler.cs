@@ -60,12 +60,14 @@ public class UpdateMarkdownCommandHandler(
             ".md",
             contentHash);
 
-        // 7. 更新标签（如果提供）
+        // 7. 更新标签（如果提供）与封面（null 不修改，空串清除）
         if (request.Tags is not null)
         {
             markdown.ClearTags();
             markdown.AddTags(request.Tags);
         }
+
+        markdown.UpdateCoverUrl(request.CoverUrl);
 
         // 8. 通过 UnitOfWork 保存更改
         await markdownRepository.UnitOfWork.SaveChangesAsync(cancellationToken);
