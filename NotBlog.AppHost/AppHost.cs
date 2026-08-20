@@ -34,7 +34,6 @@ var redis = builder.AddRedis("Redis")
 // 固定宿主端口 5672：手动配置节（localhost:5672 / 127.0.0.1:5672）无需改动即可连通；
 // ⚠️ 要求本机 5672 空闲（停掉本机 RabbitMQ 实例，否则端口绑定冲突）。
 var rabbitmq = builder.AddRabbitMQ("EventBus")
-    .WithEndpoint(port: 5672, targetPort: 5672, name: "tcp")
     .WithDataVolume();
 
 
@@ -82,11 +81,13 @@ var message = builder.AddProject<Message_Web_API>("message-web-api")
     .WithReference(rabbitmq)
     .WaitFor(postgres); // 等待数据库和 RabbitMQ 容器就绪（RELEASE）
 
-// Markdown：数据库 AddNpgsql("MarkDownPostgres")；RabbitMQ AddRabbitMQClient("EventBus")（RELEASE）。
+// Markdown：数据库 AddNpgsql("MarkDownPostgres")；RabbitMQ AddRabbitMQClient("EventBus")（RELEASE）；
+// 正文文件化：WithReference(filedev) 注入服务发现（gRPC 客户端名 filedev-web-api）。
 var markdown = builder.AddProject<Markdown_Web_API>("markdown-web-api")
     .WithReference(markDb)
     .WithReference(rabbitmq)
     .WithReference(redis)
+    .WithReference(filedev)
     .WaitFor(postgres); // 等待数据库、RabbitMQ 和 Redis 容器就绪（RELEASE）
 
 // Video：数据库 AddNpgsql("VideoPostgres")；缓存 AddCacheMemory("CacheMemory")；
