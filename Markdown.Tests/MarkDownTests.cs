@@ -3,7 +3,7 @@ using Markdown.Domain.Entities;
 namespace Markdown.Tests;
 
 /// <summary>
-///     MarkDown 聚合根领域测试：审核状态机 / 评论树软删除 / 历史快照去重 / 子评论 / 权限
+///     MarkDown 聚合根领域测试：审核状态机 / 评论树软删除 / 历史快照去重 / 子评论 / 权限 / 文件元数据 / 交互计数
 /// </summary>
 [TestFixture]
 public class MarkDownTests
@@ -11,8 +11,11 @@ public class MarkDownTests
     private static readonly Guid Owner = Guid.NewGuid();
     private static readonly Guid Other = Guid.NewGuid();
 
-    private static MarkDown CreateDefault(string name = "测试文章", string content = "内容", string hash = "h1")
-        => new(Owner, name, content, hash);
+    private static MarkDown CreateDefault(string name = "测试文章", string fileId = "f1.md", string hash = "h1")
+        => new(Owner, name, fileId, fileId, 1024, ".md", hash);
+
+    private static void UpdateFile(MarkDown md, string fileId, string hash)
+        => md.UpdateByMarkDownAsync(md.MarkDownName, fileId, fileId, 2048, ".md", hash);
 
     // ==================== 审核状态机 ====================
 
@@ -141,7 +144,7 @@ public class MarkDownTests
         md.AddChildReview(top.MarkReviewGuid, child);
 
         Assert.That(child.MarkAggregateRootGuid, Is.EqualTo(top.MarkReviewGuid));
-        Assert.That(top.MarkQuote.ReviewSome, Is.EqualTo(1), "父评论回复计数应 +1");
+        Assert.That(top.ReviewQuote.ReplySome, Is.EqualTo(1), "父评论回复计数应 +1");
         Assert.That(md.FindReview(child.MarkReviewGuid), Is.Not.Null, "子评论应纳入聚合扁平集合");
     }
 
@@ -153,14 +156,14 @@ public class MarkDownTests
         Assert.Throws<InvalidOperationException>(() => md.AddChildReview(Guid.NewGuid(), child));
     }
 
-    // ==================== 历史快照去重（P1-8） ====================
+    // ==================== 历史快照去重（P1-8，正文来自文件流参数） ====================
 
     [Test]
     public void 相同内容不重复快照()
     {
         var md = CreateDefault(hash: "hash-1");
-        Assert.That(md.CreateHistorySnapshot(), Is.Not.Null, "首次快照应创建");
-        Assert.That(md.CreateHistorySnapshot(), Is.Null, "内容未变时不应重复快照");
+        Assert.That(md.CreateHistorySnapshot("旧内容"), Is.Not.Null, "首次快照应创建");
+        Assert.That(md.CreateHistorySnapshot("旧内容"), Is.Null, "内容未变时不应重复快照");
         Assert.That(md.OldMarkDowns.Count, Is.EqualTo(1));
     }
 
@@ -168,9 +171,9 @@ public class MarkDownTests
     public void 内容变化后再快照会新增版本()
     {
         var md = CreateDefault(hash: "hash-1");
-        md.CreateHistorySnapshot();
-        md.UpdateByMarkDownAsync("测试文章", "新内容", "hash-2");
-        md.CreateHistorySnapshot();
+        md.CreateHistorySnapshot("旧内容");
+        UpdateFile(md, "f2.md", "hash-2");
+        md.CreateHistorySnapshot("内容B");
 
         Assert.That(md.OldMarkDowns.Count, Is.EqualTo(2));
         Assert.That(md.OldMarkDowns.Select(o => o.OldMarkDownHash), Does.Contain("hash-1"));
@@ -181,26 +184,29 @@ public class MarkDownTests
     public void 内容改回历史版本不会重复快照()
     {
         var md = CreateDefault(hash: "hash-1");
-        md.CreateHistorySnapshot();              // 历史: [h1]
-        md.UpdateByMarkDownAsync("测试文章", "内容B", "hash-2");
-        md.CreateHistorySnapshot();              // 历史: [h1, h2]
-        md.UpdateByMarkDownAsync("测试文章", "内容A", "hash-1");  // 改回 h1
-        md.CreateHistorySnapshot();              // h1 已存在 -> 不重复
+        md.CreateHistorySnapshot("旧内容");              // 历史: [h1]
+        UpdateFile(md, "f2.md", "hash-2");
+        md.CreateHistorySnapshot("内容B");              // 历史: [h1, h2]
+        UpdateFile(md, "f3.md", "hash-1");  // 改回 h1
+        md.CreateHistorySnapshot("内容A");              // h1 已存在 -> 不重复
 
         Assert.That(md.OldMarkDowns.Count, Is.EqualTo(2));
     }
 
-    // ==================== 更新与权限 ====================
+    // ==================== 文件元数据与更新 ====================
 
     [Test]
-    public void 更新内容刷新内容与更新时间()
+    public void 更新内容刷新文件元数据与更新时间()
     {
         var md = CreateDefault();
         var before = md.UpdateAt;
-        md.UpdateByMarkDownAsync("新名称", "新内容", "hash-2");
+        md.UpdateByMarkDownAsync("新名称", "f2.md", "f2.md", 2048, ".md", "hash-2");
 
         Assert.That(md.MarkDownName, Is.EqualTo("新名称"));
-        Assert.That(md.MarkDownContent, Is.EqualTo("新内容"));
+        Assert.That(md.FileId, Is.EqualTo("f2.md"));
+        Assert.That(md.FileUri, Is.EqualTo("f2.md"));
+        Assert.That(md.FileSize, Is.EqualTo(2048));
+        Assert.That(md.FileExt, Is.EqualTo(".md"));
         Assert.That(md.MarkDownHash, Is.EqualTo("hash-2"));
         Assert.That(md.UpdateAt >= before, Is.True);
     }
@@ -209,9 +215,47 @@ public class MarkDownTests
     public void 空参数更新抛异常()
     {
         var md = CreateDefault();
-        Assert.Throws<ArgumentNullException>(() => md.UpdateByMarkDownAsync("", "内容", "h"));
-        Assert.Throws<ArgumentNullException>(() => md.UpdateByMarkDownAsync("名称", "", "h"));
+        Assert.Throws<ArgumentNullException>(() => md.UpdateByMarkDownAsync("", "f2.md", "f2.md", 1, ".md", "h"));
+        Assert.Throws<ArgumentNullException>(() => md.UpdateByMarkDownAsync("名称", "", "f2.md", 1, ".md", "h"));
+        Assert.Throws<ArgumentNullException>(() => md.UpdateByMarkDownAsync("名称", "f2.md", "f2.md", 1, ".md", ""));
     }
+
+    [Test]
+    public void 从历史版本还原更新文件元数据()
+    {
+        var md = CreateDefault(hash: "hash-1");
+        md.CreateHistorySnapshot("旧内容");
+        UpdateFile(md, "f2.md", "hash-2");
+
+        var old = md.OldMarkDowns.Single(o => o.OldMarkDownHash == "hash-1");
+        md.RestoreFromHistory(old, "f3.md", "f3.md", 4096, ".md");
+
+        Assert.That(md.MarkDownHash, Is.EqualTo("hash-1"), "还原后哈希应为历史版本哈希");
+        Assert.That(md.FileId, Is.EqualTo("f3.md"));
+        Assert.That(md.FileSize, Is.EqualTo(4096));
+    }
+
+    // ==================== 文档交互计数（MarkQuote 委托） ====================
+
+    [Test]
+    public void 文档计数方法委托MarkQuote()
+    {
+        var md = CreateDefault();
+        Assert.That(md.AddLove(), Is.EqualTo(1));
+        Assert.That(md.AddFavorite(), Is.EqualTo(1));
+        Assert.That(md.AddShare(), Is.EqualTo(1));
+        Assert.That(md.AddCoin(), Is.EqualTo(1));
+        Assert.That(md.AddView(5), Is.EqualTo(5));
+        Assert.That(md.RemoveLove(), Is.EqualTo(0));
+
+        Assert.That(md.MarkQuote.LoveSome, Is.EqualTo(0));
+        Assert.That(md.MarkQuote.FavoriteSome, Is.EqualTo(1));
+        Assert.That(md.MarkQuote.ShareSome, Is.EqualTo(1));
+        Assert.That(md.MarkQuote.CoinSome, Is.EqualTo(1));
+        Assert.That(md.MarkQuote.ViewSome, Is.EqualTo(5));
+    }
+
+    // ==================== 权限 ====================
 
     [Test]
     public void 公开文档所有人可访问()
@@ -224,7 +268,7 @@ public class MarkDownTests
     [Test]
     public void 私有文档仅所有者可访问()
     {
-        var md = new MarkDown.MarkDownBuilder(Owner, "私有", "内容", "h")
+        var md = new MarkDown.MarkDownBuilder(Owner, "私有", "f1.md", "f1.md", 1024, ".md", "h")
             .WithMarkDownAuth(MarkDownAuth.PrivateMark)
             .Build();
         Assert.That(md.HasPermission(Owner), Is.True);
