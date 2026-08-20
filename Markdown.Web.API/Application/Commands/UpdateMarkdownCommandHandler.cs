@@ -1,10 +1,11 @@
 namespace Markdown.Web.API.Application.Commands;
 
 /// <summary>
-/// 更新 Markdown 文档命令处理器
+/// 更新 Markdown 文档命令处理器（文件化：更新前从文件流读取旧内容做历史快照，正文变更走文件存储）
 /// </summary>
 public class UpdateMarkdownCommandHandler(
     IMarkdownRepository markdownRepository,
+    IMarkdownContentStore contentStore,
     ILogger<UpdateMarkdownCommandHandler> logger) :  IRequestHandler<UpdateMarkdownCommand, bool>
 {
     public async Task<bool> Handler(UpdateMarkdownCommand request, CancellationToken cancellationToken)
@@ -31,16 +32,31 @@ public class UpdateMarkdownCommandHandler(
             throw new InvalidOperationException("已删除的文档无法修改");
         }
 
-        // 4. 创建历史版本快照（聚合根内部管理，EF Core 级联持久化）
-        markdown.CreateHistorySnapshot();
+        // 4. 创建历史版本快照（正文已文件化：从文件存储读取当前旧内容作为快照）
+        var oldContent = await contentStore.ReadAsync(markdown.FileId, cancellationToken);
+        if (oldContent is not null)
+        {
+            markdown.CreateHistorySnapshot(oldContent);
+        }
+        else
+        {
+            logger.LogWarning("文档 {MarkDownGuid} 正文文件 {FileId} 不存在，跳过历史快照",
+                request.MarkDownGuid, markdown.FileId);
+        }
 
         // 5. 计算内容哈希
         var contentHash = request.MarkDownHash ?? ComputeSha256(request.MarkDownContent);
 
-        // 6. 更新文档内容
+        // 6. 保存新正文文件，更新元数据（文件引用）
+        var fileId = await contentStore.SaveAsync(request.MarkDownContent, cancellationToken);
+        var fileSize = Encoding.UTF8.GetByteCount(request.MarkDownContent);
+
         await markdown.UpdateByMarkDownAsync(
             request.MarkDownName,
-            request.MarkDownContent,
+            fileId,
+            fileId,
+            fileSize,
+            ".md",
             contentHash);
 
         // 7. 更新标签（如果提供）

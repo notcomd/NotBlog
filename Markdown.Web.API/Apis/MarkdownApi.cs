@@ -24,9 +24,14 @@ public static class MarkdownApi
         markdownGroup.MapGet("/", GetAllAsync)
             .Produces<ApiResponse<List<MarkdownResponse>>>(StatusCodes.Status200OK);
 
-        // GET: 获取文章详情（无需认证）
+        // GET: 获取文章详情（无需认证，元数据 + 交互统计，不含正文）
         markdownGroup.MapGet("/{markDownGuid:guid}", GetAsync)
             .Produces<ApiResponse<MarkdownResponse>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse>(StatusCodes.Status404NotFound);
+
+        // GET: 获取文章正文（文件化存储，流式返回；权限校验与详情一致）
+        markdownGroup.MapGet("/{markDownGuid:guid}/content", GetContentAsync)
+            .Produces<ApiResponse<string>>(StatusCodes.Status200OK)
             .Produces<ApiResponse>(StatusCodes.Status404NotFound);
 
         // PUT: 更新文章（需认证）
@@ -109,12 +114,51 @@ public static class MarkdownApi
         int skip = 0,
         int take = 20)
     {
-        // 资源限制（P-05）：skip 不允许为负，take 钳制在 1~100
+        // 资源限制（P-05）：skip 不允许为负，take 钳制在 1~100；
+        // 列表为摘要投影（正文已文件化，列表不加载正文文件）
         var markdowns = await markdownRepository.FindAllMarkDownsAsync(
             Math.Max(0, skip),
             Math.Clamp(take, 1, 100));
-        var responses = markdowns.Select(MarkdownResponseMapper.MapToMarkdownResponse).ToList();
-        return Results.Ok(ApiResponse<List<MarkdownResponse>>.Ok(responses));
+        var responses = markdowns
+            .Select(m => new MarkdownSummaryResponse
+            {
+                MarkDownGuid = m.MarkDownGuid,
+                Name = m.MarkDownName,
+                Tags = [.. m.MarkDownTagboard],
+                Auth = m.MarkDownAuth.ToString(),
+                Status = m.Status.ToString(),
+                CreateAt = m.CreateAt,
+                UpdateAt = m.UpdateAt
+            })
+            .ToList();
+        return Results.Ok(ApiResponse<List<MarkdownSummaryResponse>>.Ok(responses));
+    }
+
+    /// <summary>
+    ///     获取 Markdown 文章正文（文件化存储：从内容存储读取，权限校验与详情一致）
+    /// </summary>
+    private static async Task<IResult> GetContentAsync(
+        Guid markDownGuid,
+        [FromServices]IMarkdownRepository markdownRepository,
+        [FromServices]IMarkdownContentStore contentStore,
+        [FromServices] ICurrentUserService currentUserService)
+    {
+        var markdown = await markdownRepository.FindMarkDownAsync(markDownGuid);
+
+        if (markdown is null || markdown.IsDelete)
+            return Results.NotFound(ApiResponse<string>.NotFound("文章不存在"));
+
+        // 越权防护（与 GetAsync 一致）：权限校验 + 审核门控双重要求
+        var viewerGuid = MarkdownApiHelpers.TryGetCurrentUserId(currentUserService) ?? Guid.Empty;
+        if (!markdown.HasPermission(viewerGuid) ||
+            (!markdown.IsApproved && markdown.MarkUserGuid != viewerGuid))
+            return Results.NotFound(ApiResponse<string>.NotFound("文章不存在"));
+
+        var content = await contentStore.ReadAsync(markdown.FileId);
+        if (content is null)
+            return Results.NotFound(ApiResponse<string>.NotFound("文章正文文件不存在"));
+
+        return Results.Ok(ApiResponse<string>.Ok(content));
     }
 
     /// <summary>

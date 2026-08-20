@@ -80,6 +80,9 @@ builder.Services.AddExceptionHandler<MarkdownApiExceptionHandler>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService,CurrentUserService>();
 
+// Markdown 正文文件存储（本地磁盘实现，阶段 1；阶段 2 换 FileDev gRPC 实现，接口不变）
+builder.Services.AddSingleton<IMarkdownContentStore, LocalMarkdownContentStore>();
+
 // ClientRequest 幂等记录过期清理（每日执行，保留 7 天）
 builder.Services.AddHostedService<ClientRequestCleanupService>();
 

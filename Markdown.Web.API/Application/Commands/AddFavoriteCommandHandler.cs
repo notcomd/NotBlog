@@ -10,6 +10,7 @@ namespace Markdown.Web.API.Application.Commands;
 /// </summary>
 public class AddFavoriteCommandHandler(
     IMarkFavoriteRepository favoriteRepository,
+    IMarkdownRepository markdownRepository,
     IRequestManagement requestManagement,
     ILogger<AddFavoriteCommandHandler> logger) :  IRequestHandler<AddFavoriteCommand, Guid>
 {
@@ -38,12 +39,15 @@ public class AddFavoriteCommandHandler(
                 try
                 {
                     await favoriteRepository.AddAsync(favorite);
+                    // 文档收藏计数 +1（同事务提交，保证记录与计数原子一致）
+                    await markdownRepository.UpdateFavoriteCountAsync(request.MarkDownGuid, +1);
                     await favoriteRepository.UnitOfWork.SaveChangesAsync(cancellationToken);
                     favoriteGuid = favorite.MarkFavoriteGuid;
                 }
                 catch (DbUpdateException ex) when (IsUniqueViolation(ex))
                 {
-                    // 并发重复收藏（不同 IdempotencyKey 同时请求）：唯一约束兜底，返回已存在记录
+                    // 并发重复收藏（不同 IdempotencyKey 同时请求）：唯一约束兜底，返回已存在记录；
+                    // 计数已随事务回滚（未落库），无需扣减
                     logger.LogInformation("并发重复收藏，唯一约束兜底：用户 {UserGuid}，文章 {MarkDownGuid}",
                         request.UserId, request.MarkDownGuid);
 

@@ -1,46 +1,50 @@
-
-
-using Markdown.Web.API.Application.IntegrationEvents;
-
 namespace Markdown.Web.API.Application.Commands;
 
 /// <summary>
-///  创建 Markdown 文档命令处理器
+///  创建 Markdown 文档命令处理器（文件化：正文先存文件存储，实体只落文件元数据）
 /// </summary>
 public class CreateMarkdownCommandHandler(
     IMarkdownRepository markdownRepository,
+    IMarkdownContentStore contentStore,
     IEventBus eventBus,
     ILogger<CreateMarkdownCommandHandler> logger) :  IRequestHandler<CreateMarkdownCommand, Guid>
 {
     public async Task<Guid> Handler(CreateMarkdownCommand request, CancellationToken cancellationToken)
     {
-        // 计算 MD5 Hash（如果没有提供）
+        // 1. 计算内容哈希（如果没有提供）
         var contentHash = request.MarkDownHash ?? ComputeSha256(request.MarkDownContent);
 
-        // 使用 Builder 模式创建实体
+        // 2. 正文文件化：保存内容到文件存储，拿到文件标识
+        var fileId = await contentStore.SaveAsync(request.MarkDownContent, cancellationToken);
+        var fileSize = Encoding.UTF8.GetByteCount(request.MarkDownContent);
+
+        // 3. 使用 Builder 模式创建实体（只含文件元数据，不含正文）
         var builder = new MarkDown.MarkDownBuilder(
             request.MarkUserGuid,
             request.MarkDownName,
-            request.MarkDownContent,
+            fileId,
+            fileId,
+            fileSize,
+            ".md",
             contentHash
         );
 
-        // 添加标签
+        // 4. 添加标签
         if (request.Tags != null)
         {
             builder.WithTags(request.Tags);
         }
 
-        // 设置文档权限
+        // 5. 设置文档权限
         builder.WithMarkDownAuth(request.MarkDownAuth);
 
         var markdownEntity = builder.Build();
 
-        // 通过聚合根仓储写入（不绕过仓储直接操作 DbContext）
+        // 6. 通过聚合根仓储写入（不绕过仓储直接操作 DbContext）
         await markdownRepository.AddAsync(markdownEntity);
         await markdownRepository.UnitOfWork.SaveChangesAsync(cancellationToken);
 
-        // 发布集成事件（总线故障不拖垮业务，P1-6）
+        // 7. 发布集成事件（总线故障不拖垮业务，P1-6）
         await EventPublishing.PublishSafelyAsync(eventBus, new MarkdownCreatedEventData
         {
             MarkDownGuid = markdownEntity.MarkDownGuid,

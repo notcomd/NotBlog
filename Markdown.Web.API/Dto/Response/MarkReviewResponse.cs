@@ -13,6 +13,5 @@ public class MarkReviewResponse
     public DateTimeOffset ReviewTime { get; set; }
     public bool IsDeleted { get; set; }
     public int ChildReviewCount { get; set; }
-    public MarkQuoteResponse? Quote { get; set; }
+    public ReviewQuoteResponse? Quote { get; set; }
 }
-

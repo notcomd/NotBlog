@@ -7,6 +7,7 @@ namespace Markdown.Web.API.Application.Commands;
 /// </summary>
 public class RemoveFavoriteCommandHandler(
     IMarkFavoriteRepository favoriteRepository,
+    IMarkdownRepository markdownRepository,
     IRequestManagement requestManagement,
     ILogger<RemoveFavoriteCommandHandler> logger) : IRequestHandler<RemoveFavoriteCommand, bool>
 {
@@ -25,6 +26,8 @@ public class RemoveFavoriteCommandHandler(
             }
 
             await favoriteRepository.RemoveAsync(favorite);
+            // 文档收藏计数 -1（同事务提交，保证记录与计数原子一致）
+            await markdownRepository.UpdateFavoriteCountAsync(request.MarkDownGuid, -1);
             await favoriteRepository.UnitOfWork.SaveChangesAsync(cancellationToken);
 
             logger.LogInformation("收藏已取消：{FavoriteGuid}，文章 {MarkDownGuid}",
