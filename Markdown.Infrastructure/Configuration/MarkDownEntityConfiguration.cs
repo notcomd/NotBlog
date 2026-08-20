@@ -11,11 +11,26 @@ public class MarkDownEntityConfiguration : IEntityTypeConfiguration<MarkDown>
         // SQL 直插/漏填 Status 的文章绕过审核直接对外可见；已有行的值不受默认值变更影响
         builder.Property(x => x.Status)
             .HasDefaultValue(MarkStatus.MarkDraft);
-        // 资源限制（P-05）：正文上限 1,000,000 字符
-        builder.Property(x => x.MarkDownContent)
-            .HasMaxLength(1_000_000);
         builder.Property(x => x.Id).UseHiLo("MarkDownGuid");
         builder.HasKey(x => x.Id);
+
+        // 文件元数据列（正文文件化：内容存文件存储后端，DB 只存引用与统计）
+        builder.Property(x => x.FileId).HasMaxLength(256).IsRequired();
+        builder.Property(x => x.FileUri).HasMaxLength(1024).IsRequired();
+        builder.Property(x => x.FileSize).IsRequired().HasDefaultValue(0L);
+        builder.Property(x => x.FileExt).HasMaxLength(32).IsRequired();
+        builder.Property(x => x.MarkDownHash).HasMaxLength(64).IsRequired();
+
+        // 文档交互统计 MarkQuote（值对象，6 列）
+        builder.OwnsOne(x => x.MarkQuote, quoteBuilder =>
+        {
+            quoteBuilder.Property(q => q.LoveSome).HasColumnName("LoveCount").HasDefaultValue(0);
+            quoteBuilder.Property(q => q.FavoriteSome).HasColumnName("FavoriteCount").HasDefaultValue(0);
+            quoteBuilder.Property(q => q.ShareSome).HasColumnName("ShareCount").HasDefaultValue(0);
+            quoteBuilder.Property(q => q.CoinSome).HasColumnName("CoinCount").HasDefaultValue(0);
+            quoteBuilder.Property(q => q.ViewSome).HasColumnName("ViewCount").HasDefaultValue(0);
+            quoteBuilder.Property(q => q.HeatScore).HasColumnName("HeatScore").HasDefaultValue(0.0);
+        });
 
         builder.HasMany(en => en.MarkReviews)
             .WithOne(en => en.MarkDown)

@@ -538,7 +538,7 @@ public class MarkDownRepository(
             // 唯一约束 (MarkReviewGuid, UserId) 冲突时整批回滚，内存计数同步回滚，
             // 避免"点赞记录已落库而计数未增"的非原子不一致
             markDownDbContext.MarkReviewLikes.Add(new MarkReviewLike(reviewGuid, userId));
-            var count = review.MarkQuote.AddLove();
+            var count = review.ReviewQuote.AddLove();
             try
             {
                 await markDownDbContext.SaveChangesAsync();
@@ -546,9 +546,9 @@ public class MarkDownRepository(
             catch (DbUpdateException ex) when (IsUniqueViolation(ex))
             {
                 // 已点赞过：回滚内存计数，幂等返回当前计数，不再递增
-                review.MarkQuote.RemoveLove();
+                review.ReviewQuote.RemoveLove();
                 logger.LogInformation("用户 {UserId} 已点赞过评论 {ReviewGuid}，忽略重复点赞", userId, reviewGuid);
-                return review.MarkQuote.LoveSome;
+                return review.ReviewQuote.LoveSome;
             }
 
             logger.LogInformation("评论 {ReviewGuid} 点赞数更新为 {Count}", reviewGuid, count);
@@ -576,11 +576,11 @@ public class MarkDownRepository(
             {
                 // 未点赞过：幂等返回当前计数，不再递减
                 logger.LogInformation("用户 {UserId} 未点赞过评论 {ReviewGuid}，忽略取消点赞", userId, reviewGuid);
-                return review.MarkQuote.LoveSome;
+                return review.ReviewQuote.LoveSome;
             }
 
             markDownDbContext.MarkReviewLikes.Remove(like);
-            var count = review.MarkQuote.RemoveLove();
+            var count = review.ReviewQuote.RemoveLove();
             await markDownDbContext.SaveChangesAsync();
             logger.LogInformation("评论 {ReviewGuid} 取消点赞后点赞数为 {Count}", reviewGuid, count);
             return count;
@@ -600,14 +600,14 @@ public class MarkDownRepository(
         try
         {
             var review = await LoadTrackedReviewAsync(reviewGuid);
-            var count = review.MarkQuote.AddView();
+            var count = review.ReviewQuote.AddView();
 
             // ExecuteUpdate 直接生成 UPDATE SQL 原子递增，无需后续 SaveChanges
             await markDownDbContext.Markdowns
                 .SelectMany(m => m.MarkReviews)
                 .Where(r => r.MarkReviewGuid == reviewGuid)
                 .ExecuteUpdateAsync(s => s.SetProperty(
-                    r => r.MarkQuote.ViewSome, r => r.MarkQuote.ViewSome + 1));
+                    r => r.ReviewQuote.ViewSome, r => r.ReviewQuote.ViewSome + 1));
 
             logger.LogInformation("评论 {ReviewGuid} 浏览数更新为 {Count}", reviewGuid, count);
             return count;
@@ -633,6 +633,32 @@ public class MarkDownRepository(
             throw new InvalidOperationException("已删除的评论无法操作");
 
         return review;
+    }
+
+    /// <summary>
+    ///     更新文档收藏计数（收藏 +1 / 取消收藏 -1，下限钳制 0）。
+    ///     不单独提交：与收藏记录变更同事务（调用方 SaveChanges 统一提交），保证计数与记录原子一致
+    /// </summary>
+    public async Task UpdateFavoriteCountAsync(Guid markDownGuid, long delta)
+    {
+        try
+        {
+            var markdown = await GetMarkDownTrackedAsync(markDownGuid)
+                ?? throw new KeyNotFoundException($"MarkDown 文档不存在：{markDownGuid}");
+
+            if (delta > 0)
+                markdown.AddFavorite(delta);
+            else if (delta < 0)
+                markdown.RemoveFavorite(-delta);
+
+            logger.LogInformation("文档 {MarkDownGuid} 收藏计数变更 {Delta}，当前 {Count}",
+                markDownGuid, delta, markdown.MarkQuote.FavoriteSome);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "更新文档收藏计数失败：{MarkDownGuid}", markDownGuid);
+            throw;
+        }
     }
 
     /// <summary>
