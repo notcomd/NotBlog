@@ -38,7 +38,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\CacheMemory\CacheMemory.csproj" />
-        <ProjectReference Include="..\EventBus\EventBus.csproj" />
+        <ProjectReference Include="..\Eventbus\EventBus.csproj" />
         <ProjectReference Include="..\FileDev.Domain\FileDev.Domain.csproj" />
         <ProjectReference Include="..\FileDev.Infrastructure\FileDev.Infrastructure.csproj" />
         <ProjectReference Include="..\JWToken\JWToken.csproj" />

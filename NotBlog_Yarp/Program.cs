@@ -1,18 +1,34 @@
 
-
 using System.Reflection;
+using CacheMemory.Core;
 using CacheMemory.Extensions;
-using Notcomd.EventBus.Extension;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
-builder.AddCacheMemory("Redis");
+
+
+
 
 builder.AddRabbitMQClient("EventBus");
-builder.Services.AddEventBus(builder.Configuration.GetConnectionString("EventBus") ?? throw new ArgumentNullException("the NotBlog_Yarp for RabbitMQ  connectionsting is null! "),
+
+///本地运行
+if (!string.IsNullOrEmpty(builder.Configuration.GetConnectionString("EventBus")))
+{
+    builder.Services.AddEventBus(builder.Configuration.GetConnectionString("EventBus") ?? 
+    throw new ArgumentNullException("the NotBlog_Yarp for RabbitMQ connectionsting is null! "),
      Assembly.GetEntryAssembly() ?? throw new ArgumentNullException("无法获取程序集"));
+}
+
+if (!string.IsNullOrEmpty(builder.Configuration.GetConnectionString("Redis")))
+{
+    builder.AddCacheMemory("Redis");
+}
+
+builder.Services.AddCacheMemory(builder.Configuration.GetSection("CacheMemory"));
+
+builder.Services.AddEventBus(builder.Configuration.GetSection("EventBus"));
 
 builder.Services.AddJwtAuthentication(builder.Configuration.GetSection("JwtOptions"));
 builder.Services.AddAuthorization();

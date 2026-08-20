@@ -1,9 +1,8 @@
-# syntax=docker/dockerfile:1
 
 # ══════════════════════════════════════════════════════════════
-# Markdown.Web.API 容器镜像
+# NotBlog_Yarp 容器镜像
 # 构建命令（在解决方案根目录 f:\NotBlog 下执行）：
-#   docker build -f Markdown.Web.API/Dockerfile -t notblog/markdown-web-api .
+#   docker build -f NotBlog_Yarp/Dockerfile -t notblog/NotBlog_Yarp .
 # ══════════════════════════════════════════════════════════════
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0.400-noble-amd64 AS build
