@@ -635,6 +635,221 @@ public class MarkDownRepository(
         return review;
     }
 
+    // ==================== 文档交互计数（阶段 2：浏览/点赞/分享/硬币） ====================
+
+    /// <summary>
+    ///     文档点赞 +1（点赞去重：同一用户对同一文档仅能点赞一次，依赖数据库唯一约束防并发重复），返回最新点赞数
+    /// </summary>
+    public async Task<long> LikeDocumentAsync(Guid markDownGuid, Guid userId)
+    {
+        try
+        {
+            var markdown = await GetMarkDownTrackedAsync(markDownGuid)
+                ?? throw new KeyNotFoundException($"MarkDown 文档不存在：{markDownGuid}");
+
+            if (markdown.IsDelete)
+                throw new InvalidOperationException("已删除的文档无法点赞");
+
+            // 点赞记录与计数在同一 SaveChanges 提交：唯一约束冲突时整批回滚，内存计数同步回滚，
+            // 避免"点赞记录已落库而计数未增"的非原子不一致
+            markDownDbContext.MarkDocumentLikes.Add(new MarkDocumentLike(markDownGuid, userId));
+            var count = markdown.AddLove();
+            try
+            {
+                await markDownDbContext.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex) when (IsUniqueViolation(ex))
+            {
+                // 已点赞过：回滚内存计数，幂等返回当前计数
+                markdown.RemoveLove();
+                logger.LogInformation("用户 {UserId} 已点赞过文档 {MarkDownGuid}，忽略重复点赞", userId, markDownGuid);
+                return markdown.MarkQuote.LoveSome;
+            }
+
+            logger.LogInformation("文档 {MarkDownGuid} 点赞数更新为 {Count}", markDownGuid, count);
+            return count;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "文档点赞失败：{MarkDownGuid}", markDownGuid);
+            throw;
+        }
+    }
+
+    /// <summary>
+    ///     取消文档点赞 -1（不低于 0，未点赞时幂等返回当前计数），返回最新点赞数
+    /// </summary>
+    public async Task<long> RemoveLikeDocumentAsync(Guid markDownGuid, Guid userId)
+    {
+        try
+        {
+            var markdown = await GetMarkDownTrackedAsync(markDownGuid)
+                ?? throw new KeyNotFoundException($"MarkDown 文档不存在：{markDownGuid}");
+
+            var like = await markDownDbContext.MarkDocumentLikes
+                .FirstOrDefaultAsync(l => l.MarkDownGuid == markDownGuid && l.UserId == userId);
+            if (like is null)
+            {
+                // 未点赞过：幂等返回当前计数
+                logger.LogInformation("用户 {UserId} 未点赞过文档 {MarkDownGuid}，忽略取消点赞", userId, markDownGuid);
+                return markdown.MarkQuote.LoveSome;
+            }
+
+            markDownDbContext.MarkDocumentLikes.Remove(like);
+            var count = markdown.RemoveLove();
+            await markDownDbContext.SaveChangesAsync();
+            logger.LogInformation("文档 {MarkDownGuid} 取消点赞后点赞数为 {Count}", markDownGuid, count);
+            return count;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "文档取消点赞失败：{MarkDownGuid}", markDownGuid);
+            throw;
+        }
+    }
+
+    /// <summary>
+    ///     文档浏览量 +1（原子 SQL 更新，不经过 EF 追踪，避免 GET 请求全实体保存的写放大）
+    /// </summary>
+    public async Task<long> IncreaseDocumentViewAsync(Guid markDownGuid)
+    {
+        try
+        {
+            var markdown = await GetMarkDownTrackedAsync(markDownGuid)
+                ?? throw new KeyNotFoundException($"MarkDown 文档不存在：{markDownGuid}");
+
+            var count = markdown.AddView();
+
+            // ExecuteUpdate 直接生成 UPDATE SQL 原子递增，无需后续 SaveChanges
+            await markDownDbContext.Markdowns
+                .Where(m => m.MarkDownGuid == markDownGuid)
+                .ExecuteUpdateAsync(s => s.SetProperty(
+                    m => m.MarkQuote.ViewSome, m => m.MarkQuote.ViewSome + 1));
+
+            logger.LogInformation("文档 {MarkDownGuid} 浏览数更新为 {Count}", markDownGuid, count);
+            return count;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "文档浏览计数失败：{MarkDownGuid}", markDownGuid);
+            throw;
+        }
+    }
+
+    /// <summary>
+    ///     文档分享 +1，返回最新分享数
+    /// </summary>
+    public async Task<long> AddDocumentShareAsync(Guid markDownGuid)
+    {
+        try
+        {
+            var markdown = await GetMarkDownTrackedAsync(markDownGuid)
+                ?? throw new KeyNotFoundException($"MarkDown 文档不存在：{markDownGuid}");
+
+            var count = markdown.AddShare();
+            await markDownDbContext.SaveChangesAsync();
+            logger.LogInformation("文档 {MarkDownGuid} 分享数更新为 {Count}", markDownGuid, count);
+            return count;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "文档分享计数失败：{MarkDownGuid}", markDownGuid);
+            throw;
+        }
+    }
+
+    /// <summary>
+    ///     文档打赏硬币（MarkCoin 流水记录 + 计数增加，同一 SaveChanges 原子提交），返回最新硬币总数
+    /// </summary>
+    public async Task<long> CoinDocumentAsync(Guid markDownGuid, Guid userId, long amount)
+    {
+        try
+        {
+            var markdown = await GetMarkDownTrackedAsync(markDownGuid)
+                ?? throw new KeyNotFoundException($"MarkDown 文档不存在：{markDownGuid}");
+
+            markDownDbContext.MarkCoins.Add(new MarkCoin(markDownGuid, userId, amount));
+            var count = markdown.AddCoin(amount);
+            await markDownDbContext.SaveChangesAsync();
+
+            logger.LogInformation("用户 {UserId} 打赏文档 {MarkDownGuid} {Amount} 硬币，累计 {Count}",
+                userId, markDownGuid, amount, count);
+            return count;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "文档打赏失败：{MarkDownGuid}", markDownGuid);
+            throw;
+        }
+    }
+
+    // ==================== 评论踩（阶段 2） ====================
+
+    /// <summary>
+    ///     评论踩 +1（踩去重：同一用户对同一评论仅能踩一次，唯一约束防并发重复），返回最新踩数
+    /// </summary>
+    public async Task<long> DislikeReviewAsync(Guid reviewGuid, Guid userId)
+    {
+        try
+        {
+            var review = await LoadTrackedReviewAsync(reviewGuid);
+
+            // 踩记录与计数在同一 SaveChanges 提交：唯一约束冲突时整批回滚，内存计数同步回滚
+            markDownDbContext.MarkReviewDislikes.Add(new MarkReviewDislike(reviewGuid, userId));
+            var count = review.ReviewQuote.AddDislike();
+            try
+            {
+                await markDownDbContext.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex) when (IsUniqueViolation(ex))
+            {
+                // 已踩过：回滚内存计数，幂等返回当前计数
+                review.ReviewQuote.RemoveDislike();
+                logger.LogInformation("用户 {UserId} 已踩过评论 {ReviewGuid}，忽略重复踩", userId, reviewGuid);
+                return review.ReviewQuote.DislikeSome;
+            }
+
+            logger.LogInformation("评论 {ReviewGuid} 踩数更新为 {Count}", reviewGuid, count);
+            return count;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "评论踩失败：{ReviewGuid}", reviewGuid);
+            throw;
+        }
+    }
+
+    /// <summary>
+    ///     取消评论踩 -1（不低于 0，未踩时幂等返回当前计数），返回最新踩数
+    /// </summary>
+    public async Task<long> RemoveDislikeReviewAsync(Guid reviewGuid, Guid userId)
+    {
+        try
+        {
+            var review = await LoadTrackedReviewAsync(reviewGuid);
+
+            var dislike = await markDownDbContext.MarkReviewDislikes
+                .FirstOrDefaultAsync(l => l.MarkReviewGuid == reviewGuid && l.UserId == userId);
+            if (dislike is null)
+            {
+                // 未踩过：幂等返回当前计数
+                logger.LogInformation("用户 {UserId} 未踩过评论 {ReviewGuid}，忽略取消踩", userId, reviewGuid);
+                return review.ReviewQuote.DislikeSome;
+            }
+
+            markDownDbContext.MarkReviewDislikes.Remove(dislike);
+            var count = review.ReviewQuote.RemoveDislike();
+            await markDownDbContext.SaveChangesAsync();
+            logger.LogInformation("评论 {ReviewGuid} 取消踩后踩数为 {Count}", reviewGuid, count);
+            return count;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "评论取消踩失败：{ReviewGuid}", reviewGuid);
+            throw;
+        }
+    }
+
     /// <summary>
     ///     更新文档收藏计数（收藏 +1 / 取消收藏 -1，下限钳制 0）。
     ///     不单独提交：与收藏记录变更同事务（调用方 SaveChanges 统一提交），保证计数与记录原子一致

@@ -34,6 +34,40 @@ public static class MarkdownApi
             .Produces<ApiResponse<string>>(StatusCodes.Status200OK)
             .Produces<ApiResponse>(StatusCodes.Status404NotFound);
 
+        // POST: 文档浏览 +1（无需认证，公开文档可匿名浏览）
+        markdownGroup.MapPost("/{markDownGuid:guid}/view", AddViewAsync)
+            .Produces<ApiResponse<long>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse>(StatusCodes.Status404NotFound);
+
+        // POST: 文档点赞（需认证，同一用户仅可点赞一次）
+        markdownGroup.MapPost("/{markDownGuid:guid}/like", LikeDocumentAsync)
+            .RequireAuthorization()
+            .Produces<ApiResponse<long>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse>(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status401Unauthorized);
+
+        // POST: 取消文档点赞（需认证，未点赞时幂等返回）
+        markdownGroup.MapPost("/{markDownGuid:guid}/unlike", UnlikeDocumentAsync)
+            .RequireAuthorization()
+            .Produces<ApiResponse<long>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse>(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status401Unauthorized);
+
+        // POST: 文档分享 +1（需认证）
+        markdownGroup.MapPost("/{markDownGuid:guid}/share", ShareDocumentAsync)
+            .RequireAuthorization()
+            .Produces<ApiResponse<long>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse>(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status401Unauthorized);
+
+        // POST: 文档打赏硬币（需认证，数量 1~100）
+        markdownGroup.MapPost("/{markDownGuid:guid}/coin", CoinDocumentAsync)
+            .RequireAuthorization()
+            .Produces<ApiResponse<long>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse>(StatusCodes.Status400BadRequest)
+            .Produces<ApiResponse>(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status401Unauthorized);
+
         // PUT: 更新文章（需认证）
         markdownGroup.MapPut("/{markDownGuid:guid}", UpdateAsync)
             .RequireAuthorization()
@@ -132,6 +166,115 @@ public static class MarkdownApi
             })
             .ToList();
         return Results.Ok(ApiResponse<List<MarkdownSummaryResponse>>.Ok(responses));
+    }
+
+    /// <summary>
+    ///     文档浏览 +1（公开文档可匿名浏览；私有/未过审文档仅作者可见时允许）
+    /// </summary>
+    private static async Task<IResult> AddViewAsync(
+        Guid markDownGuid,
+        [FromServices]IMarkdownRepository markdownRepository,
+        [FromServices]ICurrentUserService currentUserService)
+    {
+        var markdown = await markdownRepository.FindMarkDownAsync(markDownGuid);
+        if (markdown is null || markdown.IsDelete)
+            return Results.NotFound(ApiResponse<long>.NotFound("文章不存在"));
+
+        var viewerGuid = MarkdownApiHelpers.TryGetCurrentUserId(currentUserService) ?? Guid.Empty;
+        if (!markdown.HasPermission(viewerGuid) ||
+            (!markdown.IsApproved && markdown.MarkUserGuid != viewerGuid))
+            return Results.NotFound(ApiResponse<long>.NotFound("文章不存在"));
+
+        var count = await markdownRepository.IncreaseDocumentViewAsync(markDownGuid);
+        return Results.Ok(ApiResponse<long>.Ok(count));
+    }
+
+    /// <summary>
+    ///     文档点赞 +1（同一用户仅可点赞一次）
+    /// </summary>
+    private static async Task<IResult> LikeDocumentAsync(
+        Guid markDownGuid,
+        [FromServices]IMarkdownRepository markdownRepository,
+        [FromServices]ICurrentUserService currentUserService)
+    {
+        var userId = currentUserService.GetUserId();
+
+        // 越权防护：文档不可见（已删除/私有/未过审）一律 404
+        var markdown = await markdownRepository.FindMarkDownAsync(markDownGuid);
+        if (markdown is null || markdown.IsDelete ||
+            (!markdown.IsApproved && markdown.MarkUserGuid != userId) ||
+            !markdown.HasPermission(userId))
+            return Results.NotFound(ApiResponse<long>.NotFound("文章不存在"));
+
+        var count = await markdownRepository.LikeDocumentAsync(markDownGuid, userId);
+        return Results.Ok(ApiResponse<long>.Ok(count, "点赞成功"));
+    }
+
+    /// <summary>
+    ///     取消文档点赞 -1（未点赞时幂等返回当前计数）
+    /// </summary>
+    private static async Task<IResult> UnlikeDocumentAsync(
+        Guid markDownGuid,
+        [FromServices]IMarkdownRepository markdownRepository,
+        [FromServices]ICurrentUserService currentUserService)
+    {
+        var userId = currentUserService.GetUserId();
+
+        // 越权防护：与点赞一致
+        var markdown = await markdownRepository.FindMarkDownAsync(markDownGuid);
+        if (markdown is null || markdown.IsDelete ||
+            (!markdown.IsApproved && markdown.MarkUserGuid != userId) ||
+            !markdown.HasPermission(userId))
+            return Results.NotFound(ApiResponse<long>.NotFound("文章不存在"));
+
+        var count = await markdownRepository.RemoveLikeDocumentAsync(markDownGuid, userId);
+        return Results.Ok(ApiResponse<long>.Ok(count, "已取消点赞"));
+    }
+
+    /// <summary>
+    ///     文档分享 +1
+    /// </summary>
+    private static async Task<IResult> ShareDocumentAsync(
+        Guid markDownGuid,
+        [FromServices]IMarkdownRepository markdownRepository,
+        [FromServices]ICurrentUserService currentUserService)
+    {
+        var userId = currentUserService.GetUserId();
+
+        // 越权防护：与点赞一致
+        var markdown = await markdownRepository.FindMarkDownAsync(markDownGuid);
+        if (markdown is null || markdown.IsDelete ||
+            (!markdown.IsApproved && markdown.MarkUserGuid != userId) ||
+            !markdown.HasPermission(userId))
+            return Results.NotFound(ApiResponse<long>.NotFound("文章不存在"));
+
+        var count = await markdownRepository.AddDocumentShareAsync(markDownGuid);
+        return Results.Ok(ApiResponse<long>.Ok(count, "分享成功"));
+    }
+
+    /// <summary>
+    ///     文档打赏硬币（记录 MarkCoin 流水 + 计数增加）
+    /// </summary>
+    private static async Task<IResult> CoinDocumentAsync(
+        Guid markDownGuid,
+        [FromBody] CoinMarkdownRequest request,
+        [FromServices]IMarkdownRepository markdownRepository,
+        [FromServices]ICurrentUserService currentUserService)
+    {
+        var userId = currentUserService.GetUserId();
+
+        if (request.Amount is < 1 or > 100)
+            return Results.BadRequest(ApiResponse.Error("打赏数量必须在 1~100 之间"));
+
+        // 越权防护：与点赞一致
+        var markdown = await markdownRepository.FindMarkDownAsync(markDownGuid);
+        if (markdown is null || markdown.IsDelete ||
+            (!markdown.IsApproved && markdown.MarkUserGuid != userId) ||
+            !markdown.HasPermission(userId))
+            return Results.NotFound(ApiResponse<long>.NotFound("文章不存在"));
+
+        var count = await markdownRepository.CoinDocumentAsync(markDownGuid, userId, request.Amount);
+        return Results.Ok(ApiResponse<long>.Ok(count, "打赏成功"));
     }
 
     /// <summary>

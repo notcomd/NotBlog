@@ -128,4 +128,43 @@ public interface IMarkdownRepository : IRepository<MarkDown, IUnitOfWork>
     ///     不单独提交，由调用方与收藏记录变更在同一 SaveChanges 内提交，保证计数与记录原子一致
     /// </summary>
     Task UpdateFavoriteCountAsync(Guid markDownGuid, long delta);
+
+    // ===== 文档交互计数（阶段 2 端点：浏览/点赞/分享/硬币） =====
+
+    /// <summary>
+    ///     文档点赞 +1（同一用户对同一文档仅能点赞一次，唯一约束防并发重复），返回最新点赞数
+    /// </summary>
+    Task<long> LikeDocumentAsync(Guid markDownGuid, Guid userId);
+
+    /// <summary>
+    ///     取消文档点赞 -1（不低于 0，未点赞时幂等返回当前计数），返回最新点赞数
+    /// </summary>
+    Task<long> RemoveLikeDocumentAsync(Guid markDownGuid, Guid userId);
+
+    /// <summary>
+    ///     文档浏览量 +1（原子 SQL 更新），返回最新浏览数
+    /// </summary>
+    Task<long> IncreaseDocumentViewAsync(Guid markDownGuid);
+
+    /// <summary>
+    ///     文档分享 +1，返回最新分享数
+    /// </summary>
+    Task<long> AddDocumentShareAsync(Guid markDownGuid);
+
+    /// <summary>
+    ///     文档打赏硬币（记录 MarkCoin 流水 + 计数增加），返回最新硬币总数
+    /// </summary>
+    Task<long> CoinDocumentAsync(Guid markDownGuid, Guid userId, long amount);
+
+    // ===== 评论踩（阶段 2 端点） =====
+
+    /// <summary>
+    ///     评论踩 +1（同一用户对同一评论仅能踩一次，唯一约束防并发重复），返回最新踩数
+    /// </summary>
+    Task<long> DislikeReviewAsync(Guid reviewGuid, Guid userId);
+
+    /// <summary>
+    ///     取消评论踩 -1（不低于 0，未踩时幂等返回当前计数），返回最新踩数
+    /// </summary>
+    Task<long> RemoveDislikeReviewAsync(Guid reviewGuid, Guid userId);
 }
