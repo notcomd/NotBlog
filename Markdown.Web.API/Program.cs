@@ -1,5 +1,6 @@
 using System.Reflection;
 using Commons.Web;
+using FileDev.Web.API.Grpc;
 using Markdown.Infrastructure;
 using Markdown.Web.API.Apis;
 using Markdown.Web.API.Extensions;
@@ -80,8 +81,39 @@ builder.Services.AddExceptionHandler<MarkdownApiExceptionHandler>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService,CurrentUserService>();
 
-// Markdown 正文文件存储（本地磁盘实现，阶段 1；阶段 2 换 FileDev gRPC 实现，接口不变）
-builder.Services.AddSingleton<IMarkdownContentStore, LocalMarkdownContentStore>();
+// Markdown 正文文件存储：默认 FileDev gRPC（AppHost 环境）；
+// 配置 MarkdownContent:Provider=Local 时回退本地磁盘（单机调试，appsettings.Development.json）
+builder.Services.Configure<FileStorageGrpcOptions>(
+    builder.Configuration.GetSection(FileStorageGrpcOptions.SectionName));
+
+builder.Services.AddGrpcClient<FileStorage.FileStorageClient>(
+    FileDevMarkdownContentStore.ClientName,
+    options =>
+    {
+        // 优先 Aspire 服务发现解析 FileDev 地址（服务名 filedev-web-api）；
+        // 脱离 AppHost 独立启动时使用 appsettings FileStorageGrpc:Address 兜底
+        var configuredAddress = builder.Configuration["FileStorageGrpc:Address"];
+        options.Address = new Uri(string.IsNullOrWhiteSpace(configuredAddress)
+            ? $"https://{FileDevMarkdownContentStore.ClientName}"
+            : configuredAddress);
+    })
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+    {
+#if DEBUG
+        // S-16：仅 DEBUG/开发环境允许跳过证书校验；Release 下使用系统默认证书校验
+        ServerCertificateCustomValidationCallback =
+            HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+#endif
+    });
+
+if (builder.Configuration["MarkdownContent:Provider"] == "Local")
+{
+    builder.Services.AddSingleton<IMarkdownContentStore, LocalMarkdownContentStore>();
+}
+else
+{
+    builder.Services.AddSingleton<IMarkdownContentStore, FileDevMarkdownContentStore>();
+}
 
 // ClientRequest 幂等记录过期清理（每日执行，保留 7 天）
 builder.Services.AddHostedService<ClientRequestCleanupService>();

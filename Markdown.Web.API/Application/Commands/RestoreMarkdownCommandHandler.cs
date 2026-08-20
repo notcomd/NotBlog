@@ -31,7 +31,8 @@ public class RestoreMarkdownCommandHandler(
             throw new InvalidOperationException("历史版本不属于该文档");
 
         // 3. 还原前先为当前版本创建历史快照，避免当前内容丢失（当前内容从文件流读取）
-        var oldContent = await contentStore.ReadAsync(markdown.FileId, cancellationToken);
+        var oldFileId = markdown.FileId;
+        var oldContent = await contentStore.ReadAsync(oldFileId, cancellationToken);
         if (oldContent is not null)
         {
             markdown.CreateHistorySnapshot(oldContent);
@@ -48,6 +49,16 @@ public class RestoreMarkdownCommandHandler(
 
         await markdown.RestoreFromHistory(oldVersion, fileId, fileId, fileSize, ".md");
         await markdownRepository.UnitOfWork.SaveChangesAsync(cancellationToken);
+
+        // 清理还原前旧正文文件（还原前已快照到 DB 全文；删除失败不影响业务）
+        try
+        {
+            await contentStore.DeleteAsync(oldFileId, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "清理旧正文文件失败：{FileId}", oldFileId);
+        }
 
         logger.LogInformation("Markdown 文档 {MarkDownGuid} 已从历史版本 {OldGuid} 还原", request.MarkDownGuid, request.OldMarkDownGuid);
         return true;

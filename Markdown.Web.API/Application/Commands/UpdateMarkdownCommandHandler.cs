@@ -33,7 +33,8 @@ public class UpdateMarkdownCommandHandler(
         }
 
         // 4. 创建历史版本快照（正文已文件化：从文件存储读取当前旧内容作为快照）
-        var oldContent = await contentStore.ReadAsync(markdown.FileId, cancellationToken);
+        var oldFileId = markdown.FileId;
+        var oldContent = await contentStore.ReadAsync(oldFileId, cancellationToken);
         if (oldContent is not null)
         {
             markdown.CreateHistorySnapshot(oldContent);
@@ -41,7 +42,7 @@ public class UpdateMarkdownCommandHandler(
         else
         {
             logger.LogWarning("文档 {MarkDownGuid} 正文文件 {FileId} 不存在，跳过历史快照",
-                request.MarkDownGuid, markdown.FileId);
+                request.MarkDownGuid, oldFileId);
         }
 
         // 5. 计算内容哈希
@@ -68,6 +69,16 @@ public class UpdateMarkdownCommandHandler(
 
         // 8. 通过 UnitOfWork 保存更改
         await markdownRepository.UnitOfWork.SaveChangesAsync(cancellationToken);
+
+        // 9. 清理旧正文文件（历史快照已存 DB 全文，旧文件无引用价值；删除失败不影响业务）
+        try
+        {
+            await contentStore.DeleteAsync(oldFileId, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "清理旧正文文件失败：{FileId}", oldFileId);
+        }
 
         logger.LogInformation("Markdown 文档已更新：{MarkDownGuid}", request.MarkDownGuid);
         return true;
