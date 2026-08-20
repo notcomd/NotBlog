@@ -8,8 +8,8 @@ using Message.Web.API.Services;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using CacheMemory.Core;
 using Moq;
-using StackExchange.Redis;
 
 namespace Message.Tests.Services;
 
@@ -28,8 +28,8 @@ public class CallSessionStoreTests
     private const string CallerConn = "conn-caller";
     private const string CalleeConn = "conn-callee";
 
-    private Mock<IDatabase> _db = null!;
-    private Dictionary<string, RedisValue> _store = null!;
+    private Mock<IRedisCacheService> _db = null!;
+    private Dictionary<string, string> _store = null!;
     private Mock<IConnectionManager> _connectionManager = null!;
     private Mock<ICallClient> _client = null!;
     private CallSessionStore _storeUnderTest = null!;
@@ -38,21 +38,21 @@ public class CallSessionStoreTests
     [SetUp]
     public void Setup()
     {
-        _store = new Dictionary<string, RedisValue>();
-        _db = new Mock<IDatabase>();
-        _db.Setup(x => x.StringGetAsync(It.IsAny<RedisKey>(), It.IsAny<CommandFlags>()))
-            .ReturnsAsync((RedisKey key, CommandFlags _) =>
-                _store.TryGetValue(key.ToString(), out var value) ? value : RedisValue.Null);
+        _store = new Dictionary<string, string>();
+        _db = new Mock<IRedisCacheService>();
+        _db.Setup(x => x.StringGetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string key, CancellationToken _) =>
+                _store.TryGetValue(key, out var value) ? value : null);
         _db.Setup(x => x.StringSetAsync(
-                It.IsAny<RedisKey>(), It.IsAny<RedisValue>(), It.IsAny<TimeSpan?>(),
-                It.IsAny<When>(), It.IsAny<CommandFlags>()))
-            .ReturnsAsync((RedisKey key, RedisValue value, TimeSpan? _, When _, CommandFlags _) =>
+                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<TimeSpan?>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string key, string value, TimeSpan? _, CancellationToken _) =>
             {
-                _store[key.ToString()] = value;
+                _store[key] = value;
                 return true;
             });
-        _db.Setup(x => x.KeyDeleteAsync(It.IsAny<RedisKey>(), It.IsAny<CommandFlags>()))
-            .ReturnsAsync((RedisKey key, CommandFlags _) => _store.Remove(key.ToString()));
+        _db.Setup(x => x.KeyDeleteAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string key, CancellationToken _) => _store.Remove(key));
 
         // 在线连接：默认仅呼叫方在线
         _onlineUsers = new HashSet<Guid> { CallerId };
@@ -87,9 +87,9 @@ public class CallSessionStoreTests
         var scopeFactory = new Mock<IServiceScopeFactory>();
         scopeFactory.Setup(x => x.CreateScope()).Returns(scope.Object);
 
-        var redisCache = new  MessageCacheService(
-            CacheServicesTestFactory.CreateRedisMock(_db).Object,
-            new Mock<ILogger< MessageCacheService>>().Object);
+        var redisCache = new MessageCacheService(
+            _db.Object,
+            new Mock<ILogger<MessageCacheService>>().Object);
 
         _storeUnderTest = new CallSessionStore(
             redisCache,
