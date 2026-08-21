@@ -12,6 +12,9 @@ public static class MarkReviewResponseMapper
         UserId = review.UserId,
         Content = review.MarkReviewContent ?? string.Empty,
         Auth = review.MarkReviewAuth.ToString(),
+        ReviewImages = review.ReviewImages is { Count: > 0 }
+            ? [.. review.ReviewImages.Select(i => i.ImageUrl.ToString())]
+            : null,
         ReviewTime = review.MarkReviewTime,
         IsDeleted = review.IsDelete,
         ChildReviewCount = review.MarkReviews?.Count ?? 0,

@@ -164,6 +164,7 @@ public class MarkDownRepository(
             var reviews = await markDownDbContext.Markdowns
                 .Where(x => x.MarkDownGuid == markdownGuid)
                 .SelectMany(m => m.MarkReviews)
+                .Include(r => r.ReviewImages)
                 .Where(r => r.MarkAggregateRootGuid == null && !r.IsDelete)
                 .OrderByDescending(r => r.MarkReviewTime)
                 .ToListAsync();
@@ -187,6 +188,7 @@ public class MarkDownRepository(
         {
             var review = await markDownDbContext.Markdowns
                 .SelectMany(m => m.MarkReviews)
+                .Include(r => r.ReviewImages)
                 .FirstOrDefaultAsync(r => r.MarkReviewGuid == reviewGuid && !r.IsDelete);
 
             if (review is null)
@@ -210,6 +212,7 @@ public class MarkDownRepository(
         {
             var childReviews = await markDownDbContext.Markdowns
                 .SelectMany(m => m.MarkReviews)
+                .Include(r => r.ReviewImages)
                 .Where(r => r.MarkAggregateRootGuid == parentReviewGuid && !r.IsDelete)
                 .OrderBy(r => r.MarkReviewTime)
                 .ToListAsync();
