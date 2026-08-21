@@ -21,3 +21,4 @@ global using Markdown.Web.API.Services;
 global using Markdown.Web.API.Dto.Response;
 global using Microsoft.AspNetCore.Mvc;
 global using Markdown.Domain.Options;
+global using Markdown.Web.API.Background;

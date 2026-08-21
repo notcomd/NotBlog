@@ -28,7 +28,7 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
 
     private ChatSession()
     {
-        SessionId = Guid.NewGuid();
+        SessionId = Guid.CreateVersion7();
         Participants = new List<Guid>();
         CreatedTime = DateTime.UtcNow;
         IsDismissed = false;

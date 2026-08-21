@@ -7,7 +7,7 @@ namespace Markdown.Domain.Entities;
 ///     UseCount / LastUsedAt 用于"常用标签"排序建议。
 ///     取消收藏或移除标签不影响标签库（历史标签保留，保证可复用）。
 /// </summary>
-public class MarkFavoriteTag : Entity<int>
+public class MarkFavoriteTag : Entity<Guid>
 {
     /// <summary>单标签最大长度（与收藏标签规则一致）</summary>
     public const int MaxTagLength = 50;

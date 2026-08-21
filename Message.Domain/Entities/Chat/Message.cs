@@ -2,6 +2,9 @@
 
 namespace Message.Domain.Entities.Chat;
 
+/// <summary>
+/// 
+/// </summary>
 public class Message : Entity<Guid>, IAggregateRoot
 {
     private readonly List<FileAttachment> _attachments = new();

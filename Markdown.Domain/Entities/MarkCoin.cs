@@ -1,11 +1,11 @@
 namespace Markdown.Domain.Entities;
 
 /// <summary>
-///     文档打赏（硬币）记录：用户对文档的硬币打赏流水，用于文档硬币计数与审计
+/// 文档打赏（硬币）记录：用户对文档的硬币打赏流水，用于文档硬币计数与审计
 /// </summary>
-public class MarkCoin
+public class MarkCoin : Entity<Guid>,IAggregateRoot
 {
-    public int Id { get; private set; }
+    public Guid MarkCoinGuid { get; init; }
 
     public Guid MarkDownGuid { get; private set; }
 
@@ -20,9 +20,11 @@ public class MarkCoin
 
     private MarkCoin()
     {
+        MarkCoinGuid=Guid.CreateVersion7();
+        CreateAt=DateTimeOffset.UtcNow;
     }
 
-    public MarkCoin(Guid markDownGuid, Guid userId, long amount)
+    public MarkCoin(Guid markDownGuid, Guid userId, long amount):this()
     {
         if (markDownGuid == Guid.Empty)
             throw new ArgumentException("文档标识不能为空", nameof(markDownGuid));

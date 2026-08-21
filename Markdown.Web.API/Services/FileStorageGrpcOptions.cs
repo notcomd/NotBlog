@@ -14,7 +14,7 @@ public class FileStorageGrpcOptions
     public string Address { get; set; } = string.Empty;
 
     /// <summary>瞬时故障最大重试次数</summary>
-    public int RetryCount { get; set; } = 3;
+    public int RetryCount { get; set; } = 5;
 
     /// <summary>单次 gRPC 调用超时（秒）</summary>
     public int TimeoutSeconds { get; set; } = 120;

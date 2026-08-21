@@ -1,4 +1,4 @@
-namespace Markdown.Web.API.Services;
+namespace Markdown.Web.API.Background;
 
 /// <summary>
 ///     热点榜定时重建任务：每 10 分钟全量重算所有文档热度分
