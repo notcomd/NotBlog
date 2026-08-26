@@ -1,4 +1,4 @@
-namespace FileDev.Domain.Entities;
+namespace FileDev.Domain.Enum;
 
 public enum FileType
 {

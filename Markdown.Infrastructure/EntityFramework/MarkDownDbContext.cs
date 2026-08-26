@@ -59,7 +59,6 @@ public class MarkDownDbContext(DbContextOptions<MarkDownDbContext> options, INot
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfiguration(new MarkDownEntityConfiguration());
         modelBuilder.ApplyConfiguration(new MarkReviewEntityConfiguration());
-        modelBuilder.ApplyConfiguration(new ReviewImageEntityConfiguration());
         modelBuilder.ApplyConfiguration(new MarkFavoriteEntityConfiguration());
         modelBuilder.ApplyConfiguration(new MarkFavoriteTagEntityConfiguration());
 
@@ -99,7 +98,6 @@ public class MarkDownDbContext(DbContextOptions<MarkDownDbContext> options, INot
         modelBuilder.Entity<MarkCoin>(entity =>
         {
             entity.ToTable("MarkCoin");
-            entity.Property(x => x.Id).UseHiLo("MarkCoinGuid");
             entity.HasKey(x => x.Id);
             entity.Property(x => x.MarkDownGuid).IsRequired();
             entity.Property(x => x.UserId).IsRequired();

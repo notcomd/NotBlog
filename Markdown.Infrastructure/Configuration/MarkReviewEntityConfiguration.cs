@@ -5,9 +5,10 @@ public class MarkReviewEntityConfiguration : IEntityTypeConfiguration<MarkReview
     public void Configure(EntityTypeBuilder<MarkReview> builder)
     {
         builder.Ignore(en => en.DomainEvents);
+        builder.Ignore(x=>x.Id);
+
         builder.ToTable("MarkReview");
-        builder.Property(x => x.Id).UseHiLo("MarkReviewGuid");
-        builder.HasKey(x => x.Id);
+        builder.HasKey(x => x.MarkDownGuid);
 
         // 配置 MarkReviewGuid 为必填字段
         builder.Property(x => x.MarkReviewGuid).IsRequired();
@@ -33,6 +34,13 @@ public class MarkReviewEntityConfiguration : IEntityTypeConfiguration<MarkReview
             quoteBuilder.Property(q => q.ViewSome).HasColumnName("ViewCount").HasDefaultValue(0);
             quoteBuilder.Property(q => q.ReplySome).HasColumnName("ReplyCount").HasDefaultValue(0);
             quoteBuilder.Property(q => q.DislikeSome).HasColumnName("DislikeCount").HasDefaultValue(0);
+        });
+
+        // 评论配图作为 owned 值对象集合整体序列化为 JSONB 列（无独立表、无外键）。
+        // 图片为已上传资源的引用列表，无独立身份/生命周期，用 ToJson() 内联存储最贴切。
+        builder.OwnsMany(x => x.ReviewImages, reviewImageBuilder =>
+        {
+            reviewImageBuilder.ToJson();
         });
 
         // 配置索引（提高查询性能）

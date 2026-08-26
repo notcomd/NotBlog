@@ -1,4 +1,4 @@
-namespace Markdown.Domain.Entities;
+namespace Markdown.Domain.Enum;
 
 public enum MarkReviewAuth
 {

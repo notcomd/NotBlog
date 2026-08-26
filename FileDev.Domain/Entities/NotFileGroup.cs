@@ -4,7 +4,7 @@ namespace FileDev.Domain.Entities;
 /// 文件组聚合根 — 支持树形嵌套，同级名称唯一。
 /// ParentGroupId == null 表示根节点。
 /// </summary>
-public class NotFileGroup : Entity<int>, IAggregateRoot
+public class NotFileGroup : Entity<Guid>, IAggregateRoot
 {
     public Guid NotFileGroupId { get; init; }
 
@@ -14,9 +14,9 @@ public class NotFileGroup : Entity<int>, IAggregateRoot
 
     public string FileGroupName { get; private set; } = null!;
 
-    public HashSet<string> FileGroupTags { get; private set; } = [];
+    public List<string> FileGroupTags { get; private set; } = [];
 
-    public HashSet<Guid> FileIds { get; private set; } = [];
+    public List<Guid> FileIds { get; private set; } = [];
 
     public string? FileGroupDescription { get; private set; }
 
@@ -30,9 +30,8 @@ public class NotFileGroup : Entity<int>, IAggregateRoot
 
     public FileIdentity FileIdentity { get; private set; }
 
-
-
     public NotFileGroup? Parent { get; private set; }
+
     public ICollection<NotFileGroup> Children { get; private set; } = [];
 
 
@@ -67,7 +66,7 @@ public class NotFileGroup : Entity<int>, IAggregateRoot
         Guid userId,
         string fileGroupName,
         NotFileGroup? parent,
-        HashSet<string>? fileGroupTags = null,
+        List<string>? fileGroupTags = null,
         string? fileGroupDescription = null,
         FileIdentity fileIdentity = FileIdentity.FilePrivate,
         Func<Guid?, string, bool>? isNameUniqueAtSameLevel = null)
@@ -86,7 +85,7 @@ public class NotFileGroup : Entity<int>, IAggregateRoot
 
         AddDomainEvent(new CreateFileGroupEvent(
             NotFileGroupId, userId, fileGroupName,
-            fileGroupTags ?? [], fileGroupDescription, fileIdentity));
+            fileGroupTags?.ToHashSet() ?? [], fileGroupDescription, fileIdentity));
     }
 
     /// <summary>
@@ -163,7 +162,7 @@ public class NotFileGroup : Entity<int>, IAggregateRoot
         FileIdentity? fileIdentity = null)
     {
         if (fileGroupTags != null)
-            FileGroupTags = fileGroupTags;
+            FileGroupTags = fileGroupTags.ToList();
         if (fileGroupDescription != null)
             FileGroupDescription = fileGroupDescription;
         if (fileIdentity != null)
@@ -297,7 +296,7 @@ public class NotFileGroup : Entity<int>, IAggregateRoot
                 _userId,
                 _fileGroupName,
                 _parent, // 注入父级实体时走构造函数内 SetParent 的完整业务校验
-                _fileGroupTags,
+                _fileGroupTags.ToList(),
                 _fileGroupDescription,
                 _fileIdentity,
                 _isNameUniqueAtSameLevel);

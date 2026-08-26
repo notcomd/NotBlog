@@ -12,7 +12,7 @@ public class CircleMember : Entity<Guid>
         JoinTime = DateTimeOffset.UtcNow;
     }
 
-    public CircleMember(Guid circleGuid, Guid userGuid, string nickname, CircleMemberRole role = CircleMemberRole.Member) : this()
+    public CircleMember(Guid circleGuid, Guid userGuid, string? nickname = null, CircleMemberRole role = CircleMemberRole.Member) : this()
     {
         if (circleGuid == Guid.Empty)
             throw new ArgumentException("圈子ID不能为空", nameof(circleGuid));
@@ -33,7 +33,7 @@ public class CircleMember : Entity<Guid>
 
     public CircleMemberRole Role { get; private set; }
 
-    public string Nickname { get; private set; }
+    public string? Nickname { get; private set; }
 
     public CircleMemberStatus Status { get; private set; }
 
@@ -44,7 +44,7 @@ public class CircleMember : Entity<Guid>
         Role = role;
     }
 
-    public void SetNickname(string nickname)
+    public void SetNickname(string? nickname)
     {
         Nickname = nickname;
     }

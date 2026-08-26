@@ -10,8 +10,8 @@ public static class FileChunkApis
         var router = routeGroupBuilder.MapGroup("/chunk");
 
 
-        router.MapPost("/init", InitChunkUploadAsync)        
-            .WithMetadata(new RequestSizeLimitAttribute(1024 * 1024)); 
+        router.MapPost("/init", InitChunkUploadAsync)
+            .WithMetadata(new RequestSizeLimitAttribute(1024 * 1024));
 
         router.MapPost("/upload", UploadChunkAsync)
             .WithMetadata(new RequestSizeLimitAttribute(11 * 1024 * 1024));
@@ -31,7 +31,7 @@ public static class FileChunkApis
     private static IResult InternalError() => Results.Json(new { ok = false, error = "请求处理失败" }, statusCode: 500);
 
     private static async Task<IResult> InitChunkUploadAsync(
-        HttpContext context,
+        [FromServices] HttpContext context,
         [FromServices] INotMediator mediator,
         [FromServices] IOptionsSnapshot<NotFileStorageOptions> storageOptions,
         [FromServices] ILoggerFactory loggerFactory,
@@ -234,7 +234,7 @@ public static class FileChunkApis
         }
         catch (Exception ex)
         {
-            
+
             logger.LogError(ex, "取消分片上传失败: FileKey={FileKey}", fileKey);
             return InternalError();
         }

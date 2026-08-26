@@ -42,7 +42,7 @@ public class Circle : Entity<Guid>, IAggregateRoot
             Status = CircleStatus.Active
         };
 
-        circle._members.Add(new CircleMember(circle.CircleGuid, ownerGuid, CircleMemberRole.Owner));
+        circle._members.Add(new CircleMember(circle.CircleGuid, ownerGuid, null, CircleMemberRole.Owner));
         circle.AddDomainEvent(new CircleCreatedEvent(circle.CircleGuid, ownerGuid));
         return circle;
     }
@@ -110,7 +110,7 @@ public class Circle : Entity<Guid>, IAggregateRoot
             return;
         }
 
-        var member = new CircleMember(CircleGuid, userGuid, role, nickname);
+        var member = new CircleMember(CircleGuid, userGuid, nickname, role);
         _members.Add(member);
         MemberCount++;
         AddDomainEvent(new CircleMemberJoinedEvent(CircleGuid, userGuid, role, inviterGuid));

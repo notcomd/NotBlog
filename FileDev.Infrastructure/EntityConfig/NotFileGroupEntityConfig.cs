@@ -34,24 +34,20 @@ public class NotFileGroupEntityConfiguration : IEntityTypeConfiguration<NotFileG
         builder.Property(x => x.FileGroupName).HasMaxLength(256);
 
         
-        builder.Property(x => x.FileIds)
-            .HasConversion(
-                v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
-                v => System.Text.Json.JsonSerializer.Deserialize<HashSet<Guid>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new HashSet<Guid>(),
-                new ValueComparer<HashSet<Guid>>(
-                    (l, r) => l!.SetEquals(r!),
-                    v => v.Aggregate(0, (a, g) => HashCode.Combine(a, g.GetHashCode())),
-                    v => new HashSet<Guid>(v)))
-            .HasColumnType("text");
+        builder.Property(x => x.FileIds).HasConversion(
+                v => string.Join(",", v.OrderBy(x => x)),
+                v => v.Split(',',StringSplitOptions.RemoveEmptyEntries)
+                    .Select(Guid.Parse)
+                    .ToList(),
+                new ValueComparer<List<Guid>>(
+                    (l, r) => l!.SequenceEqual(r!),
+                    v => v.Aggregate(0, (a, x) => HashCode.Combine(a, x.GetHashCode())),
+                    v => new List<Guid>(v)));
 
-        builder.Property(x => x.FileGroupTags)
-            .HasConversion(
-                v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
-                v => System.Text.Json.JsonSerializer.Deserialize<HashSet<string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new HashSet<string>(),
-                new ValueComparer<HashSet<string>>(
-                    (l, r) => l!.SetEquals(r!),
-                    v => v.Aggregate(0, (a, s) => HashCode.Combine(a, s.GetHashCode())),
-                    v => new HashSet<string>(v)))
-            .HasColumnType("text");
+        builder.Property(x => x.FileGroupTags).HasConversion(
+            v=>string.Join(",",v.OrderBy(x=>x)),
+            v=>v.Split(',',StringSplitOptions.RemoveEmptyEntries)
+            .ToList()
+        );
     }
 }

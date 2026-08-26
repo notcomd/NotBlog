@@ -1,12 +1,18 @@
 
 using Google.Protobuf;
+
 using Grpc.Core;
 
-using FileInfoProto = FileDev.Web.API.Grpc.FileInfo;
+
 using FileIdentityProto = FileDev.Web.API.Grpc.FileIdentity;
+using FileInfoProto = FileDev.Web.API.Grpc.FileInfo;
 using FileTypeProto = FileDev.Web.API.Grpc.FileType;
-using DomainFileIdentity = FileDev.Domain.Entities.FileIdentity;
-using DomainFileType = FileDev.Domain.Entities.FileType;
+
+// 本文件位于 FileDev.Web.API.Grpc 命名空间，裸 FileIdentity/FileType/ChunkUploadStatus 会被解析为
+// proto 类型；以下别名显式绑定领域枚举，避免与 proto 类型冲突（领域与 proto 成员命名不同）。
+using FileIdentityDomain = FileDev.Domain.Enum.FileIdentity;
+using FileTypeDomain = FileDev.Domain.Enum.FileType;
+using ChunkUploadStatusDomain = FileDev.Domain.Enum.ChunkUploadStatus;
 
 namespace FileDev.Web.API.Grpc;
 
@@ -16,13 +22,13 @@ namespace FileDev.Web.API.Grpc;
 /// 参数校验、权限/配额检查、存储操作与事务提交全部下沉到应用服务层；
 /// 业务异常由 <see cref="GrpcExceptionMapperInterceptor"/> 统一映射为 gRPC 状态码。
 /// </summary>
-public class FileStorageServiceGRPC(INotMediator mediator,IOptionsSnapshot<NotFileStorageOptions> optionsSnapshot) : FileStorage.FileStorageBase
+public class FileStorageServiceGRPC(INotMediator mediator, IOptionsSnapshot<NotFileStorageOptions> optionsSnapshot) : FileStorage.FileStorageBase
 {
-    
 
-    private readonly INotMediator _mediator=
+
+    private readonly INotMediator _mediator =
         mediator ?? throw new ArgumentNullException(nameof(mediator));
-    
+
 
     private readonly int StreamChunkSize = optionsSnapshot.Value.ChunkFileSize;
     // ═══════════════════════════════════════════════════
@@ -164,7 +170,7 @@ public class FileStorageServiceGRPC(INotMediator mediator,IOptionsSnapshot<NotFi
                 ExpectedMd5 = request.ExpectedMd5
             },
             context.CancellationToken);
-       
+
         return new UploadFileResponse
         {
             Success = true,
@@ -360,7 +366,7 @@ public class FileStorageServiceGRPC(INotMediator mediator,IOptionsSnapshot<NotFi
                 ImageContent = request.ImageContent.ToByteArray(),
                 FileTags = request.FileTags?.ToHashSet(),
                 FileDescription = request.FileDescription,
-                FileIdentity = MapToDomainIdentity(request.FileIdentity),
+                FileIdentity =MapToDomainIdentity(request.FileIdentity),
                 ValidateFormat = request.ValidateFormat
             },
             context.CancellationToken);
@@ -469,68 +475,68 @@ public class FileStorageServiceGRPC(INotMediator mediator,IOptionsSnapshot<NotFi
     /// <summary>
     /// 将域文件身份枚举映射为gRPC文件身份协议缓冲区
     /// </summary>
-    private static FileIdentityProto MapToProtoIdentity(DomainFileIdentity identity) => identity switch
+    private static FileIdentityProto MapToProtoIdentity(FileIdentityDomain identity) => identity switch
     {
-        DomainFileIdentity.FilePublic => FileIdentityProto.FilePublic,
-        DomainFileIdentity.FilePrivate => FileIdentityProto.FilePrivate,
-        DomainFileIdentity.FilePrivatePublic => FileIdentityProto.FilePrivatePublic,
-        DomainFileIdentity.FilePasswordProtected => FileIdentityProto.FilePasswordProtected,
+        FileIdentityDomain.FilePublic => FileIdentityProto.FilePublic,
+        FileIdentityDomain.FilePrivate => FileIdentityProto.FilePrivate,
+        FileIdentityDomain.FilePrivatePublic => FileIdentityProto.FilePrivatePublic,
+        FileIdentityDomain.FilePasswordProtected => FileIdentityProto.FilePasswordProtected,
         _ => FileIdentityProto.FilePrivate
     };
 
     /// <summary>
     /// 将gRPC文件身份协议缓冲区映射为域文件身份枚举
     /// </summary>
-    private static DomainFileIdentity MapToDomainIdentity(FileIdentityProto identity) => identity switch
+    private static FileIdentityDomain MapToDomainIdentity(FileIdentityProto identity) => identity switch
     {
-        FileIdentityProto.FilePublic => DomainFileIdentity.FilePublic,
-        FileIdentityProto.FilePrivate => DomainFileIdentity.FilePrivate,
-        FileIdentityProto.FilePrivatePublic => DomainFileIdentity.FilePrivatePublic,
-        FileIdentityProto.FilePasswordProtected => DomainFileIdentity.FilePasswordProtected,
-        _ => DomainFileIdentity.FilePrivate
+        FileIdentityProto.FilePublic => FileIdentityDomain.FilePublic,
+        FileIdentityProto.FilePrivate => FileIdentityDomain.FilePrivate,
+        FileIdentityProto.FilePrivatePublic => FileIdentityDomain.FilePrivatePublic,
+        FileIdentityProto.FilePasswordProtected => FileIdentityDomain.FilePasswordProtected,
+        _ => FileIdentityDomain.FilePrivate
     };
 
     /// <summary>
     /// 将域文件类型枚举映射为gRPC文件类型协议缓冲区
     /// </summary>
-    private static FileTypeProto MapToProtoFileType(DomainFileType fileType) => fileType switch
+    private static FileTypeProto MapToProtoFileType(FileTypeDomain fileType) => fileType switch
     {
-        DomainFileType.FileImage => FileTypeProto.FileImage,
-        DomainFileType.FileVideo => FileTypeProto.FileVideo,
-        DomainFileType.FileAudio => FileTypeProto.FileAudio,
-        DomainFileType.CompressFiles => FileTypeProto.FileCompress,
-        DomainFileType.FileFile => FileTypeProto.FileOther,
-        _ => FileTypeProto.FileOther,
+        FileTypeDomain.FileImage => FileTypeProto.FileImage,
+        FileTypeDomain.FileVideo => FileTypeProto.FileVideo,
+        FileTypeDomain.FileAudio => FileTypeProto.FileAudio,
+        FileTypeDomain.FileFile => FileTypeProto.FileDocument,
+        FileTypeDomain.CompressFiles => FileTypeProto.FileCompress,
+        _ => FileTypeProto.FileOther
     };
 
     /// <summary>
     /// 将gRPC文件类型协议缓冲区映射为域文件类型枚举
     /// </summary>
-    private static DomainFileType MapToDomainFileType(FileTypeProto fileType) => fileType switch
+    private static FileTypeDomain MapToDomainFileType(FileTypeProto fileType) => fileType switch
     {
-        FileTypeProto.FileImage => DomainFileType.FileImage,
-        FileTypeProto.FileVideo => DomainFileType.FileVideo,
-        FileTypeProto.FileAudio => DomainFileType.FileAudio,
-        FileTypeProto.FileCompress => DomainFileType.CompressFiles,
-        FileTypeProto.FileOther => DomainFileType.FileFile,
-        _ => DomainFileType.FileFile,
+        FileTypeProto.FileImage => FileTypeDomain.FileImage,
+        FileTypeProto.FileVideo => FileTypeDomain.FileVideo,
+        FileTypeProto.FileAudio => FileTypeDomain.FileAudio,
+        FileTypeProto.FileDocument => FileTypeDomain.FileFile,
+        FileTypeProto.FileCompress => FileTypeDomain.CompressFiles,
+        _ => FileTypeDomain.FileFile
     };
 
     /// <summary>
     /// 将域文件块上传状态枚举映射为gRPC文件块上传状态协议缓冲区
     /// </summary>
     private static ChunkUploadStatus MapToProtoChunkStatus(
-        Domain.Entities.ChunkUploadStatus status) => status switch
-    {
-        Domain.Entities.ChunkUploadStatus.Pending => ChunkUploadStatus.ChunkPending,
-        Domain.Entities.ChunkUploadStatus.Uploading => ChunkUploadStatus.ChunkUploading,
-        Domain.Entities.ChunkUploadStatus.Merged => ChunkUploadStatus.ChunkMerged,
-        Domain.Entities.ChunkUploadStatus.Failed => ChunkUploadStatus.ChunkFailed,
-        Domain.Entities.ChunkUploadStatus.Cancelled => ChunkUploadStatus.ChunkCancelled,
-        _ => ChunkUploadStatus.ChunkPending
-    };
+        ChunkUploadStatusDomain status) => status switch
+        {
+            ChunkUploadStatusDomain.Pending => ChunkUploadStatus.ChunkPending,
+            ChunkUploadStatusDomain.Uploading => ChunkUploadStatus.ChunkUploading,
+            ChunkUploadStatusDomain.Merged => ChunkUploadStatus.ChunkMerged,
+            ChunkUploadStatusDomain.Failed => ChunkUploadStatus.ChunkFailed,
+            ChunkUploadStatusDomain.Cancelled => ChunkUploadStatus.ChunkCancelled,
+            _ => ChunkUploadStatus.ChunkPending
+        };
 
-    private static DomainFileType ResolveFileType(string ext) => FileApiHelpers.ResolveFileType(ext);
+    private static FileTypeDomain ResolveFileType(string ext) => FileApiHelpers.ResolveFileType(ext);
 
     /// <summary>
     /// 获取文件内容类型（S-17：.html/.htm/.svg 可被浏览器直接渲染，一律按 application/octet-stream 返回）

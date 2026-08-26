@@ -1,4 +1,4 @@
-namespace FileDev.Domain.Entities;
+namespace FileDev.Domain.Enum;
 
 /// <summary>
 /// 分片上传任务状态枚举。

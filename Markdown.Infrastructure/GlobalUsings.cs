@@ -10,3 +10,4 @@ global using Markdown.Infrastructure.Repository;
 global using Microsoft.Extensions.DependencyInjection;
 global using NotMediator.Abstractions;
 global using NotMediator.Mediator;
+global using Markdown.Domain.Enum;

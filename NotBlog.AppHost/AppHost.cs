@@ -1,4 +1,5 @@
-﻿using Aspire.Hosting.ApplicationModel;
+using Microsoft.Extensions.Configuration;
+
 using Projects;
 
 var builder = DistributedApplication.CreateBuilder(args);
@@ -80,6 +81,27 @@ var message = builder.AddProject<Message_Web_API>("message-web-api")
     .WithReference(filedev)
     .WithReference(rabbitmq)
     .WaitFor(postgres); // 等待数据库和 RabbitMQ 容器就绪（RELEASE）
+
+// TurnService：WebRTC TURN 限时凭证（SharedSecret 属敏感配置，仅从用户机密/环境注入，勿提交）。
+// 未配置时 Message 回落使用 appsettings.json 默认值（当前为占位符，TURN 不生效）。
+var turnSection = builder.Configuration.GetSection("TurnService");
+if (turnSection.Exists())
+{
+    var turnSecret = turnSection["SharedSecret"];
+    if (!string.IsNullOrWhiteSpace(turnSecret))
+        message.WithEnvironment("TurnService__SharedSecret", turnSecret);
+
+    var ttl = turnSection["TtlSeconds"];
+    if (!string.IsNullOrWhiteSpace(ttl))
+        message.WithEnvironment("TurnService__TtlSeconds", ttl);
+
+    var turnUrls = turnSection.GetSection("Urls").Get<string[]>();
+    if (turnUrls is { Length: > 0 })
+    {
+        for (var i = 0; i < turnUrls.Length; i++)
+            message.WithEnvironment($"TurnService__Urls__{i}", turnUrls[i]);
+    }
+}
 
 // Markdown：数据库 AddNpgsql("MarkDownPostgres")；RabbitMQ AddRabbitMQClient("EventBus")（RELEASE）；
 // 正文文件化：WithReference(filedev) 注入服务发现（gRPC 客户端名 filedev-web-api）。

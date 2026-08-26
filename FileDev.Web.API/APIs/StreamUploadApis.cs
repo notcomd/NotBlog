@@ -17,6 +17,7 @@ public static class StreamUploadApis
         return router;
     }
 
+
     public static RouteGroupBuilder MapDedupApis(this RouteGroupBuilder routeGroupBuilder)
     {
         var router = routeGroupBuilder.MapGroup("/dedup");
@@ -31,8 +32,17 @@ public static class StreamUploadApis
     private static IResult BadRequest(string error) => Results.Json(new { ok = false, error }, statusCode: 400);
     private static IResult InternalError() => Results.Json(new { ok = false, error = "请求处理失败" }, statusCode: 500);
 
+    /// <summary>
+    /// 流式上传
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="mediator"></param>
+    /// <param name="storageOptions"></param>
+    /// <param name="loggerFactory"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
     private static async Task<IResult> StreamUploadAsync(
-        HttpContext context,
+        [FromServices] HttpContext context,
         [FromServices] INotMediator mediator,
         [FromServices] IOptionsSnapshot<NotFileStorageOptions> storageOptions,
         [FromServices] ILoggerFactory loggerFactory,

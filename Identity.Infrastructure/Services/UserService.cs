@@ -1,5 +1,7 @@
 using Identity.Domain.Events;
 using Identity.Domain.ICache;
+using Identity.Domain.Dto;
+using Notcomd.Token.JWT.Security;
 
 namespace Identity.Infrastructure.Services;
 
@@ -10,51 +12,156 @@ public class UserService(
     IUserRoleRepository userRoleRepository,
     IJwtTokenService jwtTokenServer,
     ITokenSessionService tokenSessionService,
-    IIdentityCacheService identityCacheService)
+    IIdentityCacheService identityCacheService,
+    IMailQueue mailQueue)
     : IUserService
 {
     private const string EmailCodeKeyPrefix = "Login_";
 
-    // ── 邮箱密码登录 ──
+    // ── 统一登录/注册（邮箱验证码） ──
 
-    public async Task<TokenResult?> LogInByCheckPasswordAsync(
-        [EmailAddress(ErrorMessage = "邮件地址不符合要求喵！")] string email,
-        string password, string? code)
+    /// <summary>
+    /// 邮箱验证码登录（统一登录/注册）：
+    /// 1. 校验并一次性消费邮箱验证码；
+    /// 2. 邮箱已存在 → 直接登录；
+    /// 3. 邮箱不存在 → 自动创建账号并生成初始密码发送到该邮箱，然后立即登录。
+    /// </summary>
+    public async Task<EmailLoginResult?> LogInByEmailCodeAsync(
+        [EmailAddress(ErrorMessage = "无效邮件地址")] string email, string code)
     {
-        var userData = await userRepository.FindOneByUserAsync(email);
-        // S-13：用户不存在与密码错误返回同一结果，避免账号枚举
-        if (userData is null)
+        if (string.IsNullOrWhiteSpace(code))
             return null;
 
-        // 邮箱登录验证码：传了就校验（一次性消费），未传则放行纯密码登录
-        if (!string.IsNullOrWhiteSpace(code))
+        // 校验验证码（放入缓存即视为已下发），校验通过后一次性消费
+        var cached = await identityCacheService.GetStringAsync($"{EmailCodeKeyPrefix}{email}", default);
+        if (string.IsNullOrEmpty(cached) || !string.Equals(cached, code, StringComparison.Ordinal))
+            return null;
+        await identityCacheService.RemoveAsync($"{EmailCodeKeyPrefix}{email}", default);
+
+        var userData = await userRepository.FindOneByUserAsync(email);
+        var isNewUser = false;
+        if (userData is null)
         {
+            // 陌生邮箱 → 自动注册并下发初始密码
+            userData = await CreateUserAndSendInitialPasswordAsync(email);
+            if (userData is null)
+                return null;
+            isNewUser = true;
+        }
+
+        // ── 第一步: 检查是否被锁定 ──
+        if (!userData.UserAccessFail.CanLogin())
+        {
+            loggerUser.LogWarning("[{DateTime}] 用户 {UserEmail} 账号已锁定，拒绝登录", DateTime.UtcNow, userData.UserEmail);
+            return null;
+        }
+
+        await userRepository.UnitOfWork.SaveChangesAsync();
+
+        var token = await BuildTokenForUserAsync(userData);
+        return token is null ? null : new EmailLoginResult(token, isNewUser, userData.UserGuid);
+    }
+
+    /// <summary>
+    /// 密码登入（邮箱 + 密码 + 二次验证）：
+    /// 1. 邮箱不存在或锁定时拒绝（密码登入不做自动注册）；
+    /// 2. 校验密码，失败则原子递增失败计数并达到阈值时锁定；
+    /// 3. 开启二次验证的用户再校验邮箱验证码（校验通过后一次性消费），关闭二次验证的用户免验证码。
+    /// </summary>
+    public async Task<EmailLoginResult?> LogInByPasswordAsync(
+        [EmailAddress(ErrorMessage = "无效邮件地址")] string email, string password, string? code)
+    {
+        if (string.IsNullOrWhiteSpace(password))
+            return null;
+
+        var userData = await userRepository.FindOneByUserAsync(email);
+        if (userData is null)
+            return null; // 密码登入不自动注册，杜绝邮箱枚举
+
+        // ── 第一步: 检查是否被锁定 ──
+        if (!userData.UserAccessFail.CanLogin())
+        {
+            loggerUser.LogWarning("[{DateTime}] 用户 {UserEmail} 账号已锁定，拒绝密码登入", DateTime.UtcNow, userData.UserEmail);
+            return null;
+        }
+
+        // ── 第二步: 校验密码 ──
+        if (!await userData.VerifyByPasswordAsync(password))
+        {
+            await RecordAccessFailAsync(userData.UserGuid);
+            return null;
+        }
+
+        // ── 第三步: 二次验证（仅开启二次验证的用户需校验邮箱验证码）──
+        if (userData.UserSafety.IsTwoFactorEnabled)
+        {
+            if (string.IsNullOrWhiteSpace(code))
+                return null;
+
             var cached = await identityCacheService.GetStringAsync($"{EmailCodeKeyPrefix}{email}", default);
             if (string.IsNullOrEmpty(cached) || !string.Equals(cached, code, StringComparison.Ordinal))
                 return null;
             await identityCacheService.RemoveAsync($"{EmailCodeKeyPrefix}{email}", default);
         }
 
-        return await LogInByCheckPasswordCoreAsync(userData, password);
+        await userRepository.UnitOfWork.SaveChangesAsync();
+
+        var token = await BuildTokenForUserAsync(userData);
+        return token is null ? null : new EmailLoginResult(token, false, userData.UserGuid);
     }
 
-    // ── 手机号密码登录 ──
-
-    public async Task<TokenResult?> LogInByCheckPasswordAsync(PhoneNumber phoneNumber, string password, string code)
+    /// <summary>
+    /// 原子记录密码登入失败：经仓储 ExecuteUpdate 递增失败计数（并发安全），达到阈值后锁定账号。
+    /// </summary>
+    private async Task RecordAccessFailAsync(Guid userGuid)
     {
-        var userData = await userRepository.FindOneByUserAsync(phoneNumber);
-        if (userData is null)
+        var count = await userRepository.IncrementAccessFaildCountAsync(userGuid);
+        if (count >= UserAccessFail.MaxFailedAttempts)
         {
-            loggerUser.LogError("[{DateTime}] 用户 {PhoneNumber} 不存在", DateTime.UtcNow, phoneNumber);
+            var lockOutEnd = DateTimeOffset.UtcNow.Add(UserAccessFail.LockOutDuration);
+            await userRepository.LockUserAsync(userGuid, lockOutEnd);
+            loggerUser.LogWarning("[{DateTime}] 用户 {UserGuid} 密码登入失败达阈值，已锁定至 {LockOutEnd}",
+                DateTime.UtcNow, userGuid, lockOutEnd);
+        }
+    }
+
+    /// <summary>
+    /// 自动注册邮箱账号并下发初始密码。
+    /// 密码由 CSPRNG 生成（含大写、小写、数字、特殊字符），初始密码经邮件后台队列发送到该邮箱。
+    /// 并发同邮箱自动注册由 UserEmail 唯一索引兜底（TOCTOU 竞态由 DB 约束终结）。
+    /// </summary>
+    private async Task<User?> CreateUserAndSendInitialPasswordAsync(string email)
+    {
+        var userRole = await userRoleRepository.FindByUserRoleAsync("User");
+        if (userRole is null)
+        {
+            loggerUser.LogError("[{DateTime}] 默认角色 'User' 未配置，无法自动注册: {Email}", DateTime.UtcNow, email);
+            throw new InvalidOperationException("默认角色 'User' 未在数据库中配置。");
+        }
+
+        var initialPassword = JwtRandom.GenerateComplexPassword();
+        var user = await User.CreateByEmailUser(
+            userRole.RoleGuid, email, initialPassword, null, null);
+        await userRepository.AddOneByUserAsync(user);
+
+        try
+        {
+            await userRepository.UnitOfWork.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            // 并发登录同一陌生邮箱同时自动注册：唯一索引兜底
+            loggerUser.LogWarning("[{DateTime}] 并发自动注册冲突，邮箱已存在: {Email}", DateTime.UtcNow, email);
             return null;
         }
 
-        return await LogInByCheckPasswordCoreAsync(userData, password);
-    }
+        // P6：初始密码经邮件后台队列发送，不占用数据库事务做 SMTP 外部 IO
+        mailQueue.Enqueue(email, "账号开通通知",
+            $"您已通过邮箱验证码成功创建账号。您的初始密码为：{initialPassword}，请登录后尽快修改密码。");
 
-    // ── 注册 ──
-    // 注：邮箱注册走 RegisterByUserCommandHandler（命令链路，含验证码校验+事件发布），
-    // 此前残留的 RegisterByCreateUserAsync 已删除（死代码且未 SaveChanges）。
+        loggerUser.LogInformation("[{DateTime}] 邮箱自动注册成功并已下发初始密码: {Email}", DateTime.UtcNow, email);
+        return user;
+    }
 
     // ── 用户信息查询 ──
 
@@ -72,6 +179,77 @@ public class UserService(
         return await userRepository.FindAllByUserAsync();
     }
 
+    // ── 用户安全信息更新 ──
+
+    /// <summary>
+    /// 获取当前登录用户的二次验证开关状态。
+    /// </summary>
+    public async Task<bool?> GetUserSafetyAsync(Guid userGuid)
+    {
+        var user = await userRepository.FindOneByUserAsync(userGuid);
+        return user is null ? null : user.UserSafety.IsTwoFactorEnabled;
+    }
+
+    /// <summary>
+    /// 更新当前登录用户的安全信息（当前仅支持二次验证开关）。
+    /// 关闭二次验证（置 false）为降级操作，必须通过密码或邮箱验证码二次确认，防止账户被接管。
+    /// </summary>
+    public async Task<bool> UpdateUserSafetyAsync(Guid userGuid, bool? isTwoFactorEnabled,
+        string? password, string? code)
+    {
+        if (isTwoFactorEnabled is null)
+            return false; // 无可更新内容
+
+        var user = await userRepository.FindOneByUserAsync(userGuid);
+        if (user is null)
+        {
+            loggerUser.LogWarning("[{DateTime}] 未找到用户 {UserGuid}，无法更新安全信息", DateTime.UtcNow, userGuid);
+            return false;
+        }
+
+        var target = isTwoFactorEnabled.Value;
+
+        // 关闭为降级操作：需密码或邮箱验证码之二选一进行二次确认
+        if (!target && !await ConfirmIdentityAsync(user, password, code))
+            return false;
+
+        user.UserSafety.ChangeByTwoFactorEnabled(target);
+        await userRepository.UnitOfWork.SaveChangesAsync();
+
+        loggerUser.LogInformation(
+            "[{DateTime}] 用户 {UserGuid} 已更新安全信息，IsTwoFactorEnabled = {Enabled}",
+            DateTime.UtcNow, userGuid, target);
+        return true;
+    }
+
+    /// <summary>
+    /// 安全信息降级操作的身份二次确认：密码或邮箱验证码二选一通过即成功。
+    /// </summary>
+    private async Task<bool> ConfirmIdentityAsync(User user, string? password, string? code)
+    {
+        var hasPassword = !string.IsNullOrWhiteSpace(password);
+        var hasCode = !string.IsNullOrWhiteSpace(code);
+        if (!hasPassword && !hasCode)
+            return false;
+
+        if (hasPassword)
+            return await user.VerifyByPasswordAsync(password!);
+
+        return await ConsumeEmailCodeAsync(user.UserEmail, code!);
+    }
+
+    /// <summary>
+    /// 校验并一次性消费邮箱验证码。
+    /// </summary>
+    private async Task<bool> ConsumeEmailCodeAsync(string email, string code)
+    {
+        var cached = await identityCacheService.GetStringAsync($"{EmailCodeKeyPrefix}{email}", default);
+        if (string.IsNullOrEmpty(cached) || !string.Equals(cached, code, StringComparison.Ordinal))
+            return false;
+        await identityCacheService.RemoveAsync($"{EmailCodeKeyPrefix}{email}", default);
+        return true;
+    }
+
     // ── 登录核心 ──
 
     /// <summary>
@@ -83,35 +261,11 @@ public class UserService(
     ///   3. 构建 Claims 并生成 AccessToken + RefreshToken
     ///   4. 将两个 Token 分别存入缓存
     /// </summary>
-    private async ValueTask<TokenResult?> LogInByCheckPasswordCoreAsync(User userData, string password)
+    /// <summary>
+    /// 为已通过身份校验的用户构建 Claims 并生成 AccessToken + RefreshToken，登记多设备会话。
+    /// </summary>
+    private async ValueTask<TokenResult?> BuildTokenForUserAsync(User userData)
     {
-        // ── 第一步: 检查是否被锁定 ──
-        if (!userData.UserAccessFail.CanLogin())
-        {
-            loggerUser.LogWarning("[{DateTime}] 用户 {UserEmail} 账号已锁定，拒绝登录", DateTime.UtcNow, userData.UserEmail);
-            return null;
-        }
-
-        // ── 第二步: 验证密码（成功时自动清零失败计数 / 旧哈希重哈希升级）──
-        if (!await userData.VerifyByPasswordAsync(password))
-        {
-            // S-13：失败计数原子递增（ExecuteUpdate，并发安全），达到阈值时锁定账号
-            var failCount = await userRepository.IncrementAccessFaildCountAsync(userData.UserGuid);
-            // 第 MaxFailedAttempts 次失败即锁定（与 UserAccessFail 注释语义一致）
-            if (failCount >= UserAccessFail.MaxFailedAttempts)
-            {
-                await userRepository.LockUserAsync(
-                    userData.UserGuid, DateTimeOffset.UtcNow.Add(UserAccessFail.LockOutDuration));
-                userData.AddDomainEvent(new AccountLockedEvent(userData.UserGuid));
-            }
-
-            await userRepository.UnitOfWork.SaveChangesAsync();
-            loggerUser.LogWarning("[{DateTime}] 用户 {UserEmail} 密码错误", DateTime.UtcNow, userData.UserEmail);
-            return null;
-        }
-
-        await userRepository.UnitOfWork.SaveChangesAsync();
-
         try
         {
             var roleName = await GetRoleNameAsync(userData.UserRoleGuid);

@@ -13,3 +13,4 @@ global using FileDev.Domain.Dto.Response;
 global using FileDev.Domain.IServices;
 global using FileDev.Domain.Options;
 global using Microsoft.Extensions.Options;
+global using FileDev.Domain.Enum;

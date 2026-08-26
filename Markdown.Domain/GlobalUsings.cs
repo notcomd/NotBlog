@@ -4,3 +4,4 @@ global using Markdown.Domain.Heat;
 global using Commons.SeedWork;
 global using NotMediator.Abstractions;
 global using NotMediator.Mediator;
+global using Markdown.Domain.Enum;

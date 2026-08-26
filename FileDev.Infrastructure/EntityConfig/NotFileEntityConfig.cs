@@ -12,7 +12,7 @@ public class NotFileEntityConfiguration: IEntityTypeConfiguration<NotFile>
         builder.ToTable("NotFile");
         //builder.Property(x => x.Id).UseHiLo("NotFileSeq");
         builder.Ignore(x=>x.Id);
-        builder.HasKey(xn => xn.Id);
+        builder.HasKey(xn => xn.FileId);
 
         // FileId 是业务主键（GUID），必须唯一且常用于点查，添加唯一索引
         builder.HasIndex(x => x.FileId)

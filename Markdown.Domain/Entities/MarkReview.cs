@@ -21,7 +21,6 @@ public class MarkReview : Entity<Guid>
         MarkReviewContent = markReviewContent;
         ReviewImages = reviewImage;
         MarkReviewTime = DateTimeOffset.UtcNow;
-        //MarkAggregateRootGuid = Guid.Empty;
     }
 
 
@@ -31,6 +30,9 @@ public class MarkReview : Entity<Guid>
 
     public Guid UserId { get; init; }
 
+    /// <summary>
+    ///  
+    /// </summary>
     public Guid? MarkAggregateRootGuid { get; private set; }
 
     /// <summary>
@@ -51,7 +53,7 @@ public class MarkReview : Entity<Guid>
     public ICollection<ReviewImage>? ReviewImages { get; private set; }
 
     /// <summary>
-    ///     评论交互统计（点赞/查看/回复数/踩，值对象）
+    /// 评论交互统计（点赞/查看/回复数/踩，值对象）
     /// </summary>
     public ReviewQuote ReviewQuote { get; private set; }
 

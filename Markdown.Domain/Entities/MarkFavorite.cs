@@ -7,6 +7,34 @@ namespace Markdown.Domain.Entities;
 /// </summary>
 public class MarkFavorite : Entity<int>, IAggregateRoot
 {
+
+      public Guid MarkFavoriteGuid { get; init; }
+
+    /// <summary>
+    ///     收藏用户 GUID
+    /// </summary>
+    public Guid UserGuid { get; init; }
+
+    /// <summary>
+    ///     被收藏文章 GUID
+    /// </summary>
+    public Guid MarkDownGuid { get; init; }
+
+    /// <summary>
+    ///     收藏时间
+    /// </summary>
+    public DateTimeOffset CreateAt { get; init; }
+
+    /// <summary>
+    ///     收藏标签（JSON 数组文本，持久化列，供 SQL LIKE 精确过滤）
+    /// </summary>
+    public string TagsJson { get; private set; } = "[]";
+
+    /// <summary>
+    ///     收藏标签集合（充血模型操作入口；EF 忽略映射，由 TagsJson 同步持久化）
+    /// </summary>
+    public IReadOnlyCollection<string> Tags => _tags;
+
     /// <summary>单标签最大长度（与文章标签规则一致）</summary>
     public const int MaxTagLength = 50;
 
@@ -46,33 +74,7 @@ public class MarkFavorite : Entity<int>, IAggregateRoot
         return new MarkFavorite(userGuid, markDownGuid, tags ?? []);
     }
 
-    public Guid MarkFavoriteGuid { get; init; }
-
-    /// <summary>
-    ///     收藏用户 GUID
-    /// </summary>
-    public Guid UserGuid { get; init; }
-
-    /// <summary>
-    ///     被收藏文章 GUID
-    /// </summary>
-    public Guid MarkDownGuid { get; init; }
-
-    /// <summary>
-    ///     收藏时间
-    /// </summary>
-    public DateTimeOffset CreateAt { get; init; }
-
-    /// <summary>
-    ///     收藏标签（JSON 数组文本，持久化列，供 SQL LIKE 精确过滤）
-    /// </summary>
-    public string TagsJson { get; private set; } = "[]";
-
-    /// <summary>
-    ///     收藏标签集合（充血模型操作入口；EF 忽略映射，由 TagsJson 同步持久化）
-    /// </summary>
-    public IReadOnlyCollection<string> Tags => _tags;
-
+  
     /// <summary>
     ///     整体设置标签（覆盖式）
     /// </summary>

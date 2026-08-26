@@ -1,4 +1,4 @@
-namespace Markdown.Domain.Entities;
+namespace Markdown.Domain.Enum;
 
 /// <summary>
 /// 文档审核状态机：草稿 -> 待审核 -> 通过 / 驳回（驳回后可重新提交）
