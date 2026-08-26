@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -26,13 +26,8 @@ namespace Markdown.Infrastructure.Migrations
             migrationBuilder.DropSequence(
                 name: "ReviewImageGuid");
 
-            migrationBuilder.AlterColumn<Guid>(
-                name: "Id",
-                table: "MarkReview",
-                type: "uuid",
-                nullable: false,
-                oldClrType: typeof(int),
-                oldType: "integer");
+            migrationBuilder.Sql(
+                "ALTER TABLE \"MarkReview\" ALTER COLUMN \"Id\" TYPE uuid USING \"Id\"::text::uuid;");
 
             migrationBuilder.AddColumn<string>(
                 name: "ReviewImages",
@@ -40,21 +35,11 @@ namespace Markdown.Infrastructure.Migrations
                 type: "jsonb",
                 nullable: true);
 
-            migrationBuilder.AlterColumn<Guid>(
-                name: "Id",
-                table: "MarkFavoriteTag",
-                type: "uuid",
-                nullable: false,
-                oldClrType: typeof(int),
-                oldType: "integer");
+            migrationBuilder.Sql(
+                "ALTER TABLE \"MarkFavoriteTag\" ALTER COLUMN \"Id\" TYPE uuid USING \"Id\"::text::uuid;");
 
-            migrationBuilder.AlterColumn<Guid>(
-                name: "Id",
-                table: "MarkCoin",
-                type: "uuid",
-                nullable: false,
-                oldClrType: typeof(int),
-                oldType: "integer");
+            migrationBuilder.Sql(
+                "ALTER TABLE \"MarkCoin\" ALTER COLUMN \"Id\" TYPE uuid USING \"Id\"::text::uuid;");
 
             migrationBuilder.AddColumn<Guid>(
                 name: "MarkCoinGuid",

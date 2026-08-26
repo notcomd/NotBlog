@@ -208,7 +208,7 @@ namespace Markdown.Infrastructure.Migrations
 
             modelBuilder.Entity("Markdown.Domain.Entities.MarkFavoriteTag", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<Guid>("MarkFavoriteTagGuid")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
@@ -217,9 +217,6 @@ namespace Markdown.Infrastructure.Migrations
 
                     b.Property<DateTimeOffset>("LastUsedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("MarkFavoriteTagGuid")
-                        .HasColumnType("uuid");
 
                     b.Property<string>("Tag")
                         .IsRequired()
@@ -234,7 +231,7 @@ namespace Markdown.Infrastructure.Migrations
                     b.Property<Guid>("UserGuid")
                         .HasColumnType("uuid");
 
-                    b.HasKey("Id");
+                    b.HasKey("MarkFavoriteTagGuid");
 
                     b.HasIndex("UserGuid");
 
@@ -246,17 +243,13 @@ namespace Markdown.Infrastructure.Migrations
 
             modelBuilder.Entity("Markdown.Domain.Entities.MarkReview", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<Guid>("MarkDownGuid")
                         .HasColumnType("uuid");
 
                     b.Property<bool>("IsDelete")
                         .HasColumnType("boolean");
 
                     b.Property<Guid?>("MarkAggregateRootGuid")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("MarkDownGuid")
                         .HasColumnType("uuid");
 
                     b.Property<int>("MarkReviewAuth")
@@ -274,7 +267,7 @@ namespace Markdown.Infrastructure.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
-                    b.HasKey("Id");
+                    b.HasKey("MarkDownGuid");
 
                     b.HasIndex("MarkAggregateRootGuid");
 
@@ -477,7 +470,7 @@ namespace Markdown.Infrastructure.Migrations
 
                     b.OwnsMany("Markdown.Domain.Entities.ReviewImage", "ReviewImages", b1 =>
                         {
-                            b1.Property<Guid>("MarkReviewId");
+                            b1.Property<Guid>("MarkReviewMarkDownGuid");
 
                             b1.Property<int>("__synthesizedOrdinal")
                                 .ValueGeneratedOnAdd();
@@ -488,7 +481,7 @@ namespace Markdown.Infrastructure.Migrations
                             b1.Property<string>("ImageUrl")
                                 .IsRequired();
 
-                            b1.HasKey("MarkReviewId", "__synthesizedOrdinal");
+                            b1.HasKey("MarkReviewMarkDownGuid", "__synthesizedOrdinal");
 
                             b1.ToTable("MarkReview");
 
@@ -497,12 +490,12 @@ namespace Markdown.Infrastructure.Migrations
                                 .HasColumnType("jsonb");
 
                             b1.WithOwner()
-                                .HasForeignKey("MarkReviewId");
+                                .HasForeignKey("MarkReviewMarkDownGuid");
                         });
 
                     b.OwnsOne("Markdown.Domain.Entities.ReviewQuote", "ReviewQuote", b1 =>
                         {
-                            b1.Property<Guid>("MarkReviewId")
+                            b1.Property<Guid>("MarkReviewMarkDownGuid")
                                 .HasColumnType("uuid");
 
                             b1.Property<long>("DislikeSome")
@@ -529,12 +522,12 @@ namespace Markdown.Infrastructure.Migrations
                                 .HasDefaultValue(0L)
                                 .HasColumnName("ViewCount");
 
-                            b1.HasKey("MarkReviewId");
+                            b1.HasKey("MarkReviewMarkDownGuid");
 
                             b1.ToTable("MarkReview");
 
                             b1.WithOwner()
-                                .HasForeignKey("MarkReviewId");
+                                .HasForeignKey("MarkReviewMarkDownGuid");
                         });
 
                     b.Navigation("MarkDown");
