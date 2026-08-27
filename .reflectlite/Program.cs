@@ -31,9 +31,8 @@ string Opt(ParameterInfo p)
     return s;
 }
 
-var targets = new[] { "VolumeRecord", "VolumeRegistry", "AccessContext", "AccessControlBase",
-    "AccessRule", "RequestContext", "QueryFilter", "ObjectIndexEntry", "WriteOptions",
-    "StorageOptions", "LiteStorage", "TenantVolumeIsolation", "StorageVolumePool", "DirectoryLimits" };
+var targets = new[] { "LifecycleOptions", "LogLevel", "StorageTier", "StorageAction",
+    "StorageBackend", "LifecycleJob", "DirectoryLimits" };
 
 foreach (var tn in targets)
 {

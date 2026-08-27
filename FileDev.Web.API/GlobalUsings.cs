@@ -37,3 +37,5 @@ global using Microsoft.EntityFrameworkCore;
 global using OpenTelemetry.Resources;
 global using FileDev.Web.API.Resources;
 global using RabbitMQ.Client;
+global using FileDev.Web.API.Dto.Response;
+global using FileDev.Web.API.Dto.Request;

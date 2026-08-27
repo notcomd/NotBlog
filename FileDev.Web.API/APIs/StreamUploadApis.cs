@@ -139,7 +139,6 @@ public static class StreamUploadApis
         }
         catch (Exception ex)
         {
-            // #11：完整异常仅记录服务端日志，客户端返回安全通用消息
             logger.LogError(ex, "秒传检查失败: Md5={Md5}", request?.FileMd5);
             return InternalError();
         }
