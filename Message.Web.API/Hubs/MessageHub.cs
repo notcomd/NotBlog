@@ -534,7 +534,7 @@ public class MessageHub : Hub<IMessageClient>
         {
             return await _fileStorageGrpcClient.MergeChunksAsync(
                 request.FileKey, userId, request.FileName, request.Description,
-                Context.ConnectionAborted);
+                contentId: null, contentType: null, ct: Context.ConnectionAborted);
         }
         catch (Exception ex)
         {

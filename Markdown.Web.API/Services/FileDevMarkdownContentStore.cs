@@ -47,7 +47,7 @@ public class FileDevMarkdownContentStore : IMarkdownContentStore
     }
 
     /// <inheritdoc />
-    public async Task<string> SaveAsync(string content, CancellationToken ct = default)
+    public async Task<string> SaveAsync(string content, Guid? contentId = null, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(content);
 
@@ -58,7 +58,9 @@ public class FileDevMarkdownContentStore : IMarkdownContentStore
             FileName = fileName,
             FileContent = ByteString.CopyFromUtf8(content),
             FileIdentity = FileIdentity.FilePublic,
-            FileDescription = "markdown 文档正文"
+            FileDescription = "markdown 文档正文",
+            ContentId = contentId?.ToString() ?? string.Empty,
+            ContentType = ContentType.Markdown
         };
 
         var response = await ExecuteWithRetryAsync(

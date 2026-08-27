@@ -6,7 +6,6 @@ package filestorage;
 
 // ═══════════════════════════════════════════════════════
 // FileStorage gRPC Service - 文件和图片的存储与读取服务
-// Message.Web.API 通过该协议调用 FileDev.Web.API 的文件存储能力
 // ═══════════════════════════════════════════════════════
 service FileStorage {
 
@@ -30,6 +29,8 @@ service FileStorage {
   rpc UploadImage (UploadImageRequest) returns (UploadImageResponse);
   rpc DownloadImage (DownloadImageRequest) returns (stream DownloadImageResponse);
   rpc GetImageInfo (GetImageInfoRequest) returns (GetImageInfoResponse);
+
+  rpc UnregisterContentAttachments (UnregisterContentAttachmentsRequest) returns (UnregisterContentAttachmentsResponse);
 }
 
 // ═══════════════════════════════════════════════════════
@@ -61,6 +62,13 @@ enum ChunkUploadStatus {
   CHUNK_MERGED = 3;
   CHUNK_FAILED = 4;
   CHUNK_CANCELLED = 5;
+}
+
+enum ContentType {
+  CONTENT_TYPE_NONE = 0;
+  CONTENT_TYPE_POST = 1;
+  CONTENT_TYPE_MARKDOWN = 2;
+  CONTENT_TYPE_VIDEO = 3;
 }
 
 // ═══════════════════════════════════════════════════════
@@ -154,6 +162,8 @@ message UploadFileRequest {
   string file_description = 5;
   FileIdentity file_identity = 6;
   string expected_md5 = 7;
+  string content_id = 8;
+  ContentType content_type = 9;
 }
 
 message UploadFileResponse {
@@ -178,7 +188,7 @@ message DownloadFileResponse {
 }
 
 // ═══════════════════════════════════════════════════════
-// 大文件分片上传（断点续传）
+// 大文件分片上传
 // ═══════════════════════════════════════════════════════
 
 message InitChunkUploadRequest {
@@ -234,6 +244,8 @@ message MergeChunksRequest {
   string file_name = 3;
   repeated string file_tags = 4;
   string file_description = 5;
+  string content_id = 6;
+  ContentType content_type = 7;
 }
 
 message MergeChunksResponse {
@@ -268,6 +280,8 @@ message UploadImageRequest {
   bool validate_format = 7;
   int32 max_width = 8;
   int32 max_height = 9;
+  string content_id = 10;
+  ContentType content_type = 11;
 }
 
 message UploadImageResponse {
@@ -305,5 +319,16 @@ message GetImageInfoRequest {
 message GetImageInfoResponse {
   bool success = 1;
   ImageInfo image_info = 2;
+  string error_message = 3;
+}
+
+message UnregisterContentAttachmentsRequest {
+  string content_id = 1;
+  ContentType content_type = 2;
+}
+
+message UnregisterContentAttachmentsResponse {
+  bool success = 1;
+  int32 unregistered_count = 2;
   string error_message = 3;
 }

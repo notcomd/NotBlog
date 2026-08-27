@@ -14,6 +14,8 @@ public class MergeChunksCommandHandler(
             command.UserId,
             command.FileName,
             command.Description,
+            command.ContentId,
+            command.ContentType,
             cancellationToken);
 
         logger.LogInformation("合并分片：FileKey={FileKey}，成功={Success}，文件ID={FileId}",

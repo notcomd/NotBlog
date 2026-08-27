@@ -1,15 +1,23 @@
+using Grpc.Core;
+using Microsoft.AspNetCore.Http;
 using NotMediator;
 
 namespace Video.Web.API.Application.Commands;
 
 /// <summary>
 /// 通过 gRPC 调用 FileDev 服务上传视频文件和封面图片的处理器。
+/// <para>
+/// 鉴权说明：FileDev 的 gRPC 拦截器（GrpcJwtAuthInterceptor）要求请求携带 Bearer JWT。
+/// 本服务由登录用户的 HTTP 请求触发，故通过 <see cref="IHttpContextAccessor"/> 转发现场用户的令牌，
+/// 以确保 FileDev 能解析出合法调用者身份（与 Message 服务一致），并透传关联的 content_id/content_type。
+/// </para>
 /// </summary>
 public class UploadVideoViaGrpcCommandHandler(
     IVideoRepository videoRepository,
     IVideoCacheService cacheService,
     ILogger<UploadVideoViaGrpcCommandHandler> logger,
-    IOptionsSnapshot<GrpcClientOptions> grpcOptions)
+    IOptionsSnapshot<GrpcClientOptions> grpcOptions,
+    IHttpContextAccessor httpContextAccessor)
     : IRequestHandler<UploadVideoViaGrpcCommand, UploadVideoViaGrpcResult>
 {
     public async Task<UploadVideoViaGrpcResult> Handler(UploadVideoViaGrpcCommand command,
@@ -27,6 +35,9 @@ public class UploadVideoViaGrpcCommandHandler(
                 });
             var client = new FileStorage.FileStorageClient(channel);
 
+            // 视频附件使用同一 content_id 归组，上传即建立内容弱引用（CONTENT_TYPE_VIDEO）
+            var contentId = Guid.NewGuid().ToString();
+
             // 1. 通过 gRPC 上传视频文件
             var videoUploadRequest = new UploadFileRequest
             {
@@ -34,12 +45,14 @@ public class UploadVideoViaGrpcCommandHandler(
                 FileName = command.VideoFileName,
                 FileContent = Google.Protobuf.ByteString.CopyFrom(command.VideoFileContent),
                 FileIdentity = FileIdentity.FilePrivate,
-                FileDescription = command.BriefIntroduction
+                FileDescription = command.BriefIntroduction,
+                ContentId = contentId,
+                ContentType = ContentType.Video
             };
             videoUploadRequest.FileTags.AddRange(command.Tags);
 
             var videoUploadResponse = await client.UploadFileAsync(videoUploadRequest,
-                deadline: DateTime.UtcNow.AddMinutes(10), cancellationToken: cancellationToken);
+                BuildCallOptions(TimeSpan.FromMinutes(10), cancellationToken));
 
             if (!videoUploadResponse.Success)
                 return new UploadVideoViaGrpcResult(false, Guid.Empty, "", null,
@@ -59,11 +72,13 @@ public class UploadVideoViaGrpcCommandHandler(
                     FileIdentity = FileIdentity.FilePrivate,
                     ValidateFormat = true,
                     MaxWidth = 3840,
-                    MaxHeight = 2160
+                    MaxHeight = 2160,
+                    ContentId = contentId,
+                    ContentType = ContentType.Video
                 };
 
                 var coverUploadResponse = await client.UploadImageAsync(coverUploadRequest,
-                    deadline: DateTime.UtcNow.AddMinutes(5), cancellationToken: cancellationToken);
+                    BuildCallOptions(TimeSpan.FromMinutes(5), cancellationToken));
 
                 if (!coverUploadResponse.Success)
                     return new UploadVideoViaGrpcResult(false, Guid.Empty,
@@ -112,6 +127,32 @@ public class UploadVideoViaGrpcCommandHandler(
             logger.LogError(ex, "Failed to upload video: {VideoName}", command.VideoName);
             return new UploadVideoViaGrpcResult(false, Guid.Empty, "", null, ex.Message);
         }
+    }
+
+    /// <summary>
+    /// 构建 gRPC 调用选项：转发当前登录用户的 Bearer token 作为鉴权头（FileDev 拦截器要求）。
+    /// ⚠️ 必须用 IHttpContextAccessor（Singleton + AsyncLocal）而非 ICurrentUserService：
+    /// NotMediator 的 mediator 是 Singleton，SendAsync 内部 CreateScope() 解析 handler——
+    /// 本 handler 拿到的是新 scope 的 ICurrentUserService 实例（令牌恒空），而令牌设在 HTTP 请求 scope 上。
+    /// </summary>
+    private CallOptions BuildCallOptions(TimeSpan timeout, CancellationToken cancellationToken)
+    {
+        var headers = new Metadata();
+        var token = httpContextAccessor.HttpContext?.Request.Headers.Authorization.ToString();
+        if (!string.IsNullOrWhiteSpace(token) &&
+            token.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+        {
+            headers.Add("Authorization", token.Trim());
+        }
+        else
+        {
+            logger.LogWarning("[VideoGrpc] ⚠️ gRPC 调用缺少 Bearer token（HttpContext 中无 Authorization 头）");
+        }
+
+        return new CallOptions(
+            headers: headers,
+            cancellationToken: cancellationToken,
+            deadline: DateTime.UtcNow + timeout);
     }
 }
 

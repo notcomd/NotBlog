@@ -17,7 +17,7 @@ public class LocalMarkdownContentStore : IMarkdownContentStore
         _logger = logger;
     }
 
-    public Task<string> SaveAsync(string content, CancellationToken ct = default)
+    public Task<string> SaveAsync(string content, Guid? contentId = null, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(content);
 

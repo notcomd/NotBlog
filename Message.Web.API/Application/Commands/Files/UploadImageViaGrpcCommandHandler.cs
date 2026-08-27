@@ -15,6 +15,8 @@ public class UploadImageViaGrpcCommandHandler(
             command.Content,
             command.Description,
             command.ValidateFormat,
+            command.ContentId,
+            command.ContentType,
             cancellationToken);
 
         logger.LogInformation("图片上传：{FileName}（{Size} 字节），成功={Success}，文件ID={FileId}",

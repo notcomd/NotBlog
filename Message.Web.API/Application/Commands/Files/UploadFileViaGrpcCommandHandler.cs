@@ -15,6 +15,8 @@ public class UploadFileViaGrpcCommandHandler(
             command.Content,
             command.Description,
             expectedMd5: null,
+            command.ContentId,
+            command.ContentType,
             cancellationToken);
 
         logger.LogInformation("小文件上传：{FileName}（{Size} 字节），成功={Success}，文件ID={FileId}",

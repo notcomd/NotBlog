@@ -5,7 +5,7 @@ namespace FileDev.Web.API.APIs;
 public record FileServicesDi(
     INotFileRepository NotFileRepository,
     ILogger<FileServicesDi> Logger,
-    INotFileGroupRepository NotFileGroupRepository,
+    INotFileTagRepository NotFileTagRepository,
     INotFileStorageService NotFileStorageService,
     INotMediator NotMediator,
     INotFileService NotFileService);

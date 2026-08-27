@@ -123,4 +123,19 @@ public class NotFileRepository(NotFileDbContext notFileDbContext) : INotFileRepo
         return await _notFileDbContext.NotFiles
             .CountAsync(f => f.FileUri == fileUri && !f.IsDeleted && f.FileId != excludeFileId);
     }
+
+    /// <summary>按文件 ID 批量查询未删除文件，用于标签下文件列表。</summary>
+    public async Task<IEnumerable<NotFile>> GetFilesByIdsAsync(IEnumerable<Guid> fileIds)
+    {
+        if (fileIds is null)
+            throw new NotFileException("fileIds is null");
+        var idSet = fileIds as HashSet<Guid> ?? [.. fileIds];
+        if (idSet.Count == 0)
+            return [];
+
+        return await _notFileDbContext.NotFiles
+            .AsNoTracking()
+            .Where(x => idSet.Contains(x.FileId) && !x.IsDeleted)
+            .ToListAsync();
+    }
 }

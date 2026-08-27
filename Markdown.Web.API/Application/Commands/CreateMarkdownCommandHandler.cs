@@ -15,7 +15,8 @@ public class CreateMarkdownCommandHandler(
         var contentHash = request.MarkDownHash ?? ComputeSha256(request.MarkDownContent);
 
         // 2. 正文文件化：保存内容到文件存储，拿到文件标识
-        var fileId = await contentStore.SaveAsync(request.MarkDownContent, cancellationToken);
+        // （文档 MarkDownGuid 由实体构造内部生成，创建期无法预知，故不设内容附件引用）
+        var fileId = await contentStore.SaveAsync(request.MarkDownContent, contentId: null, cancellationToken);
         var fileSize = Encoding.UTF8.GetByteCount(request.MarkDownContent);
 
         // 3. 使用 Builder 模式创建实体（只含文件元数据，不含正文）

@@ -1,6 +1,7 @@
 
 
 using FileDev.Web.API.Grpc;
+using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,6 +50,25 @@ else
     // DbContext 注册（Aspire 版：连接名语义 + 自动健康检查/OpenTelemetry）
     builder.AddNpgsqlDbContext<NotFileDbContext>("NotFilePostgres");
 }
+
+// ── MongoDB（分片上传跟踪，方案 B）──
+// 单机分支：从配置节点 MongoDb:ConnectionString 读取，未配置时回落本地默认地址；
+// Aspire 分支：通过 AddMongoDBClient 注入连接串。二者最终统一为单例 IMongoDatabase。
+if (builder.Configuration.GetConnectionString("NotFileMongo") is null)
+{
+    var mongoConn = builder.Configuration["MongoDb:ConnectionString"] ?? "mongodb://127.0.0.1:27017";
+    builder.Services.AddSingleton<IMongoClient>(_ => new MongoClient(mongoConn));
+}
+else
+{
+    builder.AddMongoDBClient("NotFileMongo");
+}
+builder.Services.AddSingleton(sp =>
+{
+    var client = sp.GetRequiredService<IMongoClient>();
+    var databaseName = builder.Configuration["MongoDb:Database"] ?? "notfile";
+    return client.GetDatabase(databaseName);
+});
 
 // 模块自动初始化（仓储/领域服务注册；原 AddNotBlogServices 拆分，DbContext 改用 Aspire 注册）
 builder.Services.AddAutoAddInstance(ReflectionHelper.GetAllReferencedAssemblies());
@@ -138,9 +158,9 @@ fileStorageGroup.MapStreamUploadApis();
 fileStorageGroup.MapDedupApis();
 fileStorageGroup.MapFileVolumeApis();
 
-// F-09.2：注册文件组 API（FileStrongApi 内部自带 RequireAuthorization，
-// 端点：/api/filestorage/upload_file、/api/filestorage/create_file_group）
-app.MapGroup("/api").FileStrongApis();
+// F-09.2：注册标签 API（FileTagApi 内部自带 RequireAuthorization，
+// 端点：/api/filestorage/tags/...，即原文件组 API 的标签化替代）
+app.MapGroup("/api").FileTagApis();
 
 app.MapFileDownloadApi();
 app.MapGrpcService<FileStorageServiceGRPC>();

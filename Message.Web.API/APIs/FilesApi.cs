@@ -1,4 +1,4 @@
-﻿using Message.Web.API.Application.Commands.Files;
+using Message.Web.API.Application.Commands.Files;
 
 namespace Message.Web.API.APIs;
 
@@ -103,6 +103,8 @@ public static class FilesApi
         IFormFile file,
         [FromForm] string? description,
         [FromForm] bool isPublic,
+        [FromForm] Guid? contentId,
+        [FromForm] Grpc.ContentReferenceType? contentType,
         [FromServices] ICurrentUserService currentUser,
         [FromServices] INotMediator mediator,
         CancellationToken ct)
@@ -124,7 +126,9 @@ public static class FilesApi
                     file.FileName,
                     content,
                     description,
-                    isPublic),
+                    isPublic,
+                    contentId,
+                    contentType),
                 ct);
 
             if (!result.Success)
@@ -158,6 +162,8 @@ public static class FilesApi
     private static async Task<IResult> UploadImageAsync(
         IFormFile file,
         [FromForm] string? description,
+        [FromForm] Guid? contentId,
+        [FromForm] Grpc.ContentReferenceType? contentType,
         [FromServices] ICurrentUserService currentUser,
         [FromServices] INotMediator mediator,
         CancellationToken ct)
@@ -179,7 +185,9 @@ public static class FilesApi
                     file.FileName,
                     content,
                     description,
-                    ValidateFormat: true),
+                    ValidateFormat: true,
+                    contentId,
+                    contentType),
                 ct);
 
             if (!result.Success)
@@ -330,7 +338,9 @@ public static class FilesApi
                     request.FileKey,
                     userId,
                     request.FileName,
-                    request.Description),
+                    request.Description,
+                    request.ContentId,
+                    request.ContentType),
                 ct);
 
             return result.Success

@@ -31,6 +31,11 @@ var markDb = postgres.AddDatabase("MarkDownPostgres", "markdownpostgres");      
 var redis = builder.AddRedis("Redis")
     .WithDataVolume();
 
+// MongoDB：单实例，服务于 FileDev 的分片上传跟踪（方案 B）。资源名对齐 FileDev 的
+// GetConnectionString("NotFileMongo")；容器数据落盘持久化。
+var mongo = builder.AddMongoDB("NotFileMongo")
+    .WithDataVolume();
+
 // RabbitMQ：单实例（guest/guest，与 Message/FileDev DEBUG 手动配置节默认值一致）。
 // 固定宿主端口 5672：手动配置节（localhost:5672 / 127.0.0.1:5672）无需改动即可连通；
 // ⚠️ 要求本机 5672 空闲（停掉本机 RabbitMQ 实例，否则端口绑定冲突）。
@@ -55,6 +60,7 @@ var gatewayInternalApiKey = builder.Configuration["GatewayInternal:ApiKey"];
 var filedev = builder.AddProject<FileDev_Web_API>("filedev-web-api")
     .WithReference(notfileDb)
     .WithReference(redis)
+    .WithReference(mongo)
     .WithReference(rabbitmq)
     .WaitFor(postgres);
 

@@ -12,7 +12,8 @@ public interface IMarkdownContentStore
     ///     保存文档正文内容，返回文件标识（FileId）
     /// </summary>
     /// <param name="content">正文内容</param>
-    Task<string> SaveAsync(string content, CancellationToken ct = default);
+    /// <param name="contentId">所属 Markdown 文档 ID（已知时传入，用于透传给 FileDev 建立内容附件弱引用）</param>
+    Task<string> SaveAsync(string content, Guid? contentId = null, CancellationToken ct = default);
 
     /// <summary>
     ///     读取文档正文内容（文件不存在返回 null）

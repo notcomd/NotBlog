@@ -59,9 +59,9 @@ public abstract class IdentifiedCommandHandler<T, R>(
                     idProvider = nameof(createNotFileCommand.UserGuid);
                     commandId = createNotFileCommand.UserGuid.ToString();
                     break;
-                case CreateNotFileGroupCommand createNotFileGroupCommand:
-                    idProvider = nameof(createNotFileGroupCommand.UserGuid);
-                    commandId = createNotFileGroupCommand.UserGuid.ToString();
+                case CreateTagCommand createTagCommand:
+                    idProvider = nameof(createTagCommand.UserId);
+                    commandId = createTagCommand.UserId.ToString();
                     break;
                 default:
                     idProvider = "id/?";

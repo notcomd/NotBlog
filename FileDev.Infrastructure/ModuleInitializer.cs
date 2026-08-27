@@ -33,16 +33,15 @@ public class ModuleInitializer : IModuleInitializer
             });
         });
 
-        service.AddScoped<INotFileGroupRepository, NotFileGroupRepository>();
+        service.AddScoped<INotFileTagRepository, NotFileTagRepository>();
         service.AddScoped<INotFileRepository, NotFileRepository>();
         service.AddScoped<INotFileVolumeRepository, NotFileVolumeRepository>();
         service.AddScoped<IContentAttachmentRefRepository, ContentAttachmentRefRepository>();
         service.AddScoped<INotFileStorageService, MohuObjectStorageService>();
         service.AddScoped<INotFileService, NotFileService>();
-        service.AddScoped<INotFileGroupService, NotFileGroupService>();
         service.AddScoped<INotFileVolumeService, NotFileVolumeService>();
         service.AddScoped<IContentAttachmentService, ContentAttachmentService>();
-        service.AddScoped<IFileChunkRepository, FileChunkRepository>();
+        service.AddScoped<IFileChunkRepository, MongoFileChunkRepository>();
         service.AddScoped<IFileChunkManager, FileChunkManager>();
         service.AddScoped<IRequestManagement, RequestManagement>();
         service.AddScoped<FileStorageService>();

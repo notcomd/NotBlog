@@ -44,7 +44,7 @@ public class RestoreMarkdownCommandHandler(
         }
 
         // 4. 历史版本内容重新保存为文件，更新元数据（文件引用）
-        var fileId = await contentStore.SaveAsync(oldVersion.OldMarkDownContent, cancellationToken);
+        var fileId = await contentStore.SaveAsync(oldVersion.OldMarkDownContent, request.MarkDownGuid, cancellationToken);
         var fileSize = Encoding.UTF8.GetByteCount(oldVersion.OldMarkDownContent);
 
         await markdown.RestoreFromHistory(oldVersion, fileId, fileId, fileSize, ".md");

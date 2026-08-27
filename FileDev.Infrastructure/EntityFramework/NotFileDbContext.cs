@@ -14,9 +14,7 @@ public class NotFileDbContext(DbContextOptions<NotFileDbContext> options, INotMe
 
     public DbSet<ClientRequest> ClientRequests { get; set; }
 
-    public DbSet<NotFileGroup> NotFileGroups { get; set; }
-
-    public DbSet<FileChunkRecord> FileChunkRecords { get; set; }
+    public DbSet<NotFileTag> NotFileTags { get; set; }
 
     public DbSet<NotFileVolume> NotFileVolumes { get; set; }
 
@@ -94,8 +92,7 @@ public class NotFileDbContext(DbContextOptions<NotFileDbContext> options, INotMe
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfiguration(new NotFileEntityConfiguration());
-        modelBuilder.ApplyConfiguration(new NotFileGroupEntityConfiguration());
-        modelBuilder.ApplyConfiguration(new FileChunkRecordEntityConfig());
+        modelBuilder.ApplyConfiguration(new NotFileTagEntityConfiguration());
         modelBuilder.ApplyConfiguration(new ClientRequestTypeConfiguration());
         modelBuilder.ApplyConfiguration(new NotFileVolumeEntityConfig());
         modelBuilder.ApplyConfiguration(new ContentAttachmentRefEntityConfig());

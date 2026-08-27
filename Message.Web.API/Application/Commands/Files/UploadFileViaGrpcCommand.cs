@@ -8,4 +8,6 @@ public record UploadFileViaGrpcCommand(
     string FileName,
     byte[] Content,
     string? Description,
-    bool IsPublic) : IRequest<UploadFileResult>;
+    bool IsPublic,
+    Guid? ContentId = null,
+    ContentReferenceType? ContentType = null) : IRequest<UploadFileResult>;

@@ -49,7 +49,7 @@ public class UpdateMarkdownCommandHandler(
         var contentHash = request.MarkDownHash ?? ComputeSha256(request.MarkDownContent);
 
         // 6. 保存新正文文件，更新元数据（文件引用）
-        var fileId = await contentStore.SaveAsync(request.MarkDownContent, cancellationToken);
+        var fileId = await contentStore.SaveAsync(request.MarkDownContent, request.MarkDownGuid, cancellationToken);
         var fileSize = Encoding.UTF8.GetByteCount(request.MarkDownContent);
 
         await markdown.UpdateByMarkDownAsync(
