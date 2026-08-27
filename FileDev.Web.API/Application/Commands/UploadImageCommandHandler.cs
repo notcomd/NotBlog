@@ -1,3 +1,4 @@
+using FileDev.Domain.IRepository;
 using ImageValidator = FileDev.Web.API.Grpc.ImageValidator;
 
 namespace FileDev.Web.API.Application.Commands;
@@ -9,7 +10,8 @@ namespace FileDev.Web.API.Application.Commands;
 public class UploadImageCommandHandler(
     INotFileStorageService storageService,
     INotFileService notFileService,
-    FileDev.Domain.IRepository.INotFileRepository notFileRepository,
+    INotFileRepository notFileRepository,
+    IContentAttachmentService contentAttachmentService,
     IOptionsSnapshot<NotFileStorageOptions> configOptions,
     ILogger<UploadImageCommandHandler> logger)
     :  IRequestHandler<UploadImageCommand, UploadImageResult>
@@ -48,7 +50,7 @@ public class UploadImageCommandHandler(
         if (request.ImageContent.Length > options.MaxFileSize)
             throw new ArgumentException($"图片大小超过限制 {options.MaxFileSize / 1024 / 1024}MB");
 
-        // S-09：写入前配额检查
+        
         var used = await notFileRepository.GetTotalFileSizeByUserIdAsync(request.UserId);
         if (used + request.ImageContent.Length > options.UserStorageQuota)
             throw new FileQuotaExceededException("用户存储配额不足");
@@ -67,15 +69,24 @@ public class UploadImageCommandHandler(
             throw new InvalidOperationException($"文件存储失败: {storageResult.ErrorMessage}");
 
         var fileUri = FileApiHelpers.BuildFileUri(relativePath);
+        var isAttachment = !string.IsNullOrWhiteSpace(request.ContentId);
 
         NotFile file;
         try
         {
             file = await notFileService.CreateFileAsync(
                 request.UserId, request.FileName, request.FileTags,
-                request.FileDescription ?? string.Empty, FileType.FileImage,
+                request.FileDescription ?? string.Empty, Domain.Enum.FileType.FileImage,
                 request.ImageContent.Length, fileUri,
-                storageResult.ActualHash ?? string.Empty, request.FileIdentity);
+                storageResult.ActualHash ?? string.Empty, request.FileIdentity,
+                storageMeta: storageResult,
+                source: isAttachment ? FileSource.ContentAttachment : FileSource.UserRepository);
+
+            if (isAttachment)
+            {
+                await contentAttachmentService.RegisterAsync(
+                    request.ContentId!, request.ContentType, fileUri, file.FileId, cancellationToken);
+            }
         }
         catch (Exception ex)
         {

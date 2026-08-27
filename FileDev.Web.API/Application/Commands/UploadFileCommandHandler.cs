@@ -9,6 +9,7 @@ namespace FileDev.Web.API.Application.Commands;
 public class UploadFileCommandHandler(
     INotFileStorageService storageService,
     INotFileService notFileService,
+    IContentAttachmentService contentAttachmentService,
     IOptionsSnapshot<NotFileStorageOptions> configOptions,
     ILogger<UploadFileCommandHandler> logger)
     :  IRequestHandler<UploadFileCommand, NotFile>
@@ -54,14 +55,26 @@ public class UploadFileCommandHandler(
 
         var fileUri = FileApiHelpers.BuildFileUri(relativePath);
         var fileType = FileApiHelpers.ResolveFileType(ext);
+        var isAttachment = !string.IsNullOrWhiteSpace(request.ContentId);
 
         try
         {
-            return await notFileService.CreateFileAsync(
+            var file = await notFileService.CreateFileAsync(
                 request.UserId, request.FileName, request.FileTags,
                 request.FileDescription ?? string.Empty, fileType,
                 request.FileContent.Length, fileUri,
-                storageResult.ActualHash ?? string.Empty, request.FileIdentity);
+                storageResult.ActualHash ?? string.Empty, request.FileIdentity,
+                storageMeta: storageResult,
+                source: isAttachment ? FileSource.ContentAttachment : FileSource.UserRepository);
+
+            // 内容附件：登记 ContentRef，供随业务内容删除后回收
+            if (isAttachment)
+            {
+                await contentAttachmentService.RegisterAsync(
+                    request.ContentId!, request.ContentType, fileUri, file.FileId, cancellationToken);
+            }
+
+            return file;
         }
         catch (Exception ex)
         {

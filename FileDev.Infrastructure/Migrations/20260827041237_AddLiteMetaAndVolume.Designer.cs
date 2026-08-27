@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using FileDev.Infrastructure.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FileDev.Infrastructure.Migrations
 {
     [DbContext(typeof(NotFileDbContext))]
-    partial class NotFileDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260827041237_AddLiteMetaAndVolume")]
+    partial class AddLiteMetaAndVolume
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -22,48 +25,6 @@ namespace FileDev.Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("FileDev.Domain.Entities.ContentAttachmentRef", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("ActiveRefs")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("ContentId")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.Property<int>("ContentType")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("FileUri")
-                        .IsRequired()
-                        .HasMaxLength(1024)
-                        .HasColumnType("character varying(1024)");
-
-                    b.Property<Guid>("SourceFileId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FileUri")
-                        .HasDatabaseName("IX_ContentAttachmentRef_FileUri");
-
-                    b.HasIndex("ContentId", "ContentType")
-                        .HasDatabaseName("IX_ContentAttachmentRef_Content");
-
-                    b.ToTable("ContentAttachmentRef", (string)null);
-                });
 
             modelBuilder.Entity("FileDev.Domain.Entities.FileChunkRecord", b =>
                 {
@@ -198,9 +159,6 @@ namespace FileDev.Infrastructure.Migrations
                     b.Property<int>("ShardCount")
                         .HasColumnType("integer");
 
-                    b.Property<int>("Source")
-                        .HasColumnType("integer");
-
                     b.Property<DateTimeOffset?>("StorageExpiresAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -244,9 +202,6 @@ namespace FileDev.Infrastructure.Migrations
 
                     b.HasIndex("UserId", "IsDeleted")
                         .HasDatabaseName("IX_NotFile_UserId_IsDeleted");
-
-                    b.HasIndex("UserId", "Source")
-                        .HasDatabaseName("IX_NotFile_UserId_Source");
 
                     b.ToTable("NotFile", (string)null);
                 });

@@ -45,9 +45,10 @@ public class NotFileService(INotFileRepository notFileRepository, ILogger<INotFi
     public async Task<NotFile> CreateFileAsync(Guid userId, string fileName, HashSet<string>? fileTags,
         string? fileDescription,
         FileType fileType,
-        long fileSize, Uri fileUri, string fileMd5, FileIdentity fileIdentity = FileIdentity.FilePrivate)
+        long fileSize, Uri fileUri, string fileMd5, FileIdentity fileIdentity = FileIdentity.FilePrivate,
+        NotFileStorageResponse? storageMeta = null, FileSource source = FileSource.UserRepository)
     {
-        var file = new NotFile.NotFileBuilder()
+        var builder = new NotFile.NotFileBuilder()
             .WithFileName(fileName)
             .WithFileTags(fileTags ?? [])
             .WithFileDescription(fileDescription ?? string.Empty)
@@ -55,8 +56,22 @@ public class NotFileService(INotFileRepository notFileRepository, ILogger<INotFi
             .WithFileUri(fileUri)
             .WithFileMd5(fileMd5)
             .WithFileIdentity(fileIdentity)
-            .WithUserId(userId)
-            .Build();
+            .WithSource(source)
+            .WithUserId(userId);
+
+        // 对齐 Lite 存储元数据：由存储写回（内容哈希 / 存储层 / 卷 / 分片数 / 过期时间）
+        if (storageMeta is { Success: true })
+        {
+            builder.WithStorageMeta(
+                storageMeta.ContentHash,
+                storageMeta.Tier,
+                storageMeta.VolumeId,
+                storageMeta.ShardCount,
+                storageMeta.ExpiresAt,
+                storageMeta.UpdatedUtc);
+        }
+
+        var file = builder.Build();
         await notFileRepository.InsertFileAsync(file);
         // 返回落库实体（FileId 在实体构造时生成），上层无需再反查即可获取真实 FileId
         return file;

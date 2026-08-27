@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using FileDev.Domain.Dto.Response;
 using NotMediator;
 
 namespace FileDev.Web.API.Application.Commands;
@@ -8,7 +9,7 @@ public class CreateNotFileCommand(Guid userGuid,
                             string fileName,
                             Uri filePath,
                             string fileMd5,
-                            FileIdentity fileIdentity,
+                            Domain.Enum.FileIdentity fileIdentity,
                             long fileSize,
                             HashSet<string>? fileTags,
                             string? fileDescription
@@ -16,7 +17,7 @@ public class CreateNotFileCommand(Guid userGuid,
 {
     public Guid UserGuid { get; set; } = userGuid;
 
-    public FileIdentity FileIdentity { get; set; } = fileIdentity;
+    public Domain.Enum.FileIdentity FileIdentity { get; set; } = fileIdentity;
 
     public HashSet<string> FileTags { get; set; } = fileTags ?? [];
 
@@ -29,6 +30,9 @@ public class CreateNotFileCommand(Guid userGuid,
     public string FileMd5 { get; set; } = fileMd5;
 
     public long FileSize { get; set; } = fileSize;
+
+    /// <summary>存储层元数据（内容哈希 / 存储层 / 卷 / 分片数等），与 Lite 元数据对齐。</summary>
+    public NotFileStorageResponse? StorageMeta { get; set; }
 
     // Major：删除原 Equals/GetHashCode/ToString 仅调用 base 的无意义重写
     private string GetDebuggerDisplay()

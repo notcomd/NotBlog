@@ -8,9 +8,12 @@ namespace FileDev.Web.API.Application.DomainEventHandlers;
 /// 文件软删除事件处理（F-09.4）：软删除后清理物理文件。
 /// 秒传（F-09.1）可能使多个归属记录共享同一物理文件（同一 FileUri），
 /// 因此仅当不存在其他活跃记录引用该物理文件时才执行物理删除。
+/// 方案 C：内容附件（ContentRef）仍引用该 URI 时同样跳过物理删除，
+/// 物理回收改由 UnregisterContentAttachments 在引用清零后统一触发。
 /// </summary>
 public class FileDeleteEventHandler(
     INotFileRepository notFileRepository,
+    IContentAttachmentRefRepository contentAttachmentRefRepository,
     INotFileStorageService storageService,
     ILogger<FileDeleteEventHandler> logger) : INotificationHandler<DeleteFileEvent>
 {
@@ -26,10 +29,14 @@ public class FileDeleteEventHandler(
         // 检查是否还有其他活跃记录共享同一物理文件（秒传复用场景），数据库端 Count 统计避免全表加载
         var otherActiveRefs = await notFileRepository.CountActiveRefsByFileUriAsync(file.FileUri, file.FileId);
 
-        if (otherActiveRefs > 0)
+        // 方案 C：内容附件弱引用仍在时，物理文件交由附件回收流程管理
+        var activeContentRefs = await contentAttachmentRefRepository.CountActiveByFileUriAsync(
+            file.FileUri, cancellationToken);
+
+        if (otherActiveRefs > 0 || activeContentRefs > 0)
         {
             logger.LogInformation(
-                "[FileDelete] 物理文件仍被其他记录引用，跳过物理删除: FileId={FileId}, FileUri={FileUri}",
+                "[FileDelete] 物理文件仍被其他记录/内容附件引用，跳过物理删除: FileId={FileId}, FileUri={FileUri}",
                 notification.FileId, file.FileUri);
             return;
         }

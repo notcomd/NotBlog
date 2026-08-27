@@ -1,12 +1,6 @@
-using Commons.Extensions;
-using FileDev.Web.API.ActionFilter.Behaviors;
-using FileDev.Web.API.Background;
+
+
 using FileDev.Web.API.Grpc;
-using Notcomd.Token.JWT.Extensions;
-using Microsoft.EntityFrameworkCore;
-using OpenTelemetry.Resources;
-using FileDev.Web.API.Resources;
-using RabbitMQ.Client;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,17 +12,21 @@ builder.AddCacheMemory("Redis");
 
 if(builder.Configuration.GetConnectionString("EventBus") is null)
 {
-    ///这里使用的是appsettings.json
-    // 单机模式：无 Aspire 的 AddRabbitMQClient，需手动注册 IConnectionFactory（从 EventBus 配置节构建）
-    var eventBusCfg = builder.Configuration.GetSection("EventBus");
+
+    // 单机 EventBus：从配置节点构建 IConnectionFactory，否则 RabbitMqConnection 激活失败
+    var eventBusSection = builder.Configuration.GetSection("EventBus");
+    var hostName = eventBusSection["HostName"] ?? "127.0.0.1";
+    var userName = eventBusSection["UserName"] ?? "guest";
+    var password = eventBusSection["Password"] ?? "guest";
+    var port = eventBusSection["Port"] is { } p && int.TryParse(p, out var parsedPort) ? parsedPort : 5672;
     builder.Services.AddSingleton<IConnectionFactory>(_ => new ConnectionFactory
     {
-        HostName = eventBusCfg["HostName"] ?? "localhost",
-        UserName = eventBusCfg["UserName"] ?? "guest",
-        Password = eventBusCfg["Password"] ?? "guest",
-        Port = int.TryParse(eventBusCfg["Port"], out var p) ? p : 5672
+        HostName = hostName,
+        UserName = userName,
+        Password = password,
+        Port = port
     });
-    builder.Services.AddEventBus(builder.Configuration.GetSection("EventBus"));
+    builder.Services.AddEventBus(eventBusSection);
 }
 else
 {
@@ -39,9 +37,7 @@ else
 }
 
 
-// 数据库（Aspire 版 AddNpgsqlDbContext，connectionName 语义，2026-08-17 切换）：
-// 从 ConnectionStrings:NotFilePostgres 读连接串注册 NotFileDbContext，自动健康检查/遥测。
-// 单服务模式（无该连接串）时从 DbContextOption:DbContextConnection 桥接。
+
 if (builder.Configuration.GetConnectionString("NotFilePostgres") is null)
 {
     builder.Services.AddNpgsql<NotFileDbContext>(
@@ -69,14 +65,10 @@ builder.Services.AddScoped<FileStorageServiceGRPC>();
 builder.Services.AddScoped<GrpcJwtAuthInterceptor>();
 builder.Services.AddScoped<GrpcExceptionMapperInterceptor>();
 builder.Services.AddHostedService<ChunkCleanupBackgroundService>();
+builder.Services.AddHostedService<VolumeSyncBackgroundService>();
 builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
-//builder.Services.RemoveAbstractHandlerRegistrations(); // 移除抽象泛型基类 handler（NotMediator 自动注册未过滤抽象类，2026-08-17）
 
-// ⚠️ 修复（2026-08-15）：NotMediator 包要求手动注册管道（README），此前 TransactionBehavior/
-// LoggerBehavior 从未注册 → 所有命令无事务、无 SaveChanges 提交 → 文件元数据（NotFile）等
-// 从未落库（仅物理文件写入成功），gRPC 返回成功但数据库 0 记录（"文件上传成功但元数据无法保存"）。
-// 命令执行流程：gRPC → 命令 → LoggerBehavior → TransactionBehavior（BeginTransaction → handler
-// → CommitTransactionAsync[SaveChanges 提交 + 领域事件分发] → Commit）。
+
 builder.Services.AddScoped(typeof(IPipelineBehavior<,>), typeof(LoggerBehavior<,>));
 builder.Services.AddScoped(typeof(IPipelineBehavior<,>), typeof(TransactionBehavior<,>));
 builder.Services.AddGrpc(options =>
@@ -86,10 +78,10 @@ builder.Services.AddGrpc(options =>
     options.MaxSendMessageSize = 64 * 1024 * 1024;
     options.EnableDetailedErrors = builder.Environment.IsDevelopment();
 
-    // 异常映射拦截器注册在最外层，确保能捕获服务方法及内层拦截器抛出的业务异常
     options.Interceptors.Add<GrpcExceptionMapperInterceptor>();
     options.Interceptors.Add<GrpcJwtAuthInterceptor>();
 });
+
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddProblemDetails();
@@ -97,15 +89,7 @@ builder.Services.AddProblemDetails();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<FileCheckTypeMiddleware>();
 
-// ═══ EventBus 注册 ═══
-// var eventBusCfg = builder.Configuration.GetSection("EventBus");
-// builder.Services.AddSingleton<IConnectionFactory>(_ => new ConnectionFactory
-// {
-//     HostName = eventBusCfg["HostName"] ?? "localhost",
-//     UserName = eventBusCfg["UserName"] ?? "guest",
-//     Password = eventBusCfg["Password"] ?? "guest",
-//     Port = int.TryParse(eventBusCfg["Port"], out var p) ? p : 5672
-// });
+
 builder.Services.AddEventBus(builder.Configuration.GetSection("EventBus"), Assembly.GetExecutingAssembly());
 
 
@@ -116,8 +100,7 @@ builder.Services.Configure<NotFileStorageOptions>(
 
 builder.Services.Configure<FormOptions>(options => { options.MultipartBoundaryLengthLimit = 1024 * 1024 * 1024; }
 );
-// S-09：Kestrel 请求体上限从 1GB 下调到 100MB，超大文件必须走分片上传（分片 ≤ 5MB）；
-// 配合端点级 [RequestSizeLimit] 实现分层限制
+
 builder.WebHost.ConfigureKestrel(options => { options.Limits.MaxRequestBodySize = 100 * 1024 * 1024; });
 
 
@@ -129,10 +112,7 @@ ResourcesBanner.PrintStartupBanner();
 // 静态工具类注入日志工厂（ImageValidator 为静态类，无法走构造注入）
 ImageValidator.Configure(app.Services.GetRequiredService<ILoggerFactory>());
 
-// 启动时自动应用 EF Core 迁移（与 Identity/Markdown 项目的 AddMigration 一致，
-// 用 Database.Migrate 替代 EnsureCreated，避免与 Migration 管理的库结构冲突）
-// 修复：2026-08-13 42P01 FileChunkRecord 不存在 —— 此前该块被注释导致迁移从未应用，
-// 后台清理服务（ChunkCleanupBackgroundService）查询 FileChunkRecord 表时报 relation does not exist。
+
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<NotFileDbContext>();
@@ -156,6 +136,7 @@ var fileStorageGroup = app.MapGroup("/api/filestorage").RequireAuthorization();
 fileStorageGroup.MapFileChunkApis();
 fileStorageGroup.MapStreamUploadApis();
 fileStorageGroup.MapDedupApis();
+fileStorageGroup.MapFileVolumeApis();
 
 // F-09.2：注册文件组 API（FileStrongApi 内部自带 RequireAuthorization，
 // 端点：/api/filestorage/upload_file、/api/filestorage/create_file_group）

@@ -66,7 +66,10 @@ public class StreamUploadCommandHandler(
             content.Length,
             request.FileTags,
             request.FileDescription
-        );
+        )
+        {
+            StorageMeta = storageResult
+        };
 
         try
         {

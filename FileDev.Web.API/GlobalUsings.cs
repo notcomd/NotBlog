@@ -29,3 +29,11 @@ global using NotMediator.Abstractions;
 global using NotMediator.Mediator;
 
 global using Scalar.AspNetCore;
+global using Commons.Extensions;
+global using FileDev.Web.API.ActionFilter.Behaviors;
+global using FileDev.Web.API.Background;
+global using Notcomd.Token.JWT.Extensions;
+global using Microsoft.EntityFrameworkCore;
+global using OpenTelemetry.Resources;
+global using FileDev.Web.API.Resources;
+global using RabbitMQ.Client;

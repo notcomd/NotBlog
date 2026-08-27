@@ -22,12 +22,22 @@ namespace FileDev.Web.API.Grpc;
 /// 参数校验、权限/配额检查、存储操作与事务提交全部下沉到应用服务层；
 /// 业务异常由 <see cref="GrpcExceptionMapperInterceptor"/> 统一映射为 gRPC 状态码。
 /// </summary>
-public class FileStorageServiceGRPC(INotMediator mediator, IOptionsSnapshot<NotFileStorageOptions> optionsSnapshot) : FileStorage.FileStorageBase
+public class FileStorageServiceGRPC(
+    INotMediator mediator,
+    IOptionsSnapshot<NotFileStorageOptions> optionsSnapshot,
+    INotFileStorageService storageService,
+    IContentAttachmentService contentAttachmentService) : FileStorage.FileStorageBase
 {
 
 
     private readonly INotMediator _mediator =
         mediator ?? throw new ArgumentNullException(nameof(mediator));
+
+    private readonly IContentAttachmentService _contentAttachmentService =
+        contentAttachmentService ?? throw new ArgumentNullException(nameof(contentAttachmentService));
+
+    private readonly INotFileStorageService _storageService =
+        storageService ?? throw new ArgumentNullException(nameof(storageService));
 
 
     private readonly int StreamChunkSize = optionsSnapshot.Value.ChunkFileSize;
@@ -167,7 +177,9 @@ public class FileStorageServiceGRPC(INotMediator mediator, IOptionsSnapshot<NotF
                 FileTags = request.FileTags?.ToHashSet(),
                 FileDescription = request.FileDescription,
                 FileIdentity = MapToDomainIdentity(request.FileIdentity),
-                ExpectedMd5 = request.ExpectedMd5
+                ExpectedMd5 = request.ExpectedMd5,
+                ContentId = request.ContentId,
+                ContentType = MapContentType(request.ContentType)
             },
             context.CancellationToken);
 
@@ -317,7 +329,9 @@ public class FileStorageServiceGRPC(INotMediator mediator, IOptionsSnapshot<NotF
                 FileKey = request.FileKey,
                 FileName = request.FileName,
                 FileTags = request.FileTags?.ToHashSet(),
-                FileDescription = request.FileDescription
+                FileDescription = request.FileDescription,
+                ContentId = request.ContentId,
+                ContentType = MapContentType(request.ContentType)
             },
             context.CancellationToken);
 
@@ -367,7 +381,9 @@ public class FileStorageServiceGRPC(INotMediator mediator, IOptionsSnapshot<NotF
                 FileTags = request.FileTags?.ToHashSet(),
                 FileDescription = request.FileDescription,
                 FileIdentity =MapToDomainIdentity(request.FileIdentity),
-                ValidateFormat = request.ValidateFormat
+                ValidateFormat = request.ValidateFormat,
+                ContentId = request.ContentId,
+                ContentType = MapContentType(request.ContentType)
             },
             context.CancellationToken);
 
@@ -448,6 +464,36 @@ public class FileStorageServiceGRPC(INotMediator mediator, IOptionsSnapshot<NotF
     // ═══════════════════════════════════════════════════
     // 私有映射辅助方法
     // ═══════════════════════════════════════════════════
+
+    /// <summary>
+    /// 注销业务内容下的全部附件引用，并对「不再被任何内容引用」的附件执行物理删除。
+    /// 删除逻辑（FileUri → 相对路径）与 FileDeletedEventHandler 保持一致。
+    /// </summary>
+    public override async Task<UnregisterContentAttachmentsResponse> UnregisterContentAttachments(
+        UnregisterContentAttachmentsRequest request, ServerCallContext context)
+    {
+        if (string.IsNullOrWhiteSpace(request.ContentId))
+            throw new ArgumentException("content_id 不能为空");
+
+        var domainType = MapContentType(request.ContentType);
+        var toDelete = await _contentAttachmentService.UnregisterByContentAsync(
+            request.ContentId, domainType, context.CancellationToken);
+
+        var unregistered = 0;
+        foreach (var fileUri in toDelete)
+        {
+            var relativePath = FileApiHelpers.FileUriToRelativePath(fileUri);
+            var result = await _storageService.DeleteAsync(relativePath);
+            if (result.Success)
+                unregistered++;
+        }
+
+        return new UnregisterContentAttachmentsResponse
+        {
+            Success = true,
+            UnregisteredCount = unregistered
+        };
+    }
 
     /// <summary>
     /// 将域文件实体映射为gRPC文件信息协议缓冲区
@@ -537,6 +583,18 @@ public class FileStorageServiceGRPC(INotMediator mediator, IOptionsSnapshot<NotF
         };
 
     private static FileTypeDomain ResolveFileType(string ext) => FileApiHelpers.ResolveFileType(ext);
+
+    /// <summary>
+    /// 将 gRPC 内容类型协议缓冲区映射为领域内容类型枚举。
+    /// gRPC 枚举（CONTENT_TYPE_NONE/...）与领域枚举（None/Post/...）同名同序，逐项转换。
+    /// </summary>
+    private static FileDev.Domain.Enum.ContentType MapContentType(ContentType contentType) => contentType switch
+    {
+        ContentType.Post => FileDev.Domain.Enum.ContentType.Post,
+        ContentType.Markdown => FileDev.Domain.Enum.ContentType.Markdown,
+        ContentType.Video => FileDev.Domain.Enum.ContentType.Video,
+        _ => FileDev.Domain.Enum.ContentType.None
+    };
 
     /// <summary>
     /// 获取文件内容类型（S-17：.html/.htm/.svg 可被浏览器直接渲染，一律按 application/octet-stream 返回）

@@ -18,6 +18,10 @@ public class NotFileDbContext(DbContextOptions<NotFileDbContext> options, INotMe
 
     public DbSet<FileChunkRecord> FileChunkRecords { get; set; }
 
+    public DbSet<NotFileVolume> NotFileVolumes { get; set; }
+
+    public DbSet<ContentAttachmentRef> ContentAttachmentRefs { get; set; }
+
     public bool HasActiveTransaction => _currentTransaction is not null;
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
@@ -93,5 +97,7 @@ public class NotFileDbContext(DbContextOptions<NotFileDbContext> options, INotMe
         modelBuilder.ApplyConfiguration(new NotFileGroupEntityConfiguration());
         modelBuilder.ApplyConfiguration(new FileChunkRecordEntityConfig());
         modelBuilder.ApplyConfiguration(new ClientRequestTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new NotFileVolumeEntityConfig());
+        modelBuilder.ApplyConfiguration(new ContentAttachmentRefEntityConfig());
     }
 }

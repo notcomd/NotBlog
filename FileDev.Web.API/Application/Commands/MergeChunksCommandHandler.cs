@@ -1,4 +1,5 @@
 using FileDev.Domain.Entities;
+using FileDev.Domain.Enum;
 using FileDev.Domain.IServices;
 using FileDev.Web.API.APIs;
 
@@ -9,6 +10,7 @@ public class MergeChunksCommandHandler(
     IFileChunkManager chunkManager,
     INotFileService notFileService,
     FileDev.Domain.IRepository.INotFileRepository notFileRepository,
+    IContentAttachmentService contentAttachmentService,
     IOptionsSnapshot<NotFileStorageOptions> configOptions,
     ILogger<MergeChunksCommandHandler> logger)
     :  IRequestHandler<MergeChunksCommand, NotFile>
@@ -52,6 +54,8 @@ public class MergeChunksCommandHandler(
         // 元数据优先使用调用方传入的覆盖值，未提供时回退到分片记录值（与 HTTP 合并链路行为一致）
         var fileUri = FileApiHelpers.BuildFileUri(request.FileKey);
 
+        var isAttachment = !string.IsNullOrWhiteSpace(request.ContentId);
+
         var file = await notFileService.CreateFileAsync(
             record.UserId,
             request.FileName ?? record.FileName,
@@ -59,7 +63,15 @@ public class MergeChunksCommandHandler(
             request.FileDescription ?? record.FileDescription ?? string.Empty,
             record.FileType,
             record.TotalSize, fileUri,
-            mergeResult.ActualHash ?? record.FileMd5, record.FileIdentity);
+            mergeResult.ActualHash ?? record.FileMd5, record.FileIdentity,
+            storageMeta: mergeResult,
+            source: isAttachment ? FileSource.ContentAttachment : FileSource.UserRepository);
+
+        if (isAttachment)
+        {
+            await contentAttachmentService.RegisterAsync(
+                request.ContentId!, request.ContentType, fileUri, file.FileId, cancellationToken);
+        }
 
         logger.LogInformation("[ChunkMerge] 文件合并完成: FileKey={FileKey}, FileName={FileName}",
             request.FileKey, record.FileName);

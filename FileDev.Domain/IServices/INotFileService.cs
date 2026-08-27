@@ -32,7 +32,8 @@ public interface INotFileService
     /// <returns>落库文件实体（含真实 FileId，供上层响应映射使用）</returns>
     Task<NotFile> CreateFileAsync(Guid userId, string fileName, HashSet<string>? fileTags,
         string fileDescription, FileType fileType, long fileSize, Uri fileUri, string fileMd5,
-        FileIdentity fileIdentity = FileIdentity.FilePrivate);
+        FileIdentity fileIdentity = FileIdentity.FilePrivate,
+        NotFileStorageResponse? storageMeta = null, FileSource source = FileSource.UserRepository);
 
     /// <summary>
     ///  获取用户所有文件

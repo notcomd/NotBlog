@@ -1,4 +1,5 @@
 using FileDev.Domain.Entities;
+using FileDev.Domain.Enum;
 using FileDev.Domain.Exception;
 using FileDev.Domain.IRepository;
 using FileDev.Infrastructure.EntityFramework;
@@ -35,9 +36,10 @@ public class NotFileRepository(NotFileDbContext notFileDbContext) : INotFileRepo
         if (Guid.Empty == userId)
             throw new NotFileException("userId is null");
         // 在 DB 层过滤 IsDeleted，避免加载已删除文件到内存后再过滤（原实现在 Service 层内存过滤，低效）
+        // 方案 C：仓库列表仅返回用户文件仓库（Source=UserRepository），内容附件由业务侧维护
         return await _notFileDbContext.NotFiles
             .AsNoTracking()
-            .Where(x => x.UserId.Equals(userId) && !x.IsDeleted)
+            .Where(x => x.UserId.Equals(userId) && !x.IsDeleted && x.Source == FileSource.UserRepository)
             .ToListAsync();
     }
 

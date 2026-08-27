@@ -39,7 +39,7 @@ public class CreateNotFileCommandHandler(INotFileStorageService storageProvider,
                 $"文件大小 {request.FileSize} 超过限制 {_config.MaxFileSize / 1024 / 1024}MB");
 
         // 2. 构建实体并插入跟踪器（实体构造时会添加 UploadNotFileEvent 领域事件）
-        var notfile = new NotFile.NotFileBuilder()
+        var builder = new NotFile.NotFileBuilder()
             .WithUserId(request.UserGuid)
             .WithFileName(request.FileName)
             .WithFileTags(request.FileTags ?? [])
@@ -47,8 +47,20 @@ public class CreateNotFileCommandHandler(INotFileStorageService storageProvider,
             .WithFileSize(request.FileSize)
             .WithFileUri(request.FilePath)
             .WithFileMd5(request.FileMd5)
-            .WithFileIdentity(request.FileIdentity)
-            .Build();
+            .WithFileIdentity(request.FileIdentity);
+
+        if (request.StorageMeta is { Success: true })
+        {
+            builder.WithStorageMeta(
+                request.StorageMeta.ContentHash,
+                request.StorageMeta.Tier,
+                request.StorageMeta.VolumeId,
+                request.StorageMeta.ShardCount,
+                request.StorageMeta.ExpiresAt,
+                request.StorageMeta.UpdatedUtc);
+        }
+
+        var notfile = builder.Build();
 
         await _notFileRepository.InsertFileAsync(notfile);
         await _notFileRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);

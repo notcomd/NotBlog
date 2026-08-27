@@ -10,30 +10,6 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
 
     private readonly Dictionary<Guid, int> _unreadCount = new();
 
-    public ChatSession(SessionType sessionType, Guid creatorId, IEnumerable<Guid>? participants = null,
-        string? sessionName = null)
-    {
-        SessionId = Guid.NewGuid();
-        SessionType = sessionType;
-        CreatorId = creatorId;
-        // 修复（2026-08-15）：Participants 改为 List<Guid>（EF primitive collection 只支持
-        // 数组/List，不支持 HashSet；List 可被 Npgsql 翻译 Contains/Count 查询）
-        Participants = participants?.ToList() ?? new List<Guid> { creatorId };
-        SessionName = sessionName;
-        CreatedTime = DateTime.UtcNow;
-        IsDismissed = false;
-        IsPinned = false;
-        IsMuted = false;
-    }
-
-    private ChatSession()
-    {
-        SessionId = Guid.CreateVersion7();
-        Participants = new List<Guid>();
-        CreatedTime = DateTime.UtcNow;
-        IsDismissed = false;
-    }
-
     /// <summary>
     /// 会话ID
     /// </summary>
@@ -114,6 +90,29 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
     /// 最后读取时间
     /// </summary>
     public IReadOnlyDictionary<Guid, DateTime> LastReadTime => _lastReadTime;
+
+        public ChatSession(SessionType sessionType, Guid creatorId, IEnumerable<Guid>? participants = null,
+        string? sessionName = null)
+    {
+        SessionId = Guid.NewGuid();
+        SessionType = sessionType;
+        CreatorId = creatorId;
+        Participants = participants?.ToList() ?? new List<Guid> { creatorId };
+        SessionName = sessionName;
+        CreatedTime = DateTime.UtcNow;
+        IsDismissed = false;
+        IsPinned = false;
+        IsMuted = false;
+    }
+
+    private ChatSession()
+    {
+        SessionId = Guid.CreateVersion7();
+        Participants = new List<Guid>();
+        CreatedTime = DateTime.UtcNow;
+        IsDismissed = false;
+    }
+
 
     /// <summary>
     /// 创建私聊会话
