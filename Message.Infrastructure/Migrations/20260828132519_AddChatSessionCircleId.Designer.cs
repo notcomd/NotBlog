@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Message.Infrastructure.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Message.Infrastructure.Migrations
 {
     [DbContext(typeof(MessageDbContext))]
-    partial class MessageDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260828132519_AddChatSessionCircleId")]
+    partial class AddChatSessionCircleId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

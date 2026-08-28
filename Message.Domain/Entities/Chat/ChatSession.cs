@@ -24,6 +24,11 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
     public Guid? GroupId { get; init; }
 
     /// <summary>
+    /// 关联社区ID（Channel 社区聊天，Discord 式服务器频道）
+    /// </summary>
+    public Guid? CircleId { get; init; }
+
+    /// <summary>
     /// 创建者ID
     /// </summary>
     public Guid CreatorId { get; init; }
@@ -122,6 +127,24 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
             GroupId = groupId
         };
         session.AddDomainEvent(new SessionCreatedEvent(session.SessionId, participants, SessionType.Group));
+        return session;
+    }
+
+    /// <summary>
+    /// 创建社区频道会话（Channel）。
+    /// </summary>
+    /// <param name="circleId">社区ID</param>
+    /// <param name="creatorId">创建者ID（圈主）</param>
+    /// <param name="initialMembers">初始成员ID列表（创建时仅圈主，成员加入经事件同步）</param>
+    /// <returns>社区频道会话</returns>
+    public static ChatSession CreateChannelSession(Guid circleId, Guid creatorId, HashSet<Guid> initialMembers)
+    {
+        var participants = new HashSet<Guid>(initialMembers) { creatorId };
+        var session = new ChatSession(SessionType.Channel, creatorId, participants)
+        {
+            CircleId = circleId
+        };
+        session.AddDomainEvent(new SessionCreatedEvent(session.SessionId, participants, SessionType.Channel));
         return session;
     }
 
@@ -265,7 +288,7 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
     /// <para>重构已校验、已持久化的实体，不重复触发领域工厂校验、不重新产生领域事件。</para>
     /// </summary>
     public static ChatSession Rebuild(
-        Guid sessionId, SessionType sessionType, Guid? groupId, Guid creatorId,
+        Guid sessionId, SessionType sessionType, Guid? groupId, Guid? circleId, Guid creatorId,
         List<Guid> participants, IReadOnlyDictionary<Guid, ChatSessionMemberState> memberStates,
         Guid? lastMessageId, string? lastMessageContent, DateTime? lastMessageTime,
         DateTime createdTime, DateTime? dismissedTime, bool isDismissed)
@@ -275,6 +298,7 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
             SessionId = sessionId,
             SessionType = sessionType,
             GroupId = groupId,
+            CircleId = circleId,
             CreatorId = creatorId,
             CreatedTime = createdTime
         };

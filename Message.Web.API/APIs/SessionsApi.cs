@@ -140,13 +140,14 @@ public static class SessionsApi
         [FromServices] ICurrentUserService currentUser,
         [FromServices] INotMediator mediator,
         [FromServices] IGroupRepository groupRepository,
+        [FromServices] ICircleRepository circleRepository,
         CancellationToken ct)
     {
         try
         {
             var userId = currentUser.GetUserId();
             var sessions = await mediator.SendAsync(new GetUserSessionsQuery(userId), ct);
-            return Results.Ok(ApiResponse<IEnumerable<SessionDto>>.Ok(await MapToDtosAsync(sessions, userId, groupRepository)));
+            return Results.Ok(ApiResponse<IEnumerable<SessionDto>>.Ok(await MapToDtosAsync(sessions, userId, groupRepository, circleRepository)));
         }
         catch (Exception ex)
         {
@@ -169,6 +170,7 @@ public static class SessionsApi
         [FromServices] INotMediator mediator,
         [FromServices] ICurrentUserService currentUser,
         [FromServices] IGroupRepository groupRepository,
+        [FromServices] ICircleRepository circleRepository,
         [FromServices] SessionCacheService sessionCache,
         CancellationToken ct)
     {
@@ -189,7 +191,7 @@ public static class SessionsApi
             if (session == null)
                 return Results.Ok(ApiResponse<SessionDto>.NotFound("会话不存在"));
 
-            var dto = await MapToDtoAsync(session, callerId, groupRepository);
+            var dto = await MapToDtoAsync(session, callerId, groupRepository, circleRepository);
             await sessionCache.CacheSessionAsync(id, dto, ct);
             return Results.Ok(ApiResponse<SessionDto>.Ok(dto));
         }
@@ -359,13 +361,14 @@ public static class SessionsApi
         [FromServices] ICurrentUserService currentUser,
         [FromServices] INotMediator mediator,
         [FromServices] IGroupRepository groupRepository,
+        [FromServices] ICircleRepository circleRepository,
         CancellationToken ct)
     {
         try
         {
             var userId = currentUser.GetUserId();
             var sessions = await mediator.SendAsync(new GetPinnedSessionsQuery(userId), ct);
-            return Results.Ok(ApiResponse<IEnumerable<SessionDto>>.Ok(await MapToDtosAsync(sessions, userId, groupRepository)));
+            return Results.Ok(ApiResponse<IEnumerable<SessionDto>>.Ok(await MapToDtosAsync(sessions, userId, groupRepository, circleRepository)));
         }
         catch (Exception ex)
         {
@@ -399,8 +402,8 @@ public static class SessionsApi
 
     /// <summary>
     /// 会话实体 → DTO 映射（查询期投影）。
-    /// <para>方案A：群聊会话名称不再存储于 ChatSession，改为按 GroupId 从群组查询（GroupName），
-    /// 消除与 Group 实体的功能重叠；私聊会话无群组，名称置空。</para>
+    /// <para>方案A：群聊会话名称不再存储于 ChatSession，改为按 GroupId 从群组查询（GroupName）、
+    /// 社区频道会话按 CircleId 从社区查询（Name），消除与 Group/Circle 实体的功能重叠；私聊会话无名称，置空。</para>
     /// <para>IsPinned/IsMuted 按成员维度，取决于请求用户。</para>
     /// </summary>
     private static SessionDto MapToDto(ChatSession session, Guid userId, string? sessionName = null)
@@ -412,6 +415,7 @@ public static class SessionsApi
             SessionType = session.SessionType,
             SessionName = sessionName,
             GroupId = session.GroupId,
+            CircleId = session.CircleId,
             CreatorId = session.CreatorId,
             Participants = session.Participants.ToList(),
             LastMessageId = session.LastMessageId,
@@ -423,16 +427,16 @@ public static class SessionsApi
         };
     }
 
-    /// <summary>单个群聊会话按 GroupId 投影群名后映射为 DTO。</summary>
+    /// <summary>单个会话按 GroupId/CircleId 投影名称后映射为 DTO。</summary>
     private static async Task<SessionDto> MapToDtoAsync(
-        ChatSession session, Guid userId, IGroupRepository groupRepository)
+        ChatSession session, Guid userId, IGroupRepository groupRepository, ICircleRepository circleRepository)
     {
-        return MapToDto(session, userId, await ResolveGroupNameAsync(session, groupRepository));
+        return MapToDto(session, userId, await ResolveSessionNameAsync(session, groupRepository, circleRepository));
     }
 
-    /// <summary>批量会话映射为 DTO（一次性解析全部群名，避免 N+1 查询）。</summary>
+    /// <summary>批量会话映射为 DTO（一次性解析全部群名/社区名，避免 N+1 查询）。</summary>
     private static async Task<IEnumerable<SessionDto>> MapToDtosAsync(
-        IEnumerable<ChatSession> sessions, Guid userId, IGroupRepository groupRepository)
+        IEnumerable<ChatSession> sessions, Guid userId, IGroupRepository groupRepository, ICircleRepository circleRepository)
     {
         var list = sessions.ToList();
         var groupIds = list
@@ -449,19 +453,52 @@ public static class SessionsApi
                 groupNames[groupId] = group.GroupName;
         }
 
+        var circleIds = list
+            .Where(s => s.SessionType == SessionType.Channel && s.CircleId.HasValue)
+            .Select(s => s.CircleId!.Value)
+            .Distinct()
+            .ToList();
+
+        var circleNames = new Dictionary<Guid, string>();
+        foreach (var circleId in circleIds)
+        {
+            var circle = await circleRepository.GetByIdAsync(circleId);
+            if (circle != null)
+                circleNames[circleId] = circle.Name;
+        }
+
         return list.Select(s => MapToDto(s, userId,
-            s.SessionType == SessionType.Group && s.GroupId.HasValue &&
-            groupNames.TryGetValue(s.GroupId.Value, out var name) ? name : null));
+            ResolveName(s, groupNames, circleNames)));
     }
 
-    /// <summary>解析群聊会话对应的群名称（私聊返回 null）。</summary>
-    private static async Task<string?> ResolveGroupNameAsync(
-        ChatSession session, IGroupRepository groupRepository)
+    /// <summary>解析会话名称（群聊取群名，社区频道取社区名，私聊返回 null）。</summary>
+    private static async Task<string?> ResolveSessionNameAsync(
+        ChatSession session, IGroupRepository groupRepository, ICircleRepository circleRepository)
     {
-        if (session.SessionType != SessionType.Group || !session.GroupId.HasValue)
-            return null;
-        var group = await groupRepository.GetByIdAsync(session.GroupId.Value);
-        return group?.GroupName;
+        if (session.SessionType == SessionType.Group && session.GroupId.HasValue)
+        {
+            var group = await groupRepository.GetByIdAsync(session.GroupId.Value);
+            return group?.GroupName;
+        }
+        if (session.SessionType == SessionType.Channel && session.CircleId.HasValue)
+        {
+            var circle = await circleRepository.GetByIdAsync(session.CircleId.Value);
+            return circle?.Name;
+        }
+        return null;
+    }
+
+    /// <summary>从已解析的群名/社区名字典中取出会话名称（群聊/社区频道专用）。</summary>
+    private static string? ResolveName(
+        ChatSession session, IReadOnlyDictionary<Guid, string> groupNames, IReadOnlyDictionary<Guid, string> circleNames)
+    {
+        if (session.SessionType == SessionType.Group && session.GroupId.HasValue &&
+            groupNames.TryGetValue(session.GroupId.Value, out var groupName))
+            return groupName;
+        if (session.SessionType == SessionType.Channel && session.CircleId.HasValue &&
+            circleNames.TryGetValue(session.CircleId.Value, out var circleName))
+            return circleName;
+        return null;
     }
 
     /// <summary>添加会话参与者请求</summary>

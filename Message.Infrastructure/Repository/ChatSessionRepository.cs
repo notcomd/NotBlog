@@ -61,6 +61,12 @@ public class ChatSessionRepository(MessageDbContext context) : IChatSessionRepos
             .FirstOrDefaultAsync(s => s.GroupId == groupId && !s.IsDismissed);
     }
 
+    public async Task<ChatSession?> GetByCircleIdAsync(Guid circleId)
+    {
+        return await context.ChatSessions
+            .FirstOrDefaultAsync(s => s.CircleId == circleId && !s.IsDismissed);
+    }
+
     public async Task<ChatSession> AddAsync(ChatSession session)
     {
         var entry = await context.ChatSessions.AddAsync(session);

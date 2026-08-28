@@ -42,5 +42,8 @@ public class ChatSessionConfiguration : IEntityTypeConfiguration<ChatSession>
         builder.HasIndex(s => s.GroupId)
             .IsUnique()
             .HasFilter("\"GroupId\" IS NOT NULL");
+        builder.HasIndex(s => s.CircleId)
+            .IsUnique()
+            .HasFilter("\"CircleId\" IS NOT NULL");
     }
 }

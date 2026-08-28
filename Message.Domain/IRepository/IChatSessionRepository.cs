@@ -10,6 +10,7 @@ public interface IChatSessionRepository : IRepository<ChatSession, IUnitOfWork>
     Task<IEnumerable<ChatSession>> GetByTypeAsync(SessionType sessionType);
     Task<IEnumerable<ChatSession>> GetActiveSessionsAsync(Guid userId);
     Task<ChatSession?> GetByGroupIdAsync(Guid groupId);
+    Task<ChatSession?> GetByCircleIdAsync(Guid circleId);
     Task<ChatSession> AddAsync(ChatSession session);
     Task<ChatSession> UpdateAsync(ChatSession session);
     Task DeleteAsync(Guid sessionId);

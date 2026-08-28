@@ -16,6 +16,7 @@ public static class ChatSessionMapper
             SessionId = session.SessionId,
             SessionType = session.SessionType,
             GroupId = session.GroupId,
+            CircleId = session.CircleId,
             CreatorId = session.CreatorId,
             Participants = new List<Guid>(session.Participants),
             MemberStates = session.MemberStates.Values.Select(ToStateDocument).ToList(),
@@ -34,7 +35,7 @@ public static class ChatSessionMapper
         var memberStates = doc.MemberStates.ToDictionary(
             d => d.MemberId, ToStateEntity);
         return ChatSession.Rebuild(
-            doc.SessionId, doc.SessionType, doc.GroupId, doc.CreatorId,
+            doc.SessionId, doc.SessionType, doc.GroupId, doc.CircleId, doc.CreatorId,
             doc.Participants, memberStates,
             doc.LastMessageId, doc.LastMessageContent, doc.LastMessageTime,
             doc.CreatedTime, doc.DismissedTime, doc.IsDismissed);

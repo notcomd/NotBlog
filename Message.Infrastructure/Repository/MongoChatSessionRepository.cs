@@ -74,6 +74,12 @@ public class MongoChatSessionRepository(IMongoDatabase database, MessageDbContex
         return doc is null ? null : ChatSessionMapper.ToEntity(doc);
     }
 
+    public async Task<ChatSession?> GetByCircleIdAsync(Guid circleId)
+    {
+        var doc = await _sessions.Find(d => d.CircleId == circleId && !d.IsDismissed).FirstOrDefaultAsync();
+        return doc is null ? null : ChatSessionMapper.ToEntity(doc);
+    }
+
     public async Task<ChatSession> AddAsync(ChatSession session)
     {
         await _sessions.InsertOneAsync(ChatSessionMapper.ToDocument(session));

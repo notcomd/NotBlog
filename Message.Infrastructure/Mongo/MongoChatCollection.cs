@@ -129,5 +129,10 @@ public static class MongoChatCollection
         collection.Indexes.CreateOne(new CreateIndexModel<ChatSessionDocument>(
             Builders<ChatSessionDocument>.IndexKeys.Ascending(d => d.SessionType),
             new CreateIndexOptions { Name = "IX_ChatSession_Type" }));
+
+        // 社区频道会话查询（社区聊天 tab 打开时按 CircleId 定位会话）
+        collection.Indexes.CreateOne(new CreateIndexModel<ChatSessionDocument>(
+            Builders<ChatSessionDocument>.IndexKeys.Ascending(d => d.CircleId),
+            new CreateIndexOptions { Name = "IX_ChatSession_CircleId" }));
     }
 }

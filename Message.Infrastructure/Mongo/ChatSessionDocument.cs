@@ -17,6 +17,7 @@ public sealed class ChatSessionDocument
 
     public SessionType SessionType { get; set; }
     public Guid? GroupId { get; set; }
+    public Guid? CircleId { get; set; }
     public Guid CreatorId { get; set; }
 
     /// <summary>参与者ID列表</summary>
