@@ -93,7 +93,7 @@ public class DeleteCommentCommandHandlerTests
         var tweet = Tweet.Create(AuthorId, "圈子帖", null, null, null, Visibility.Public, CircleGuid);
         _tweetRepository.Setup(r => r.GetByIdAsync(TweetGuid)).ReturnsAsync(tweet);
         _circleRepository.Setup(r => r.GetMemberAsync(CircleGuid, circleOwner))
-            .ReturnsAsync(new CircleMember(CircleGuid, circleOwner, CircleMemberRole.Owner));
+            .ReturnsAsync(new CircleMember(CircleGuid, circleOwner, role: CircleMemberRole.Owner));
 
         var result = await CreateHandler(NormalUser().Object).Handler(
             new DeleteCommentCommand(CommentGuid, circleOwner), CancellationToken.None);
@@ -113,7 +113,7 @@ public class DeleteCommentCommandHandlerTests
         var tweet = Tweet.Create(AuthorId, "圈子帖", null, null, null, Visibility.Public, CircleGuid);
         _tweetRepository.Setup(r => r.GetByIdAsync(TweetGuid)).ReturnsAsync(tweet);
         _circleRepository.Setup(r => r.GetMemberAsync(CircleGuid, circleAdmin))
-            .ReturnsAsync(new CircleMember(CircleGuid, circleAdmin, CircleMemberRole.Admin));
+            .ReturnsAsync(new CircleMember(CircleGuid, circleAdmin, role: CircleMemberRole.Admin));
 
         var result = await CreateHandler(NormalUser().Object).Handler(
             new DeleteCommentCommand(CommentGuid, circleAdmin), CancellationToken.None);
@@ -129,7 +129,7 @@ public class DeleteCommentCommandHandlerTests
         var tweet = Tweet.Create(AuthorId, "圈子帖", null, null, null, Visibility.Public, CircleGuid);
         _tweetRepository.Setup(r => r.GetByIdAsync(TweetGuid)).ReturnsAsync(tweet);
         _circleRepository.Setup(r => r.GetMemberAsync(CircleGuid, plainMember))
-            .ReturnsAsync(new CircleMember(CircleGuid, plainMember, CircleMemberRole.Member));
+            .ReturnsAsync(new CircleMember(CircleGuid, plainMember, role: CircleMemberRole.Member));
 
         Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
             await CreateHandler(NormalUser().Object).Handler(

@@ -1,4 +1,5 @@
-﻿using MessageEntity = Message.Domain.Entities.Chat.Message;
+using Message.Domain.ValueObjects.Message;
+using MessageEntity = Message.Domain.Entities.Chat.Message;
 
 namespace Message.Web.API.Application.Commands.Messages;
 /// <summary>
@@ -67,24 +68,28 @@ public class ForwardMessageCommandHandler(
     /// <exception cref="NotSupportedException"></exception>
     private MessageEntity CreateForwardedMessage(MessageEntity original, Guid targetSessionId, Guid forwardedBy)
     {
+        var content = original.Content;
         return original.MessageType switch
         {
             MessageType.MessageText => MessageEntity.CreateTextMessage(targetSessionId, forwardedBy,
-                original.Content ?? ""),
+                ((TextContent)content).Value),
             MessageType.MessageImage => MessageEntity.CreateImageMessage(targetSessionId, forwardedBy,
-                original.MediaUri!, original.Caption, original.ThumbnailUri),
+                ((MediaContent)content).MediaUri, ((MediaContent)content).Caption, ((MediaContent)content).ThumbnailUri),
             MessageType.MessageVideo => MessageEntity.CreateVideoMessage(targetSessionId, forwardedBy,
-                original.MediaUri!, original.Duration ?? 0, original.Caption, original.ThumbnailUri),
+                ((MediaContent)content).MediaUri, ((MediaContent)content).Duration ?? 0,
+                ((MediaContent)content).Caption, ((MediaContent)content).ThumbnailUri),
             MessageType.MessageAudio => MessageEntity.CreateAudioMessage(targetSessionId, forwardedBy,
-                original.MediaUri!, original.Duration ?? 0, original.Caption),
-            MessageType.MessageFile => MessageEntity.CreateFileMessage(targetSessionId, forwardedBy, original.MediaUri!,
-                original.FileName ?? "", original.FileSize ?? 0, original.MimeType ?? ""),
+                ((MediaContent)content).MediaUri, ((MediaContent)content).Duration ?? 0, ((MediaContent)content).Caption),
+            MessageType.MessageFile => MessageEntity.CreateFileMessage(targetSessionId, forwardedBy,
+                ((FileContent)content).FileUri, ((FileContent)content).FileName,
+                ((FileContent)content).FileSize, ((FileContent)content).MimeType),
             MessageType.MessageLocation => MessageEntity.CreateLocationMessage(targetSessionId, forwardedBy,
-                original.Latitude ?? 0, original.Longitude ?? 0, original.LocationName ?? ""),
+                ((LocationContent)content).Latitude, ((LocationContent)content).Longitude,
+                ((LocationContent)content).LocationName),
             MessageType.MessageLink => MessageEntity.CreateLinkMessage(targetSessionId, forwardedBy,
-                original.LinkUrl ?? "", original.LinkTitle, original.LinkDescription),
+                ((LinkContent)content).Url.ToString(), ((LinkContent)content).Title, ((LinkContent)content).Description),
             MessageType.MessageExpression => MessageEntity.CreateExpressionMessage(targetSessionId, forwardedBy,
-                original.ExpressionCode ?? ""),
+                ((ExpressionContent)content).Value),
             _ => throw new NotSupportedException($"不支持的消息类型: {original.MessageType}")
         };
     }

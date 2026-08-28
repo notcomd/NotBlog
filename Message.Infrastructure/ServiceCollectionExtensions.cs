@@ -1,5 +1,6 @@
 
 using Message.Infrastructure.MongoMigration;
+using Message.Infrastructure.Services;
 
 namespace Message.Infrastructure;
 
@@ -96,6 +97,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IImageModerationService, DefaultImageModerationService>();
         services.AddScoped<IEmailSender, DefaultEmailSender>();
         services.AddScoped<ILocalizationService, DefaultLocalizationService>();
+        services.AddSingleton<IMessageRecallPolicy, DefaultMessageRecallPolicy>();
 
         services.TryAddSingleton<MessageCacheService>();
         services.TryAddSingleton<SessionCacheService>();

@@ -5,7 +5,7 @@ namespace Message.Domain.ValueObjects.Message;
 /// 文本消息内容值对象。
 /// 承载文本消息的原子内容约束（非空、长度上限），不可变。
 /// </summary>
-public class TextContent : ValueObject
+public class TextContent : MessageContent
 {
     private TextContent(string value)
     {
@@ -19,10 +19,14 @@ public class TextContent : ValueObject
 
     public string Value { get; }
 
+    public override MessageType MessageType => MessageType.MessageText;
+
     public static TextContent Create(string value) => new(value);
 
     protected override IEnumerable<object> GetAtomicValues()
     {
         yield return Value;
     }
+
+    public override string ToSessionSummary() => Value;
 }

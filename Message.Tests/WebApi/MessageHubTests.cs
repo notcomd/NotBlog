@@ -473,7 +473,8 @@ public class MessageHubTests
                 CacheServicesTestFactory.CreateSessionCache(),
                 CacheServicesTestFactory.CreateRedisCache(),
                 Mediator.Object,
-                FriendsRepository.Object)
+                FriendsRepository.Object,
+                new DefaultMessageRecallPolicy())
             {
                 Context = Context.Object,
                 Clients = clients.Object,

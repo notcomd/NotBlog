@@ -168,24 +168,16 @@ public class MessageRepository(MessageDbContext context) :  IMessageRepository
         if (pageSize < 1) pageSize = 10;
         if (pageSize > 100) pageSize = 100;
 
-        var query = DbSet
-            .Include(m => m.Attachments)
-            .Where(m => m.SessionId == sessionId &&
-                        !m.IsRecalled &&
-                        (m.Content != null && m.Content.Contains(searchTerm)));
-
-        return await query.OrderByDescending(m => m.SentTime)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
+        // 消息本体已迁移 MongoDB，会话内文本搜索由 MongoMessageRepository 承载（覆盖注册）。
+        // 领域 Content 已收敛为多态 MessageContent 且不由 EF 映射，此 EF 旧路径不再可用。
+        throw new NotSupportedException("消息搜索已由 MongoDB 仓储承载，请通过 IMongoMessageRepository 查询。");
     }
 
     /// <summary>统计会话内搜索匹配的消息总数（供分页 TotalCount 使用，P-05）。</summary>
     public async Task<int> SearchCountAsync(Guid sessionId, string searchTerm)
     {
-        return await DbSet.CountAsync(m => m.SessionId == sessionId &&
-                                           !m.IsRecalled &&
-                                           (m.Content != null && m.Content.Contains(searchTerm)));
+        // 同 SearchAsync：消息本体已迁移 MongoDB，搜索统计由 Mongo 仓储承载。
+        throw new NotSupportedException("消息搜索统计已由 MongoDB 仓储承载，请通过 IMongoMessageRepository 查询。");
     }
 
     public async Task<IEnumerable<MessageEntity>> GetForwardedMessagesAsync(Guid originalMessageId)
