@@ -294,4 +294,41 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
     {
         return Participants.Contains(userId);
     }
+
+    /// <summary>
+    /// 从持久化数据重建会话聚合根（Mongo 投影读取路径）。
+    /// <para>重构已校验、已持久化的实体，不重复触发领域工厂校验、不重新产生领域事件。</para>
+    /// </summary>
+    public static ChatSession Rebuild(
+        Guid sessionId, SessionType sessionType, string? sessionName, Guid? groupId, Guid creatorId,
+        List<Guid> participants, IReadOnlyDictionary<Guid, int> unreadCount,
+        IReadOnlyDictionary<Guid, DateTime> lastReadTime,
+        Guid? lastMessageId, string? lastMessageContent, DateTime? lastMessageTime,
+        DateTime createdTime, DateTime? dismissedTime, bool isDismissed, bool isPinned, bool isMuted)
+    {
+        var session = new ChatSession
+        {
+            SessionId = sessionId,
+            SessionType = sessionType,
+            GroupId = groupId,
+            CreatorId = creatorId,
+            CreatedTime = createdTime
+        };
+        session.SessionName = sessionName;
+        session.Participants = participants;
+        session._unreadCount.Clear();
+        session._lastReadTime.Clear();
+        foreach (var (userId, count) in unreadCount)
+            session._unreadCount[userId] = count;
+        foreach (var (userId, time) in lastReadTime)
+            session._lastReadTime[userId] = time;
+        session.LastMessageId = lastMessageId;
+        session.LastMessageContent = lastMessageContent;
+        session.LastMessageTime = lastMessageTime;
+        session.DismissedTime = dismissedTime;
+        session.IsDismissed = isDismissed;
+        session.IsPinned = isPinned;
+        session.IsMuted = isMuted;
+        return session;
+    }
 }

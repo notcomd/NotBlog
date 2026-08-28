@@ -1,4 +1,4 @@
-﻿using Message.Domain.Entities.Recall;
+using Message.Domain.Entities.Recall;
 
 namespace Message.Domain.Entities.Chat;
 
@@ -258,5 +258,58 @@ public class Message : Entity<Guid>, IAggregateRoot
     private void RaiseMessageSentEvent()
     {
         AddDomainEvent(new MessageSentEvent(MessageId, SenderId, ReceiverId, SessionId, MessageType));
+    }
+
+    /// <summary>
+    /// 从持久化数据重建消息聚合根（Mongo 投影读取路径）。
+    /// <para>重构已校验、已持久化的实体，不重复触发领域工厂校验、不重新产生领域事件。</para>
+    /// </summary>
+    public static Message Rebuild(
+        Guid messageId, Guid sessionId, Guid senderId, Guid? receiverId,
+        MessageType messageType, MessageStatus status,
+        string? content, Uri? mediaUri, string? thumbnailUri, long? fileSize, double? duration,
+        string? fileName, string? mimeType, string? caption,
+        double? latitude, double? longitude, string? locationName,
+        string? linkUrl, string? linkTitle, string? linkDescription, string? expressionCode,
+        DateTime sentTime, DateTime? deliveredTime, DateTime? readTime,
+        bool isRecalled, bool isEncrypted, bool isForwarded,
+        Guid? originalMessageId, Guid? replyToMessageId,
+        IReadOnlyCollection<FileAttachment> attachments)
+    {
+        var message = new Message
+        {
+            MessageId = messageId,
+            SessionId = sessionId,
+            SenderId = senderId,
+            SentTime = sentTime
+        };
+        message.ReceiverId = receiverId;
+        message.MessageType = messageType;
+        message.Status = status;
+        message.Content = content;
+        message.MediaUri = mediaUri;
+        message.ThumbnailUri = thumbnailUri;
+        message.FileSize = fileSize;
+        message.Duration = duration;
+        message.FileName = fileName;
+        message.MimeType = mimeType;
+        message.Caption = caption;
+        message.Latitude = latitude;
+        message.Longitude = longitude;
+        message.LocationName = locationName;
+        message.LinkUrl = linkUrl;
+        message.LinkTitle = linkTitle;
+        message.LinkDescription = linkDescription;
+        message.ExpressionCode = expressionCode;
+        message.DeliveredTime = deliveredTime;
+        message.ReadTime = readTime;
+        message.IsRecalled = isRecalled;
+        message.IsEncrypted = isEncrypted;
+        message.IsForwarded = isForwarded;
+        message.OriginalMessageId = originalMessageId;
+        message.ReplyToMessageId = replyToMessageId;
+        foreach (var attachment in attachments)
+            message._attachments.Add(attachment);
+        return message;
     }
 }

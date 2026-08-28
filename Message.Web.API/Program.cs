@@ -1,6 +1,8 @@
 using System.Reflection;
 using CacheMemory.Extensions;
 using Message.Infrastructure;
+using Message.Infrastructure.MongoMigration;
+using MongoDB.Driver;
 using NotBlog.ServiceDefaults;
 using Scalar.AspNetCore;
 
@@ -30,9 +32,30 @@ else
 
 builder.AddNpgsqlDbContext<MessageDbContext>("MessagePostgres");
 
+// ── MongoDB（D2-1 对话迁移：message + chat_session 集合）──
+// 单机分支：从配置节点 MongoDb:ConnectionString 读取，未配置时回落本地默认地址；
+// Aspire 分支：通过 AddMongoDBClient 注入连接串。二者统一为单例 IMongoDatabase。
+if (builder.Configuration.GetConnectionString("MessageMongo") is null)
+{
+    var mongoConn = builder.Configuration["MongoDb:ConnectionString"] ?? "mongodb://127.0.0.1:27017";
+    builder.Services.AddSingleton<IMongoClient>(_ => new MongoClient(mongoConn));
+}
+else
+{
+    builder.AddMongoDBClient("MessageMongo");
+}
+builder.Services.AddSingleton(sp =>
+{
+    var client = sp.GetRequiredService<IMongoClient>();
+    var databaseName = builder.Configuration["MongoDb:Database"] ?? "notblog_message";
+    return client.GetDatabase(databaseName);
+});
+
 builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
 
 builder.Services.AddMessageInfrastructure(builder.Configuration);
+// D2-1：消息/会话读写链路切换到 Mongo（message + chat_session 集合）；社交域仍留 EF。
+builder.Services.AddMessageMongoRepositories();
 builder.Services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<MessageDbContext>());
 builder.Services.AddHttpContextAccessor();
 
@@ -50,6 +73,17 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddProblemDetails();
 
 var app = builder.Build();
+
+// ═══ 存量聊天数据迁移（PG → Mongo）═══
+// 一次性任务：设置 ChatMigration__BackfillOnStartup=true 启动即执行；
+// 幂等（upsert），完成后无需保留该配置。默认关闭以不影响常规启动。
+if (app.Configuration.GetValue<bool>("ChatMigration:BackfillOnStartup"))
+{
+    using var migrationScope = app.Services.CreateScope();
+    var migrator = migrationScope.ServiceProvider.GetRequiredService<MessageMongoMigrationService>();
+    var migrationResult = await migrator.ExecuteAsync();
+    Console.WriteLine($"[ChatMigration] 存量迁移完成：会话={migrationResult.SessionsMigrated}，消息={migrationResult.MessagesMigrated}");
+}
 
 app.MapDefaultEndpoints();
 
