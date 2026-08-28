@@ -9,7 +9,6 @@ public class MergeChunksCommandHandler(
     INotFileStorageService storageService,
     IFileChunkManager chunkManager,
     INotFileService notFileService,
-    FileDev.Domain.IRepository.INotFileRepository notFileRepository,
     IContentAttachmentService contentAttachmentService,
     IOptionsSnapshot<NotFileStorageOptions> configOptions,
     ILogger<MergeChunksCommandHandler> logger)
@@ -34,10 +33,10 @@ public class MergeChunksCommandHandler(
         if (!await chunkManager.AreAllChunksUploadedAsync(request.FileKey, cancellationToken))
             throw new InvalidOperationException($"分片未全部上传完毕: {request.FileKey}");
 
-        // S-09：合并前配额检查（校验时机后移至完整性校验之后）
-        var used = await notFileRepository.GetTotalFileSizeByUserIdAsync(request.UserId);
-        if (used + record.TotalSize > configOptions.Value.UserStorageQuota)
-            throw new FileQuotaExceededException("用户存储配额不足");
+        // S-09：合并前配额检查（统一走 UserFileInfo 记账表校验，且置于分片完整性校验之后）
+        await notFileService.ValidateUploadAsync(
+            request.UserId, request.FileName ?? record.FileName, record.TotalSize,
+            configOptions.Value, cancellationToken);
 
         // 合并分片
         var mergeResult = await storageService.MergeChunksAsync(
@@ -72,6 +71,9 @@ public class MergeChunksCommandHandler(
             await contentAttachmentService.RegisterAsync(
                 request.ContentId!, request.ContentType, fileUri, file.FileId, cancellationToken);
         }
+
+        // 合并成功记账（配额不足抛异常，由事务回滚文件记录）
+        await notFileService.OccupyQuotaAsync(request.UserId, record.TotalSize, cancellationToken);
 
         logger.LogInformation("[ChunkMerge] 文件合并完成: FileKey={FileKey}, FileName={FileName}",
             request.FileKey, record.FileName);

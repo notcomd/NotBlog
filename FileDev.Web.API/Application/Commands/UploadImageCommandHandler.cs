@@ -1,4 +1,3 @@
-using FileDev.Domain.IRepository;
 using ImageValidator = FileDev.Web.API.Grpc.ImageValidator;
 
 namespace FileDev.Web.API.Application.Commands;
@@ -10,7 +9,6 @@ namespace FileDev.Web.API.Application.Commands;
 public class UploadImageCommandHandler(
     INotFileStorageService storageService,
     INotFileService notFileService,
-    INotFileRepository notFileRepository,
     IContentAttachmentService contentAttachmentService,
     IOptionsSnapshot<NotFileStorageOptions> configOptions,
     ILogger<UploadImageCommandHandler> logger)
@@ -47,13 +45,10 @@ public class UploadImageCommandHandler(
         }
 
         var options = configOptions.Value;
-        if (request.ImageContent.Length > options.MaxFileSize)
-            throw new ArgumentException($"图片大小超过限制 {options.MaxFileSize / 1024 / 1024}MB");
 
-        
-        var used = await notFileRepository.GetTotalFileSizeByUserIdAsync(request.UserId);
-        if (used + request.ImageContent.Length > options.UserStorageQuota)
-            throw new FileQuotaExceededException("用户存储配额不足");
+        // 统一前置校验（S-09/S-17：扩展名白名单、大小上限、用户配额）
+        await notFileService.ValidateUploadAsync(
+            request.UserId, request.FileName, request.ImageContent.Length, options, cancellationToken);
 
         var ext2 = Path.GetExtension(request.FileName).ToLowerInvariant();
         var relativePath = FileApiHelpers.BuildFileKey(request.UserId, ext2);

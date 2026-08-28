@@ -1,12 +1,9 @@
 using Commons.Core;
 using FileDev.Domain.IRepository;
-using FileDev.Domain.IServices;
-using FileDev.Domain.Options;
 using FileDev.Infrastructure.Repository;
 using FileDev.Infrastructure.Service;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using MohuTianchi.Lite;
 
 namespace FileDev.Infrastructure;
@@ -71,6 +68,7 @@ public class ModuleInitializer : IModuleInitializer
         service.AddScoped<INotFileRepository, NotFileRepository>();
         service.AddScoped<INotFileVolumeRepository, NotFileVolumeRepository>();
         service.AddScoped<IContentAttachmentRefRepository, ContentAttachmentRefRepository>();
+        service.AddScoped<IUserFileInfoRepository, UserFileInfoRepository>();
         service.AddScoped<INotFileStorageService, MohuObjectStorageService>();
         service.AddScoped<INotFileService, NotFileService>();
         service.AddScoped<INotFileVolumeService, NotFileVolumeService>();

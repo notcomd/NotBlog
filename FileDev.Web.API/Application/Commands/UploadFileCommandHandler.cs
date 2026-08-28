@@ -74,6 +74,9 @@ public class UploadFileCommandHandler(
                     request.ContentId!, request.ContentType, fileUri, file.FileId, cancellationToken);
             }
 
+            // 上传成功记账（配额不足抛异常，由事务回滚文件记录）
+            await notFileService.OccupyQuotaAsync(request.UserId, request.FileContent.Length, cancellationToken);
+
             return file;
         }
         catch (Exception ex)

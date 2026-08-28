@@ -20,6 +20,8 @@ public class NotFileDbContext(DbContextOptions<NotFileDbContext> options, INotMe
 
     public DbSet<ContentAttachmentRef> ContentAttachmentRefs { get; set; }
 
+    public DbSet<UserFileInfo> UserFileInfos { get; set; }
+
     public bool HasActiveTransaction => _currentTransaction is not null;
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
@@ -96,5 +98,6 @@ public class NotFileDbContext(DbContextOptions<NotFileDbContext> options, INotMe
         modelBuilder.ApplyConfiguration(new ClientRequestTypeConfiguration());
         modelBuilder.ApplyConfiguration(new NotFileVolumeEntityConfig());
         modelBuilder.ApplyConfiguration(new ContentAttachmentRefEntityConfig());
+        modelBuilder.ApplyConfiguration(new UserFileInfoEntityConfig());
     }
 }

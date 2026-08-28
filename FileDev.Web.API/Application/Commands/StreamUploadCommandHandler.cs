@@ -74,6 +74,9 @@ public class StreamUploadCommandHandler(
         try
         {
             await mediator.SendAsync(uploadCmd, cancellationToken);
+
+            // 上传成功记账（配额不足抛异常，由事务回滚文件记录）
+            await notFileService.OccupyQuotaAsync(request.UserId, content.Length, cancellationToken);
         }
         catch (Exception ex)
         {
