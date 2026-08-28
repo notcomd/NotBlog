@@ -70,7 +70,14 @@ public class MessageMongoMigrationService(MessageDbContext context, IMongoDataba
             if (unreadBySession.TryGetValue(session.SessionId, out var unread))
             {
                 foreach (var (userId, count) in unread)
-                    doc.UnreadCount[userId] = count;
+                {
+                    // 未读补算：优先命中已有成员状态片段，缺失则新建，避免覆盖置顶/免打扰。
+                    var state = doc.MemberStates.FirstOrDefault(s => s.MemberId == userId)
+                                ?? new ChatSessionMemberStateDocument { MemberId = userId };
+                    state.UnreadCount = count;
+                    if (!doc.MemberStates.Any(s => s.MemberId == userId))
+                        doc.MemberStates.Add(state);
+                }
             }
 
             // 幂等：以 _id=SessionId upsert，可重跑不产生重复。

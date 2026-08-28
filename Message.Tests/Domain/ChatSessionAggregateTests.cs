@@ -105,7 +105,7 @@ public class ChatSessionAggregateTests
         session.MarkAsRead(UserB);
 
         Assert.That(session.GetUnreadCount(UserB), Is.Zero);
-        Assert.That(session.LastReadTime[UserB], Is.LessThanOrEqualTo(DateTime.UtcNow));
+        Assert.That(session.MemberStates[UserB].LastReadTime, Is.LessThanOrEqualTo(DateTime.UtcNow));
     }
 
     [Test]
@@ -154,14 +154,14 @@ public class ChatSessionAggregateTests
     {
         var session = ChatSession.CreatePrivateSession(UserA, UserB);
 
-        session.Pin();
-        Assert.That(session.IsPinned, Is.True);
-        session.Unpin();
-        Assert.That(session.IsPinned, Is.False);
+        session.SetPinned(UserB, true);
+        Assert.That(session.MemberStates[UserB].IsPinned, Is.True);
+        session.SetPinned(UserB, false);
+        Assert.That(session.MemberStates[UserB].IsPinned, Is.False);
 
-        session.Mute();
-        Assert.That(session.IsMuted, Is.True);
-        session.Unmute();
-        Assert.That(session.IsMuted, Is.False);
+        session.SetMuted(UserB, true);
+        Assert.That(session.MemberStates[UserB].IsMuted, Is.True);
+        session.SetMuted(UserB, false);
+        Assert.That(session.MemberStates[UserB].IsMuted, Is.False);
     }
 }

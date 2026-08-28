@@ -20,10 +20,7 @@ public class SetSessionPinCommandHandler(
         if (!session.IsParticipant(operatorId))
             throw new UnauthorizedAccessException("您不是该会话的参与者");
 
-        if (command.Pin)
-            session.Pin();
-        else
-            session.Unpin();
+        session.SetPinned(operatorId, command.Pin);
 
         await sessionRepository.UpdateAsync(session);
         await sessionRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);

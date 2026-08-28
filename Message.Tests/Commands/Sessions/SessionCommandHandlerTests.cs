@@ -138,7 +138,7 @@ public class SessionCommandHandlerTests
         Assert.Multiple(() =>
         {
             Assert.That(result, Is.True);
-            Assert.That(session.IsPinned, Is.True);
+            Assert.That(session.MemberStates[UserId].IsPinned, Is.True);
             _sessionRepository.Verify(r => r.UpdateAsync(session), Times.Once);
             _unitOfWork.Verify(u => u.SaveEntitiesAsync(It.IsAny<CancellationToken>()), Times.Once);
         });
@@ -148,7 +148,7 @@ public class SessionCommandHandlerTests
     public async Task SetSessionPin_取消置顶时_应调用Unpin并保存()
     {
         var session = new ChatSession(SessionType.Private, UserId, new HashSet<Guid> { UserId });
-        session.Pin();
+        session.SetPinned(UserId, true);
         _sessionRepository.Setup(r => r.GetByIdAsync(SessionId)).ReturnsAsync(session);
         _sessionRepository.Setup(r => r.UpdateAsync(It.IsAny<ChatSession>()))
             .ReturnsAsync((ChatSession s) => s);
@@ -164,7 +164,7 @@ public class SessionCommandHandlerTests
         Assert.Multiple(() =>
         {
             Assert.That(result, Is.True);
-            Assert.That(session.IsPinned, Is.False);
+            Assert.That(session.MemberStates[UserId].IsPinned, Is.False);
             _sessionRepository.Verify(r => r.UpdateAsync(session), Times.Once);
             _unitOfWork.Verify(u => u.SaveEntitiesAsync(It.IsAny<CancellationToken>()), Times.Once);
         });

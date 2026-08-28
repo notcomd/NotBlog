@@ -45,7 +45,10 @@ public class MongoChatSessionRepository(IMongoDatabase database, MessageDbContex
 
     public async Task<IEnumerable<ChatSession>> GetPinnedSessionsAsync(Guid userId)
     {
-        var docs = await _sessions.Find(d => d.IsPinned && !d.IsDismissed && d.Participants.Contains(userId))
+        // 置顶为用户维度：匹配该成员的状态片段 IsPinned==true
+        var docs = await _sessions.Find(d => !d.IsDismissed
+                                             && d.Participants.Contains(userId)
+                                             && d.MemberStates.Any(s => s.MemberId == userId && s.IsPinned))
             .SortByDescending(d => d.LastMessageTime)
             .ToListAsync();
         return docs.Select(ChatSessionMapper.ToEntity);
@@ -116,14 +119,14 @@ public class MongoChatSessionRepository(IMongoDatabase database, MessageDbContex
     public async Task<int> GetTotalUnreadCountAsync(Guid userId)
     {
         var sessions = await _sessions.Find(d => !d.IsDismissed && d.Participants.Contains(userId)).ToListAsync();
-        return sessions.Sum(d => d.UnreadCount.TryGetValue(userId, out var count) ? count : 0);
+        return sessions.Sum(d => d.MemberStates.FirstOrDefault(s => s.MemberId == userId)?.UnreadCount ?? 0);
     }
 
     public async Task<IEnumerable<ChatSession>> GetSessionsWithUnreadMessagesAsync(Guid userId)
     {
         var docs = await _sessions.Find(d => !d.IsDismissed && d.Participants.Contains(userId)).ToListAsync();
         return docs
-            .Where(d => d.UnreadCount.TryGetValue(userId, out var count) && count > 0)
+            .Where(d => (d.MemberStates.FirstOrDefault(s => s.MemberId == userId)?.UnreadCount ?? 0) > 0)
             .Select(ChatSessionMapper.ToEntity);
     }
 

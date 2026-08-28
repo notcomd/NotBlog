@@ -20,10 +20,7 @@ public class SetSessionMuteCommandHandler(
         if (!session.IsParticipant(operatorId))
             throw new UnauthorizedAccessException("您不是该会话的参与者");
 
-        if (command.Mute)
-            session.Mute();
-        else
-            session.Unmute();
+        session.SetMuted(operatorId, command.Mute);
 
         await sessionRepository.UpdateAsync(session);
         await sessionRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);

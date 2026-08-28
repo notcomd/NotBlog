@@ -32,10 +32,12 @@ public class ChatSessionRepository(MessageDbContext context) : IChatSessionRepos
 
     public async Task<IEnumerable<ChatSession>> GetPinnedSessionsAsync(Guid userId)
     {
-        return await context.ChatSessions
-            .Where(s => s.IsPinned && !s.IsDismissed && s.Participants.Contains(userId))
-            .OrderByDescending(s => s.LastMessageTime)
-            .ToListAsync();
+        // 置顶为用户维度：MemberStates 未落 PG（Ignore），加载后在内存按成员状态过滤。
+        return (await context.ChatSessions
+                .Where(s => !s.IsDismissed && s.Participants.Contains(userId))
+                .ToListAsync())
+            .Where(s => s.MemberStates.TryGetValue(userId, out var st) && st.IsPinned)
+            .OrderByDescending(s => s.LastMessageTime);
     }
 
     public async Task<IEnumerable<ChatSession>> GetByTypeAsync(SessionType sessionType)

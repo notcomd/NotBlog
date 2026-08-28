@@ -23,11 +23,8 @@ public sealed class ChatSessionDocument
     /// <summary>参与者ID列表</summary>
     public List<Guid> Participants { get; set; } = new();
 
-    /// <summary>成员未读数（key = 用户ID），热路径 $inc 维护</summary>
-    public Dictionary<Guid, int> UnreadCount { get; set; } = new();
-
-    /// <summary>成员最后读取时间（key = 用户ID）</summary>
-    public Dictionary<Guid, DateTime> LastReadTime { get; set; } = new();
+    /// <summary>各成员的会话状态（未读 / 最后读取 / 置顶 / 免打扰），key = 用户ID</summary>
+    public List<ChatSessionMemberStateDocument> MemberStates { get; set; } = new();
 
     public Guid? LastMessageId { get; set; }
     public string? LastMessageContent { get; set; }
@@ -36,8 +33,6 @@ public sealed class ChatSessionDocument
     public DateTime CreatedTime { get; set; }
     public DateTime? DismissedTime { get; set; }
     public bool IsDismissed { get; set; }
-    public bool IsPinned { get; set; }
-    public bool IsMuted { get; set; }
 
     /// <summary>乐观锁版本号（__v，替换 EF ConcurrencyToken）</summary>
     public int Version { get; set; }

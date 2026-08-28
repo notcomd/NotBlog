@@ -6,9 +6,7 @@ namespace Message.Domain.Entities.Chat;
 /// </summary>
 public class ChatSession : Entity<Guid>, IAggregateRoot
 {
-    private readonly Dictionary<Guid, DateTime> _lastReadTime = new();
-
-    private readonly Dictionary<Guid, int> _unreadCount = new();
+    private readonly Dictionary<Guid, ChatSessionMemberState> _memberStates = new();
 
     /// <summary>
     /// 会话ID
@@ -72,24 +70,12 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
     public bool IsDismissed { get; private set; }
 
     /// <summary>
-    /// 是否已置顶
+    /// 各成员的会话状态（未读 / 最后读取 / 置顶 / 免打扰），key = 用户ID。
+    /// 置顶/免打扰为成员维度而非会话维度，便于 SignalR 多端会话管理。
     /// </summary>
-    public bool IsPinned { get; private set; }
+    public IReadOnlyDictionary<Guid, ChatSessionMemberState> MemberStates => _memberStates;
 
     /// <summary>
-    /// 是否已禁言
-    /// </summary>
-    public bool IsMuted { get; private set; }
-
-    /// <summary>
-    /// 未读消息数量
-    /// </summary>
-    public IReadOnlyDictionary<Guid, int> UnreadCount => _unreadCount;
-
-    /// <summary>
-    /// 最后读取时间
-    /// </summary>
-    public IReadOnlyDictionary<Guid, DateTime> LastReadTime => _lastReadTime;
 
         public ChatSession(SessionType sessionType, Guid creatorId, IEnumerable<Guid>? participants = null,
         string? sessionName = null)
@@ -101,8 +87,8 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
         SessionName = sessionName;
         CreatedTime = DateTime.UtcNow;
         IsDismissed = false;
-        IsPinned = false;
-        IsMuted = false;
+        foreach (var participantId in Participants)
+            _memberStates[participantId] = new ChatSessionMemberState(participantId);
     }
 
     private ChatSession()
@@ -160,7 +146,7 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
             throw new InvalidOperationException("用户已在会话中");
 
         Participants.Add(userId);
-        _unreadCount[userId] = 0;
+        _memberStates[userId] = new ChatSessionMemberState(userId);
     }
 
     /// <summary>
@@ -177,8 +163,7 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
             throw new InvalidOperationException("私聊会话至少需要两个参与者");
 
         Participants.Remove(userId);
-        _unreadCount.Remove(userId);
-        _lastReadTime.Remove(userId);
+        _memberStates.Remove(userId);
     }
 
     /// <summary>
@@ -197,9 +182,12 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
 
         foreach (var participantId in Participants)
         {
-            if (!_unreadCount.ContainsKey(participantId))
-                _unreadCount[participantId] = 0;
-            _unreadCount[participantId]++;
+            if (!_memberStates.TryGetValue(participantId, out var state))
+            {
+                state = new ChatSessionMemberState(participantId);
+                _memberStates[participantId] = state;
+            }
+            state.IncrementUnread();
         }
     }
 
@@ -212,10 +200,7 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
         if (!Participants.Contains(userId))
             throw new InvalidOperationException("用户不在会话中");
 
-        if (_unreadCount.ContainsKey(userId) && _unreadCount[userId] > 0)
-            _unreadCount[userId] = 0;
-
-        _lastReadTime[userId] = DateTime.UtcNow;
+        StateOf(userId).MarkAsRead(DateTime.UtcNow);
     }
 
     /// <summary>
@@ -225,40 +210,41 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
     /// <returns>未读消息数量</returns>
     public int GetUnreadCount(Guid userId)
     {
-        return _unreadCount.TryGetValue(userId, out var count) ? count : 0;
+        return MemberStates.TryGetValue(userId, out var state) ? state.UnreadCount : 0;
     }
 
     /// <summary>
-    /// 置顶会话
+    /// 设置某成员的会话置顶状态（成员维度）。
     /// </summary>
-    public void Pin()
+    /// <param name="userId">用户ID</param>
+    /// <param name="pinned">是否置顶</param>
+    public void SetPinned(Guid userId, bool pinned)
     {
-        IsPinned = true;
+        if (!Participants.Contains(userId))
+            throw new InvalidOperationException("用户不在会话中");
+        StateOf(userId).SetPinned(pinned);
     }
 
     /// <summary>
-    /// 取消置顶会话
+    /// 设置某成员的会话免打扰状态（成员维度）。
     /// </summary>
-    public void Unpin()
+    /// <param name="userId">用户ID</param>
+    /// <param name="muted">是否免打扰</param>
+    public void SetMuted(Guid userId, bool muted)
     {
-        IsPinned = false;
+        if (!Participants.Contains(userId))
+            throw new InvalidOperationException("用户不在会话中");
+        StateOf(userId).SetMuted(muted);
     }
 
-    /// <summary>
-    /// 禁言会话
-    /// </summary>
-    /// <param name="duration">禁言持续时间</param>
-    public void Mute()
+    /// <summary>获取（必要时创建）成员的会话状态。</summary>
+    private ChatSessionMemberState StateOf(Guid userId)
     {
-        IsMuted = true;
-    }
-
-    /// <summary>
-    /// 取消禁言会话
-    /// </summary>
-    public void Unmute()
-    {
-        IsMuted = false;
+        if (_memberStates.TryGetValue(userId, out var state))
+            return state;
+        state = new ChatSessionMemberState(userId);
+        _memberStates[userId] = state;
+        return state;
     }
 
     /// <summary>
@@ -301,10 +287,9 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
     /// </summary>
     public static ChatSession Rebuild(
         Guid sessionId, SessionType sessionType, string? sessionName, Guid? groupId, Guid creatorId,
-        List<Guid> participants, IReadOnlyDictionary<Guid, int> unreadCount,
-        IReadOnlyDictionary<Guid, DateTime> lastReadTime,
+        List<Guid> participants, IReadOnlyDictionary<Guid, ChatSessionMemberState> memberStates,
         Guid? lastMessageId, string? lastMessageContent, DateTime? lastMessageTime,
-        DateTime createdTime, DateTime? dismissedTime, bool isDismissed, bool isPinned, bool isMuted)
+        DateTime createdTime, DateTime? dismissedTime, bool isDismissed)
     {
         var session = new ChatSession
         {
@@ -316,19 +301,14 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
         };
         session.SessionName = sessionName;
         session.Participants = participants;
-        session._unreadCount.Clear();
-        session._lastReadTime.Clear();
-        foreach (var (userId, count) in unreadCount)
-            session._unreadCount[userId] = count;
-        foreach (var (userId, time) in lastReadTime)
-            session._lastReadTime[userId] = time;
+        session._memberStates.Clear();
+        foreach (var (userId, state) in memberStates)
+            session._memberStates[userId] = state;
         session.LastMessageId = lastMessageId;
         session.LastMessageContent = lastMessageContent;
         session.LastMessageTime = lastMessageTime;
         session.DismissedTime = dismissedTime;
         session.IsDismissed = isDismissed;
-        session.IsPinned = isPinned;
-        session.IsMuted = isMuted;
         return session;
     }
 }

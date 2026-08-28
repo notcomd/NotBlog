@@ -1,4 +1,4 @@
-﻿using Message.Infrastructure.Services;
+using Message.Infrastructure.Services;
 
 namespace Message.Web.API.APIs;
 
@@ -146,7 +146,7 @@ public static class SessionsApi
         {
             var userId = currentUser.GetUserId();
             var sessions = await mediator.SendAsync(new GetUserSessionsQuery(userId), ct);
-            return Results.Ok(ApiResponse<IEnumerable<SessionDto>>.Ok(sessions.Select(MapToDto)));
+            return Results.Ok(ApiResponse<IEnumerable<SessionDto>>.Ok(sessions.Select(s => MapToDto(s, userId))));
         }
         catch (Exception ex)
         {
@@ -188,7 +188,7 @@ public static class SessionsApi
             if (session == null)
                 return Results.Ok(ApiResponse<SessionDto>.NotFound("会话不存在"));
 
-            var dto = MapToDto(session);
+            var dto = MapToDto(session, callerId);
             await sessionCache.CacheSessionAsync(id, dto, ct);
             return Results.Ok(ApiResponse<SessionDto>.Ok(dto));
         }
@@ -363,7 +363,7 @@ public static class SessionsApi
         {
             var userId = currentUser.GetUserId();
             var sessions = await mediator.SendAsync(new GetPinnedSessionsQuery(userId), ct);
-            return Results.Ok(ApiResponse<IEnumerable<SessionDto>>.Ok(sessions.Select(MapToDto)));
+            return Results.Ok(ApiResponse<IEnumerable<SessionDto>>.Ok(sessions.Select(s => MapToDto(s, userId))));
         }
         catch (Exception ex)
         {
@@ -395,22 +395,26 @@ public static class SessionsApi
         }
     }
 
-    /// <summary>会话实体 → DTO 映射</summary>
-    private static SessionDto MapToDto(ChatSession session) => new()
+    /// <summary>会话实体 → DTO 映射（IsPinned/IsMuted 按成员维度，取决于请求用户）。</summary>
+    private static SessionDto MapToDto(ChatSession session, Guid userId)
     {
-        SessionId = session.SessionId,
-        SessionType = session.SessionType,
-        SessionName = session.SessionName,
-        GroupId = session.GroupId,
-        CreatorId = session.CreatorId,
-        Participants = session.Participants.ToList(),
-        LastMessageId = session.LastMessageId,
-        LastMessageContent = session.LastMessageContent,
-        LastMessageTime = session.LastMessageTime,
-        CreatedTime = session.CreatedTime,
-        IsPinned = session.IsPinned,
-        IsMuted = session.IsMuted
-    };
+        var state = session.MemberStates.TryGetValue(userId, out var st) ? st : null;
+        return new SessionDto
+        {
+            SessionId = session.SessionId,
+            SessionType = session.SessionType,
+            SessionName = session.SessionName,
+            GroupId = session.GroupId,
+            CreatorId = session.CreatorId,
+            Participants = session.Participants.ToList(),
+            LastMessageId = session.LastMessageId,
+            LastMessageContent = session.LastMessageContent,
+            LastMessageTime = session.LastMessageTime,
+            CreatedTime = session.CreatedTime,
+            IsPinned = state?.IsPinned ?? false,
+            IsMuted = state?.IsMuted ?? false
+        };
+    }
 
     /// <summary>添加会话参与者请求</summary>
     public record AddParticipantRequest(Guid UserId);

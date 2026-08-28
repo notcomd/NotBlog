@@ -28,12 +28,6 @@ public class ChatSessionConfiguration : IEntityTypeConfiguration<ChatSession>
         builder.Property(s => s.IsDismissed)
             .IsRequired();
 
-        builder.Property(s => s.IsPinned)
-            .IsRequired();
-
-        builder.Property(s => s.IsMuted)
-            .IsRequired();
-
         builder.Property(s => s.LastMessageContent)
             .HasMaxLength(500);
 
@@ -45,8 +39,7 @@ public class ChatSessionConfiguration : IEntityTypeConfiguration<ChatSession>
         builder.Property(s => s.Participants)
             .HasColumnName("Participants")
             .HasColumnType("uuid[]");
-        builder.Ignore(s => s.UnreadCount);
-        builder.Ignore(s => s.LastReadTime);
+        builder.Ignore(s => s.MemberStates);
 
         builder.HasIndex(s => s.CreatorId);
         builder.HasIndex(s => s.GroupId)
