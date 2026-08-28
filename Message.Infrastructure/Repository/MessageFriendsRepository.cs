@@ -131,7 +131,7 @@ public class MessageFriendsRepository(MessageDbContext context)
         return await DbSet.AnyAsync(f =>
             f.UserId == userId &&
             f.FriendId == friendId &&
-            (f.Status == FriendshipStatus.Blocked || f.IsBlocked));
+            f.Status == FriendshipStatus.Blocked);
     }
 
     public async Task<int> GetFriendCountAsync(Guid userId)

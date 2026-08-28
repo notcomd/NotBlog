@@ -58,7 +58,7 @@ public class SessionCommandHandlerTests
             new Mock<ILogger<CreateSessionCommandHandler>>().Object);
 
         var result = await handler.Handler(
-            new CreateSessionCommand(UserId, SessionType.Private, FriendId, null, null, null),
+            new CreateSessionCommand(UserId, SessionType.Private, FriendId, null, null),
             CancellationToken.None);
 
         Assert.Multiple(() =>
@@ -80,7 +80,7 @@ public class SessionCommandHandlerTests
             new Mock<ILogger<CreateSessionCommandHandler>>().Object);
 
         var result = await handler.Handler(
-            new CreateSessionCommand(UserId, SessionType.Private, FriendId, null, null, null),
+            new CreateSessionCommand(UserId, SessionType.Private, FriendId, null, null),
             CancellationToken.None);
 
         Assert.Multiple(() =>
@@ -104,7 +104,7 @@ public class SessionCommandHandlerTests
             new Mock<ILogger<CreateSessionCommandHandler>>().Object);
 
         var result = await handler.Handler(
-            new CreateSessionCommand(UserId, SessionType.Group, null, Guid.NewGuid(), "测试群",
+            new CreateSessionCommand(UserId, SessionType.Group, null, Guid.NewGuid(),
                 new HashSet<Guid> { UserId, FriendId }),
             CancellationToken.None);
 

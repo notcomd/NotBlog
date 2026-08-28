@@ -29,7 +29,7 @@ public class AddGroupMemberCommandHandler(
         if (session is null)
         {
             session = ChatSession.CreateGroupSession(
-                group.GroupId, group.OwnerId, group.GroupName,
+                group.GroupId, group.OwnerId,
                 group.Members.Select(m => m.UserId).ToHashSet());
             await sessionRepository.AddAsync(session);
         }

@@ -265,7 +265,7 @@ public class SendMessageCommandHandlerTests
     public async Task Handler_群聊会话_不应设置消息接收者()
     {
         var groupSession = new ChatSession(SessionType.Group, SenderId,
-            new HashSet<Guid> { SenderId, Guid.NewGuid() }, "测试群");
+            new HashSet<Guid> { SenderId, Guid.NewGuid() });
         _sessionRepository.Setup(r => r.GetByIdAsync(SessionId)).ReturnsAsync(groupSession);
 
         MessageEntity? saved = null;

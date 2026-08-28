@@ -16,9 +16,6 @@ public class ChatSessionConfiguration : IEntityTypeConfiguration<ChatSession>
             .IsRequired()
             .HasConversion<string>();
 
-        builder.Property(s => s.SessionName)
-            .HasMaxLength(200);
-
         builder.Property(s => s.CreatorId)
             .IsRequired();
 

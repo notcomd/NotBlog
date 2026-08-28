@@ -25,7 +25,6 @@ public class CreateSessionCommandHandler(
             session = ChatSession.CreateGroupSession(
                 command.GroupId!.Value,
                 command.UserId,
-                command.SessionName!,
                 command.InitialMembers ?? new HashSet<Guid>());
         }
 

@@ -16,7 +16,6 @@ public sealed class ChatSessionDocument
     public Guid SessionId { get; set; }
 
     public SessionType SessionType { get; set; }
-    public string? SessionName { get; set; }
     public Guid? GroupId { get; set; }
     public Guid CreatorId { get; set; }
 

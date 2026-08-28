@@ -58,6 +58,12 @@ public class GroupMember : Entity<Guid>
         Role = GroupMemberRole.Member;
     }
 
+    /// <summary>转让群主场景：将本成员角色置为群主（由聚合根 <see cref="Group.TransferOwnership"/> 调用）。</summary>
+    public void BecomeOwner()
+    {
+        Role = GroupMemberRole.Owner;
+    }
+
     public void Mute(TimeSpan duration)
     {
         IsMuted = true;
@@ -98,6 +104,52 @@ public class GroupMember : Entity<Guid>
         if (IsMuted && MuteEndTime.HasValue && DateTime.UtcNow < MuteEndTime.Value)
             return false;
         return true;
+    }
+
+    /// <summary>
+    /// 邀请成员：允许成员邀请时所有成员可邀请，否则需非普通成员。
+    /// </summary>
+    public bool CanInvite(bool allowMemberInvite)
+    {
+        return allowMemberInvite || Role != GroupMemberRole.Member;
+    }
+
+    /// <summary>
+    /// 编辑群信息：允许成员编辑时所有成员可编辑，否则需非普通成员。
+    /// </summary>
+    public bool CanEditInfo(bool allowMemberEditInfo)
+    {
+        return allowMemberEditInfo || Role != GroupMemberRole.Member;
+    }
+
+    /// <summary>移除成员：需非普通成员。</summary>
+    public bool CanRemoveMember() => Role != GroupMemberRole.Member;
+
+    /// <summary>禁言/解禁成员：需群主或管理员。</summary>
+    public bool CanMuteMember() => Role is GroupMemberRole.Admin or GroupMemberRole.Owner;
+
+    /// <summary>封禁/解封成员：需群主或管理员。</summary>
+    public bool CanBanMember() => Role is GroupMemberRole.Admin or GroupMemberRole.Owner;
+
+    /// <summary>转让群主：仅群主。</summary>
+    public bool CanTransferOwnership() => Role == GroupMemberRole.Owner;
+
+    /// <summary>
+    /// 按权限判定（角色能力内聚于此，聚合根 <see cref="Group.HasPermission"/> 委托本方法）。
+    /// </summary>
+    public bool Can(GroupPermission permission, bool allowMemberInvite, bool allowMemberEditInfo)
+    {
+        return permission switch
+        {
+            GroupPermission.SendMessage => CanSendMessage(),
+            GroupPermission.InviteMember => CanInvite(allowMemberInvite),
+            GroupPermission.EditGroupInfo => CanEditInfo(allowMemberEditInfo),
+            GroupPermission.RemoveMember => CanRemoveMember(),
+            GroupPermission.MuteMember => CanMuteMember(),
+            GroupPermission.BanMember => CanBanMember(),
+            GroupPermission.TransferOwnership => CanTransferOwnership(),
+            _ => false
+        };
     }
 
     /// <summary>

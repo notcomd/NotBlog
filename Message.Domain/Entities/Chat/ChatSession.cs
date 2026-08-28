@@ -19,11 +19,6 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
     public SessionType SessionType { get; init; }
 
     /// <summary>
-    /// 会话名称
-    /// </summary>
-    public string? SessionName { get; private set; }
-
-    /// <summary>
     /// 群聊ID
     /// </summary>
     public Guid? GroupId { get; init; }
@@ -77,14 +72,12 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
 
     /// <summary>
 
-        public ChatSession(SessionType sessionType, Guid creatorId, IEnumerable<Guid>? participants = null,
-        string? sessionName = null)
+        public ChatSession(SessionType sessionType, Guid creatorId, IEnumerable<Guid>? participants = null)
     {
         SessionId = Guid.NewGuid();
         SessionType = sessionType;
         CreatorId = creatorId;
         Participants = participants?.ToList() ?? new List<Guid> { creatorId };
-        SessionName = sessionName;
         CreatedTime = DateTime.UtcNow;
         IsDismissed = false;
         foreach (var participantId in Participants)
@@ -119,14 +112,12 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
     /// </summary>
     /// <param name="groupId">群聊ID</param>
     /// <param name="creatorId">创建者ID</param>
-    /// <param name="groupName">群聊名称</param>
     /// <param name="initialMembers">初始成员ID列表</param>
     /// <returns>群聊会话</returns>
-    public static ChatSession CreateGroupSession(Guid groupId, Guid creatorId, string groupName,
-        HashSet<Guid> initialMembers)
+    public static ChatSession CreateGroupSession(Guid groupId, Guid creatorId, HashSet<Guid> initialMembers)
     {
         var participants = new HashSet<Guid>(initialMembers) { creatorId };
-        var session = new ChatSession(SessionType.Group, creatorId, participants, groupName)
+        var session = new ChatSession(SessionType.Group, creatorId, participants)
         {
             GroupId = groupId
         };
@@ -260,18 +251,6 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
     }
 
     /// <summary>
-    /// 更新会话名称
-    /// </summary>
-    /// <param name="name">会话名称</param>
-    public void UpdateSessionName(string name)
-    {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("会话名称不能为空", nameof(name));
-
-        SessionName = name;
-    }
-
-    /// <summary>
     /// 检查用户是否为会话参与者
     /// </summary>
     /// <param name="userId">用户ID</param>
@@ -286,7 +265,7 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
     /// <para>重构已校验、已持久化的实体，不重复触发领域工厂校验、不重新产生领域事件。</para>
     /// </summary>
     public static ChatSession Rebuild(
-        Guid sessionId, SessionType sessionType, string? sessionName, Guid? groupId, Guid creatorId,
+        Guid sessionId, SessionType sessionType, Guid? groupId, Guid creatorId,
         List<Guid> participants, IReadOnlyDictionary<Guid, ChatSessionMemberState> memberStates,
         Guid? lastMessageId, string? lastMessageContent, DateTime? lastMessageTime,
         DateTime createdTime, DateTime? dismissedTime, bool isDismissed)
@@ -299,7 +278,6 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
             CreatorId = creatorId,
             CreatedTime = createdTime
         };
-        session.SessionName = sessionName;
         session.Participants = participants;
         session._memberStates.Clear();
         foreach (var (userId, state) in memberStates)
