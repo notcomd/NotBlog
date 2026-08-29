@@ -52,4 +52,10 @@ public interface IMessageClient
     /// </summary>
     /// <param name="progress">上传进度信息（文件Key、已完成分片数、总分片数、百分比等）</param>
     Task UploadProgress(ChunkUploadProgress progress);
+
+    /// <summary>
+    /// 接收站内通知（Markdown 点赞/投币/评论互动与评论发布等触发的作者通知实时推送）
+    /// </summary>
+    /// <param name="notification">站内通知 DTO</param>
+    Task PushNotification(NotificationDto notification);
 }

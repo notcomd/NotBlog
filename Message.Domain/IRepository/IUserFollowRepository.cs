@@ -15,6 +15,9 @@ public interface IUserFollowRepository : IRepository<UserFollow, IUnitOfWork>
     /// <summary>我关注的用户ID列表（Feed 聚合用）</summary>
     Task<IEnumerable<Guid>> GetFollowingIdsAsync(Guid userGuid);
 
+    /// <summary>我的粉丝（关注者）用户ID列表</summary>
+    Task<IEnumerable<Guid>> GetFollowerIdsAsync(Guid userGuid);
+
     Task<int> GetFollowingCountAsync(Guid userGuid);
     Task<int> GetFollowerCountAsync(Guid userGuid);
 

@@ -90,6 +90,21 @@ public class MessageDeliveryService
     }
 
     /// <summary>
+    /// 向指定用户的所有在线连接推送站内通知（离线静默，前端经 /api/notifications 轮询/重连补拉）。
+    /// </summary>
+    /// <param name="userId">目标用户（通知接收者）</param>
+    /// <param name="dto">通知 DTO</param>
+    public async Task NotifyNotificationAsync(Guid userId, NotificationDto dto, CancellationToken ct = default)
+    {
+        var connections = await GetOnlineConnectionsAsync([userId], ct);
+        if (connections.Count == 0)
+            return;
+
+        await Task.WhenAll(
+            connections.Select(c => _hubContext.Clients.Client(c).PushNotification(dto)));
+    }
+
+    /// <summary>
     /// 通知会话内其他用户某消息已被读取。
     /// </summary>
     public async Task NotifyMessageReadAsync(

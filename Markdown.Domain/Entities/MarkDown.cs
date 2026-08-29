@@ -152,6 +152,11 @@ public class MarkDown : Entity<int>, IAggregateRoot
     public long AddCoin(long count = 1) => MarkQuote.AddCoin(count);
 
     /// <summary>
+    ///     文档打赏硬币 -1（下限钳制 0；仅用于投币唯一约束冲突时的内存计数回滚）
+    /// </summary>
+    public long RemoveCoin(long count = 1) => MarkQuote.RemoveCoin(count);
+
+    /// <summary>
     ///     文档浏览 +1（配合 Redis Set 防刷）
     /// </summary>
     public long AddView(long count = 1) => MarkQuote.AddView(count);

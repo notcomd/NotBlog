@@ -107,9 +107,9 @@ public interface IMarkdownRepository : IRepository<MarkDown, IUnitOfWork>
     Task<MarkReview> AddChildReviewAsync(Guid markDownGuid, Guid parentReviewGuid, MarkReview childReview);
 
     /// <summary>
-    ///     评论点赞 +1（同一用户对同一评论仅能点赞一次），返回最新点赞数（F-10.5）
+    ///     评论点赞 +1（同一用户对同一评论仅能点赞一次，唯一约束防并发重复），返回计数与是否首次
     /// </summary>
-    Task<long> LikeReviewAsync(Guid reviewGuid, Guid userId);
+    Task<InteractionResult> LikeReviewAsync(Guid reviewGuid, Guid userId);
 
     /// <summary>
     ///     取消评论点赞 -1（不低于 0，未点赞时幂等返回当前计数），返回最新点赞数（F-10.5）
@@ -132,9 +132,9 @@ public interface IMarkdownRepository : IRepository<MarkDown, IUnitOfWork>
     // ===== 文档交互计数（阶段 2 端点：浏览/点赞/分享/硬币） =====
 
     /// <summary>
-    ///     文档点赞 +1（同一用户对同一文档仅能点赞一次，唯一约束防并发重复），返回最新点赞数
+    ///     文档点赞 +1（同一用户对同一文档仅能点赞一次，唯一约束防并发重复），返回计数与是否首次
     /// </summary>
-    Task<long> LikeDocumentAsync(Guid markDownGuid, Guid userId);
+    Task<InteractionResult> LikeDocumentAsync(Guid markDownGuid, Guid userId);
 
     /// <summary>
     ///     取消文档点赞 -1（不低于 0，未点赞时幂等返回当前计数），返回最新点赞数
@@ -152,16 +152,16 @@ public interface IMarkdownRepository : IRepository<MarkDown, IUnitOfWork>
     Task<long> AddDocumentShareAsync(Guid markDownGuid);
 
     /// <summary>
-    ///     文档打赏硬币（记录 MarkCoin 流水 + 计数增加），返回最新硬币总数
+    ///     文档打赏硬币（一用户一文档一次：记录 MarkCoin 流水 + 计数增加），重复投币幂等返回现总额，返回计数与是否首次
     /// </summary>
-    Task<long> CoinDocumentAsync(Guid markDownGuid, Guid userId, long amount);
+    Task<InteractionResult> CoinDocumentAsync(Guid markDownGuid, Guid userId, long amount);
 
     // ===== 评论踩（阶段 2 端点） =====
 
     /// <summary>
-    ///     评论踩 +1（同一用户对同一评论仅能踩一次，唯一约束防并发重复），返回最新踩数
+    ///     评论踩 +1（同一用户对同一评论仅能踩一次，唯一约束防并发重复），返回计数与是否首次
     /// </summary>
-    Task<long> DislikeReviewAsync(Guid reviewGuid, Guid userId);
+    Task<InteractionResult> DislikeReviewAsync(Guid reviewGuid, Guid userId);
 
     /// <summary>
     ///     取消评论踩 -1（不低于 0，未踩时幂等返回当前计数），返回最新踩数

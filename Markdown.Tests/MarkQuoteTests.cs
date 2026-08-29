@@ -52,6 +52,15 @@ public class MarkQuoteTests
     }
 
     [Test]
+    public void RemoveCoin递减且下限钳制为零()
+    {
+        var q = new MarkQuote(coinSome: 3);
+        Assert.That(q.RemoveCoin(2), Is.EqualTo(1));
+        Assert.That(q.RemoveCoin(5), Is.EqualTo(0), "下限钳制为 0，不出现负数");
+        Assert.Throws<ArgumentOutOfRangeException>(() => q.RemoveCoin(-1));
+    }
+
+    [Test]
     public void 热度分可设置与读取()
     {
         var q = new MarkQuote();

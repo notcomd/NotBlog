@@ -141,6 +141,22 @@ public class MarkQuote
     }
 
     /// <summary>
+    ///     减少硬币数（线程安全，下限钳制为 0；用于投币唯一约束冲突时的内存计数回滚）
+    /// </summary>
+    public long RemoveCoin(long count = 1)
+    {
+        if (count < 0) throw new ArgumentOutOfRangeException(nameof(count), "减少的数量不能为负数");
+        var newValue = Interlocked.Add(ref _coinSome, -count);
+        if (newValue < 0)
+        {
+            Interlocked.Exchange(ref _coinSome, 0);
+            return 0;
+        }
+
+        return newValue;
+    }
+
+    /// <summary>
     ///     增加浏览数（线程安全）
     /// </summary>
     public long AddView(long count = 1)

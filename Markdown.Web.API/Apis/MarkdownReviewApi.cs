@@ -331,14 +331,21 @@ public static class MarkdownReviewApi
             !markdown.HasPermission(userId))
             return Results.NotFound(ApiResponse<long>.NotFound("评论不存在"));
 
-        var count = await markdownRepository.LikeReviewAsync(reviewGuid, userId);
+        var result = await markdownRepository.LikeReviewAsync(reviewGuid, userId);
 
-        // 发布点赞集成事件（总线故障不拖垮业务，P1-6）
-        await EventPublishing.PublishSafelyAsync(eventBus, new MarkReviewLikedIntegrationEvent(
-            reviewGuid, review.MarkDownGuid, userId, count, DateTimeOffset.UtcNow),
-            loggerFactory.CreateLogger("MarkdownReviewApi.LikeReview"));
+        // 仅首次点赞发布作者通知（重复点赞幂等分支不发，防止轰炸）；
+        // 兼容说明：原 MarkReviewLiked 集成事件保留未删，但通知统一改走 MarkdownInteraction 事件
+        if (result.IsFirst)
+        {
+            await EventPublishing.PublishSafelyAsync(eventBus, new MarkdownInteractionIntegrationEvent(
+                MarkdownInteractionType.ReviewLiked,
+                review.MarkDownGuid, markdown.MarkDownName, reviewGuid,
+                ActorUserId: userId, TargetUserId: review.UserId,
+                Amount: 0, OccurredAt: DateTimeOffset.UtcNow),
+                loggerFactory.CreateLogger("MarkdownReviewApi.LikeReview"));
+        }
 
-        return Results.Ok(ApiResponse<long>.Ok(count, "点赞成功"));
+        return Results.Ok(ApiResponse<long>.Ok(result.Count, "点赞成功"));
     }
 
     /// <summary>
@@ -347,7 +354,9 @@ public static class MarkdownReviewApi
     private static async Task<IResult> DislikeReviewAsync(
         Guid reviewGuid,
         [FromServices]IMarkdownRepository markdownRepository,
-        [FromServices]ICurrentUserService currentUserService)
+        [FromServices]ICurrentUserService currentUserService,
+        [FromServices]IEventBus eventBus,
+        [FromServices]ILoggerFactory loggerFactory)
     {
         var userId = currentUserService.GetUserId();
 
@@ -362,8 +371,20 @@ public static class MarkdownReviewApi
             !markdown.HasPermission(userId))
             return Results.NotFound(ApiResponse<long>.NotFound("评论不存在"));
 
-        var count = await markdownRepository.DislikeReviewAsync(reviewGuid, userId);
-        return Results.Ok(ApiResponse<long>.Ok(count, "踩成功"));
+        var result = await markdownRepository.DislikeReviewAsync(reviewGuid, userId);
+
+        // 仅首次点踩发布作者通知（重复点踩幂等分支不发）
+        if (result.IsFirst)
+        {
+            await EventPublishing.PublishSafelyAsync(eventBus, new MarkdownInteractionIntegrationEvent(
+                MarkdownInteractionType.ReviewDisliked,
+                review.MarkDownGuid, markdown.MarkDownName, reviewGuid,
+                ActorUserId: userId, TargetUserId: review.UserId,
+                Amount: 0, OccurredAt: DateTimeOffset.UtcNow),
+                loggerFactory.CreateLogger("MarkdownReviewApi.DislikeReview"));
+        }
+
+        return Results.Ok(ApiResponse<long>.Ok(result.Count, "踩成功"));
     }
 
     /// <summary>

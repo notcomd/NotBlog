@@ -252,7 +252,9 @@ public static class MarkdownApi
         Guid markDownGuid,
         [FromServices]IMarkdownRepository markdownRepository,
         [FromServices]IMarkdownHotBoardService hotBoardService,
-        [FromServices]ICurrentUserService currentUserService)
+        [FromServices]ICurrentUserService currentUserService,
+        [FromServices]IEventBus eventBus,
+        [FromServices]ILoggerFactory loggerFactory)
     {
         var userId = currentUserService.GetUserId();
 
@@ -263,11 +265,22 @@ public static class MarkdownApi
             !markdown.HasPermission(userId))
             return Results.NotFound(ApiResponse<long>.NotFound("文章不存在"));
 
-        var count = await markdownRepository.LikeDocumentAsync(markDownGuid, userId);
+        var result = await markdownRepository.LikeDocumentAsync(markDownGuid, userId);
+
+        // 仅首次点赞发布作者通知（重复点赞幂等分支不发，防止轰炸）
+        if (result.IsFirst)
+        {
+            await EventPublishing.PublishSafelyAsync(eventBus, new MarkdownInteractionIntegrationEvent(
+                MarkdownInteractionType.DocumentLiked,
+                markDownGuid, markdown.MarkDownName, ReviewGuid: null,
+                ActorUserId: userId, TargetUserId: markdown.MarkUserGuid,
+                Amount: 0, OccurredAt: DateTimeOffset.UtcNow),
+                loggerFactory.CreateLogger("MarkdownApi.LikeDocument"));
+        }
 
         // 热度分实时刷新（失败不影响点赞，定时重建兜底）
         await hotBoardService.UpdateScoreAsync(markDownGuid);
-        return Results.Ok(ApiResponse<long>.Ok(count, "点赞成功"));
+        return Results.Ok(ApiResponse<long>.Ok(result.Count, "点赞成功"));
     }
 
     /// <summary>
@@ -321,14 +334,16 @@ public static class MarkdownApi
     }
 
     /// <summary>
-    ///     文档打赏硬币（记录 MarkCoin 流水 + 计数增加）
+    ///     文档打赏硬币（一用户一篇仅一次；重复投币幂等返回现总额，不重复累计、不再发通知）
     /// </summary>
     private static async Task<IResult> CoinDocumentAsync(
         Guid markDownGuid,
         [FromBody] CoinMarkdownRequest request,
         [FromServices]IMarkdownRepository markdownRepository,
         [FromServices]IMarkdownHotBoardService hotBoardService,
-        [FromServices]ICurrentUserService currentUserService)
+        [FromServices]ICurrentUserService currentUserService,
+        [FromServices]IEventBus eventBus,
+        [FromServices]ILoggerFactory loggerFactory)
     {
         var userId = currentUserService.GetUserId();
 
@@ -342,11 +357,22 @@ public static class MarkdownApi
             !markdown.HasPermission(userId))
             return Results.NotFound(ApiResponse<long>.NotFound("文章不存在"));
 
-        var count = await markdownRepository.CoinDocumentAsync(markDownGuid, userId, request.Amount);
+        var result = await markdownRepository.CoinDocumentAsync(markDownGuid, userId, request.Amount);
+
+        // 仅首次投币发布作者通知（重复投币幂等分支不发）
+        if (result.IsFirst)
+        {
+            await EventPublishing.PublishSafelyAsync(eventBus, new MarkdownInteractionIntegrationEvent(
+                MarkdownInteractionType.DocumentCoined,
+                markDownGuid, markdown.MarkDownName, ReviewGuid: null,
+                ActorUserId: userId, TargetUserId: markdown.MarkUserGuid,
+                Amount: request.Amount, OccurredAt: DateTimeOffset.UtcNow),
+                loggerFactory.CreateLogger("MarkdownApi.CoinDocument"));
+        }
 
         // 热度分实时刷新（失败不影响打赏，定时重建兜底）
         await hotBoardService.UpdateScoreAsync(markDownGuid);
-        return Results.Ok(ApiResponse<long>.Ok(count, "打赏成功"));
+        return Results.Ok(ApiResponse<long>.Ok(result.Count, result.IsFirst ? "打赏成功" : "您已打赏过该文章，不重复累计"));
     }
 
     /// <summary>

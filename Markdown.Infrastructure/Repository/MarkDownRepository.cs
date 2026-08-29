@@ -529,9 +529,9 @@ public class MarkDownRepository(
     }
 
     /// <summary>
-    ///     评论点赞 +1（点赞去重：同一用户对同一评论仅能点赞一次，依赖数据库唯一约束防并发重复），返回最新点赞数
+    ///     评论点赞 +1（点赞去重：同一用户对同一评论仅能点赞一次，依赖数据库唯一约束防并发重复），返回计数与是否首次
     /// </summary>
-    public async Task<long> LikeReviewAsync(Guid reviewGuid, Guid userId)
+    public async Task<InteractionResult> LikeReviewAsync(Guid reviewGuid, Guid userId)
     {
         try
         {
@@ -548,14 +548,14 @@ public class MarkDownRepository(
             }
             catch (DbUpdateException ex) when (IsUniqueViolation(ex))
             {
-                // 已点赞过：回滚内存计数，幂等返回当前计数，不再递增
+                // 已点赞过：回滚内存计数，幂等返回当前计数，不再递增（非首次，不发通知）
                 review.ReviewQuote.RemoveLove();
                 logger.LogInformation("用户 {UserId} 已点赞过评论 {ReviewGuid}，忽略重复点赞", userId, reviewGuid);
-                return review.ReviewQuote.LoveSome;
+                return new InteractionResult(review.ReviewQuote.LoveSome, IsFirst: false);
             }
 
             logger.LogInformation("评论 {ReviewGuid} 点赞数更新为 {Count}", reviewGuid, count);
-            return count;
+            return new InteractionResult(count, IsFirst: true);
         }
         catch (Exception ex)
         {
@@ -641,9 +641,9 @@ public class MarkDownRepository(
     // ==================== 文档交互计数（阶段 2：浏览/点赞/分享/硬币） ====================
 
     /// <summary>
-    ///     文档点赞 +1（点赞去重：同一用户对同一文档仅能点赞一次，依赖数据库唯一约束防并发重复），返回最新点赞数
+    ///     文档点赞 +1（点赞去重：同一用户对同一文档仅能点赞一次，依赖数据库唯一约束防并发重复），返回计数与是否首次
     /// </summary>
-    public async Task<long> LikeDocumentAsync(Guid markDownGuid, Guid userId)
+    public async Task<InteractionResult> LikeDocumentAsync(Guid markDownGuid, Guid userId)
     {
         try
         {
@@ -663,14 +663,14 @@ public class MarkDownRepository(
             }
             catch (DbUpdateException ex) when (IsUniqueViolation(ex))
             {
-                // 已点赞过：回滚内存计数，幂等返回当前计数
+                // 已点赞过：回滚内存计数，幂等返回当前计数（非首次，不发通知）
                 markdown.RemoveLove();
                 logger.LogInformation("用户 {UserId} 已点赞过文档 {MarkDownGuid}，忽略重复点赞", userId, markDownGuid);
-                return markdown.MarkQuote.LoveSome;
+                return new InteractionResult(markdown.MarkQuote.LoveSome, IsFirst: false);
             }
 
             logger.LogInformation("文档 {MarkDownGuid} 点赞数更新为 {Count}", markDownGuid, count);
-            return count;
+            return new InteractionResult(count, IsFirst: true);
         }
         catch (Exception ex)
         {
@@ -762,22 +762,45 @@ public class MarkDownRepository(
     }
 
     /// <summary>
-    ///     文档打赏硬币（MarkCoin 流水记录 + 计数增加，同一 SaveChanges 原子提交），返回最新硬币总数
+    ///     文档打赏硬币（一用户一文档一次：MarkCoin 流水记录 + 计数增加，同一 SaveChanges 原子提交）。
+    ///     已有投币记录时幂等返回现总额（IsFirst=false，不发通知）；唯一约束冲突时整批回滚并回滚内存计数。
+    ///     返回现硬币总数与是否首次
     /// </summary>
-    public async Task<long> CoinDocumentAsync(Guid markDownGuid, Guid userId, long amount)
+    public async Task<InteractionResult> CoinDocumentAsync(Guid markDownGuid, Guid userId, long amount)
     {
         try
         {
             var markdown = await GetMarkDownTrackedAsync(markDownGuid)
                 ?? throw new KeyNotFoundException($"MarkDown 文档不存在：{markDownGuid}");
 
+            // 已投币：幂等返回当前总额，不新增记录、不递增（非首次，不发通知）
+            var exists = await markDownDbContext.MarkCoins
+                .AnyAsync(c => c.MarkDownGuid == markDownGuid && c.UserId == userId);
+            if (exists)
+            {
+                logger.LogInformation("用户 {UserId} 已打赏过文档 {MarkDownGuid}，幂等返回现总额 {Count}",
+                    userId, markDownGuid, markdown.MarkQuote.CoinSome);
+                return new InteractionResult(markdown.MarkQuote.CoinSome, IsFirst: false);
+            }
+
             markDownDbContext.MarkCoins.Add(new MarkCoin(markDownGuid, userId, amount));
             var count = markdown.AddCoin(amount);
-            await markDownDbContext.SaveChangesAsync();
+            try
+            {
+                await markDownDbContext.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex) when (IsUniqueViolation(ex))
+            {
+                // 并发重复投币：回滚内存计数，幂等返回当前总额
+                markdown.RemoveCoin(amount);
+                logger.LogInformation("用户 {UserId} 并发重复打赏文档 {MarkDownGuid}，幂等返回现总额 {Count}",
+                    userId, markDownGuid, markdown.MarkQuote.CoinSome);
+                return new InteractionResult(markdown.MarkQuote.CoinSome, IsFirst: false);
+            }
 
             logger.LogInformation("用户 {UserId} 打赏文档 {MarkDownGuid} {Amount} 硬币，累计 {Count}",
                 userId, markDownGuid, amount, count);
-            return count;
+            return new InteractionResult(count, IsFirst: true);
         }
         catch (Exception ex)
         {
@@ -789,9 +812,9 @@ public class MarkDownRepository(
     // ==================== 评论踩（阶段 2） ====================
 
     /// <summary>
-    ///     评论踩 +1（踩去重：同一用户对同一评论仅能踩一次，唯一约束防并发重复），返回最新踩数
+    ///     评论踩 +1（踩去重：同一用户对同一评论仅能踩一次，唯一约束防并发重复），返回计数与是否首次
     /// </summary>
-    public async Task<long> DislikeReviewAsync(Guid reviewGuid, Guid userId)
+    public async Task<InteractionResult> DislikeReviewAsync(Guid reviewGuid, Guid userId)
     {
         try
         {
@@ -806,14 +829,14 @@ public class MarkDownRepository(
             }
             catch (DbUpdateException ex) when (IsUniqueViolation(ex))
             {
-                // 已踩过：回滚内存计数，幂等返回当前计数
+                // 已踩过：回滚内存计数，幂等返回当前计数（非首次，不发通知）
                 review.ReviewQuote.RemoveDislike();
                 logger.LogInformation("用户 {UserId} 已踩过评论 {ReviewGuid}，忽略重复踩", userId, reviewGuid);
-                return review.ReviewQuote.DislikeSome;
+                return new InteractionResult(review.ReviewQuote.DislikeSome, IsFirst: false);
             }
 
             logger.LogInformation("评论 {ReviewGuid} 踩数更新为 {Count}", reviewGuid, count);
-            return count;
+            return new InteractionResult(count, IsFirst: true);
         }
         catch (Exception ex)
         {

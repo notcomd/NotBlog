@@ -57,6 +57,9 @@ builder.Services.AddMessageInfrastructure(builder.Configuration);
 // D2-1：消息/会话读写链路切换到 Mongo（message + chat_session 集合）；社交域仍留 EF。
 builder.Services.AddMessageMongoRepositories();
 builder.Services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<MessageDbContext>());
+
+// Markdown 发布通知聚合器：每 10 分钟将窗口内多条「好友/关注者发布文章」合并为一条站内通知
+builder.Services.AddHostedService<Message.Web.API.Background.MarkdownPublishAggregationService>();
 builder.Services.AddHttpContextAccessor();
 
 // ═══ EventBus 消费者注册（RabbitMQ）：扫描 Web.API 程序集的集成事件处理器（如 RegisterByUserIntegrationEvent）═══

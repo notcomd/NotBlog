@@ -94,7 +94,7 @@ public class MarkDownDbContext(DbContextOptions<MarkDownDbContext> options, INot
             entity.HasIndex(x => x.MarkDownGuid);
         });
 
-        // MarkCoin 文档打赏记录表配置（同用户可多次打赏，无唯一约束）
+        // MarkCoin 文档打赏记录表配置（唯一约束：一用户对一篇文档仅可投币一次，防重复累计与刷热度）
         modelBuilder.Entity<MarkCoin>(entity =>
         {
             entity.ToTable("MarkCoin");
@@ -103,6 +103,7 @@ public class MarkDownDbContext(DbContextOptions<MarkDownDbContext> options, INot
             entity.Property(x => x.UserId).IsRequired();
             entity.Property(x => x.Amount).IsRequired().HasDefaultValue(0L);
             entity.HasIndex(x => x.MarkDownGuid);
+            entity.HasIndex(x => new { x.MarkDownGuid, x.UserId }).IsUnique();
         });
 
         // MarkReviewDislike 评论踩记录表配置（唯一约束实现踩去重）
