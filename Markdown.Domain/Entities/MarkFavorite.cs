@@ -8,7 +8,7 @@ namespace Markdown.Domain.Entities;
 public class MarkFavorite : Entity<int>, IAggregateRoot
 {
 
-      public Guid MarkFavoriteGuid { get; init; }
+    public Guid MarkFavoriteGuid { get; init; }
 
     /// <summary>
     ///     收藏用户 GUID
