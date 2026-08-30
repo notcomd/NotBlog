@@ -167,6 +167,12 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
         return await DbSet.CountAsync(t => t.TweetStatus == TweetStatus.Pending);
     }
 
+    /// <summary>全量推文总数（运营统计用，不分状态）</summary>
+    public async Task<int> GetCountAllAsync()
+    {
+        return await DbSet.CountAsync();
+    }
+
     public async Task<int> GetTimelineCountAsync(IEnumerable<Guid> authorGuids, Guid viewerId, IEnumerable<Guid> followingIds)
     {
         var ids = authorGuids.Distinct().ToArray();

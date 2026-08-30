@@ -159,4 +159,7 @@ public interface ITweetRepository : IRepository<Tweet, IUnitOfWork>
     /// 获取关注 Feed 数量（与 GetCommunityFeedAsync 同条件，R-07 分页计数对齐）
     /// </summary>
     Task<int> GetCommunityFeedCountAsync(IEnumerable<Guid> authorGuids, Guid viewerId, IEnumerable<Guid> followingIds);
+
+    /// <summary>全量推文总数（运营统计用，不分状态）</summary>
+    Task<int> GetCountAllAsync();
 }

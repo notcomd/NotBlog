@@ -106,4 +106,53 @@ public class UserRepository(IdentityDbContext userDbContext)
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// 管理员分页查询用户：keyword 模糊匹配邮箱/用户名/手机号，按创建时间倒序。
+    /// 仅投影安全字段（AdminUserBrief），绝不加载 PasswordHash/盐等敏感数据。
+    /// </summary>
+    public async Task<(ICollection<AdminUserBrief> Items, int Total)> GetPagedUsersAsync(string? keyword, int page, int pageSize)
+    {
+        page = Math.Max(1, page);
+        pageSize = Math.Clamp(pageSize, 1, 100);
+
+        var query = userDbContext.Users.AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            var kw = keyword.Trim();
+            query = query.Where(u =>
+                u.UserEmail.Contains(kw) ||
+                (u.UserName != null && u.UserName.Contains(kw)) ||
+                (u.PhoneNumber != null && u.PhoneNumber.PhoneCode.Contains(kw)));
+        }
+
+        var total = await query.CountAsync();
+
+        var items = await query
+            .OrderByDescending(u => u.CreateDatetime)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(u => new AdminUserBrief(
+                u.UserGuid,
+                u.UserName,
+                u.UserEmail,
+                u.AvatarUrl != null ? u.AvatarUrl.ToString() : null,
+                u.PhoneNumber != null ? u.PhoneNumber.PhoneCode : null,
+                u.CreateDatetime,
+                (u.UserAccessFail != null && u.UserAccessFail.LockOutEnd != null &&
+                 u.UserAccessFail.LockOutEnd.Value > DateTimeOffset.UtcNow) ||
+                (u.UserSafety != null && u.UserSafety.LockOutEnd != null &&
+                 u.UserSafety.LockOutEnd.Value > DateTimeOffset.UtcNow)))
+            .ToListAsync();
+
+        return (items, total);
+    }
+
+    public async Task<bool> ExistsByEmailAsync(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            return false;
+        return await userDbContext.Users.AnyAsync(u => u.UserEmail == email.Trim());
+    }
+
 }

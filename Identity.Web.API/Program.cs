@@ -254,6 +254,8 @@ app.MapGroup("api/identity/oauth").MapOAuthServerApi();
 app.MapGroup("api/identity/ready").MapEmailVerificationApi();
 //管理端点
 app.MapGroup("api/identity/manger").MapUserManagerApi();
+//管理端用户管理端点（AdminOnly）
+app.MapGroup("api/identity/manger").MapAdminUserApi();
 //头像上传端点
 app.MapGroup("api/identity").MapAvatarApi();
 

@@ -70,6 +70,23 @@ public class UserStatusCacheService
         return (int)count;
     }
 
+    /// <summary>
+    /// 获取 Redis 在线用户集合（message:online:users）。
+    /// 返回原始字符串（用户 ID），由调用方按需解析。
+    /// </summary>
+    public async Task<IEnumerable<string>> GetOnlineUserIdsAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await _cache.SetMembersAsync(OnlineUsersKey, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "读取在线用户列表失败，返回空集合");
+            return [];
+        }
+    }
+
     private record UserStatus
     {
         public bool IsOnline { get; init; }

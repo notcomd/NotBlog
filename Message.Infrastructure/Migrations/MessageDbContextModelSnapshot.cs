@@ -23,6 +23,46 @@ namespace Message.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Message.Domain.Entities.Announcement.Announcement", b =>
+                {
+                    b.Property<Guid>("AnnouncementGuid")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(5000)
+                        .HasColumnType("character varying(5000)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatorUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsRecalled")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset?>("RecalledAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("AnnouncementGuid");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("IsRecalled", "CreatedAt");
+
+                    b.ToTable("Announcements", (string)null);
+                });
+
             modelBuilder.Entity("Message.Domain.Entities.Chat.ChatSession", b =>
                 {
                     b.Property<Guid>("SessionId")

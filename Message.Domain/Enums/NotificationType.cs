@@ -24,5 +24,10 @@ public enum NotificationType
     MarkdownCommentAdded,
     MarkdownCommentReplied,
     // ===== 文章发布 → 好友通知（v1.2） =====
-    MarkdownPublished
+    MarkdownPublished,
+    // ===== 以下为 Video 服务作者通知（互动计数与作者通知 v1.0 实施文档） =====
+    VideoLiked,
+    VideoCoined,
+    VideoCommentAdded,
+    VideoCommentReplied
 }

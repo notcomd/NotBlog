@@ -157,6 +157,8 @@ fileStorageGroup.MapFileChunkApis();
 fileStorageGroup.MapStreamUploadApis();
 fileStorageGroup.MapDedupApis();
 fileStorageGroup.MapFileVolumeApis();
+// 管理端文件端点（/api/filestorage/admin/*，内部校验管理员角色）
+fileStorageGroup.MapAdminFileApi();
 
 // F-09.2：注册标签 API（FileTagApi 内部自带 RequireAuthorization，
 // 端点：/api/filestorage/tags/...，即原文件组 API 的标签化替代）

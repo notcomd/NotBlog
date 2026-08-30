@@ -56,7 +56,10 @@ public class VideoReview : Entity<Guid>
 
     public VideoControl VideoControl { get; private set; }
 
-    public VideoQuote VideoQuote { get; private set; }
+    /// <summary>
+    /// 评论互动计数（点赞/点踩，独立于视频 VideoQuote 的语义）。
+    /// </summary>
+    public ReviewQuote Quote { get; private set; }
 
     public ICollection<VideoReview>? VideoReviews { get; private set; }
 
@@ -67,8 +70,10 @@ public class VideoReview : Entity<Guid>
         VideoReviewGuid = Guid.CreateVersion7();
         TimeSpace = new TimeSpace(DateTime.UtcNow, DateTime.UtcNow);
         VideoControl = VideoControl.VideoControlBuilder();
-        VideoQuote = VideoQuote.VideoQuoteBuilder();
-        Content = ReviewContent.CreateText(string.Empty);
+        Quote = ReviewQuote.ReviewQuoteBuilder();
+        // 占位内容：真实内容由公开构造经 ReviewContent.CreateDefault 推断并覆盖；
+        // 不能在此调用 CreateText(空串)（CreateText/CreateDefault 均拒绝空内容，导致实体无法构造）。
+        Content = new ReviewContent();
         VideoReviews = [];
     }
 
@@ -79,6 +84,21 @@ public class VideoReview : Entity<Guid>
     public VideoReview(Guid videoGuid, Guid userGuid, Guid? rootGuid,
         string? videoReviewBody, List<VideoImage>? videoImages) : this()
     {
+        VideoGuid = videoGuid;
+        UserGuid = userGuid;
+        RootReview = rootGuid;
+        Content = ReviewContent.CreateDefault(videoReviewBody, videoImages);
+    }
+
+    /// <summary>
+    /// 指定评论 Id 的构造器：由调用方传入幂等/可追踪的 VideoReviewGuid（用于评论发布通知等场景）。
+    /// </summary>
+    public VideoReview(Guid videoReviewGuid, Guid videoGuid, Guid userGuid, Guid? rootGuid,
+        string? videoReviewBody, List<VideoImage>? videoImages) : this()
+    {
+        if (videoReviewGuid == Guid.Empty)
+            throw new ArgumentException("VideoReviewGuid must not be empty.", nameof(videoReviewGuid));
+        VideoReviewGuid = videoReviewGuid;
         VideoGuid = videoGuid;
         UserGuid = userGuid;
         RootReview = rootGuid;

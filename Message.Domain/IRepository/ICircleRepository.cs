@@ -37,4 +37,10 @@ public interface ICircleRepository : IRepository<Circle, IUnitOfWork>
     Task<Circle> UpdateAsync(Circle circle);
     Task DeleteAsync(Guid circleGuid);
     Task<bool> ExistsAsync(Guid circleGuid);
+
+    /// <summary>管理端全量圈子分页（含已解散，keyword 模糊匹配名称，按创建时间倒序）</summary>
+    Task<IEnumerable<Circle>> GetPagedAsync(string? keyword, int page = 1, int pageSize = 20);
+
+    /// <summary>管理端全量圈子总数（含已解散，与 GetPagedAsync 同条件）</summary>
+    Task<int> GetTotalCountAsync(string? keyword);
 }

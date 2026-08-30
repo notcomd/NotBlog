@@ -2,6 +2,7 @@ using System.Reflection;
 using CacheMemory.Extensions;
 using Message.Infrastructure;
 using Message.Infrastructure.MongoMigration;
+using Microsoft.EntityFrameworkCore;
 using MongoDB.Driver;
 using NotBlog.ServiceDefaults;
 using Scalar.AspNetCore;
@@ -88,6 +89,20 @@ if (app.Configuration.GetValue<bool>("ChatMigration:BackfillOnStartup"))
     Console.WriteLine($"[ChatMigration] 存量迁移完成：会话={migrationResult.SessionsMigrated}，消息={migrationResult.MessagesMigrated}");
 }
 
+// EF Core 结构迁移自动应用（幂等：仅执行未应用的迁移；Announcements 等新增实体表随之创建）。
+// 迁移记录表缺失等历史场景下失败仅告警，不阻断服务启动。
+try
+{
+    using var efScope = app.Services.CreateScope();
+    var efDbContext = efScope.ServiceProvider.GetRequiredService<MessageDbContext>();
+    await efDbContext.Database.MigrateAsync();
+    Console.WriteLine("[Message] EF Core 迁移已应用");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"[Message] EF Core 迁移应用失败（不影响启动，可在部署后手动 dotnet ef database update）: {ex.Message}");
+}
+
 app.MapDefaultEndpoints();
 
 // Configure the HTTP request pipeline.
@@ -120,6 +135,7 @@ app.MapFollowsApi();
 app.MapNotificationsApi();
 app.MapUserInfoApi();
 app.MapTurnApi();
+app.MapAnnouncementsApi();
 
 app.MapHub<MessageHub>("/MessageHub");
 app.MapHub<CommunityHub>("/CommunityHub");

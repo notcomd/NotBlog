@@ -42,8 +42,13 @@ public class  VideoProtectedTime
 
     public static VideoProtectedTime? Create(DateTimeOffset? startTime, DateTimeOffset? endTime)
     {
-        if (startTime == DateTimeOffset.MinValue && endTime == DateTimeOffset.MinValue) return null;
+        // null 入参视为未设置（MinValue），与 VideoControl 默认构造（null, null）兼容；
+        // 否则 VideoControl.VideoControlBuilder() 在构造 Phase 即抛 Nullable Must have a value。
+        var start = startTime ?? DateTimeOffset.MinValue;
+        var end = endTime ?? DateTimeOffset.MinValue;
 
-        return new VideoProtectedTime(startTime!.Value, endTime!.Value);
+        if (start == DateTimeOffset.MinValue && end == DateTimeOffset.MinValue) return null;
+
+        return new VideoProtectedTime(start, end);
     }
 }
