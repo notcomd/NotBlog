@@ -134,6 +134,7 @@ app.MapTopicsApi();
 app.MapFollowsApi();
 app.MapNotificationsApi();
 app.MapUserInfoApi();
+app.MapUsersApi();
 app.MapTurnApi();
 app.MapAnnouncementsApi();
 

@@ -36,6 +36,9 @@ public class VideoBarrage
 
     public bool IsDelete { get; private set; }
 
+    /// <summary>播放时间点（毫秒，自视频开头；播放器据此在对应进度显示弹幕，可空）</summary>
+    public long? TimeAt { get; private set; }
+
     public VideoControl VideoControl { get; private set; }
 
     public VideoQuote VideoQuote { get; private set; }
@@ -142,6 +145,14 @@ public class VideoBarrage
 
 
     public void SoftDelete()=>this.IsDelete=true;
+
+    /// <summary>设置播放时间点（毫秒；不传则播放器按接收顺序展示）</summary>
+    public void SetTimeAt(long? timeAt)
+    {
+        if (timeAt is < 0)
+            throw new ArgumentException("播放时间点不能为负数", nameof(timeAt));
+        TimeAt = timeAt;
+    }
   
     // ── 内部方法 ──
 

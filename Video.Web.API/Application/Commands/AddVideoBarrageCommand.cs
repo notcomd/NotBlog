@@ -8,4 +8,5 @@ public record AddVideoBarrageCommand(
     Guid VideoGuid,
     Guid UserGuid,
     string? Body,
-    List<VideoImage>? VideoImages) : IRequest<Guid>, IIdempotentRequest;
+    List<VideoImage>? VideoImages,
+    long? TimeAt = null) : IRequest<Guid>, IIdempotentRequest;

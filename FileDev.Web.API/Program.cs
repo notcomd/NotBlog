@@ -157,6 +157,7 @@ fileStorageGroup.MapFileChunkApis();
 fileStorageGroup.MapStreamUploadApis();
 fileStorageGroup.MapDedupApis();
 fileStorageGroup.MapFileVolumeApis();
+fileStorageGroup.MapMyFilesApis();
 // 管理端文件端点（/api/filestorage/admin/*，内部校验管理员角色）
 fileStorageGroup.MapAdminFileApi();
 

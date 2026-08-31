@@ -18,7 +18,7 @@ public record OAuthCallbackRequest(
 /// </summary>
 /// <param name="Provider"></param>
 /// <param name="RedirectUri"></param>
-public record OAuthLoginInitRequest(
+public abstract record OAuthLoginInitRequest(
     string Provider,
     string RedirectUri
 );

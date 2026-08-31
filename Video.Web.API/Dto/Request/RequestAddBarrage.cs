@@ -5,7 +5,8 @@ public record RequestAddBarrage(
     Guid VideoGuid,
     Guid UserGuid,
     string? VideoBarrageBody,
-    List<BarrageImageRequest>? VideoImages);
+    List<BarrageImageRequest>? VideoImages,
+    long? TimeAt = null);
 
 /// <summary>
 /// 弹幕图片请求 DTO。

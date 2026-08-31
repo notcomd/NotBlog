@@ -16,14 +16,15 @@ namespace NotBlog_Yarp.Permission;
 ///   - Redis Key：yarp:permission-mappings
 ///   - Redis TTL：24h（轮询 5 分钟续期，事件驱动即时刷新）
 /// </summary>
-public class PermissionMappingStore
+public class PermissionMappingStore(
+    IWebHostEnvironment env,
+    ILogger<PermissionMappingStore> logger,
+    IRedisCacheService? redis = null)
 {
     private const string RedisKey = "yarp:permission-mappings";
     private static readonly TimeSpan RedisTtl = TimeSpan.FromHours(24);
 
-    private readonly string _filePath;
-    private readonly IRedisCacheService? _redis;
-    private readonly ILogger<PermissionMappingStore> _logger;
+    private readonly string _filePath = Path.Combine(env.ContentRootPath, "permission-mappings.json");
     private readonly SemaphoreSlim _fileSemaphore = new(1, 1);
 
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -32,33 +33,23 @@ public class PermissionMappingStore
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
-    public PermissionMappingStore(
-        IWebHostEnvironment env,
-        ILogger<PermissionMappingStore> logger,
-        IRedisCacheService? redis = null)
-    {
-        _filePath = Path.Combine(env.ContentRootPath, "permission-mappings.json");
-        _logger = logger;
-        _redis = redis;
-    }
-
     /// <summary>
     /// 保存映射到 Redis + JSON 文件（双写）
     /// </summary>
     public async Task SaveAsync(IReadOnlyList<PermissionMappingDto> mappings, CancellationToken ct = default)
     {
         // 1. 写 Redis（主存，跨实例共享）
-        if (_redis is not null)
+        if (redis is not null)
         {
             try
             {
                 var json = JsonSerializer.Serialize(mappings, JsonOptions);
-                await _redis.StringSetAsync(RedisKey, json, RedisTtl, ct);
-                _logger.LogDebug("[MappingStore] 已写入 Redis: {Count} 条映射", mappings.Count);
+                await redis.StringSetAsync(RedisKey, json, RedisTtl, ct);
+                logger.LogDebug("[MappingStore] 已写入 Redis: {Count} 条映射", mappings.Count);
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "[MappingStore] 写入 Redis 失败（不影响 JSON 写入）");
+                logger.LogWarning(ex, "[MappingStore] 写入 Redis 失败（不影响 JSON 写入）");
             }
         }
 
@@ -82,11 +73,11 @@ public class PermissionMappingStore
             // 原子替换（File.Move 在同卷下是原子操作）
             File.Move(tempPath, _filePath, overwrite: true);
 
-            _logger.LogDebug("[MappingStore] 已持久化 {Count} 条映射到 JSON 文件", mappings.Count);
+            logger.LogDebug("[MappingStore] 已持久化 {Count} 条映射到 JSON 文件", mappings.Count);
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "[MappingStore] 持久化 JSON 文件失败（不影响 Redis）");
+            logger.LogWarning(ex, "[MappingStore] 持久化 JSON 文件失败（不影响 Redis）");
         }
         finally
         {
@@ -101,17 +92,17 @@ public class PermissionMappingStore
     public async Task<IReadOnlyList<PermissionMappingDto>?> LoadAsync(CancellationToken ct = default)
     {
         // 1. 尝试 Redis（主存，跨实例共享）
-        if (_redis is not null)
+        if (redis is not null)
         {
             try
             {
-                var json = await _redis.StringGetAsync(RedisKey, ct);
+                var json = await redis.StringGetAsync(RedisKey, ct);
                 if (!string.IsNullOrEmpty(json))
                 {
                     var mappings = JsonSerializer.Deserialize<List<PermissionMappingDto>>(json, JsonOptions);
                     if (mappings is { Count: > 0 })
                     {
-                        _logger.LogInformation(
+                        logger.LogInformation(
                             "[MappingStore] 从 Redis 加载 {Count} 条映射", mappings.Count);
                         return mappings.AsReadOnly();
                     }
@@ -119,7 +110,7 @@ public class PermissionMappingStore
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "[MappingStore] 从 Redis 加载失败，回退到 JSON 文件");
+                logger.LogWarning(ex, "[MappingStore] 从 Redis 加载失败，回退到 JSON 文件");
             }
         }
 
@@ -144,11 +135,11 @@ public class PermissionMappingStore
 
             if (container?.Mappings is null || container.Mappings.Count == 0)
             {
-                _logger.LogWarning("[MappingStore] JSON 文件存在但无有效映射: {Path}", _filePath);
+                logger.LogWarning("[MappingStore] JSON 文件存在但无有效映射: {Path}", _filePath);
                 return null;
             }
 
-            _logger.LogInformation(
+            logger.LogInformation(
                 "[MappingStore] 从本地 JSON 加载 {Count} 条映射（保存于 {SavedAt:u}）",
                 container.Mappings.Count, container.SavedAt);
 
@@ -156,7 +147,7 @@ public class PermissionMappingStore
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "[MappingStore] 加载本地 JSON 映射失败: {Path}", _filePath);
+            logger.LogWarning(ex, "[MappingStore] 加载本地 JSON 映射失败: {Path}", _filePath);
             return null;
         }
         finally

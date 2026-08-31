@@ -25,6 +25,9 @@ public record UserInfoDto
     public Uri? BackgroundCoverUrl { get; init; }
 
     public Uri? AvatarUrl { get; init; }
+
+    /// <summary>个人签名（可空）</summary>
+    public string? Bio { get; init; }
     
     public DateTimeOffset UpdateTime { get; init; }
 }

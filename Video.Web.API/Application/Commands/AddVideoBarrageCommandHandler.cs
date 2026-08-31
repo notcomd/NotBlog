@@ -32,6 +32,7 @@ public class AddVideoBarrageCommandHandler(
         };
 
         video.AddByVideoBarrage(barrage);
+        barrage.SetTimeAt(request.TimeAt);
         await videoRepository.UpdateByVideoAsync(video);
 
         if (cacheService is not null)

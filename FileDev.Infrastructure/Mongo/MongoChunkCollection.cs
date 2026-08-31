@@ -1,5 +1,7 @@
 using FileDev.Domain.Entities;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 
 namespace FileDev.Infrastructure.Mongo;
@@ -13,6 +15,17 @@ namespace FileDev.Infrastructure.Mongo;
 /// </summary>
 public static class MongoChunkCollection
 {
+    static MongoChunkCollection()
+    {
+        // MongoDB.Driver 3.x 默认 GuidRepresentationMode=V3，BsonDefaults.GuidRepresentation 为 Unspecified，
+        // 类映射 AutoMap 出的 Guid 序列化器在写/查（含 LINQ 常量序列化）时会抛
+        // "GuidSerializer cannot serialize a Guid when GuidRepresentation is Unspecified"。
+        // 显式注册 Standard（binary subtype 4，与 uuidRepresentation=standard 一致），
+        // 静态构造器先于本类任何类映射注册执行，保证序列化器抢先生效。
+        BsonSerializer.RegisterSerializer(typeof(Guid), new GuidSerializer(GuidRepresentation.Standard));
+        BsonSerializer.RegisterSerializer(typeof(Guid?), new NullableSerializer<Guid>(new GuidSerializer(GuidRepresentation.Standard)));
+    }
+
     /// <summary>集合名：文件分片上传记录</summary>
     public const string CollectionName = "file_chunk_records";
 

@@ -88,7 +88,8 @@ public static class VideoBarrageEndpoints
                 VideoGuid: request.VideoGuid,
                 UserGuid: callerGuid,
                 Body: sanitizedBody,
-                VideoImages: domainImages);
+                VideoImages: domainImages,
+                TimeAt: request.TimeAt);
 
             var barrageGuid = await videoServiceDI.NotMediator.SendAsync(command);
 
@@ -145,7 +146,7 @@ public static class VideoBarrageEndpoints
                     return new BarrageResponse(
                         b.VideoBarrageGuid, b.VideoGuid, b.UserGuid,
                         b.VideoBarrageBody, b.BarrageType.ToString(),
-                        b.TimeSpace.CreateAt, b.IsDelete, images);
+                        b.TimeAt, b.TimeSpace.CreateAt, b.IsDelete, images);
                 })
                 .ToList() ?? [];
 

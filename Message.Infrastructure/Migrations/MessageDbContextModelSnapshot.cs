@@ -965,6 +965,9 @@ namespace Message.Infrastructure.Migrations
                         .HasMaxLength(2048)
                         .HasColumnType("character varying(2048)");
 
+                    b.Property<string>("Bio")
+                        .HasColumnType("text");
+
                     b.Property<long>("Coins")
                         .HasColumnType("bigint");
 

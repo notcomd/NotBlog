@@ -102,13 +102,29 @@ public interface ITweetRepository : IRepository<Tweet, IUnitOfWork>
     Task<bool> ExistsAsync(Guid tweetGuid);
 
     /// <summary>
-    /// 获取用户可见推文数量（与 GetByAuthorAsync 同条件，R-07 分页计数对齐）
+    /// 获取用户推文数量（与 GetByAuthorAsync 同条件，R-07 分页计数对齐）
     /// </summary>
     /// <param name="authorGuid">作者ID</param>
     /// <param name="viewerId">查看者ID（未认证为 Guid.Empty）</param>
     /// <param name="followingIds">查看者的关注集合（Followers 可见性判定）</param>
     /// <returns>指定作者对查看者可见的推文数量</returns>
     Task<int> GetCountByAuthorAsync(Guid authorGuid, Guid viewerId, IEnumerable<Guid> followingIds);
+
+    /// <summary>
+    /// 获取作者已发布作品（Approved 状态，公开口径）的获赞总数（个人主页统计用，忽略可见性以稳定对外口径）
+    /// </summary>
+    /// <param name="authorGuid">作者ID</param>
+    /// <returns>获赞总数</returns>
+    Task<long> GetLikeTotalByAuthorAsync(Guid authorGuid);
+
+    /// <summary>
+    /// 按 ID 批量获取推文（可见性过滤；保持传入顺序 — 收藏/点赞列表等按互动时间倒序场景使用）
+    /// </summary>
+    /// <param name="tweetGuids">推文 ID 列表</param>
+    /// <param name="viewerId">查看者ID（未认证为 Guid.Empty）</param>
+    /// <param name="followingIds">查看者的关注集合（Followers 可见性判定）</param>
+    /// <returns>可见推文列表（按 <paramref name="tweetGuids"/> 顺序）</returns>
+    Task<IEnumerable<Tweet>> GetVisibleByIdsAsync(IEnumerable<Guid> tweetGuids, Guid viewerId, IEnumerable<Guid> followingIds);
 
     /// <summary>
     /// 获取待审核推文数量

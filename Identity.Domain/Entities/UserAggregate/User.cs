@@ -180,6 +180,20 @@ public class User : Entity<Guid>, IAggregateRoot
     }
 
     /// <summary>
+    /// 更新用户头像（Identity 为头像唯一真相源；保存后发布事件同步 Message UserInfo）
+    /// </summary>
+    /// <param name="avatarUrl">新头像地址（FileDev 上传返回的 fileUri）</param>
+    public void ChangeByAvatar(Uri avatarUrl)
+    {
+        if (avatarUrl is null)
+            throw new ArgumentNullException(nameof(avatarUrl));
+        if (avatarUrl.ToString().Length > 2048)
+            throw new ArgumentException("头像地址不能超过2048个字符", nameof(avatarUrl));
+
+        AvatarUrl = avatarUrl;
+    }
+
+    /// <summary>
     /// 修改用户密码
     /// </summary>
     /// <param name="password">新密码</param>

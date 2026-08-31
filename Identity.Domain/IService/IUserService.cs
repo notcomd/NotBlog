@@ -1,32 +1,7 @@
-using Identity.Domain.Dto;
-
 namespace Identity.Domain.IService;
 
 public interface IUserService
 {
-    /// <summary>
-    /// 邮箱验证码登录（统一登录/注册）。
-    /// 校验邮箱验证码后：邮箱已存在则直接登录；不存在则自动创建账号并生成初始密码发送到该邮箱。
-    /// </summary>
-    /// <param name="email">邮箱地址</param>
-    /// <param name="code">邮箱验证码</param>
-    /// <returns>验证码错误或账号锁定等失败返回 null；否则返回 <see cref="EmailLoginResult"/>（含 Token 与是否新建账号）</returns>
-    Task<EmailLoginResult?> LogInByEmailCodeAsync(
-        [EmailAddress(ErrorMessage = "无效邮件地址")] string email, string code);
-
-    /// <summary>
-    /// 密码登入（邮箱 + 密码 + 二次验证）。
-    /// 开启二次验证（<see cref="UserSafety.IsTwoFactorEnabled"/>）的用户必须携带邮箱验证码；
-    /// 关闭二次验证的用户免验证码。邮箱不存在时返回 null（密码登入不做自动注册）。
-    /// </summary>
-    /// <param name="email">邮箱地址</param>
-    /// <param name="password">密码</param>
-    /// <param name="code">邮箱验证码（仅开启二次验证的用户必填）</param>
-    /// <returns>账号不存在、密码错误、验证码错误或账号锁定返回 null；否则返回 <see cref="EmailLoginResult"/>（IsNewUser 恒为 false）</returns>
-    Task<EmailLoginResult?> LogInByPasswordAsync(
-        [EmailAddress(ErrorMessage = "无效邮件地址")] string email, string password, string? code);
-
-
     /// <summary>
     /// 根据邮箱获取用户
     /// </summary>

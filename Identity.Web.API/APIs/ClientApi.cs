@@ -1,6 +1,6 @@
+using Identity.Domain.Dto.Response;
 using Identity.Web.API.Application.Commands;
 using Identity.Web.API.Application.Commands.Client;
-using Identity.Web.API.Dto.Response;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Mvc;
 
@@ -52,7 +52,7 @@ public static class ClientApi
         return route;
     }
 
-    // ──────────── 端点实现 ────────────
+   
 
     private static async Task<IResult> CreateClientAsync(
         [FromServices] INotMediator mediator,
@@ -133,7 +133,7 @@ public static class ClientApi
         }
     }
 
-    // ──────────── 映射 ────────────
+    
 
     private static ClientInfoDto ToDto(NotClient client)
     {

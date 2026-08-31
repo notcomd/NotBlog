@@ -76,4 +76,9 @@ public class TweetInteractionRepository : ITweetInteractionRepository
     {
         return await _dbSet.CountAsync(i => i.TweetGuid == tweetGuid && i.Type == type);
     }
+
+    public async Task<int> GetCountByUserAsync(Guid userGuid, InteractionType type)
+    {
+        return await _dbSet.CountAsync(i => i.UserGuid == userGuid && i.Type == type);
+    }
 }

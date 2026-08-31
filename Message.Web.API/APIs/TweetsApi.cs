@@ -1,4 +1,4 @@
-﻿using Message.Web.API.Application.Commands.Tweets;
+using Message.Web.API.Application.Commands.Tweets;
 
 namespace Message.Web.API.APIs;
 
@@ -49,6 +49,12 @@ public static class TweetsApi
             .WithSummary("我的草稿列表")
             .WithDescription("获取当前用户的推文草稿列表（按最近编辑倒序），支持分页")
             .Produces<ApiResponse<PagedResult<TweetDto>>>();
+
+        // GET /favorites/my — 我的收藏列表（字面量路由，先于 /{tweetGuid} 注册）
+        group.MapGet("/favorites/my", GetMyFavoritesAsync)
+            .WithSummary("我的收藏列表")
+            .WithDescription("获取当前用户收藏的推文列表（按收藏时间倒序，含可见性过滤）")
+            .Produces<ApiResponse<PagedResult<CommunityPostDto>>>();
 
         // GET /{tweetGuid} — 获取推文详情
         group.MapGet("/{tweetGuid}", GetTweetAsync)
@@ -317,6 +323,24 @@ public static class TweetsApi
         catch (Exception ex)
         {
             return Results.Json(ApiResponse<PagedResult<TweetDto>>.Error($"获取草稿列表失败: {ex.Message}"), statusCode: 500);
+        }
+    }
+
+    private static async Task<IResult> GetMyFavoritesAsync(
+        [FromServices] ICurrentUserService currentUser,
+        [FromServices] INotMediator mediator,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 12,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            var paged = await mediator.SendAsync(new GetMyFavoritesQuery(currentUser.GetUserId(), page, pageSize), ct);
+            return Results.Ok(ApiResponse<PagedResult<CommunityPostDto>>.Ok(paged));
+        }
+        catch (Exception ex)
+        {
+            return Results.Json(ApiResponse<PagedResult<CommunityPostDto>>.Error($"获取收藏列表失败: {ex.Message}"), statusCode: 500);
         }
     }
 

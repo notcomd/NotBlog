@@ -39,6 +39,9 @@ namespace Video.Infrastructure.Migrations
                     b.Property<bool>("IsDelete")
                         .HasColumnType("boolean");
 
+                    b.Property<long?>("TimeAt")
+                        .HasColumnType("bigint");
+
                     b.Property<Guid>("UserGuid")
                         .HasColumnType("uuid");
 

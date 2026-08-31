@@ -13,7 +13,7 @@ namespace Identity.Web.API.APIs;
 
 public static class IdentityApis
 {
-    /// <summary>S-13：登录 IP 级限流阈值（10 次/分钟）</summary>
+    
     private const int LoginRateLimitPerMinute = 10;
     private const string LoginRateLimitKeyPrefix = "login:rate:";
 
@@ -63,9 +63,10 @@ public static class IdentityApis
     }
 
     /// <summary>
-    /// 统一登录/注册：邮箱 + 验证码。
-    /// 验证码校验通过后：邮箱已注册则直接登录；未注册则自动创建账号（生成初始密码发送到该邮箱），
-    /// 并向消息系统发布注册集成事件。返回 Token 及 IsNewUser 标记。
+    /// 统一登录/注册接口：POST /identity/Login { email, password?, code? }。
+    /// 携带密码 → 密码登入（开启二次验证的用户需同时携带 code）；
+    /// 仅携带验证码 → 验证码登入，未注册邮箱自动注册（CQRS：LogInCommand + RegisterByEmailCommand）。
+    /// 新注册用户在签发 Token 后发布 RegisterByUserIntegrationEvent（Outbox），通知下游服务初始化关联数据。
     /// </summary>
     private static async Task<IResult> Login([FromServices] IdentityService identityService,
         [FromServices] IRedisCacheService redisCacheService,
@@ -73,8 +74,6 @@ public static class IdentityApis
         [FromBody] LoginRequest loginRequest,
         HttpContext httpContext)
     {
-        // S-13：登录 IP 级限流（10 次/分钟；Redis 原子计数，窗口内首请求设置 TTL，超限返回 429）
-        // P9：取 X-Forwarded-For 客户端 IP（网关后限流不再全员同源）
         var ip = httpContext.GetClientIp();
         var window = DateTimeOffset.UtcNow.ToString("yyyyMMddHHmm");
         var rateKey = $"{LoginRateLimitKeyPrefix}{ip}:{window}";
@@ -86,23 +85,25 @@ public static class IdentityApis
             return Results.Json(new { error = "登录尝试过于频繁，请稍后再试" },
                 statusCode: StatusCodes.Status429TooManyRequests);
 
-        var data = string.IsNullOrWhiteSpace(loginRequest.Password)
-            // 仅验证码：统一登录/注册（未注册邮箱自动创建账号并下发初始密码）
-            ? await identityService.UserService
-                .LogInByEmailCodeAsync(loginRequest.Email, loginRequest.Code!)
-            // 携带密码：密码登入（开启二次验证的用户需同时携带验证码）
-            : await identityService.UserService
-                .LogInByPasswordAsync(loginRequest.Email, loginRequest.Password, loginRequest.Code);
-        if (data is null)
+        // 密码登入与验证码登入至少二选一
+        if (string.IsNullOrWhiteSpace(loginRequest.Password) && string.IsNullOrWhiteSpace(loginRequest.Code))
+            return Results.BadRequest(new { error = "请提供密码或邮箱验证码" });
+
+        var command = new LogInCommand(loginRequest.Email, loginRequest.Password, loginRequest.Code);
+
+        var data = await identityService.NotMediator.SendAsync(command);
+
+        if (data is null || data.Token is null)
             return Results.Json(new { error = "邮箱、密码或验证码错误" },
                 statusCode: StatusCodes.Status401Unauthorized);
 
-        // 新注册用户：发布注册集成事件，通知 FileDev / Message 等下游服务初始化关联数据
+        // 新注册用户：发布注册集成事件，通知 FileDev / Message 等下游服务初始化关联数据（含邮箱/昵称/头像）
         if (data.IsNewUser)
         {
             await outboxStore.StoreAsync(new OutboxMessage(
                 nameof(RegisterByUserIntegrationEvent),
-                new RegisterByUserIntegrationEvent(data.UserId)), default);
+                new RegisterByUserIntegrationEvent(data.UserId, data.UserEmail ?? string.Empty,
+                    data.UserName, data.AvatarUrl)), default);
         }
 
         return Results.Ok(new

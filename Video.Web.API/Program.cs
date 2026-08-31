@@ -1,4 +1,6 @@
 
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
@@ -77,6 +79,20 @@ builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
 
 var app = builder.Build();
+
+// EF Core 结构迁移自动应用（幂等：仅执行未应用的迁移；与 Identity/Markdown/Message 启动逻辑对齐）。
+// 迁移失败仅告警、不阻断服务启动。
+try
+{
+    using var efScope = app.Services.CreateScope();
+    var efDbContext = efScope.ServiceProvider.GetRequiredService<VideoDbContext>();
+    await efDbContext.Database.MigrateAsync();
+    Console.WriteLine("[Video] EF Core 迁移已应用");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"[Video] EF Core 迁移应用失败（不影响启动，可在部署后手动 dotnet ef database update）: {ex.Message}");
+}
 
 app.MapDefaultEndpoints();
 

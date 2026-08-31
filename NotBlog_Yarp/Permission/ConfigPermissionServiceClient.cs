@@ -9,18 +9,13 @@ namespace NotBlog_Yarp.Permission;
 /// 不依赖 Identity 服务，适合本地开发和集成测试场景。
 /// 使用 IOptionsMonitor 支持配置热重载（且与 Singleton 生命周期兼容）。
 /// </summary>
-public class ConfigPermissionServiceClient : IPermissionServiceClient
+public class ConfigPermissionServiceClient(
+    IOptionsMonitor<PermissionOptions> options,
+    ILogger<ConfigPermissionServiceClient> logger)
+    : IPermissionServiceClient
 {
-    private readonly IOptionsMonitor<PermissionOptions> _options;
-    private readonly ILogger<ConfigPermissionServiceClient> _logger;
-
-    public ConfigPermissionServiceClient(
-        IOptionsMonitor<PermissionOptions> options,
-        ILogger<ConfigPermissionServiceClient> logger)
-    {
-        _options = options ?? throw new ArgumentNullException(nameof(options));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    }
+    private readonly IOptionsMonitor<PermissionOptions> _options = options ?? throw new ArgumentNullException(nameof(options));
+    private readonly ILogger<ConfigPermissionServiceClient> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
     /// <inheritdoc />
     public Task<bool> CheckPermissionAsync(

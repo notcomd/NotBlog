@@ -14,23 +14,17 @@ namespace NotBlog_Yarp.Permission;
 /// 失败降级（F-12）：Identity 不可用/端点缺失时按 PermissionOptions.FailPolicy 处理
 /// （Open = 放行 / Closed = 拒绝），避免权限服务短暂不可用时全站 403。
 /// </summary>
-public class HttpPermissionServiceClient : IPermissionServiceClient
+public class HttpPermissionServiceClient(
+    HttpClient http,
+    ILogger<HttpPermissionServiceClient> logger,
+    IOptions<PermissionOptions> options)
+    : IPermissionServiceClient
 {
-    private readonly HttpClient _http;
-    private readonly ILogger<HttpPermissionServiceClient> _logger;
-    private readonly IOptions<PermissionOptions> _options;
+    private readonly HttpClient _http = http ?? throw new ArgumentNullException(nameof(http));
+    private readonly ILogger<HttpPermissionServiceClient> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly IOptions<PermissionOptions> _options = options ?? throw new ArgumentNullException(nameof(options));
 
-    public HttpPermissionServiceClient(
-        HttpClient http,
-        ILogger<HttpPermissionServiceClient> logger,
-        IOptions<PermissionOptions> options)
-    {
-        _http = http ?? throw new ArgumentNullException(nameof(http));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _options = options ?? throw new ArgumentNullException(nameof(options));
-    }
 
-    /// <inheritdoc />
     public async Task<IReadOnlyList<PermissionMappingDto>> GetMappingsAsync(CancellationToken ct = default)
     {
         try
@@ -70,7 +64,7 @@ public class HttpPermissionServiceClient : IPermissionServiceClient
         }
     }
 
-    /// <inheritdoc />
+
     public async Task<PermissionCheckResult> CheckAndGetScopeAsync(
         Guid userId, string permissionCode, CancellationToken ct = default)
     {
@@ -85,9 +79,7 @@ public class HttpPermissionServiceClient : IPermissionServiceClient
 
             if (!response.IsSuccessStatusCode)
             {
-                // V5：仅 5xx/429 视为"服务不可用"按 FailPolicy 降级；
-                // 4xx（404 端点缺失 / 401 凭证错误 / 400 参数错误）属于配置或调用错误，
-                // fail-closed 拒绝 —— 否则权限检查会因端点缺失而静默放行。
+
                 if ((int)response.StatusCode >= 500 || (int)response.StatusCode == StatusCodes.Status429TooManyRequests)
                 {
                     _logger.LogWarning(

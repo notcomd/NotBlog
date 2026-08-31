@@ -1,7 +1,6 @@
 using System.Net.Mail;
 using CacheMemory.Core;
 using Identity.Domain.ICache;
-using Identity.Infrastructure.Idempotent;
 using Identity.Web.API.Application.Commands;
 using Microsoft.AspNetCore.Mvc;
 
@@ -28,13 +27,8 @@ public static class EmailVerificationApi
     public static RouteGroupBuilder MapEmailVerificationApi(this RouteGroupBuilder routeBuilder)
     {
         var group = routeBuilder.MapGroup("/email-verifications").WithTags("Email Verification");
-
-        // 发送邮箱验证码
         group.MapPost("", SendCode);
-
-        // 确认邮箱验证码结果
         group.MapPost("/confirm", ConfirmCode);
-
         return routeBuilder;
     }
 
@@ -56,8 +50,6 @@ public static class EmailVerificationApi
         if (!MailAddress.TryCreate(request.Email, out _))
             return Results.BadRequest(new { error = "邮箱格式不正确" });
 
-        // S-13：IP 级限流（3 次/分钟，Redis 原子计数，窗口内首请求设置 TTL）
-        // P9：取 X-Forwarded-For 客户端 IP（网关后限流不再全员同源）
         var ip = httpContext.GetClientIp();
         var window = DateTimeOffset.UtcNow.ToString("yyyyMMddHHmm");
         var rateKey = $"{CodeRateLimitKeyPrefix}{ip}:{window}";
@@ -103,15 +95,13 @@ public static class EmailVerificationApi
 
         if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Code))
             return Results.BadRequest(new { error = "邮箱和验证码不能为空" });
-
-        // IP 级限流：10 次/分钟，防止暴力穷举验证码
-        // P9：取 X-Forwarded-For 客户端 IP（网关后限流不再全员同源）
+        
         var ip = httpContext.GetClientIp();
         var window = DateTimeOffset.UtcNow.ToString("yyyyMMddHHmm");
         var rateKey = $"{ConfirmRateLimitKeyPrefix}{ip}:{window}";
-        var count = await redisCacheService.StringIncrementAsync(rateKey);
+        var count = await redisCacheService.StringIncrementAsync(rateKey, ct: cancellationToken);
         if (count == 1)
-            await redisCacheService.KeyExpireAsync(rateKey, TimeSpan.FromMinutes(1));
+            await redisCacheService.KeyExpireAsync(rateKey, TimeSpan.FromMinutes(1), cancellationToken);
         if (count > ConfirmRateLimitPerMinute)
             return Results.Json(new { error = "验证过于频繁，请稍后再试" },
                 statusCode: StatusCodes.Status429TooManyRequests);
@@ -122,24 +112,20 @@ public static class EmailVerificationApi
 
         if (!valid)
         {
-            // 失败计数：超过 MaxCodeVerifyAttempts 次后删除验证码（失效），防止持续穷举
             var failKey = $"{CodeFailCountKeyPrefix}{request.Email}";
-            var fails = await redisCacheService.StringIncrementAsync(failKey);
+            var fails = await redisCacheService.StringIncrementAsync(failKey, ct: cancellationToken);
             if (fails == 1)
-                await redisCacheService.KeyExpireAsync(failKey, TimeSpan.FromMinutes(5));
+                await redisCacheService.KeyExpireAsync(failKey, TimeSpan.FromMinutes(5), cancellationToken);
             if (fails >= MaxCodeVerifyAttempts)
             {
                 await identityCacheService.RemoveAsync(codeKey, cancellationToken);
-                await redisCacheService.KeyDeleteAsync(failKey);
+                await redisCacheService.KeyDeleteAsync(failKey, cancellationToken);
             }
         }
         else
         {
-            // 验证成功后清除失败计数
-            await redisCacheService.KeyDeleteAsync($"{CodeFailCountKeyPrefix}{request.Email}");
+            await redisCacheService.KeyDeleteAsync($"{CodeFailCountKeyPrefix}{request.Email}", cancellationToken);
         }
-
-        // S-16：验证码本身不写日志，仅记录校验结果
         logger.LogInformation("验证码确认：{Email} => {Result}", request.Email, valid ? "通过" : "失败");
         return Results.Ok(new { valid });
     }

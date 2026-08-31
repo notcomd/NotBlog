@@ -25,6 +25,12 @@ public static class UserInfoApi
             .Accepts<UpdateBackgroundCoverRequest>("application/json")
             .Produces<ApiResponse>();
 
+        // PUT /me/bio — 更新个人签名（空白清除）
+        group.MapPut("/me/bio", UpdateBioAsync)
+            .WithSummary("更新个人签名")
+            .Accepts<UpdateUserBioRequest>("application/json")
+            .Produces<ApiResponse>();
+
         // POST /sign-in — 每日签到（+250 经验）
         group.MapPost("/sign-in", SignInAsync)
             .WithSummary("每日签到")
@@ -100,6 +106,27 @@ public static class UserInfoApi
         catch (Exception ex)
         {
             return Results.Json(ApiResponse.Error($"更新背景封面失败: {ex.Message}"), statusCode: 500);
+        }
+    }
+
+    private static async Task<IResult> UpdateBioAsync(
+        [FromBody] UpdateUserBioRequest request,
+        [FromServices] ICurrentUserService currentUser,
+        [FromServices] INotMediator mediator,
+        CancellationToken ct)
+    {
+        try
+        {
+            await mediator.SendAsync(new UpdateUserBioCommand(currentUser.GetUserId(), request.Bio), ct);
+            return Results.Ok(ApiResponse.Ok("个人签名已更新"));
+        }
+        catch (ArgumentException ex)
+        {
+            return Results.Ok(ApiResponse.BadRequest(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            return Results.Json(ApiResponse.Error($"更新个人签名失败: {ex.Message}"), statusCode: 500);
         }
     }
 
