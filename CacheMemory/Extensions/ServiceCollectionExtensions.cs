@@ -43,9 +43,8 @@ public static class ServiceCollectionExtensions
         // 注册核心服务
         CacheMemoryAspireExtensions.RegisterCoreServices(services, options);
 
-        // 注册健康检查
-        services.AddHealthChecks()
-            .AddCheck<CacheMemoryHealthCheck>(CacheMemoryHealthCheck.Name, tags: ["redis", "cache"]);
+        // 幂等注册健康检查（多次调用 AddCacheMemory 不会重复注册同名检查）
+        CacheMemoryAspireExtensions.TryRegisterCacheMemoryHealthCheck(services);
 
         return services;
     }
@@ -83,8 +82,7 @@ public static class ServiceCollectionExtensions
 
         CacheMemoryAspireExtensions.RegisterCoreServices(services, options);
 
-        services.AddHealthChecks()
-            .AddCheck<CacheMemoryHealthCheck>(CacheMemoryHealthCheck.Name, tags: ["redis", "cache"]);
+        CacheMemoryAspireExtensions.TryRegisterCacheMemoryHealthCheck(services);
 
         return services;
     }
@@ -111,8 +109,7 @@ public static class ServiceCollectionExtensions
 
         CacheMemoryAspireExtensions.RegisterCoreServices(services, options);
 
-        services.AddHealthChecks()
-            .AddCheck<CacheMemoryHealthCheck>(CacheMemoryHealthCheck.Name, tags: ["redis", "cache"]);
+        CacheMemoryAspireExtensions.TryRegisterCacheMemoryHealthCheck(services);
 
         return services;
     }

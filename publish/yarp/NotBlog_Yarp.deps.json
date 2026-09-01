@@ -8,8 +8,8 @@
     ".NETCoreApp,Version=v10.0": {
       "NotBlog_Yarp/1.0.0": {
         "dependencies": {
-          "Aspire.RabbitMQ.Client": "13.4.6",
-          "Aspire.StackExchange.Redis.DistributedCaching": "13.4.6",
+          "Aspire.RabbitMQ.Client": "13.5.3",
+          "Aspire.StackExchange.Redis.DistributedCaching": "13.5.3",
           "CacheMemory": "1.0.0",
           "EventBus": "1.0.0",
           "JWToken": "1.0.0",
@@ -22,7 +22,7 @@
           "NotBlog_Yarp.dll": {}
         }
       },
-      "Aspire.RabbitMQ.Client/13.4.6": {
+      "Aspire.RabbitMQ.Client/13.5.3": {
         "dependencies": {
           "AspNetCore.HealthChecks.Rabbitmq": "9.0.0",
           "Microsoft.Extensions.DependencyInjection.AutoActivation": "10.9.0",
@@ -32,12 +32,12 @@
         },
         "runtime": {
           "lib/net10.0/Aspire.RabbitMQ.Client.dll": {
-            "assemblyVersion": "13.4.6.0",
-            "fileVersion": "13.400.626.31906"
+            "assemblyVersion": "13.5.3.0",
+            "fileVersion": "13.500.326.42503"
           }
         }
       },
-      "Aspire.StackExchange.Redis/13.4.6": {
+      "Aspire.StackExchange.Redis/13.5.3": {
         "dependencies": {
           "AspNetCore.HealthChecks.Redis": "9.0.0",
           "Microsoft.Extensions.DependencyInjection.AutoActivation": "10.9.0",
@@ -47,15 +47,15 @@
         },
         "runtime": {
           "lib/net10.0/Aspire.StackExchange.Redis.dll": {
-            "assemblyVersion": "13.4.6.0",
-            "fileVersion": "13.400.626.31906"
+            "assemblyVersion": "13.5.3.0",
+            "fileVersion": "13.500.326.42503"
           }
         }
       },
-      "Aspire.StackExchange.Redis.DistributedCaching/13.4.6": {
+      "Aspire.StackExchange.Redis.DistributedCaching/13.5.3": {
         "dependencies": {
           "AspNetCore.HealthChecks.Redis": "9.0.0",
-          "Aspire.StackExchange.Redis": "13.4.6",
+          "Aspire.StackExchange.Redis": "13.5.3",
           "Microsoft.Extensions.Caching.StackExchangeRedis": "10.0.11",
           "Microsoft.Extensions.DependencyInjection.AutoActivation": "10.9.0",
           "OpenTelemetry.Extensions.Hosting": "1.17.0",
@@ -64,8 +64,8 @@
         },
         "runtime": {
           "lib/net10.0/Aspire.StackExchange.Redis.DistributedCaching.dll": {
-            "assemblyVersion": "13.4.6.0",
-            "fileVersion": "13.400.626.31906"
+            "assemblyVersion": "13.5.3.0",
+            "fileVersion": "13.500.326.42503"
           }
         }
       },
@@ -533,7 +533,7 @@
       },
       "CacheMemory/1.0.0": {
         "dependencies": {
-          "Aspire.StackExchange.Redis": "13.4.6",
+          "Aspire.StackExchange.Redis": "13.5.3",
           "Microsoft.Extensions.Caching.StackExchangeRedis": "10.0.11",
           "StackExchange.Redis": "3.1.13"
         },
@@ -598,26 +598,26 @@
       "serviceable": false,
       "sha512": ""
     },
-    "Aspire.RabbitMQ.Client/13.4.6": {
+    "Aspire.RabbitMQ.Client/13.5.3": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-mqMaBSuvDJv/fSTTOvABeR88LuchYEmAzJ2VHVShN3H+uVEtmPhNSvoPVFIhwFkcd8BWTReBXGxqR6H2SJEKsg==",
-      "path": "aspire.rabbitmq.client/13.4.6",
-      "hashPath": "aspire.rabbitmq.client.13.4.6.nupkg.sha512"
+      "sha512": "sha512-nJG5kdGPvyJZ5zpRXV3ozXaz3bHu8s+h+4hIJl79JwtSjasSEY8fqHESd0A6/+TtnYuqRmUaRwoHiLj9NDq/vQ==",
+      "path": "aspire.rabbitmq.client/13.5.3",
+      "hashPath": "aspire.rabbitmq.client.13.5.3.nupkg.sha512"
     },
-    "Aspire.StackExchange.Redis/13.4.6": {
+    "Aspire.StackExchange.Redis/13.5.3": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-eIdqyDrChSFrGInWzY6fp175grYvYVpaiWcymYMDSvrDj8gpGddOqEFKftylOMlxUEBkaxLt1itm0KHBY8DhZg==",
-      "path": "aspire.stackexchange.redis/13.4.6",
-      "hashPath": "aspire.stackexchange.redis.13.4.6.nupkg.sha512"
+      "sha512": "sha512-B0mJpW8715pp8ecZ5RXh3pG78ncg8EKMM1pOZO2X10z0RLqTLerhyW4i2RrxOZMkx00BDRrZT+43e6GHmvdjUQ==",
+      "path": "aspire.stackexchange.redis/13.5.3",
+      "hashPath": "aspire.stackexchange.redis.13.5.3.nupkg.sha512"
     },
-    "Aspire.StackExchange.Redis.DistributedCaching/13.4.6": {
+    "Aspire.StackExchange.Redis.DistributedCaching/13.5.3": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-uv+k2ci1LxEvrsoehc6QijBHgifN8x5NA5B/wETj1bjn0zI3pIh30ShAu/lojGGgeqh7YYQip75Gr4B+ZCLfMw==",
-      "path": "aspire.stackexchange.redis.distributedcaching/13.4.6",
-      "hashPath": "aspire.stackexchange.redis.distributedcaching.13.4.6.nupkg.sha512"
+      "sha512": "sha512-EBkcHLElw38oWRbBlY/TRY1OEWOE+zMptWlPidsCY3lKhj3v0usGrH18BdB5JPRQKdJDA7fjJd7eqsvAOIJlNw==",
+      "path": "aspire.stackexchange.redis.distributedcaching/13.5.3",
+      "hashPath": "aspire.stackexchange.redis.distributedcaching.13.5.3.nupkg.sha512"
     },
     "AspNetCore.HealthChecks.Rabbitmq/9.0.0": {
       "type": "package",

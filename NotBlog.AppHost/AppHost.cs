@@ -7,7 +7,7 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 
 var postgres = builder.AddPostgres("postgres")
-    .WithImagePullPolicy(ImagePullPolicy.Never)
+    //.WithImagePullPolicy(ImagePullPolicy.Never)
     .WithDataVolume();
 
 var identityDb = postgres.AddDatabase("IdentityPostgres", "identitypostgres");      // Identity.Web.API（GetConnectionString("IdentityPostgres")）
@@ -18,7 +18,7 @@ var markDb = postgres.AddDatabase("MarkDownPostgres", "markdownpostgres");      
 
 // Redis：单实例。Identity/Message 读连接名 "Redis"，Video/FileDev 经 WithReference(connectionName:"CacheMemory") 注入。
 var redis = builder.AddRedis("Redis")
-    .WithImagePullPolicy(ImagePullPolicy.Never)
+    //.WithImagePullPolicy(ImagePullPolicy.Never)
     .WithDataVolume();
 
 
@@ -27,13 +27,13 @@ var redis = builder.AddRedis("Redis")
 // postgres/redis/rabbitmq 容器均正常）；mongo:8 已本地预拉（ImagePullPolicy.Never 不触网）。
 // 宿主固定 27018→容器 27017，避开本机常驻 mongod 的 27017。
 var mongo = builder.AddContainer("NotFileMongo", "mongo:8")
-    .WithImagePullPolicy(ImagePullPolicy.Never)
+    //.WithImagePullPolicy(ImagePullPolicy.Never)
     .WithVolume("notblog-mongo-data", "/data/db")
     .WithEndpoint(port: 27018, targetPort: 27017, name: "mongo-port");
 
 
 var rabbitmq = builder.AddRabbitMQ("EventBus")
-    .WithImagePullPolicy(ImagePullPolicy.Never)
+    //.WithImagePullPolicy(ImagePullPolicy.Never)
     .WithDataVolume();
 
 
