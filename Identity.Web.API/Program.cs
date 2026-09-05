@@ -1,17 +1,14 @@
 
-
+using Identity.Infrastructure.Migrations;
 using Identity.Web.API.Resources;
-using Aspire.Npgsql.EntityFrameworkCore.PostgreSQL;
+
+
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
-//builder.AddNpgsql("IdentityPostgres");
 
-builder.AddCacheMemory("Redis");
-
-builder.AddRabbitMQClient("EventBus");
 
 // ═══ NotEmail：Outlook OAuth 2.0 发送验证码 ═══
 // Outlook.com 已禁用 SMTP 密码认证，必须使用 OAuth 2.0（MSAL 设备代码流）
@@ -45,16 +42,23 @@ if (builder.Configuration.GetConnectionString("IdentityPostgres") is null)
         builder.Configuration.GetSection("DbContextOption").GetValue<string>("DbContextConnection")
         ?? throw new ArgumentNullException("数据库连接字符未配置");
 }
-else
-{
-    Console.WriteLine("Aspire服务执行！");
-}
 
-// 模块自动初始化（仓储/领域服务注册；原 AddNotBlogServices 拆分，DbContext 改用 Aspire 注册）
+// IEventBus 注册必须无条件执行：Aspire WithReference(rabbitmq) 注入 ConnectionStrings:EventBus 后，
+// 其注册的是 IConnectionFactory/IConnection（AddRabbitMQClient），并不注册自定义 IEventBus——
+// 若按连接串存在与否跳过注册，命令处理器（构造依赖 IEventBus）会在 ValidateOnBuild 时解析失败。
+var eventBusCfg = builder.Configuration.GetSection("EventBus");
+builder.Services.AddEventBus(eventBusCfg, Assembly.GetExecutingAssembly());
+
+
+
 builder.Services.AddAutoAddInstance([.. ReflectionHelper.GetAllReferencedAssemblies()]);
 
-// DbContext 注册（Aspire 版：连接名语义 + 自动健康检查/OpenTelemetry）
 builder.AddNpgsqlDbContext<IdentityDbContext>("IdentityPostgres");
+
+builder.AddCacheMemory("Redis");
+
+builder.AddRabbitMQClient("EventBus");
+
 
 
 
@@ -63,6 +67,7 @@ builder.Services.AddIdentityService(builder.Configuration.GetSection("JwtOptions
 builder.Services.AddMigration<IdentityDbContext, IdentityDbSeeder>();
 
 builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
+
 builder.Services.RemoveAbstractHandlerRegistrations(); // 移除抽象泛型基类 handler（NotMediator 自动注册未过滤抽象类，2026-08-17）
 
 builder.Services.AddScoped<IdentityService>();
@@ -78,7 +83,6 @@ builder.Services.AddGrpcClient<Identity.Web.API.Grpc.FileStorage.FileStorageClie
 {
     var handler = new HttpClientHandler();
 #if DEBUG
-    // S-16：仅 DEBUG/开发环境允许自签名证书；Release 下使用系统默认证书校验
     handler.ServerCertificateCustomValidationCallback =
         HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
 #endif
@@ -93,23 +97,8 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddProblemDetails();
 
-// ═══ EventBus 注册（通过 IConfiguration 配置驱动） ═══
-// IConnectionFactory 来源：Aspire AddRabbitMQClient("EventBus") 或手动注册
 
-// var hostName = eventBusCfg["HostName"] ?? "localhost";
-// var userName = eventBusCfg["UserName"] ?? "guest";
-// var password = eventBusCfg["Password"] ?? "guest";
-// var port = int.TryParse(eventBusCfg["Port"], out var p) ? p : 5672;
 
-// builder.Services.AddSingleton<IConnectionFactory>(_ => new ConnectionFactory
-// {
-//     HostName = hostName,
-//     UserName = userName,
-//     Password = password,
-//     Port = port
-// });
-var eventBusCfg = builder.Configuration.GetSection("EventBus");
-builder.Services.AddEventBus(eventBusCfg, Assembly.GetExecutingAssembly());
 
 // S-19：Outbox 反序列化声明——Identity 发布的集成事件若无本地 handler，
 // 必须在此显式注册事件类型，否则 OutboxPublisher 会按"未找到事件类型"丢弃消息
@@ -138,7 +127,6 @@ builder.Services.AddCors(options =>
     {
         if (corsOrigins.Length == 0)
         {
-            // 白名单为空：仅允许同源（拒绝一切跨域来源，也不允许携带凭据）
             policy.SetIsOriginAllowed(_ => false);
         }
         else
@@ -215,14 +203,23 @@ builder.Services.PostConfigure<OAuthOptions>(opt =>
     }
 });
 
-// 注册 OAuth 服务
-// 注：GitHub 端点已统一到 /api/identity/auth/oauth/{provider}（OAuthApis），
-// OAuthService 内部自行实现 GitHub 用户获取（GetGitHubUserInfoAsync）。
+
 
 var app = builder.Build();
 
 // 启动 Banner（ASCII 字符画）：原样输出到控制台，避免 logger 前缀破坏对齐；文件缺失/读取失败不影响启动
 ResourcesBanner.PrintStartupBanner();
+
+// try
+// {
+//     using var scope = app.Services.CreateScope();
+//     var idtity = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
+//     await idtity.Database.MigrateAsync();
+// }
+// catch (Exception ex)
+// {
+//     Console.WriteLine($"[Identity] EF Core 迁移应用失败（不影响启动，可在部署后手动 dotnet ef database update）: {ex.Message}");
+// }
 
 
 app.MapDefaultEndpoints();

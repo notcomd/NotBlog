@@ -18,7 +18,7 @@ internal static class MigrateDbContextExtensions
         where TContext : DbContext
     {
         // Enable migration tracing
-        //services.AddOpenTelemetry().WithTracing(tracing => tracing.AddSource(ActivitySourceName));
+        services.AddOpenTelemetry().WithTracing(tracing => tracing.AddSource(ActivitySourceName));
 
         return services.AddHostedService(sp => new MigrationHostedService<TContext>(sp, seeder));
     }
@@ -47,6 +47,7 @@ internal static class MigrateDbContextExtensions
             logger.LogInformation("Migrating database associated with context {DbContextName}", typeof(TContext).Name);
 
             var strategy = context!.Database.CreateExecutionStrategy();
+            // await context.Database.MigrateAsync();
 
             await strategy.ExecuteAsync(() => InvokeSeeder(seeder, context, scopeServices));
         }
@@ -55,19 +56,18 @@ internal static class MigrateDbContextExtensions
             logger.LogError(ex, "An error occurred while migrating the database used on context {DbContextName}",
                 typeof(TContext).Name);
 
-            // activity.SetExceptionTags(ex);
-
             throw;
         }
     }
 
     private static async Task InvokeSeeder<TContext>(Func<TContext, IServiceProvider, Task> seeder, TContext context,
-        IServiceProvider services)
+        IServiceProvider services, CancellationToken ct = default)
         where TContext : DbContext
     {
         using var activity = ActivitySource.StartActivity($"Migrating {typeof(TContext).Name}");
-
-        await context.Database.MigrateAsync();
+        var scope = services.GetRequiredService<ILogger<TContext>>();
+        scope.LogInformation("Seeding data for context {DbContextName}", typeof(TContext).Name);
+        await context.Database.MigrateAsync(ct);
         await seeder(context, services);
     }
 
@@ -76,14 +76,9 @@ internal static class MigrateDbContextExtensions
         Func<TContext, IServiceProvider, Task> seeder)
         : BackgroundService where TContext : DbContext
     {
-        public override Task StartAsync(CancellationToken cancellationToken)
-        {
-            return serviceProvider.MigrateDbContextAsync(seeder);
-        }
-
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            return Task.CompletedTask;
+            return serviceProvider.MigrateDbContextAsync(seeder);
         }
     }
 }
