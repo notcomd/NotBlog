@@ -4,12 +4,13 @@ public class NotClientRepository(IdentityDbContext dbContext) : INotClientReposi
 {
     public IUnitOfWork UnitOfWork => dbContext;
 
+
     public async ValueTask<NotClient?> FindByClientIdAsync(string clientId, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(clientId))
             return null;
 
-        return await dbContext.NotClients
+        return await dbContext.NotClients.AsNoTracking()
             .FirstOrDefaultAsync(c => c.ClientId == clientId && c.Status != ClientStatus.Revoked, ct);
     }
 
@@ -35,4 +36,7 @@ public class NotClientRepository(IdentityDbContext dbContext) : INotClientReposi
         dbContext.NotClients.Update(client);
         return ValueTask.CompletedTask;
     }
+
+
+    
 }

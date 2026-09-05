@@ -30,67 +30,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5b6bb9ff-c83f-4a69-99e3-d3d137b7bca0" name="Changes" comment="refactor(identity): 重构身份认证服务并更新数据库配置&#10;&#10;- 移除登录请求中的验证码必填验证&#10;- 修改ILoginByCheckPasswordAsync接口方法，将code参数改为可空类型&#10;- 移除用户注册、重置密码和发送重置邮件等接口方法&#10;- 重命名GetUserByEmailAsync为GetUserInfoAsync，GetAllUsersAsync为FindUserByVagueAsync&#10;- 更新数据源配置，设置PostgreSQL数据库连接信息和架构映射&#10;- 修改UserService实现，注入Redis缓存服务并更新日志格式&#10;- 移除验证码相关验证逻辑，更新用户登录验证流程&#10;- 修改JWT声明构建方式，支持多角色名称处理&#10;- 更新角色权限获取逻辑，添加异步角色名称查询方法&#10;- 修改用户管理API端点，更新用户信息获取方式&#10;- 为命令类添加日志记录接口实现&#10;- 更新命令处理器，使用新的接口方法名和参数结构&#10;- 简化重复请求处理逻辑，使用统一的日志记录接口">
-      <change afterPath="$PROJECT_DIR$/qodana.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dockerignore" beforeDir="false" afterPath="$PROJECT_DIR$/.dockerignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.NotBlog/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.NotBlog/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CacheMemory/CacheMemory.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/CacheMemory/CacheMemory.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FileDev.Infrastructure/Mongo/MongoChunkCollection.cs" beforeDir="false" afterPath="$PROJECT_DIR$/FileDev.Infrastructure/Mongo/MongoChunkCollection.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FileDev.Web.API/FileDev.Web.API.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/FileDev.Web.API/FileDev.Web.API.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FileDev.Web.API/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/FileDev.Web.API/Program.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Domain/Dto/EmailLoginResult.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Domain/Dto/OAuth/OAuthDto.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Domain/Dto/OAuth/OAuthDto.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Domain/Dto/Response/LoginResponse.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Domain/Dto/Response/LoginResponse.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Domain/Dto/Response/ResponseSignUpRecord.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Domain/Dto/Response/ResponseSignUpRecord.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Domain/Entities/ClientAggregate/NotClient.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Domain/Entities/ClientAggregate/NotClient.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Domain/Entities/UserAggregate/User.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Domain/Entities/UserAggregate/User.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Domain/IService/IUserService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Domain/IService/IUserService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Infrastructure/Services/UserService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Infrastructure/Services/UserService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Web.API/APIs/ClientApi.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Web.API/APIs/ClientApi.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Web.API/APIs/EmailVerificationApi.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Web.API/APIs/EmailVerificationApi.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Web.API/APIs/IdentityApis.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Web.API/APIs/IdentityApis.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Web.API/APIs/OAuthApis.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Web.API/APIs/OAuthApis.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Web.API/Application/Commands/SendEmailCommandHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Web.API/Application/Commands/SendEmailCommandHandler.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Web.API/Application/Commands/UploadAvatarCommandHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Web.API/Application/Commands/UploadAvatarCommandHandler.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Web.API/Application/IntegrationEvents/Events/RegisterByUserIntegrationEvent.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Web.API/Application/IntegrationEvents/Events/RegisterByUserIntegrationEvent.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Web.API/Dto/Response/ClientInfoDto.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Domain/Dto/Response/ClientInfoDto.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Identity.Web.API/Identity.Web.API.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/Identity.Web.API/Identity.Web.API.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Markdown.Web.API/Markdown.Web.API.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/Markdown.Web.API/Markdown.Web.API.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Domain/Entities/User/UserInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Domain/Entities/User/UserInfo.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Domain/IRepository/ITweetInteractionRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Domain/IRepository/ITweetInteractionRepository.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Domain/IRepository/ITweetRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Domain/IRepository/ITweetRepository.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Infrastructure/Migrations/MessageDbContextModelSnapshot.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Infrastructure/Migrations/MessageDbContextModelSnapshot.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Infrastructure/Mongo/MongoChatCollection.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Infrastructure/Mongo/MongoChatCollection.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Infrastructure/Repository/TweetInteractionRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Infrastructure/Repository/TweetInteractionRepository.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Infrastructure/Repository/TweetRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Infrastructure/Repository/TweetRepository.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Web.API/APIs/TweetsApi.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Web.API/APIs/TweetsApi.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Web.API/APIs/UserInfoApi.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Web.API/APIs/UserInfoApi.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Web.API/Dto/Response/UserInfoDto.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Web.API/Dto/Response/UserInfoDto.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Web.API/Dto/Response/UserInfoMappingExtensions.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Web.API/Dto/Response/UserInfoMappingExtensions.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Web.API/GlobalUsings.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Web.API/GlobalUsings.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Web.API/Message.Web.API.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Web.API/Message.Web.API.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Message.Web.API/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Message.Web.API/Program.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/NotBlog.AppHost/AppHost.cs" beforeDir="false" afterPath="$PROJECT_DIR$/NotBlog.AppHost/AppHost.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NotBlog.AppHost/NotBlog.AppHost.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/NotBlog.AppHost/NotBlog.AppHost.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NotBlog_Yarp/Middlewares/PermissionFilterMiddleware.cs" beforeDir="false" afterPath="$PROJECT_DIR$/NotBlog_Yarp/Middlewares/PermissionFilterMiddleware.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NotBlog_Yarp/NotBlog_Yarp.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/NotBlog_Yarp/NotBlog_Yarp.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NotBlog_Yarp/Permission/ConfigPermissionServiceClient.cs" beforeDir="false" afterPath="$PROJECT_DIR$/NotBlog_Yarp/Permission/ConfigPermissionServiceClient.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NotBlog_Yarp/Permission/HttpPermissionServiceClient.cs" beforeDir="false" afterPath="$PROJECT_DIR$/NotBlog_Yarp/Permission/HttpPermissionServiceClient.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NotBlog_Yarp/Permission/IPermissionServiceClient.cs" beforeDir="false" afterPath="$PROJECT_DIR$/NotBlog_Yarp/Permission/IPermissionServiceClient.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NotBlog_Yarp/Permission/PermissionMappingInitializer.cs" beforeDir="false" afterPath="$PROJECT_DIR$/NotBlog_Yarp/Permission/PermissionMappingInitializer.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NotBlog_Yarp/Permission/PermissionMappingStore.cs" beforeDir="false" afterPath="$PROJECT_DIR$/NotBlog_Yarp/Permission/PermissionMappingStore.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NotBlog_Yarp/Permission/PermissionUpdatedEventHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/NotBlog_Yarp/Permission/PermissionUpdatedEventHandler.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NotBlog_Yarp/Transforms/UserContextTransform.cs" beforeDir="false" afterPath="$PROJECT_DIR$/NotBlog_Yarp/Transforms/UserContextTransform.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NotBlog_Yarp/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/NotBlog_Yarp/appsettings.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NuGet.config" beforeDir="false" afterPath="$PROJECT_DIR$/NuGet.config" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Video.Domain/Entities/VideoBarrage.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Video.Domain/Entities/VideoBarrage.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Video.Infrastructure/Migrations/VideoDbContextModelSnapshot.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Video.Infrastructure/Migrations/VideoDbContextModelSnapshot.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Video.Web.API/Apis/VideoBarrageEndpoints.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Video.Web.API/Apis/VideoBarrageEndpoints.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Video.Web.API/Application/Commands/AddVideoBarrageCommand.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Video.Web.API/Application/Commands/AddVideoBarrageCommand.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Video.Web.API/Application/Commands/AddVideoBarrageCommandHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Video.Web.API/Application/Commands/AddVideoBarrageCommandHandler.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Video.Web.API/Dto/Request/RequestAddBarrage.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Video.Web.API/Dto/Request/RequestAddBarrage.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Video.Web.API/Dto/Response/BarrageResponse.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Video.Web.API/Dto/Response/BarrageResponse.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Video.Web.API/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Video.Web.API/Program.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Video.Web.API/Video.Web.API.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/Video.Web.API/Video.Web.API.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/NotBlog.AppHost/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/NotBlog.AppHost/appsettings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/NotBlog_Yarp/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/NotBlog_Yarp/Program.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/notblog-ui" beforeDir="false" afterPath="$PROJECT_DIR$/notblog-ui" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -695,6 +638,7 @@
       <workItem from="1788073685924" duration="30000" />
       <workItem from="1788073762644" duration="13767000" />
       <workItem from="1788181912965" duration="1133000" />
+      <workItem from="1788443682148" duration="2092000" />
     </task>
     <task id="LOCAL-00019" summary="feat(identity): 添加 OAuth 第三方登录功能&#10;&#10;- 添加 Google、GitHub 和 Microsoft OAuth 配置选项&#10;- 实现 OAuthService 处理第三方登录流程&#10;- 添加 Author2 聚合根管理外部登录信息&#10;- 创建 Author2Repository 数据访问层&#10;- 添加 UserService 接口和实现用户服务&#10;- 配置 OAuth 相关实体和数据库映射&#10;- 更新包引用版本并清理冗余引用&#10;- 重构命名空间结构统一 Options 配置位置&#10;- 添加内存缓存仓库 IMemoryRepository 接口定义&#10;- 实现 Redis 分布式缓存 MemoryRepository 服务">
       <option name="closed" value="true" />

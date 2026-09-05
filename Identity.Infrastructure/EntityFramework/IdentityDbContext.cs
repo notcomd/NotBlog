@@ -1,4 +1,3 @@
-using Identity.Infrastructure.Idempotent;
 using Notcomd.EventBus.Outbox;
 
 namespace Identity.Infrastructure.EntityFramework;

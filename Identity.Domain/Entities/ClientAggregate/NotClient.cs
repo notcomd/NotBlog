@@ -10,7 +10,7 @@ namespace Identity.Domain.Entities.ClientAggregate;
 /// </summary>
 public class NotClient : Entity<int>, IAggregateRoot
 {
-   
+
 
     protected NotClient()
     {
@@ -70,45 +70,45 @@ public class NotClient : Entity<int>, IAggregateRoot
 
     public Guid NotClientId { get; init; } = Guid.CreateVersion7();
 
-   
+
     public string ClientId { get; private set; } = null!;
 
-   
 
-   
+
+
     public string ApplicationName { get; private set; } = null!;
 
-    
+
     public string? ApplicationDescription { get; private set; }
 
-    
+
     public string? ApplicationIcon { get; private set; }
 
-    
+
     public string? HomepageUri { get; private set; }
 
-    
+
     public string? PrivacyPolicyUri { get; private set; }
 
-    
+
     public string? TermsOfServiceUri { get; private set; }
 
 
     public string? ContactEmail { get; private set; }
 
-  
+
     public string ClientSecret { get; private set; } = null!;
 
-    
+
     public HashSet<string> RedirectUris { get; private set; } = [];
 
-   
+
     public HashSet<string> PostLogoutRedirectUris { get; private set; } = [];
 
-    
+
     public HashSet<string> AllowedScopes { get; private set; } = [];
 
-    
+
     public HashSet<string> AllowedGrantTypes { get; private set; } = [];
 
     // ── 安全与类型 ──
@@ -116,32 +116,32 @@ public class NotClient : Entity<int>, IAggregateRoot
 
     public ApplicationType ApplicationType { get; private set; }
 
-   
+
     public string TokenEndpointAuthMethod { get; private set; } = null!;
 
-    
+
     public bool RequirePkce { get; private set; }
 
-   
+
     public bool RequireConsent { get; private set; }
 
-    
+
     public HashSet<string>? AllowedCorsOrigins { get; private set; }
 
     // ── 状态与审计 ──
 
-    
+
     public ClientStatus Status { get; private set; }
 
-    
+
     public DateTimeOffset CreatedAt { get; init; }
 
-   
+
     public DateTimeOffset UpdatedAt { get; private set; }
 
     // ── 领域行为 ──
 
-    
+
     public void RotateSecret(string newSecret)
     {
         if (string.IsNullOrWhiteSpace(newSecret))
@@ -150,7 +150,7 @@ public class NotClient : Entity<int>, IAggregateRoot
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    
+
     public void UpdateApplicationInfo(
         string? applicationName = null,
         string? applicationDescription = null,
@@ -273,12 +273,12 @@ public class NotClient : Entity<int>, IAggregateRoot
         return AllowedGrantTypes.Contains(grantType);
     }
 
-   
+
     public bool IsPublicClient => ApplicationType is ApplicationType.SPA
         or ApplicationType.Native
         or ApplicationType.Desktop;
 
-    
+
     /// <summary>是否为机密客户端（Confidential Client：Web / Service）</summary>
     public bool IsConfidentialClient => !IsPublicClient;
 }

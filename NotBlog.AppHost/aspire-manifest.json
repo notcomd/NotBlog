@@ -1,0 +1,479 @@
+{
+  "resources": {
+    "postgres": {
+      "type": "container.v1",
+      "connectionString": "Host={postgres.bindings.tcp.host};Port={postgres.bindings.tcp.port};Username=postgres;Password={postgres-password.value}",
+      "image": "docker.io/library/postgres:18.3",
+      "volumes": [
+        {
+          "name": "notblog.apphost-4e335c671b-postgres-data",
+          "target": "/var/lib/postgresql",
+          "readOnly": false
+        }
+      ],
+      "env": {
+        "POSTGRES_HOST_AUTH_METHOD": "scram-sha-256",
+        "POSTGRES_INITDB_ARGS": "--auth-host=scram-sha-256 --auth-local=scram-sha-256",
+        "POSTGRES_USER": "postgres",
+        "POSTGRES_PASSWORD": "{postgres-password.value}"
+      },
+      "bindings": {
+        "tcp": {
+          "scheme": "tcp",
+          "protocol": "tcp",
+          "transport": "tcp",
+          "targetPort": 5432
+        }
+      }
+    },
+    "IdentityPostgres": {
+      "type": "value.v0",
+      "connectionString": "{postgres.connectionString};Database=identitypostgres"
+    },
+    "NotFilePostgres": {
+      "type": "value.v0",
+      "connectionString": "{postgres.connectionString};Database=notfilepostgres"
+    },
+    "MessagePostgres": {
+      "type": "value.v0",
+      "connectionString": "{postgres.connectionString};Database=messagepostgres"
+    },
+    "VideoPostgres": {
+      "type": "value.v0",
+      "connectionString": "{postgres.connectionString};Database=videopostgres"
+    },
+    "MarkDownPostgres": {
+      "type": "value.v0",
+      "connectionString": "{postgres.connectionString};Database=markdownpostgres"
+    },
+    "Redis": {
+      "type": "container.v1",
+      "connectionString": "{Redis.bindings.tcp.host}:{Redis.bindings.tcp.port},password={Redis-password.value}{cond-redis-bindings-tcp-tlsenabled-bd71387f.connectionString}",
+      "image": "docker.io/library/redis:8.6",
+      "entrypoint": "/bin/sh",
+      "args": [
+        "-c",
+        "redis-server --requirepass $REDIS_PASSWORD --save 60 1"
+      ],
+      "volumes": [
+        {
+          "name": "notblog.apphost-4e335c671b-Redis-data",
+          "target": "/data",
+          "readOnly": false
+        }
+      ],
+      "env": {
+        "REDIS_PASSWORD": "{Redis-password.value}"
+      },
+      "bindings": {
+        "tcp": {
+          "scheme": "redis",
+          "protocol": "tcp",
+          "transport": "tcp",
+          "targetPort": 6379
+        }
+      }
+    },
+    "NotFileMongo": {
+      "type": "container.v1",
+      "image": "mongo:8",
+      "volumes": [
+        {
+          "name": "notblog-mongo-data",
+          "target": "/data/db",
+          "readOnly": false
+        }
+      ],
+      "bindings": {
+        "mongo-port": {
+          "scheme": "tcp",
+          "protocol": "tcp",
+          "transport": "tcp",
+          "port": 27018,
+          "targetPort": 27017
+        }
+      }
+    },
+    "EventBus": {
+      "type": "container.v1",
+      "connectionString": "amqp://guest:{EventBus-password-uri-encoded.value}@{EventBus.bindings.tcp.host}:{EventBus.bindings.tcp.port}",
+      "image": "docker.io/library/rabbitmq:4.3",
+      "volumes": [
+        {
+          "name": "notblog.apphost-4e335c671b-EventBus-data",
+          "target": "/var/lib/rabbitmq",
+          "readOnly": false
+        }
+      ],
+      "env": {
+        "RABBITMQ_DEFAULT_USER": "guest",
+        "RABBITMQ_DEFAULT_PASS": "{EventBus-password.value}"
+      },
+      "bindings": {
+        "tcp": {
+          "scheme": "tcp",
+          "protocol": "tcp",
+          "transport": "tcp",
+          "targetPort": 5672
+        }
+      }
+    },
+    "filedev-web-api": {
+      "type": "project.v1",
+      "path": "../FileDev.Web.API/FileDev.Web.API.csproj",
+      "env": {
+        "OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY": "in_memory",
+        "ASPNETCORE_FORWARDEDHEADERS_ENABLED": "true",
+        "HTTP_PORTS": "{filedev-web-api.bindings.http.targetPort}",
+        "ConnectionStrings__NotFilePostgres": "{NotFilePostgres.connectionString}",
+        "NOTFILEPOSTGRES_HOST": "{postgres.bindings.tcp.host}",
+        "NOTFILEPOSTGRES_PORT": "{postgres.bindings.tcp.port}",
+        "NOTFILEPOSTGRES_USERNAME": "postgres",
+        "NOTFILEPOSTGRES_PASSWORD": "{postgres-password.value}",
+        "NOTFILEPOSTGRES_URI": "postgresql://postgres:{postgres-password-uri-encoded.value}@{postgres.bindings.tcp.host}:{postgres.bindings.tcp.port}/notfilepostgres",
+        "NOTFILEPOSTGRES_JDBCCONNECTIONSTRING": "jdbc:postgresql://{postgres.bindings.tcp.host}:{postgres.bindings.tcp.port}/notfilepostgres",
+        "NOTFILEPOSTGRES_DATABASENAME": "notfilepostgres",
+        "ConnectionStrings__Redis": "{Redis.connectionString}",
+        "REDIS_HOST": "{Redis.bindings.tcp.host}",
+        "REDIS_PORT": "{Redis.bindings.tcp.port}",
+        "REDIS_PASSWORD": "{Redis-password.value}",
+        "REDIS_URI": "{Redis.bindings.tcp.scheme}://:{Redis-password-uri-encoded.value}@{Redis.bindings.tcp.host}:{Redis.bindings.tcp.port}",
+        "ConnectionStrings__EventBus": "{EventBus.connectionString}",
+        "EVENTBUS_HOST": "{EventBus.bindings.tcp.host}",
+        "EVENTBUS_PORT": "{EventBus.bindings.tcp.port}",
+        "EVENTBUS_USERNAME": "guest",
+        "EVENTBUS_PASSWORD": "{EventBus-password.value}",
+        "EVENTBUS_URI": "amqp://guest:{EventBus-password-uri-encoded.value}@{EventBus.bindings.tcp.host}:{EventBus.bindings.tcp.port}",
+        "ConnectionStrings__NotFileMongo": "mongodb://localhost:27018",
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "{docker-compose-dashboard.bindings.otlp-grpc.url}",
+        "OTEL_EXPORTER_OTLP_PROTOCOL": "grpc",
+        "OTEL_SERVICE_NAME": "filedev-web-api"
+      },
+      "bindings": {
+        "http": {
+          "scheme": "http",
+          "protocol": "tcp",
+          "transport": "http"
+        },
+        "https": {
+          "scheme": "https",
+          "protocol": "tcp",
+          "transport": "http"
+        }
+      }
+    },
+    "identity-web-api": {
+      "type": "project.v1",
+      "path": "../Identity.Web.API/Identity.Web.API.csproj",
+      "env": {
+        "OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY": "in_memory",
+        "ASPNETCORE_FORWARDEDHEADERS_ENABLED": "true",
+        "HTTP_PORTS": "{identity-web-api.bindings.http.targetPort}",
+        "ConnectionStrings__IdentityPostgres": "{IdentityPostgres.connectionString}",
+        "IDENTITYPOSTGRES_HOST": "{postgres.bindings.tcp.host}",
+        "IDENTITYPOSTGRES_PORT": "{postgres.bindings.tcp.port}",
+        "IDENTITYPOSTGRES_USERNAME": "postgres",
+        "IDENTITYPOSTGRES_PASSWORD": "{postgres-password.value}",
+        "IDENTITYPOSTGRES_URI": "postgresql://postgres:{postgres-password-uri-encoded.value}@{postgres.bindings.tcp.host}:{postgres.bindings.tcp.port}/identitypostgres",
+        "IDENTITYPOSTGRES_JDBCCONNECTIONSTRING": "jdbc:postgresql://{postgres.bindings.tcp.host}:{postgres.bindings.tcp.port}/identitypostgres",
+        "IDENTITYPOSTGRES_DATABASENAME": "identitypostgres",
+        "ConnectionStrings__Redis": "{Redis.connectionString}",
+        "REDIS_HOST": "{Redis.bindings.tcp.host}",
+        "REDIS_PORT": "{Redis.bindings.tcp.port}",
+        "REDIS_PASSWORD": "{Redis-password.value}",
+        "REDIS_URI": "{Redis.bindings.tcp.scheme}://:{Redis-password-uri-encoded.value}@{Redis.bindings.tcp.host}:{Redis.bindings.tcp.port}",
+        "ConnectionStrings__EventBus": "{EventBus.connectionString}",
+        "EVENTBUS_HOST": "{EventBus.bindings.tcp.host}",
+        "EVENTBUS_PORT": "{EventBus.bindings.tcp.port}",
+        "EVENTBUS_USERNAME": "guest",
+        "EVENTBUS_PASSWORD": "{EventBus-password.value}",
+        "EVENTBUS_URI": "amqp://guest:{EventBus-password-uri-encoded.value}@{EventBus.bindings.tcp.host}:{EventBus.bindings.tcp.port}",
+        "FILEDEV_WEB_API_HTTP": "{filedev-web-api.bindings.http.url}",
+        "services__filedev-web-api__http__0": "{filedev-web-api.bindings.http.url}",
+        "FILEDEV_WEB_API_HTTPS": "{filedev-web-api.bindings.https.url}",
+        "services__filedev-web-api__https__0": "{filedev-web-api.bindings.https.url}",
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "{docker-compose-dashboard.bindings.otlp-grpc.url}",
+        "OTEL_EXPORTER_OTLP_PROTOCOL": "grpc",
+        "OTEL_SERVICE_NAME": "identity-web-api"
+      },
+      "bindings": {
+        "http": {
+          "scheme": "http",
+          "protocol": "tcp",
+          "transport": "http"
+        },
+        "https": {
+          "scheme": "https",
+          "protocol": "tcp",
+          "transport": "http"
+        }
+      }
+    },
+    "message-web-api": {
+      "type": "project.v1",
+      "path": "../Message.Web.API/Message.Web.API.csproj",
+      "env": {
+        "OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY": "in_memory",
+        "ASPNETCORE_FORWARDEDHEADERS_ENABLED": "true",
+        "HTTP_PORTS": "{message-web-api.bindings.http.targetPort}",
+        "ConnectionStrings__MessagePostgres": "{MessagePostgres.connectionString}",
+        "MESSAGEPOSTGRES_HOST": "{postgres.bindings.tcp.host}",
+        "MESSAGEPOSTGRES_PORT": "{postgres.bindings.tcp.port}",
+        "MESSAGEPOSTGRES_USERNAME": "postgres",
+        "MESSAGEPOSTGRES_PASSWORD": "{postgres-password.value}",
+        "MESSAGEPOSTGRES_URI": "postgresql://postgres:{postgres-password-uri-encoded.value}@{postgres.bindings.tcp.host}:{postgres.bindings.tcp.port}/messagepostgres",
+        "MESSAGEPOSTGRES_JDBCCONNECTIONSTRING": "jdbc:postgresql://{postgres.bindings.tcp.host}:{postgres.bindings.tcp.port}/messagepostgres",
+        "MESSAGEPOSTGRES_DATABASENAME": "messagepostgres",
+        "ConnectionStrings__Redis": "{Redis.connectionString}",
+        "REDIS_HOST": "{Redis.bindings.tcp.host}",
+        "REDIS_PORT": "{Redis.bindings.tcp.port}",
+        "REDIS_PASSWORD": "{Redis-password.value}",
+        "REDIS_URI": "{Redis.bindings.tcp.scheme}://:{Redis-password-uri-encoded.value}@{Redis.bindings.tcp.host}:{Redis.bindings.tcp.port}",
+        "FILEDEV_WEB_API_HTTP": "{filedev-web-api.bindings.http.url}",
+        "services__filedev-web-api__http__0": "{filedev-web-api.bindings.http.url}",
+        "FILEDEV_WEB_API_HTTPS": "{filedev-web-api.bindings.https.url}",
+        "services__filedev-web-api__https__0": "{filedev-web-api.bindings.https.url}",
+        "ConnectionStrings__EventBus": "{EventBus.connectionString}",
+        "EVENTBUS_HOST": "{EventBus.bindings.tcp.host}",
+        "EVENTBUS_PORT": "{EventBus.bindings.tcp.port}",
+        "EVENTBUS_USERNAME": "guest",
+        "EVENTBUS_PASSWORD": "{EventBus-password.value}",
+        "EVENTBUS_URI": "amqp://guest:{EventBus-password-uri-encoded.value}@{EventBus.bindings.tcp.host}:{EventBus.bindings.tcp.port}",
+        "ConnectionStrings__MessageMongo": "mongodb://localhost:27018",
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "{docker-compose-dashboard.bindings.otlp-grpc.url}",
+        "OTEL_EXPORTER_OTLP_PROTOCOL": "grpc",
+        "OTEL_SERVICE_NAME": "message-web-api"
+      },
+      "bindings": {
+        "http": {
+          "scheme": "http",
+          "protocol": "tcp",
+          "transport": "http"
+        },
+        "https": {
+          "scheme": "https",
+          "protocol": "tcp",
+          "transport": "http"
+        }
+      }
+    },
+    "markdown-web-api": {
+      "type": "project.v1",
+      "path": "../Markdown.Web.API/Markdown.Web.API.csproj",
+      "env": {
+        "OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY": "in_memory",
+        "ASPNETCORE_FORWARDEDHEADERS_ENABLED": "true",
+        "HTTP_PORTS": "{markdown-web-api.bindings.http.targetPort}",
+        "ConnectionStrings__MarkDownPostgres": "{MarkDownPostgres.connectionString}",
+        "MARKDOWNPOSTGRES_HOST": "{postgres.bindings.tcp.host}",
+        "MARKDOWNPOSTGRES_PORT": "{postgres.bindings.tcp.port}",
+        "MARKDOWNPOSTGRES_USERNAME": "postgres",
+        "MARKDOWNPOSTGRES_PASSWORD": "{postgres-password.value}",
+        "MARKDOWNPOSTGRES_URI": "postgresql://postgres:{postgres-password-uri-encoded.value}@{postgres.bindings.tcp.host}:{postgres.bindings.tcp.port}/markdownpostgres",
+        "MARKDOWNPOSTGRES_JDBCCONNECTIONSTRING": "jdbc:postgresql://{postgres.bindings.tcp.host}:{postgres.bindings.tcp.port}/markdownpostgres",
+        "MARKDOWNPOSTGRES_DATABASENAME": "markdownpostgres",
+        "ConnectionStrings__EventBus": "{EventBus.connectionString}",
+        "EVENTBUS_HOST": "{EventBus.bindings.tcp.host}",
+        "EVENTBUS_PORT": "{EventBus.bindings.tcp.port}",
+        "EVENTBUS_USERNAME": "guest",
+        "EVENTBUS_PASSWORD": "{EventBus-password.value}",
+        "EVENTBUS_URI": "amqp://guest:{EventBus-password-uri-encoded.value}@{EventBus.bindings.tcp.host}:{EventBus.bindings.tcp.port}",
+        "ConnectionStrings__Redis": "{Redis.connectionString}",
+        "REDIS_HOST": "{Redis.bindings.tcp.host}",
+        "REDIS_PORT": "{Redis.bindings.tcp.port}",
+        "REDIS_PASSWORD": "{Redis-password.value}",
+        "REDIS_URI": "{Redis.bindings.tcp.scheme}://:{Redis-password-uri-encoded.value}@{Redis.bindings.tcp.host}:{Redis.bindings.tcp.port}",
+        "FILEDEV_WEB_API_HTTP": "{filedev-web-api.bindings.http.url}",
+        "services__filedev-web-api__http__0": "{filedev-web-api.bindings.http.url}",
+        "FILEDEV_WEB_API_HTTPS": "{filedev-web-api.bindings.https.url}",
+        "services__filedev-web-api__https__0": "{filedev-web-api.bindings.https.url}",
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "{docker-compose-dashboard.bindings.otlp-grpc.url}",
+        "OTEL_EXPORTER_OTLP_PROTOCOL": "grpc",
+        "OTEL_SERVICE_NAME": "markdown-web-api"
+      },
+      "bindings": {
+        "http": {
+          "scheme": "http",
+          "protocol": "tcp",
+          "transport": "http"
+        },
+        "https": {
+          "scheme": "https",
+          "protocol": "tcp",
+          "transport": "http"
+        }
+      }
+    },
+    "video-web-api": {
+      "type": "project.v1",
+      "path": "../Video.Web.API/Video.Web.API.csproj",
+      "env": {
+        "OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY": "in_memory",
+        "ASPNETCORE_FORWARDEDHEADERS_ENABLED": "true",
+        "HTTP_PORTS": "{video-web-api.bindings.http.targetPort}",
+        "ConnectionStrings__VideoPostgres": "{VideoPostgres.connectionString}",
+        "VIDEOPOSTGRES_HOST": "{postgres.bindings.tcp.host}",
+        "VIDEOPOSTGRES_PORT": "{postgres.bindings.tcp.port}",
+        "VIDEOPOSTGRES_USERNAME": "postgres",
+        "VIDEOPOSTGRES_PASSWORD": "{postgres-password.value}",
+        "VIDEOPOSTGRES_URI": "postgresql://postgres:{postgres-password-uri-encoded.value}@{postgres.bindings.tcp.host}:{postgres.bindings.tcp.port}/videopostgres",
+        "VIDEOPOSTGRES_JDBCCONNECTIONSTRING": "jdbc:postgresql://{postgres.bindings.tcp.host}:{postgres.bindings.tcp.port}/videopostgres",
+        "VIDEOPOSTGRES_DATABASENAME": "videopostgres",
+        "ConnectionStrings__Redis": "{Redis.connectionString}",
+        "REDIS_HOST": "{Redis.bindings.tcp.host}",
+        "REDIS_PORT": "{Redis.bindings.tcp.port}",
+        "REDIS_PASSWORD": "{Redis-password.value}",
+        "REDIS_URI": "{Redis.bindings.tcp.scheme}://:{Redis-password-uri-encoded.value}@{Redis.bindings.tcp.host}:{Redis.bindings.tcp.port}",
+        "ConnectionStrings__EventBus": "{EventBus.connectionString}",
+        "EVENTBUS_HOST": "{EventBus.bindings.tcp.host}",
+        "EVENTBUS_PORT": "{EventBus.bindings.tcp.port}",
+        "EVENTBUS_USERNAME": "guest",
+        "EVENTBUS_PASSWORD": "{EventBus-password.value}",
+        "EVENTBUS_URI": "amqp://guest:{EventBus-password-uri-encoded.value}@{EventBus.bindings.tcp.host}:{EventBus.bindings.tcp.port}",
+        "FILEDEV_WEB_API_HTTP": "{filedev-web-api.bindings.http.url}",
+        "services__filedev-web-api__http__0": "{filedev-web-api.bindings.http.url}",
+        "FILEDEV_WEB_API_HTTPS": "{filedev-web-api.bindings.https.url}",
+        "services__filedev-web-api__https__0": "{filedev-web-api.bindings.https.url}",
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "{docker-compose-dashboard.bindings.otlp-grpc.url}",
+        "OTEL_EXPORTER_OTLP_PROTOCOL": "grpc",
+        "OTEL_SERVICE_NAME": "video-web-api"
+      },
+      "bindings": {
+        "http": {
+          "scheme": "http",
+          "protocol": "tcp",
+          "transport": "http"
+        },
+        "https": {
+          "scheme": "https",
+          "protocol": "tcp",
+          "transport": "http"
+        }
+      }
+    },
+    "notblog-yarp-gateway": {
+      "type": "project.v1",
+      "path": "../NotBlog_Yarp/NotBlog_Yarp.csproj",
+      "env": {
+        "OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY": "in_memory",
+        "IDENTITY_WEB_API_HTTP": "{identity-web-api.bindings.http.url}",
+        "services__identity-web-api__http__0": "{identity-web-api.bindings.http.url}",
+        "IDENTITY_WEB_API_HTTPS": "{identity-web-api.bindings.https.url}",
+        "services__identity-web-api__https__0": "{identity-web-api.bindings.https.url}",
+        "MESSAGE_WEB_API_HTTP": "{message-web-api.bindings.http.url}",
+        "services__message-web-api__http__0": "{message-web-api.bindings.http.url}",
+        "MESSAGE_WEB_API_HTTPS": "{message-web-api.bindings.https.url}",
+        "services__message-web-api__https__0": "{message-web-api.bindings.https.url}",
+        "MARKDOWN_WEB_API_HTTP": "{markdown-web-api.bindings.http.url}",
+        "services__markdown-web-api__http__0": "{markdown-web-api.bindings.http.url}",
+        "MARKDOWN_WEB_API_HTTPS": "{markdown-web-api.bindings.https.url}",
+        "services__markdown-web-api__https__0": "{markdown-web-api.bindings.https.url}",
+        "VIDEO_WEB_API_HTTP": "{video-web-api.bindings.http.url}",
+        "services__video-web-api__http__0": "{video-web-api.bindings.http.url}",
+        "VIDEO_WEB_API_HTTPS": "{video-web-api.bindings.https.url}",
+        "services__video-web-api__https__0": "{video-web-api.bindings.https.url}",
+        "FILEDEV_WEB_API_HTTP": "{filedev-web-api.bindings.http.url}",
+        "services__filedev-web-api__http__0": "{filedev-web-api.bindings.http.url}",
+        "FILEDEV_WEB_API_HTTPS": "{filedev-web-api.bindings.https.url}",
+        "services__filedev-web-api__https__0": "{filedev-web-api.bindings.https.url}",
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "{docker-compose-dashboard.bindings.otlp-grpc.url}",
+        "OTEL_EXPORTER_OTLP_PROTOCOL": "grpc",
+        "OTEL_SERVICE_NAME": "notblog-yarp-gateway"
+      }
+    },
+    "docker-compose": {
+      "error": "This resource does not support generation in the manifest."
+    },
+    "postgres-password": {
+      "type": "parameter.v0",
+      "value": "{postgres-password.inputs.value}",
+      "inputs": {
+        "value": {
+          "type": "string",
+          "secret": true,
+          "default": {
+            "generate": {
+              "minLength": 22
+            }
+          }
+        }
+      }
+    },
+    "postgres-password-uri-encoded": {
+      "type": "annotated.string",
+      "value": "{postgres-password.value}",
+      "filter": "uri"
+    },
+    "Redis-password": {
+      "type": "parameter.v0",
+      "value": "{Redis-password.inputs.value}",
+      "inputs": {
+        "value": {
+          "type": "string",
+          "secret": true,
+          "default": {
+            "generate": {
+              "minLength": 22,
+              "special": false
+            }
+          }
+        }
+      }
+    },
+    "Redis-password-uri-encoded": {
+      "type": "annotated.string",
+      "value": "{Redis-password.value}",
+      "filter": "uri"
+    },
+    "EventBus-password": {
+      "type": "parameter.v0",
+      "value": "{EventBus-password.inputs.value}",
+      "inputs": {
+        "value": {
+          "type": "string",
+          "secret": true,
+          "default": {
+            "generate": {
+              "minLength": 22,
+              "special": false
+            }
+          }
+        }
+      }
+    },
+    "EventBus-password-uri-encoded": {
+      "type": "annotated.string",
+      "value": "{EventBus-password.value}",
+      "filter": "uri"
+    },
+    "docker-compose-dashboard": {
+      "type": "container.v1",
+      "image": "mcr.microsoft.com/dotnet/nightly/aspire-dashboard:13.5",
+      "bindings": {
+        "http": {
+          "scheme": "http",
+          "protocol": "tcp",
+          "transport": "http",
+          "targetPort": 18888,
+          "external": true
+        },
+        "otlp-grpc": {
+          "scheme": "http",
+          "protocol": "tcp",
+          "transport": "http",
+          "targetPort": 18889
+        },
+        "otlp-http": {
+          "scheme": "http",
+          "protocol": "tcp",
+          "transport": "http",
+          "targetPort": 18890
+        }
+      }
+    },
+    "cond-redis-bindings-tcp-tlsenabled-bd71387f": {
+      "type": "value.v0",
+      "connectionString": ""
+    }
+  }
+}

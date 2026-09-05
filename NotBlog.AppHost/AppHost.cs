@@ -6,9 +6,12 @@ using Projects;
 var builder = DistributedApplication.CreateBuilder(args);
 
 
+// 宿主端口映射（供本机数据库客户端直连，同时避开本机常驻服务）：
+//   5433 -> 5432  PostgreSQL；6380 -> 6379 Redis；5673 -> 5672 RabbitMQ（本机 5672 常被占用）
 var postgres = builder.AddPostgres("postgres")
     //.WithImagePullPolicy(ImagePullPolicy.Never)
-    .WithDataVolume();
+    .WithDataVolume()
+    .WithHostPort(5433);
 
 var identityDb = postgres.AddDatabase("IdentityPostgres", "identitypostgres");      // Identity.Web.API（GetConnectionString("IdentityPostgres")）
 var notfileDb = postgres.AddDatabase("NotFilePostgres", "notfilepostgres");         // FileDev.Web.API（GetconnectionString("FileDevPostgres")）
@@ -19,7 +22,8 @@ var markDb = postgres.AddDatabase("MarkDownPostgres", "markdownpostgres");      
 // Redis：单实例。Identity/Message 读连接名 "Redis"，Video/FileDev 经 WithReference(connectionName:"CacheMemory") 注入。
 var redis = builder.AddRedis("Redis")
     //.WithImagePullPolicy(ImagePullPolicy.Never)
-    .WithDataVolume();
+    .WithDataVolume()
+    .WithHostPort(6380);
 
 
 // MongoDB：服务于 FileDev 的分片上传跟踪 / Message 的对话迁移数据（连接串经 WithEnvironment 显式注入）。
@@ -34,7 +38,8 @@ var mongo = builder.AddContainer("NotFileMongo", "mongo:8")
 
 var rabbitmq = builder.AddRabbitMQ("EventBus")
     //.WithImagePullPolicy(ImagePullPolicy.Never)
-    .WithDataVolume();
+    .WithDataVolume()
+    .WithEndpoint(port: 5673, targetPort: 5672, name: "tcp");
 
 
 
@@ -120,9 +125,9 @@ if (!string.IsNullOrEmpty(gatewayInternalApiKey))
     gateway.WithEnvironment("GATEWAY_INTERNAL_API_KEY", gatewayInternalApiKey);
 
 
-var frontend = builder.AddDockerfile("notblog-ui", "..", "notblog-ui/Dockerfile")
-    .WithEnvironment("GATEWAY_UPSTREAM", "host.docker.internal:5000")
-    .WithHttpEndpoint(port: 8080, targetPort: 80);
+// var frontend = builder.AddProject<Not>("notblog-frontend")
+//     .WithEnvironment("GATEWAY_UPSTREAM", "host.docker.internal:5000")
+//     .WithHttpEndpoint(port: 8080, targetPort: 80);
 
 
 builder.AddDockerComposeEnvironment("docker-compose");

@@ -2,6 +2,12 @@ namespace Identity.Domain.ICache;
 
 public interface IIdentityCacheService
 {
+    /// <summary>
+    ///  根据key 获取缓存信息
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     Task<string?> GetStringAsync(string key, CancellationToken cancellationToken);
 
     /// <summary>
@@ -14,5 +20,11 @@ public interface IIdentityCacheService
     /// </summary>
     Task SetStringAsync(string key, string value, TimeSpan ttl, CancellationToken cancellationToken);
 
+    /// <summary>
+    ///  删除写入的缓存
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     Task RemoveAsync(string key, CancellationToken cancellationToken);
 }
