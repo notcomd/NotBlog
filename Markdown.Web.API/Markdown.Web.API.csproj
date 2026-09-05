@@ -29,12 +29,13 @@
         <ProjectReference Include="..\JWToken\JWToken.csproj" />
         <ProjectReference Include="..\Eventbus\EventBus.csproj" />
         <ProjectReference Include="..\Commons\Commons.csproj" />
+        <ProjectReference Include="..\CacheMemory\CacheMemory.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="13.4.6" />
+        <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="13.5.3" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.11" />
-        <PackageReference Include="Aspire.RabbitMQ.Client" Version="13.4.6" />
+        <PackageReference Include="Aspire.RabbitMQ.Client" Version="13.5.3" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.11" />
         <PackageReference Include="NotMediator" Version="2.0.1" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.11">
@@ -43,6 +44,15 @@
         </PackageReference>
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
         <PackageReference Include="Scalar.AspNetCore" Version="2.16.20" />
+        <PackageReference Include="Google.Protobuf" Version="3.35.1" />
+        <PackageReference Include="Grpc.Net.ClientFactory" Version="2.83.0" />
+        <PackageReference Include="Grpc.Tools" Version="2.83.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
     </ItemGroup>
 
+    <ItemGroup>
+        <Protobuf Include="Protos\filestorage.proto" GrpcServices="Client" />
+    </ItemGroup>
 </Project>

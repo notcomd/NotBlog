@@ -18,7 +18,7 @@ namespace Identity.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.9")
+                .HasAnnotation("ProductVersion", "10.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -252,7 +252,7 @@ namespace Identity.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.PrimitiveCollection<HashSet<Guid>>("UserGuid")
+                    b.PrimitiveCollection<List<Guid>>("UserGuid")
                         .IsRequired()
                         .HasColumnType("uuid[]");
 
@@ -364,6 +364,12 @@ namespace Identity.Infrastructure.Migrations
 
                     b.Property<int>("BlackOrWhite")
                         .HasColumnType("integer");
+
+                    b.Property<bool>("IsTwoFactorEnabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("is_two_factor_enabled");
 
                     b.Property<DateTimeOffset?>("LockOutEnd")
                         .HasColumnType("timestamp with time zone");

@@ -1,4 +1,4 @@
-﻿using FileDev.Domain.IRepository;
+using FileDev.Domain.IRepository;
 using FileDev.Domain.IServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -54,13 +54,11 @@ public class ChunkCleanupBackgroundService(
         var expired = await repository.GetExpiredRecordsAsync(threshold, ct);
         foreach (var record in expired)
         {
+            // Mongo 仓储的删除即时生效，无需工作单元/显式提交。
             await storageService.CleanupChunksAsync(record.FileKey);
             await repository.DeleteAsync(record.FileKey, ct);
             logger.LogInformation("[ChunkCleanup] 清理过期分片: FileKey={FileKey}, CreatedAt={CreatedAt}",
                 record.FileKey, record.CreatedAt);
         }
-
-        if (expired.Any())
-            await repository.UnitOfWork.SaveChangesAsync(ct);
     }
 }

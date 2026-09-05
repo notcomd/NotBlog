@@ -1,4 +1,7 @@
 
+using Message.Infrastructure.MongoMigration;
+using Message.Infrastructure.Services;
+
 namespace Message.Infrastructure;
 
 public static class ServiceCollectionExtensions
@@ -44,6 +47,18 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+    /// <summary>
+    /// 以 Mongo 仓储覆盖消息/会话仓储注册（D2-1：message + chat_session 集合切换到 Mongo）。
+    /// <para>必须在 <see cref="RegisterRepositories"/> 之后调用——AddScoped 后注册者胜出；
+    /// 社交域（FileAttachment/群/好友/Tweet）仍保留 EF 注册。测试用的内存库不走此路径。</para>
+    /// </summary>
+    public static IServiceCollection AddMessageMongoRepositories(this IServiceCollection services)
+    {
+        services.AddScoped<IMessageRepository, MongoMessageRepository>();
+        services.AddScoped<IChatSessionRepository, MongoChatSessionRepository>();
+        return services;
+    }
+
     private static void RegisterRepositories(IServiceCollection services)
     {
         services.AddScoped<IMessageRepository, MessageRepository>();
@@ -82,11 +97,15 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IImageModerationService, DefaultImageModerationService>();
         services.AddScoped<IEmailSender, DefaultEmailSender>();
         services.AddScoped<ILocalizationService, DefaultLocalizationService>();
+        services.AddSingleton<IMessageRecallPolicy, DefaultMessageRecallPolicy>();
 
         services.TryAddSingleton<MessageCacheService>();
         services.TryAddSingleton<SessionCacheService>();
         services.TryAddSingleton<UnreadCountCacheService>();
         services.TryAddSingleton<UserStatusCacheService>();
+
+        // 存量聊天数据迁移（PG → Mongo），一次性后台任务，由宿主按配置门控触发。
+        services.AddScoped<MessageMongoMigrationService>();
 
         // 社区事件发布器（AI 机器人 / MCP 扩展出口）：
         // CommunityEventBus:Enabled = true → RabbitMQ 实现（需宿主已注册 IConnectionFactory）；

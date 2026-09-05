@@ -8,7 +8,8 @@ public class RecallMessageCommandHandler(
     ILogger<RecallMessageCommandHandler> logger,
      MessageCacheService redisCache,
     MessageDeliveryService delivery,
-    IChatSessionRepository sessionRepository) : IRequestHandler<RecallMessageCommand, bool>
+    IChatSessionRepository sessionRepository,
+    IMessageRecallPolicy recallPolicy) : IRequestHandler<RecallMessageCommand, bool>
 {
     public async Task<bool> Handler(RecallMessageCommand command, CancellationToken cancellationToken)
     {
@@ -16,7 +17,7 @@ public class RecallMessageCommandHandler(
         if (message == null)
             throw new KeyNotFoundException("消息不存在");
 
-        message.Recall(command.UserId, command.Reason, null);
+        message.Recall(command.UserId, command.Reason, null, recallPolicy);
         await messageRepository.UpdateAsync(message);
         await messageRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
 

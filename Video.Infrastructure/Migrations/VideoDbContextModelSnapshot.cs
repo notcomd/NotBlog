@@ -39,6 +39,9 @@ namespace Video.Infrastructure.Migrations
                     b.Property<bool>("IsDelete")
                         .HasColumnType("boolean");
 
+                    b.Property<long?>("TimeAt")
+                        .HasColumnType("bigint");
+
                     b.Property<Guid>("UserGuid")
                         .HasColumnType("uuid");
 
@@ -688,40 +691,6 @@ namespace Video.Infrastructure.Migrations
                                 .HasForeignKey("VideoReviewGuid");
                         });
 
-                    b.OwnsOne("Video.Domain.ValueObjects.VideoQuote", "VideoQuote", b1 =>
-                        {
-                            b1.Property<Guid>("VideoReviewGuid");
-
-                            b1.Property<long>("Ballot")
-                                .HasJsonPropertyName("c_Ballot");
-
-                            b1.Property<long>("Down")
-                                .HasJsonPropertyName("c_Down");
-
-                            b1.Property<long>("Share")
-                                .HasJsonPropertyName("c_Share");
-
-                            b1.Property<long>("Stars")
-                                .HasJsonPropertyName("c_Stars");
-
-                            b1.Property<long>("Upvote")
-                                .HasJsonPropertyName("c_Upvote");
-
-                            b1.Property<long>("Watch")
-                                .HasJsonPropertyName("c_Watch");
-
-                            b1.HasKey("VideoReviewGuid");
-
-                            b1.ToTable("VideoReview");
-
-                            b1
-                                .ToJson("VideoQuote")
-                                .HasColumnType("jsonb");
-
-                            b1.WithOwner()
-                                .HasForeignKey("VideoReviewGuid");
-                        });
-
                     b.OwnsOne("Video.Domain.ValueObjects.ReviewContent", "Content", b1 =>
                         {
                             b1.Property<Guid>("VideoReviewGuid");
@@ -771,7 +740,32 @@ namespace Video.Infrastructure.Migrations
                             b1.Navigation("MediaItems");
                         });
 
+                    b.OwnsOne("Video.Domain.ValueObjects.ReviewQuote", "Quote", b1 =>
+                        {
+                            b1.Property<Guid>("VideoReviewGuid");
+
+                            b1.Property<long>("Dislike")
+                                .HasJsonPropertyName("c_Dislike");
+
+                            b1.Property<long>("Like")
+                                .HasJsonPropertyName("c_Like");
+
+                            b1.HasKey("VideoReviewGuid");
+
+                            b1.ToTable("VideoReview");
+
+                            b1
+                                .ToJson("Quote")
+                                .HasColumnType("jsonb");
+
+                            b1.WithOwner()
+                                .HasForeignKey("VideoReviewGuid");
+                        });
+
                     b.Navigation("Content")
+                        .IsRequired();
+
+                    b.Navigation("Quote")
                         .IsRequired();
 
                     b.Navigation("TimeSpace")
@@ -781,9 +775,6 @@ namespace Video.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("VideoImages");
-
-                    b.Navigation("VideoQuote")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Video.Domain.Entities.Videos", b =>

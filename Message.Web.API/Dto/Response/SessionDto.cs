@@ -5,6 +5,7 @@ public class SessionDto
     public SessionType SessionType { get; init; }
     public string? SessionName { get; init; }
     public Guid? GroupId { get; init; }
+    public Guid? CircleId { get; init; }
     public Guid CreatorId { get; init; }
     public List<Guid> Participants { get; init; } = new();
     public Guid? LastMessageId { get; init; }

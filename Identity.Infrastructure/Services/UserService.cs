@@ -1,60 +1,20 @@
-using Identity.Domain.Events;
 using Identity.Domain.ICache;
 
 namespace Identity.Infrastructure.Services;
 
+/// <summary>
+/// 用户读侧/安全信息服务（纯查询 + 二次验证开关更新）。
+/// 登录/注册（含自动注册创建用户、密码失败计数、锁定）等增删改事务已迁移至
+/// Web.API Application 层 CQRS 命令（LogInCommand / RegisterByEmailCommand），
+/// 本服务不再持有任何创建/登录事务，遵循框架命令编排设计。
+/// </summary>
 public class UserService(
-    IOptionsSnapshot<JwtOptions> optionsSnapshot,
     ILogger<IUserRepository> loggerUser,
     IUserRepository userRepository,
-    IUserRoleRepository userRoleRepository,
-    IJwtTokenService jwtTokenServer,
-    ITokenSessionService tokenSessionService,
     IIdentityCacheService identityCacheService)
     : IUserService
 {
     private const string EmailCodeKeyPrefix = "Login_";
-
-    // ── 邮箱密码登录 ──
-
-    public async Task<TokenResult?> LogInByCheckPasswordAsync(
-        [EmailAddress(ErrorMessage = "邮件地址不符合要求喵！")] string email,
-        string password, string? code)
-    {
-        var userData = await userRepository.FindOneByUserAsync(email);
-        // S-13：用户不存在与密码错误返回同一结果，避免账号枚举
-        if (userData is null)
-            return null;
-
-        // 邮箱登录验证码：传了就校验（一次性消费），未传则放行纯密码登录
-        if (!string.IsNullOrWhiteSpace(code))
-        {
-            var cached = await identityCacheService.GetStringAsync($"{EmailCodeKeyPrefix}{email}", default);
-            if (string.IsNullOrEmpty(cached) || !string.Equals(cached, code, StringComparison.Ordinal))
-                return null;
-            await identityCacheService.RemoveAsync($"{EmailCodeKeyPrefix}{email}", default);
-        }
-
-        return await LogInByCheckPasswordCoreAsync(userData, password);
-    }
-
-    // ── 手机号密码登录 ──
-
-    public async Task<TokenResult?> LogInByCheckPasswordAsync(PhoneNumber phoneNumber, string password, string code)
-    {
-        var userData = await userRepository.FindOneByUserAsync(phoneNumber);
-        if (userData is null)
-        {
-            loggerUser.LogError("[{DateTime}] 用户 {PhoneNumber} 不存在", DateTime.UtcNow, phoneNumber);
-            return null;
-        }
-
-        return await LogInByCheckPasswordCoreAsync(userData, password);
-    }
-
-    // ── 注册 ──
-    // 注：邮箱注册走 RegisterByUserCommandHandler（命令链路，含验证码校验+事件发布），
-    // 此前残留的 RegisterByCreateUserAsync 已删除（死代码且未 SaveChanges）。
 
     // ── 用户信息查询 ──
 
@@ -72,112 +32,74 @@ public class UserService(
         return await userRepository.FindAllByUserAsync();
     }
 
-    // ── 登录核心 ──
+    // ── 用户安全信息更新 ──
 
     /// <summary>
-    /// 登入验证核心方法
-    /// 
-    /// 职责:
-    ///   1. 验证用户密码
-    ///   2. 解除账号锁定
-    ///   3. 构建 Claims 并生成 AccessToken + RefreshToken
-    ///   4. 将两个 Token 分别存入缓存
+    /// 获取当前登录用户的二次验证开关状态。
     /// </summary>
-    private async ValueTask<TokenResult?> LogInByCheckPasswordCoreAsync(User userData, string password)
+    public async Task<bool?> GetUserSafetyAsync(Guid userGuid)
     {
-        // ── 第一步: 检查是否被锁定 ──
-        if (!userData.UserAccessFail.CanLogin())
+        var user = await userRepository.FindOneByUserAsync(userGuid);
+        return user is null ? null : user.UserSafety.IsTwoFactorEnabled;
+    }
+
+    /// <summary>
+    /// 更新当前登录用户的安全信息（当前仅支持二次验证开关）。
+    /// 关闭二次验证（置 false）为降级操作，必须通过密码或邮箱验证码二次确认，防止账户被接管。
+    /// </summary>
+    public async Task<bool> UpdateUserSafetyAsync(Guid userGuid, bool? isTwoFactorEnabled,
+        string? password, string? code)
+    {
+        if (isTwoFactorEnabled is null)
+            return false; // 无可更新内容
+
+        var user = await userRepository.FindOneByUserAsync(userGuid);
+        if (user is null)
         {
-            loggerUser.LogWarning("[{DateTime}] 用户 {UserEmail} 账号已锁定，拒绝登录", DateTime.UtcNow, userData.UserEmail);
-            return null;
+            loggerUser.LogWarning("[{DateTime}] 未找到用户 {UserGuid}，无法更新安全信息", DateTime.UtcNow, userGuid);
+            return false;
         }
 
-        // ── 第二步: 验证密码（成功时自动清零失败计数 / 旧哈希重哈希升级）──
-        if (!await userData.VerifyByPasswordAsync(password))
-        {
-            // S-13：失败计数原子递增（ExecuteUpdate，并发安全），达到阈值时锁定账号
-            var failCount = await userRepository.IncrementAccessFaildCountAsync(userData.UserGuid);
-            // 第 MaxFailedAttempts 次失败即锁定（与 UserAccessFail 注释语义一致）
-            if (failCount >= UserAccessFail.MaxFailedAttempts)
-            {
-                await userRepository.LockUserAsync(
-                    userData.UserGuid, DateTimeOffset.UtcNow.Add(UserAccessFail.LockOutDuration));
-                userData.AddDomainEvent(new AccountLockedEvent(userData.UserGuid));
-            }
+        var target = isTwoFactorEnabled.Value;
 
-            await userRepository.UnitOfWork.SaveChangesAsync();
-            loggerUser.LogWarning("[{DateTime}] 用户 {UserEmail} 密码错误", DateTime.UtcNow, userData.UserEmail);
-            return null;
-        }
+        // 关闭为降级操作：需密码或邮箱验证码之二选一进行二次确认
+        if (!target && !await ConfirmIdentityAsync(user, password, code))
+            return false;
 
+        user.UserSafety.ChangeByTwoFactorEnabled(target);
         await userRepository.UnitOfWork.SaveChangesAsync();
 
-        try
-        {
-            var roleName = await GetRoleNameAsync(userData.UserRoleGuid);
-            var claims = BuildClaims(userData, roleName.ToHashSet());
-
-            var config = optionsSnapshot.Value;
-            var tokenData = await jwtTokenServer.BuildTokenAsync(claims, config);
-
-            // P3：多设备会话登记（每设备独立槽位，不再互相覆盖）
-            await tokenSessionService.RegisterAsync(userData.UserGuid, tokenData,
-                TimeSpan.FromSeconds(config.ExpireSeconds),
-                TimeSpan.FromSeconds(config.RefreshTokenExpireSeconds));
-
-            loggerUser.LogInformation(
-                "[{DateTime}] 用户 {UserEmail} 验证通过，" +
-                "Token 已生成 (AccessToken 过期: {ExpireSeconds} 秒，RefreshToken 过期: {RefreshSeconds} 秒)",
-                DateTime.UtcNow, userData.UserEmail, config.ExpireSeconds, config.RefreshTokenExpireSeconds);
-
-            return tokenData;
-        }
-        catch (Exception ex)
-        {
-            loggerUser.LogError(ex, "[{DateTime}] 用户 {UserEmail} Token 生成失败", DateTime.UtcNow, userData.UserEmail);
-            return null;
-        }
+        loggerUser.LogInformation(
+            "[{DateTime}] 用户 {UserGuid} 已更新安全信息，IsTwoFactorEnabled = {Enabled}",
+            DateTime.UtcNow, userGuid, target);
+        return true;
     }
 
-    // ── Claims 构建 ──
-
     /// <summary>
-    /// 从用户实体构建 JWT Claims
+    /// 安全信息降级操作的身份二次确认：密码或邮箱验证码二选一通过即成功。
     /// </summary>
-    private static List<Claim> BuildClaims(User userData, HashSet<string> roleName)
+    private async Task<bool> ConfirmIdentityAsync(User user, string? password, string? code)
     {
-        var claims = new List<Claim>
-        {
-            new(ClaimTypes.NameIdentifier, userData.UserGuid.ToString()),
-            new(ClaimTypes.Name, userData.UserName ??
-                                 throw new InvalidOperationException("用户名不能为空")),
-            new(ClaimTypes.Email, userData.UserEmail ??
-                                  throw new InvalidOperationException("用户邮箱不能为空")),
-            new(ClaimTypes.Role, string.Join(",", roleName))
-        };
+        var hasPassword = !string.IsNullOrWhiteSpace(password);
+        var hasCode = !string.IsNullOrWhiteSpace(code);
+        if (!hasPassword && !hasCode)
+            return false;
 
-        if (!string.IsNullOrEmpty(userData.PhoneNumber?.PhoneCode))
-            claims.Add(new Claim(ClaimTypes.MobilePhone, userData.PhoneNumber.PhoneCode));
+        if (hasPassword)
+            return await user.VerifyByPasswordAsync(password!);
 
-        return claims;
+        return await ConsumeEmailCodeAsync(user.UserEmail, code!);
     }
 
-    // ── 角色查询 ──
-
     /// <summary>
-    /// 获取角色名称
+    /// 校验并一次性消费邮箱验证码。
     /// </summary>
-    private async Task<IEnumerable<string>> GetRoleNameAsync(IEnumerable<Guid> roleGuids)
+    private async Task<bool> ConsumeEmailCodeAsync(string email, string code)
     {
-        var roleNames = new List<string>();
-        foreach (var roleGuid in roleGuids)
-        {
-            var role = await userRoleRepository.FindByUserRoleAsync(roleGuid);
-            if (role is null) continue;
-            roleNames.Add(role.RoleName);
-        }
-
-        return roleNames;
+        var cached = await identityCacheService.GetStringAsync($"{EmailCodeKeyPrefix}{email}", default);
+        if (string.IsNullOrEmpty(cached) || !string.Equals(cached, code, StringComparison.Ordinal))
+            return false;
+        await identityCacheService.RemoveAsync($"{EmailCodeKeyPrefix}{email}", default);
+        return true;
     }
 }
-

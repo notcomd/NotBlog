@@ -60,6 +60,14 @@ public static class VideoCacheKeys
     /// <summary>观看计数去重窗口时长（5 分钟），窗口内同一用户对同一视频只计 1 次观看。</summary>
     public static readonly TimeSpan VideoWatchWindowTtl = TimeSpan.FromMinutes(5);
 
+    // ── Video Interaction Once (Interaction Notification Dedup, 互动实施文档) ──
+    /// <summary>互动「首次」去重 Key（SETNX）。Key format: video:interact:once:{videoGuid}:{userGuid}:{field}</summary>
+    public static string VideoInteractionOnce(Guid videoGuid, Guid userGuid, string field)
+        => $"{Prefix}:interact:once:{videoGuid}:{userGuid}:{field}";
+
+    /// <summary>互动去重窗口时长（30 天）：窗口内同一用户对同一视频的同一互动只发一次通知。</summary>
+    public static readonly TimeSpan VideoInteractionOnceTtl = TimeSpan.FromDays(30);
+
     // ── Video Reviews (Comments) ──
     /// <summary>Redis String (JSON): cached review list for a video. Key format: video:reviews:{videoGuid}</summary>
     public static string VideoReviews(Guid videoGuid) => $"{Prefix}:reviews:{videoGuid}";
@@ -69,6 +77,13 @@ public static class VideoCacheKeys
 
     /// <summary>Redis Hash: interaction counters for a single review. Key format: video:review-quote:{reviewGuid}</summary>
     public static string ReviewQuote(Guid reviewGuid) => $"{Prefix}:review-quote:{reviewGuid}";
+
+    /// <summary>Hash field names for ReviewQuote counters.</summary>
+    public static class ReviewQuoteFields
+    {
+        public const string Like = "like";
+        public const string Dislike = "dislike";
+    }
 
     /// <summary>Pattern to invalidate all review caches for a video.</summary>
     public static string VideoReviewAllPattern(Guid videoGuid) => $"{Prefix}:reviews:*:{videoGuid}";

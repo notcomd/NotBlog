@@ -23,10 +23,53 @@ namespace Message.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Message.Domain.Entities.Announcement.Announcement", b =>
+                {
+                    b.Property<Guid>("AnnouncementGuid")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(5000)
+                        .HasColumnType("character varying(5000)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatorUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsRecalled")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset?>("RecalledAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("AnnouncementGuid");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("IsRecalled", "CreatedAt");
+
+                    b.ToTable("Announcements", (string)null);
+                });
+
             modelBuilder.Entity("Message.Domain.Entities.Chat.ChatSession", b =>
                 {
                     b.Property<Guid>("SessionId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("CircleId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedTime")
@@ -47,12 +90,6 @@ namespace Message.Infrastructure.Migrations
                     b.Property<bool>("IsDismissed")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("IsMuted")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsPinned")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("LastMessageContent")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
@@ -68,15 +105,15 @@ namespace Message.Infrastructure.Migrations
                         .HasColumnType("uuid[]")
                         .HasColumnName("Participants");
 
-                    b.Property<string>("SessionName")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
                     b.Property<string>("SessionType")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("SessionId");
+
+                    b.HasIndex("CircleId")
+                        .IsUnique()
+                        .HasFilter("\"CircleId\" IS NOT NULL");
 
                     b.HasIndex("CreatorId");
 
@@ -159,30 +196,8 @@ namespace Message.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Caption")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<string>("Content")
-                        .HasMaxLength(4000)
-                        .HasColumnType("character varying(4000)");
-
                     b.Property<DateTime?>("DeliveredTime")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<double?>("Duration")
-                        .HasColumnType("double precision");
-
-                    b.Property<string>("ExpressionCode")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("FileName")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<long?>("FileSize")
-                        .HasColumnType("bigint");
 
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
@@ -195,40 +210,6 @@ namespace Message.Infrastructure.Migrations
 
                     b.Property<bool>("IsRecalled")
                         .HasColumnType("boolean");
-
-                    b.Property<double?>("Latitude")
-                        .HasColumnType("double precision");
-
-                    b.Property<string>("LinkDescription")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<string>("LinkTitle")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("LinkUrl")
-                        .HasMaxLength(2048)
-                        .HasColumnType("character varying(2048)");
-
-                    b.Property<string>("LocationName")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<double?>("Longitude")
-                        .HasColumnType("double precision");
-
-                    b.Property<string>("MediaUri")
-                        .HasMaxLength(2048)
-                        .HasColumnType("character varying(2048)");
-
-                    b.Property<string>("MessageType")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("MimeType")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
 
                     b.Property<Guid?>("OriginalMessageId")
                         .HasColumnType("uuid");
@@ -254,10 +235,6 @@ namespace Message.Infrastructure.Migrations
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<string>("ThumbnailUri")
-                        .HasMaxLength(2048)
-                        .HasColumnType("character varying(2048)");
 
                     b.HasKey("MessageId");
 
@@ -293,9 +270,6 @@ namespace Message.Infrastructure.Migrations
 
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
-
-                    b.Property<bool>("IsBlocked")
-                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsMuted")
                         .HasColumnType("boolean");
@@ -447,6 +421,9 @@ namespace Message.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("CircleGuid")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CircleMembleGuid")
                         .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset>("JoinTime")
@@ -987,6 +964,9 @@ namespace Message.Infrastructure.Migrations
                     b.Property<string>("BackgroundCoverUrl")
                         .HasMaxLength(2048)
                         .HasColumnType("character varying(2048)");
+
+                    b.Property<string>("Bio")
+                        .HasColumnType("text");
 
                     b.Property<long>("Coins")
                         .HasColumnType("bigint");

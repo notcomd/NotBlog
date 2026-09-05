@@ -7,6 +7,7 @@ public record BarrageResponse(
     Guid UserGuid,
     string? VideoBarrageBody,
     string BarrageType,
+    long? TimeAt,
     DateTimeOffset CreateAt,
     bool IsDelete,
     List<BarrageImageResponse>? VideoImages = null);

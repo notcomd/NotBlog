@@ -35,11 +35,10 @@ public class ChatSessionAggregateTests
         var groupId = Guid.NewGuid();
         var members = new HashSet<Guid> { UserA, UserC };
 
-        var session = ChatSession.CreateGroupSession(groupId, UserB, "测试群", members);
+        var session = ChatSession.CreateGroupSession(groupId, UserB, members);
 
         Assert.That(session.SessionType, Is.EqualTo(SessionType.Group));
         Assert.That(session.GroupId, Is.EqualTo(groupId));
-        Assert.That(session.SessionName, Is.EqualTo("测试群"));
         Assert.That(session.IsParticipant(UserA), Is.True);
         Assert.That(session.IsParticipant(UserB), Is.True, "创建者必须为参与者");
         Assert.That(session.IsParticipant(UserC), Is.True);
@@ -75,7 +74,7 @@ public class ChatSessionAggregateTests
     {
         var groupId = Guid.NewGuid();
         var session = ChatSession.CreateGroupSession(
-            groupId, UserA, "群", new HashSet<Guid> { UserB, UserC });
+            groupId, UserA, new HashSet<Guid> { UserB, UserC });
 
         session.RemoveParticipant(UserC);
 
@@ -105,7 +104,7 @@ public class ChatSessionAggregateTests
         session.MarkAsRead(UserB);
 
         Assert.That(session.GetUnreadCount(UserB), Is.Zero);
-        Assert.That(session.LastReadTime[UserB], Is.LessThanOrEqualTo(DateTime.UtcNow));
+        Assert.That(session.MemberStates[UserB].LastReadTime, Is.LessThanOrEqualTo(DateTime.UtcNow));
     }
 
     [Test]
@@ -141,27 +140,18 @@ public class ChatSessionAggregateTests
     }
 
     [Test]
-    public void UpdateSessionName_空名称应抛出异常()
-    {
-        var session = ChatSession.CreatePrivateSession(UserA, UserB);
-
-        Assert.That(() => session.UpdateSessionName("  "),
-            Throws.ArgumentException.With.Message.Contains("会话名称不能为空"));
-    }
-
-    [Test]
     public void Pin与Mute_应正确切换状态()
     {
         var session = ChatSession.CreatePrivateSession(UserA, UserB);
 
-        session.Pin();
-        Assert.That(session.IsPinned, Is.True);
-        session.Unpin();
-        Assert.That(session.IsPinned, Is.False);
+        session.SetPinned(UserB, true);
+        Assert.That(session.MemberStates[UserB].IsPinned, Is.True);
+        session.SetPinned(UserB, false);
+        Assert.That(session.MemberStates[UserB].IsPinned, Is.False);
 
-        session.Mute();
-        Assert.That(session.IsMuted, Is.True);
-        session.Unmute();
-        Assert.That(session.IsMuted, Is.False);
+        session.SetMuted(UserB, true);
+        Assert.That(session.MemberStates[UserB].IsMuted, Is.True);
+        session.SetMuted(UserB, false);
+        Assert.That(session.MemberStates[UserB].IsMuted, Is.False);
     }
 }

@@ -2,6 +2,10 @@
 **/bin/
 **/obj/
 
+# ── 前端依赖与产物（容器内重新 npm ci / build）──
+**/node_modules/
+**/dist/
+
 # ── 版本控制 ──
 .git/
 .gitignore

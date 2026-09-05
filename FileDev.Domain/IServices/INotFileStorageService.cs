@@ -1,5 +1,5 @@
 using FileDev.Domain.Dto.Request;
-using FileDev.Domain.Dto.Response;
+
 
 namespace FileDev.Domain.IServices;
 
@@ -51,4 +51,28 @@ public interface INotFileStorageService
     /// 获取总分片数
     /// </summary>
     Task<int> GetTotalChunkCountAsync(long fileSize);
+
+    /// <summary>
+    /// 读取对象清单（镜像 Lite ObjectManifest + ContentHash），用于对齐文件存储元数据；对象不存在返回 null。
+    /// </summary>
+    Task<StorageManifestDto?> GetManifestAsync(string fileRelativePath, CancellationToken ct = default);
+
+    /// <summary>
+    /// 调整对象存储层（Hot→Cold），并返回改动后的清单；对象不存在返回 null。
+    /// </summary>
+    Task<StorageManifestDto?> ChangeStorageTierAsync(string fileRelativePath, StorageTier tier,
+        CancellationToken ct = default);
+
+    /// <summary>新增一个共享数据卷（返回新卷记录，卷 ID 为空串表示默认卷）。</summary>
+    Task<NotFileVolumeInfoDto> AddVolumeAsync(string rootPath, CancellationToken ct = default);
+
+    /// <summary>为指定租户新增专属数据卷。</summary>
+    Task<NotFileVolumeInfoDto> AddTenantVolumeAsync(string tenantId, string rootPath,
+        CancellationToken ct = default);
+
+    /// <summary>列出全部数据卷统计（镜像 Lite VolumeRecord）。</summary>
+    Task<IEnumerable<NotFileVolumeInfoDto>> GetVolumeStatsAsync(CancellationToken ct = default);
+
+    /// <summary>列出虚拟目录统计（镜像 Lite DirectoryInfo，按 Key 首段聚合的物理占用视图）。</summary>
+    Task<IEnumerable<NotFileDirectoryInfoDto>> GetDirectoryStatsAsync(CancellationToken ct = default);
 }

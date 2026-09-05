@@ -22,23 +22,80 @@ namespace Markdown.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.HasSequence("MarkDocumentLikeGuid")
+                .IncrementsBy(10);
+
             modelBuilder.HasSequence("MarkDownGuid")
                 .IncrementsBy(10);
 
             modelBuilder.HasSequence("MarkFavoriteGuid")
                 .IncrementsBy(10);
 
-            modelBuilder.HasSequence("MarkFavoriteTagGuid")
-                .IncrementsBy(10);
-
-            modelBuilder.HasSequence("MarkReviewGuid")
+            modelBuilder.HasSequence("MarkReviewDislikeGuid")
                 .IncrementsBy(10);
 
             modelBuilder.HasSequence("MarkReviewLikeGuid")
                 .IncrementsBy(10);
 
-            modelBuilder.HasSequence("ReviewImageGuid")
-                .IncrementsBy(10);
+            modelBuilder.Entity("Markdown.Domain.Entities.MarkCoin", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("Amount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(0L);
+
+                    b.Property<DateTimeOffset>("CreateAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("MarkCoinGuid")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("MarkDownGuid")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MarkDownGuid");
+
+                    b.HasIndex("MarkDownGuid", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("MarkCoin", (string)null);
+                });
+
+            modelBuilder.Entity("Markdown.Domain.Entities.MarkDocumentLike", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<int>("Id"), "MarkDocumentLikeGuid");
+
+                    b.Property<DateTimeOffset>("CreateAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("MarkDownGuid")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MarkDownGuid");
+
+                    b.HasIndex("MarkDownGuid", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("MarkDocumentLike", (string)null);
+                });
 
             modelBuilder.Entity("Markdown.Domain.Entities.MarkDown", b =>
                 {
@@ -48,8 +105,32 @@ namespace Markdown.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<int>("Id"), "MarkDownGuid");
 
+                    b.Property<string>("CoverUrl")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
                     b.Property<DateTimeOffset>("CreateAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FileExt")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("FileId")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<long>("FileSize")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(0L);
+
+                    b.Property<string>("FileUri")
+                        .IsRequired()
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
 
                     b.Property<bool>("IsDelete")
                         .HasColumnType("boolean");
@@ -57,17 +138,13 @@ namespace Markdown.Infrastructure.Migrations
                     b.Property<int>("MarkDownAuth")
                         .HasColumnType("integer");
 
-                    b.Property<string>("MarkDownContent")
-                        .IsRequired()
-                        .HasMaxLength(1000000)
-                        .HasColumnType("character varying(1000000)");
-
                     b.Property<Guid>("MarkDownGuid")
                         .HasColumnType("uuid");
 
                     b.Property<string>("MarkDownHash")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
 
                     b.Property<string>("MarkDownName")
                         .IsRequired()
@@ -134,20 +211,15 @@ namespace Markdown.Infrastructure.Migrations
 
             modelBuilder.Entity("Markdown.Domain.Entities.MarkFavoriteTag", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("MarkFavoriteTagGuid")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<int>("Id"), "MarkFavoriteTagGuid");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset>("CreateAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTimeOffset>("LastUsedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("MarkFavoriteTagGuid")
-                        .HasColumnType("uuid");
 
                     b.Property<string>("Tag")
                         .IsRequired()
@@ -162,7 +234,7 @@ namespace Markdown.Infrastructure.Migrations
                     b.Property<Guid>("UserGuid")
                         .HasColumnType("uuid");
 
-                    b.HasKey("Id");
+                    b.HasKey("MarkFavoriteTagGuid");
 
                     b.HasIndex("UserGuid");
 
@@ -174,19 +246,13 @@ namespace Markdown.Infrastructure.Migrations
 
             modelBuilder.Entity("Markdown.Domain.Entities.MarkReview", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<int>("Id"), "MarkReviewGuid");
+                    b.Property<Guid>("MarkDownGuid")
+                        .HasColumnType("uuid");
 
                     b.Property<bool>("IsDelete")
                         .HasColumnType("boolean");
 
                     b.Property<Guid?>("MarkAggregateRootGuid")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("MarkDownGuid")
                         .HasColumnType("uuid");
 
                     b.Property<int>("MarkReviewAuth")
@@ -204,7 +270,7 @@ namespace Markdown.Infrastructure.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
-                    b.HasKey("Id");
+                    b.HasKey("MarkDownGuid");
 
                     b.HasIndex("MarkAggregateRootGuid");
 
@@ -213,6 +279,33 @@ namespace Markdown.Infrastructure.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("MarkReview", (string)null);
+                });
+
+            modelBuilder.Entity("Markdown.Domain.Entities.MarkReviewDislike", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<int>("Id"), "MarkReviewDislikeGuid");
+
+                    b.Property<DateTimeOffset>("CreateAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("MarkReviewGuid")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MarkReviewGuid");
+
+                    b.HasIndex("MarkReviewGuid", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("MarkReviewDislike", (string)null);
                 });
 
             modelBuilder.Entity("Markdown.Domain.Entities.MarkReviewLike", b =>
@@ -286,32 +379,6 @@ namespace Markdown.Infrastructure.Migrations
                     b.ToTable("OldMarkDown");
                 });
 
-            modelBuilder.Entity("Markdown.Domain.Entities.ReviewImage", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<int>("Id"), "ReviewImageGuid");
-
-                    b.Property<string>("ImageName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ImageUrl")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("MarkReviewId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MarkReviewId");
-
-                    b.ToTable("ReviewImage", (string)null);
-                });
-
             modelBuilder.Entity("Markdown.Infrastructure.Idempotent.ClientRequest", b =>
                 {
                     b.Property<Guid>("ClientRequestId")
@@ -334,6 +401,61 @@ namespace Markdown.Infrastructure.Migrations
                     b.ToTable("ClientRequest", (string)null);
                 });
 
+            modelBuilder.Entity("Markdown.Domain.Entities.MarkDown", b =>
+                {
+                    b.OwnsOne("Markdown.Domain.Entities.MarkQuote", "MarkQuote", b1 =>
+                        {
+                            b1.Property<int>("MarkDownId")
+                                .HasColumnType("integer");
+
+                            b1.Property<long>("CoinSome")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("bigint")
+                                .HasDefaultValue(0L)
+                                .HasColumnName("CoinCount");
+
+                            b1.Property<long>("FavoriteSome")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("bigint")
+                                .HasDefaultValue(0L)
+                                .HasColumnName("FavoriteCount");
+
+                            b1.Property<double>("HeatScore")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("double precision")
+                                .HasDefaultValue(0.0)
+                                .HasColumnName("HeatScore");
+
+                            b1.Property<long>("LoveSome")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("bigint")
+                                .HasDefaultValue(0L)
+                                .HasColumnName("LoveCount");
+
+                            b1.Property<long>("ShareSome")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("bigint")
+                                .HasDefaultValue(0L)
+                                .HasColumnName("ShareCount");
+
+                            b1.Property<long>("ViewSome")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("bigint")
+                                .HasDefaultValue(0L)
+                                .HasColumnName("ViewCount");
+
+                            b1.HasKey("MarkDownId");
+
+                            b1.ToTable("MarkDown");
+
+                            b1.WithOwner()
+                                .HasForeignKey("MarkDownId");
+                        });
+
+                    b.Navigation("MarkQuote")
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Markdown.Domain.Entities.MarkReview", b =>
                 {
                     b.HasOne("Markdown.Domain.Entities.MarkReview", null)
@@ -349,16 +471,41 @@ namespace Markdown.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("Markdown.Domain.Entities.MarkQuote", "MarkQuote", b1 =>
+                    b.OwnsMany("Markdown.Domain.Entities.ReviewImage", "ReviewImages", b1 =>
                         {
-                            b1.Property<int>("MarkReviewId")
-                                .HasColumnType("integer");
+                            b1.Property<Guid>("MarkReviewMarkDownGuid");
 
-                            b1.Property<long>("CommentSome")
+                            b1.Property<int>("__synthesizedOrdinal")
+                                .ValueGeneratedOnAdd();
+
+                            b1.Property<string>("ImageName")
+                                .IsRequired();
+
+                            b1.Property<string>("ImageUrl")
+                                .IsRequired();
+
+                            b1.HasKey("MarkReviewMarkDownGuid", "__synthesizedOrdinal");
+
+                            b1.ToTable("MarkReview");
+
+                            b1
+                                .ToJson("ReviewImages")
+                                .HasColumnType("jsonb");
+
+                            b1.WithOwner()
+                                .HasForeignKey("MarkReviewMarkDownGuid");
+                        });
+
+                    b.OwnsOne("Markdown.Domain.Entities.ReviewQuote", "ReviewQuote", b1 =>
+                        {
+                            b1.Property<Guid>("MarkReviewMarkDownGuid")
+                                .HasColumnType("uuid");
+
+                            b1.Property<long>("DislikeSome")
                                 .ValueGeneratedOnAdd()
                                 .HasColumnType("bigint")
                                 .HasDefaultValue(0L)
-                                .HasColumnName("CommentCount");
+                                .HasColumnName("DislikeCount");
 
                             b1.Property<long>("LoveSome")
                                 .ValueGeneratedOnAdd()
@@ -366,17 +513,11 @@ namespace Markdown.Infrastructure.Migrations
                                 .HasDefaultValue(0L)
                                 .HasColumnName("LoveCount");
 
-                            b1.Property<long>("ReviewSome")
+                            b1.Property<long>("ReplySome")
                                 .ValueGeneratedOnAdd()
                                 .HasColumnType("bigint")
                                 .HasDefaultValue(0L)
                                 .HasColumnName("ReplyCount");
-
-                            b1.Property<long>("ShareSome")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("bigint")
-                                .HasDefaultValue(0L)
-                                .HasColumnName("ShareCount");
 
                             b1.Property<long>("ViewSome")
                                 .ValueGeneratedOnAdd()
@@ -384,17 +525,19 @@ namespace Markdown.Infrastructure.Migrations
                                 .HasDefaultValue(0L)
                                 .HasColumnName("ViewCount");
 
-                            b1.HasKey("MarkReviewId");
+                            b1.HasKey("MarkReviewMarkDownGuid");
 
                             b1.ToTable("MarkReview");
 
                             b1.WithOwner()
-                                .HasForeignKey("MarkReviewId");
+                                .HasForeignKey("MarkReviewMarkDownGuid");
                         });
 
                     b.Navigation("MarkDown");
 
-                    b.Navigation("MarkQuote")
+                    b.Navigation("ReviewImages");
+
+                    b.Navigation("ReviewQuote")
                         .IsRequired();
                 });
 
@@ -410,17 +553,6 @@ namespace Markdown.Infrastructure.Migrations
                     b.Navigation("MarkDown");
                 });
 
-            modelBuilder.Entity("Markdown.Domain.Entities.ReviewImage", b =>
-                {
-                    b.HasOne("Markdown.Domain.Entities.MarkReview", "MarkReview")
-                        .WithMany("ReviewImages")
-                        .HasForeignKey("MarkReviewId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("MarkReview");
-                });
-
             modelBuilder.Entity("Markdown.Domain.Entities.MarkDown", b =>
                 {
                     b.Navigation("MarkReviews");
@@ -431,8 +563,6 @@ namespace Markdown.Infrastructure.Migrations
             modelBuilder.Entity("Markdown.Domain.Entities.MarkReview", b =>
                 {
                     b.Navigation("MarkReviews");
-
-                    b.Navigation("ReviewImages");
                 });
 #pragma warning restore 612, 618
         }

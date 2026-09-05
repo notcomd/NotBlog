@@ -5,7 +5,7 @@ namespace Message.Domain.ValueObjects.Message;
 /// 文件消息内容值对象。
 /// 不可变，封装文件 URI 与名称/大小/MIME 约束。
 /// </summary>
-public class FileContent : ValueObject
+public class FileContent : MessageContent
 {
     private FileContent(Uri fileUri, string fileName, long fileSize, string mimeType)
     {
@@ -30,6 +30,8 @@ public class FileContent : ValueObject
     public long FileSize { get; }
     public string MimeType { get; }
 
+    public override MessageType MessageType => MessageType.MessageFile;
+
     public static FileContent Create(Uri fileUri, string fileName, long fileSize, string mimeType)
         => new(fileUri, fileName, fileSize, mimeType);
 
@@ -40,4 +42,6 @@ public class FileContent : ValueObject
         yield return FileSize;
         yield return MimeType;
     }
+
+    public override string ToSessionSummary() => $"[文件] {FileName}";
 }

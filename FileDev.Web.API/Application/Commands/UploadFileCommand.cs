@@ -15,4 +15,10 @@ public class UploadFileCommand : IRequest<NotFile>
 
     /// <summary>预期文件哈希（SHA256），为空则跳过校验</summary>
     public string? ExpectedMd5 { get; set; }
+
+    /// <summary>所属业务内容 ID（非空则本条为内容附件，登记 ContentRef）</summary>
+    public string? ContentId { get; set; }
+
+    /// <summary>业务内容类型（Post / Markdown / Video），仅在 ContentId 非空时生效</summary>
+    public FileDev.Domain.Enum.ContentType ContentType { get; set; }
 }

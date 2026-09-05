@@ -22,46 +22,9 @@ public class MessageConfiguration : IEntityTypeConfiguration<MessageEntity>
 
         builder.Property(m => m.ReceiverId);
 
-        builder.Property(m => m.MessageType)
-            .IsRequired()
-            .HasConversion<string>();
-
         builder.Property(m => m.Status)
             .IsRequired()
             .HasConversion<string>();
-
-        builder.Property(m => m.Content)
-            .HasMaxLength(4000);
-
-        builder.Property(m => m.MediaUri)
-            .HasMaxLength(2048);
-
-        builder.Property(m => m.ThumbnailUri)
-            .HasMaxLength(2048);
-
-        builder.Property(m => m.FileName)
-            .HasMaxLength(500);
-
-        builder.Property(m => m.MimeType)
-            .HasMaxLength(100);
-
-        builder.Property(m => m.Caption)
-            .HasMaxLength(500);
-
-        builder.Property(m => m.LocationName)
-            .HasMaxLength(200);
-
-        builder.Property(m => m.LinkUrl)
-            .HasMaxLength(2048);
-
-        builder.Property(m => m.LinkTitle)
-            .HasMaxLength(200);
-
-        builder.Property(m => m.LinkDescription)
-            .HasMaxLength(500);
-
-        builder.Property(m => m.ExpressionCode)
-            .HasMaxLength(100);
 
         builder.Property(m => m.SentTime)
             .IsRequired();
@@ -74,6 +37,11 @@ public class MessageConfiguration : IEntityTypeConfiguration<MessageEntity>
 
         builder.Property(m => m.IsForwarded)
             .IsRequired();
+
+        // 消息内容已收敛为多态值对象 MessageContent，且消息本体落 MongoDB；
+        // EF 此处不再映射内容相关列（避免破坏既有表结构），仅跟踪标识/状态元数据。
+        builder.Ignore(m => m.Content);
+        builder.Ignore(m => m.MessageType);
 
         builder.HasIndex(m => m.SessionId);
         builder.HasIndex(m => m.SenderId);

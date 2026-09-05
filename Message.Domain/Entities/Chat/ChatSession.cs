@@ -6,33 +6,7 @@ namespace Message.Domain.Entities.Chat;
 /// </summary>
 public class ChatSession : Entity<Guid>, IAggregateRoot
 {
-    private readonly Dictionary<Guid, DateTime> _lastReadTime = new();
-
-    private readonly Dictionary<Guid, int> _unreadCount = new();
-
-    public ChatSession(SessionType sessionType, Guid creatorId, IEnumerable<Guid>? participants = null,
-        string? sessionName = null)
-    {
-        SessionId = Guid.NewGuid();
-        SessionType = sessionType;
-        CreatorId = creatorId;
-        // 修复（2026-08-15）：Participants 改为 List<Guid>（EF primitive collection 只支持
-        // 数组/List，不支持 HashSet；List 可被 Npgsql 翻译 Contains/Count 查询）
-        Participants = participants?.ToList() ?? new List<Guid> { creatorId };
-        SessionName = sessionName;
-        CreatedTime = DateTime.UtcNow;
-        IsDismissed = false;
-        IsPinned = false;
-        IsMuted = false;
-    }
-
-    private ChatSession()
-    {
-        SessionId = Guid.NewGuid();
-        Participants = new List<Guid>();
-        CreatedTime = DateTime.UtcNow;
-        IsDismissed = false;
-    }
+    private readonly Dictionary<Guid, ChatSessionMemberState> _memberStates = new();
 
     /// <summary>
     /// 会话ID
@@ -45,14 +19,14 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
     public SessionType SessionType { get; init; }
 
     /// <summary>
-    /// 会话名称
-    /// </summary>
-    public string? SessionName { get; private set; }
-
-    /// <summary>
     /// 群聊ID
     /// </summary>
     public Guid? GroupId { get; init; }
+
+    /// <summary>
+    /// 关联社区ID（Channel 社区聊天，Discord 式服务器频道）
+    /// </summary>
+    public Guid? CircleId { get; init; }
 
     /// <summary>
     /// 创建者ID
@@ -96,24 +70,33 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
     public bool IsDismissed { get; private set; }
 
     /// <summary>
-    /// 是否已置顶
+    /// 各成员的会话状态（未读 / 最后读取 / 置顶 / 免打扰），key = 用户ID。
+    /// 置顶/免打扰为成员维度而非会话维度，便于 SignalR 多端会话管理。
     /// </summary>
-    public bool IsPinned { get; private set; }
+    public IReadOnlyDictionary<Guid, ChatSessionMemberState> MemberStates => _memberStates;
 
     /// <summary>
-    /// 是否已禁言
-    /// </summary>
-    public bool IsMuted { get; private set; }
 
-    /// <summary>
-    /// 未读消息数量
-    /// </summary>
-    public IReadOnlyDictionary<Guid, int> UnreadCount => _unreadCount;
+        public ChatSession(SessionType sessionType, Guid creatorId, IEnumerable<Guid>? participants = null)
+    {
+        SessionId = Guid.NewGuid();
+        SessionType = sessionType;
+        CreatorId = creatorId;
+        Participants = participants?.ToList() ?? new List<Guid> { creatorId };
+        CreatedTime = DateTime.UtcNow;
+        IsDismissed = false;
+        foreach (var participantId in Participants)
+            _memberStates[participantId] = new ChatSessionMemberState(participantId);
+    }
 
-    /// <summary>
-    /// 最后读取时间
-    /// </summary>
-    public IReadOnlyDictionary<Guid, DateTime> LastReadTime => _lastReadTime;
+    private ChatSession()
+    {
+        SessionId = Guid.CreateVersion7();
+        Participants = new List<Guid>();
+        CreatedTime = DateTime.UtcNow;
+        IsDismissed = false;
+    }
+
 
     /// <summary>
     /// 创建私聊会话
@@ -134,18 +117,34 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
     /// </summary>
     /// <param name="groupId">群聊ID</param>
     /// <param name="creatorId">创建者ID</param>
-    /// <param name="groupName">群聊名称</param>
     /// <param name="initialMembers">初始成员ID列表</param>
     /// <returns>群聊会话</returns>
-    public static ChatSession CreateGroupSession(Guid groupId, Guid creatorId, string groupName,
-        HashSet<Guid> initialMembers)
+    public static ChatSession CreateGroupSession(Guid groupId, Guid creatorId, HashSet<Guid> initialMembers)
     {
         var participants = new HashSet<Guid>(initialMembers) { creatorId };
-        var session = new ChatSession(SessionType.Group, creatorId, participants, groupName)
+        var session = new ChatSession(SessionType.Group, creatorId, participants)
         {
             GroupId = groupId
         };
         session.AddDomainEvent(new SessionCreatedEvent(session.SessionId, participants, SessionType.Group));
+        return session;
+    }
+
+    /// <summary>
+    /// 创建社区频道会话（Channel）。
+    /// </summary>
+    /// <param name="circleId">社区ID</param>
+    /// <param name="creatorId">创建者ID（圈主）</param>
+    /// <param name="initialMembers">初始成员ID列表（创建时仅圈主，成员加入经事件同步）</param>
+    /// <returns>社区频道会话</returns>
+    public static ChatSession CreateChannelSession(Guid circleId, Guid creatorId, HashSet<Guid> initialMembers)
+    {
+        var participants = new HashSet<Guid>(initialMembers) { creatorId };
+        var session = new ChatSession(SessionType.Channel, creatorId, participants)
+        {
+            CircleId = circleId
+        };
+        session.AddDomainEvent(new SessionCreatedEvent(session.SessionId, participants, SessionType.Channel));
         return session;
     }
 
@@ -161,7 +160,7 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
             throw new InvalidOperationException("用户已在会话中");
 
         Participants.Add(userId);
-        _unreadCount[userId] = 0;
+        _memberStates[userId] = new ChatSessionMemberState(userId);
     }
 
     /// <summary>
@@ -178,8 +177,7 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
             throw new InvalidOperationException("私聊会话至少需要两个参与者");
 
         Participants.Remove(userId);
-        _unreadCount.Remove(userId);
-        _lastReadTime.Remove(userId);
+        _memberStates.Remove(userId);
     }
 
     /// <summary>
@@ -198,9 +196,12 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
 
         foreach (var participantId in Participants)
         {
-            if (!_unreadCount.ContainsKey(participantId))
-                _unreadCount[participantId] = 0;
-            _unreadCount[participantId]++;
+            if (!_memberStates.TryGetValue(participantId, out var state))
+            {
+                state = new ChatSessionMemberState(participantId);
+                _memberStates[participantId] = state;
+            }
+            state.IncrementUnread();
         }
     }
 
@@ -213,10 +214,7 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
         if (!Participants.Contains(userId))
             throw new InvalidOperationException("用户不在会话中");
 
-        if (_unreadCount.ContainsKey(userId) && _unreadCount[userId] > 0)
-            _unreadCount[userId] = 0;
-
-        _lastReadTime[userId] = DateTime.UtcNow;
+        StateOf(userId).MarkAsRead(DateTime.UtcNow);
     }
 
     /// <summary>
@@ -226,40 +224,41 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
     /// <returns>未读消息数量</returns>
     public int GetUnreadCount(Guid userId)
     {
-        return _unreadCount.TryGetValue(userId, out var count) ? count : 0;
+        return MemberStates.TryGetValue(userId, out var state) ? state.UnreadCount : 0;
     }
 
     /// <summary>
-    /// 置顶会话
+    /// 设置某成员的会话置顶状态（成员维度）。
     /// </summary>
-    public void Pin()
+    /// <param name="userId">用户ID</param>
+    /// <param name="pinned">是否置顶</param>
+    public void SetPinned(Guid userId, bool pinned)
     {
-        IsPinned = true;
+        if (!Participants.Contains(userId))
+            throw new InvalidOperationException("用户不在会话中");
+        StateOf(userId).SetPinned(pinned);
     }
 
     /// <summary>
-    /// 取消置顶会话
+    /// 设置某成员的会话免打扰状态（成员维度）。
     /// </summary>
-    public void Unpin()
+    /// <param name="userId">用户ID</param>
+    /// <param name="muted">是否免打扰</param>
+    public void SetMuted(Guid userId, bool muted)
     {
-        IsPinned = false;
+        if (!Participants.Contains(userId))
+            throw new InvalidOperationException("用户不在会话中");
+        StateOf(userId).SetMuted(muted);
     }
 
-    /// <summary>
-    /// 禁言会话
-    /// </summary>
-    /// <param name="duration">禁言持续时间</param>
-    public void Mute()
+    /// <summary>获取（必要时创建）成员的会话状态。</summary>
+    private ChatSessionMemberState StateOf(Guid userId)
     {
-        IsMuted = true;
-    }
-
-    /// <summary>
-    /// 取消禁言会话
-    /// </summary>
-    public void Unmute()
-    {
-        IsMuted = false;
+        if (_memberStates.TryGetValue(userId, out var state))
+            return state;
+        state = new ChatSessionMemberState(userId);
+        _memberStates[userId] = state;
+        return state;
     }
 
     /// <summary>
@@ -275,18 +274,6 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
     }
 
     /// <summary>
-    /// 更新会话名称
-    /// </summary>
-    /// <param name="name">会话名称</param>
-    public void UpdateSessionName(string name)
-    {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("会话名称不能为空", nameof(name));
-
-        SessionName = name;
-    }
-
-    /// <summary>
     /// 检查用户是否为会话参与者
     /// </summary>
     /// <param name="userId">用户ID</param>
@@ -294,5 +281,36 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
     public bool IsParticipant(Guid userId)
     {
         return Participants.Contains(userId);
+    }
+
+    /// <summary>
+    /// 从持久化数据重建会话聚合根（Mongo 投影读取路径）。
+    /// <para>重构已校验、已持久化的实体，不重复触发领域工厂校验、不重新产生领域事件。</para>
+    /// </summary>
+    public static ChatSession Rebuild(
+        Guid sessionId, SessionType sessionType, Guid? groupId, Guid? circleId, Guid creatorId,
+        List<Guid> participants, IReadOnlyDictionary<Guid, ChatSessionMemberState> memberStates,
+        Guid? lastMessageId, string? lastMessageContent, DateTime? lastMessageTime,
+        DateTime createdTime, DateTime? dismissedTime, bool isDismissed)
+    {
+        var session = new ChatSession
+        {
+            SessionId = sessionId,
+            SessionType = sessionType,
+            GroupId = groupId,
+            CircleId = circleId,
+            CreatorId = creatorId,
+            CreatedTime = createdTime
+        };
+        session.Participants = participants;
+        session._memberStates.Clear();
+        foreach (var (userId, state) in memberStates)
+            session._memberStates[userId] = state;
+        session.LastMessageId = lastMessageId;
+        session.LastMessageContent = lastMessageContent;
+        session.LastMessageTime = lastMessageTime;
+        session.DismissedTime = dismissedTime;
+        session.IsDismissed = isDismissed;
+        return session;
     }
 }

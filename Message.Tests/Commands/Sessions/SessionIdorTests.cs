@@ -77,7 +77,7 @@ public class SessionIdorTests
         Assert.Multiple(() =>
         {
             Assert.That(result, Is.True);
-            Assert.That(session.IsPinned, Is.True);
+            Assert.That(session.MemberStates[ParticipantId].IsPinned, Is.True);
             _unitOfWork.Verify(u => u.SaveEntitiesAsync(It.IsAny<CancellationToken>()), Times.Once);
         });
     }

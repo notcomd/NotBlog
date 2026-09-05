@@ -2,6 +2,7 @@ using Message.Domain.Entities.Chat;
 using Message.Domain.Enums;
 using Message.Domain.IRepository;
 using Message.Domain.IServices;
+using Message.Infrastructure.Services;
 using Commons.SeedWork;
 using Message.Tests.TestHelpers;
 using Message.Web.API.Application.Commands.Messages;
@@ -130,7 +131,8 @@ public class MessageIdorTests
             new Mock<ILogger<RecallMessageCommandHandler>>().Object,
             CacheServicesTestFactory.CreateRedisCache(),
             CreateDeliveryService(),
-            _sessionRepository.Object);
+            _sessionRepository.Object,
+            new DefaultMessageRecallPolicy());
 
         Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await handler.Handler(
@@ -154,7 +156,8 @@ public class MessageIdorTests
             new Mock<ILogger<RecallMessageCommandHandler>>().Object,
             CacheServicesTestFactory.CreateRedisCache(),
             CreateDeliveryService(),
-            _sessionRepository.Object);
+            _sessionRepository.Object,
+            new DefaultMessageRecallPolicy());
 
         var result = await handler.Handler(
             new RecallMessageCommand(message.MessageId, SenderId, RecallReason.UserRequest),

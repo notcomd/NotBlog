@@ -43,7 +43,7 @@ public static class VideoReviewEndpoints
         // 评论点赞接口（通过 CQRS Command）
         group.MapPost("/{reviewGuid:guid}/like", LikeReviewAsync)
             .WithName("LikeReview")
-            .WithDescription("Like/unlike a review (upvote/down/ballot/share)");
+            .WithDescription("Like/unlike a review (upvote=like / down=dislike)");
 
         return group;
     }
@@ -156,7 +156,7 @@ public static class VideoReviewEndpoints
                     r.VideoReviewGuid, r.VideoGuid, r.UserGuid,
                     r.RootReview, r.VideoReviewBody,
                     r.TimeSpace.CreateAt, r.TimeSpace.UpdateAt,
-                    r.VideoQuote.Upvote, r.VideoQuote.Stars, r.VideoQuote.Watch))
+                    r.Quote.Like, r.Quote.Dislike))
                 .ToList();
 
             return Results.Ok(new VideoResult<List<VideoReviewResponse>>(VideoResultType.VideoResultOk, 200,
@@ -222,7 +222,7 @@ public static class VideoReviewEndpoints
                     r.VideoReviewGuid, r.VideoGuid, r.UserGuid,
                     r.RootReview, r.VideoReviewBody,
                     r.TimeSpace.CreateAt, r.TimeSpace.UpdateAt,
-                    r.VideoQuote.Upvote, r.VideoQuote.Stars, r.VideoQuote.Watch))
+                    r.Quote.Like, r.Quote.Dislike))
                 .ToList();
 
             return Results.Ok(new VideoResult<List<VideoReviewResponse>>(VideoResultType.VideoResultOk, 200,
@@ -323,12 +323,8 @@ public static class VideoReviewEndpoints
             var interaction = new
             {
                 review.VideoReviewGuid,
-                review.VideoQuote.Upvote,
-                review.VideoQuote.Stars,
-                review.VideoQuote.Watch,
-                review.VideoQuote.Down,
-                review.VideoQuote.Ballot,
-                review.VideoQuote.Share
+                review.Quote.Like,
+                review.Quote.Dislike
             };
 
             return Results.Ok(new VideoResult<object>(VideoResultType.VideoResultOk, 200,

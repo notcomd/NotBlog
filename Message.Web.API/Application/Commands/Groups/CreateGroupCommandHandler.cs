@@ -27,7 +27,7 @@ public class CreateGroupCommandHandler(
 
         // 联动：自动创建群聊会话（CreateGroupSession 内部自动并入群主；与群组同事务提交）
         var session = ChatSession.CreateGroupSession(
-            group.GroupId, command.UserId, group.GroupName,
+            group.GroupId, command.UserId,
             command.InitialMembers ?? new HashSet<Guid>());
         await sessionRepository.AddAsync(session);
 

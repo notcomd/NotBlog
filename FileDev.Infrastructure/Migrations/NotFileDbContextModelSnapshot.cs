@@ -23,94 +23,58 @@ namespace FileDev.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("FileDev.Domain.Entities.FileChunkRecord", b =>
-                {
-                    b.Property<Guid>("RecordId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("ChunkSize")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTimeOffset?>("CompletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("FileDescription")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<string>("FileIdentity")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
-
-                    b.Property<string>("FileKey")
-                        .IsRequired()
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)");
-
-                    b.Property<string>("FileMd5")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<string>("FileTags")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)");
-
-                    b.Property<string>("FileType")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
-
-                    b.Property<int>("TotalChunks")
-                        .HasColumnType("integer");
-
-                    b.Property<long>("TotalSize")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("UploadedChunks")
-                        .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("character varying(4000)")
-                        .HasColumnName("UploadedChunksCsv");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("RecordId");
-
-                    b.HasIndex("FileKey")
-                        .IsUnique()
-                        .HasDatabaseName("IX_FileChunkRecord_FileKey");
-
-                    b.HasIndex("UserId")
-                        .HasDatabaseName("IX_FileChunkRecord_UserId");
-
-                    b.HasIndex("Status", "CreatedAt")
-                        .HasDatabaseName("IX_FileChunkRecord_Status_CreatedAt");
-
-                    b.ToTable("FileChunkRecord", (string)null);
-                });
-
-            modelBuilder.Entity("FileDev.Domain.Entities.NotFile", b =>
+            modelBuilder.Entity("FileDev.Domain.Entities.ContentAttachmentRef", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<int>("ActiveRefs")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ContentId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<int>("ContentType")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FileUri")
+                        .IsRequired()
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
+
+                    b.Property<Guid>("SourceFileId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FileUri")
+                        .HasDatabaseName("IX_ContentAttachmentRef_FileUri");
+
+                    b.HasIndex("ContentId", "ContentType")
+                        .HasDatabaseName("IX_ContentAttachmentRef_Content");
+
+                    b.ToTable("ContentAttachmentRef", (string)null);
+                });
+
+            modelBuilder.Entity("FileDev.Domain.Entities.NotFile", b =>
+                {
+                    b.Property<Guid>("FileId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ContentHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
 
                     b.Property<DateTimeOffset?>("DeleteTime")
                         .HasColumnType("timestamp with time zone");
@@ -119,9 +83,6 @@ namespace FileDev.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)");
-
-                    b.Property<Guid>("FileId")
-                        .HasColumnType("uuid");
 
                     b.Property<int>("FileIdentity")
                         .HasColumnType("integer");
@@ -151,6 +112,21 @@ namespace FileDev.Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
+                    b.Property<int>("ShardCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Source")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset?>("StorageExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("StorageUpdatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Tier")
+                        .HasColumnType("integer");
+
                     b.Property<DateTimeOffset>("UpdateTime")
                         .HasColumnType("timestamp with time zone");
 
@@ -160,7 +136,12 @@ namespace FileDev.Infrastructure.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
-                    b.HasKey("Id");
+                    b.Property<string>("VolumeId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.HasKey("FileId");
 
                     b.HasIndex("FileId")
                         .IsUnique()
@@ -172,51 +153,51 @@ namespace FileDev.Infrastructure.Migrations
                     b.HasIndex("UserId")
                         .HasDatabaseName("IX_NotFile_UserId");
 
+                    b.HasIndex("VolumeId")
+                        .HasDatabaseName("IX_NotFile_VolumeId");
+
                     b.HasIndex("FileMd5", "FileSize")
                         .HasDatabaseName("IX_NotFile_FileMd5_FileSize");
 
                     b.HasIndex("UserId", "IsDeleted")
                         .HasDatabaseName("IX_NotFile_UserId_IsDeleted");
 
+                    b.HasIndex("UserId", "Source")
+                        .HasDatabaseName("IX_NotFile_UserId_Source");
+
                     b.ToTable("NotFile", (string)null);
                 });
 
-            modelBuilder.Entity("FileDev.Domain.Entities.NotFileGroup", b =>
+            modelBuilder.Entity("FileDev.Domain.Entities.NotFileTag", b =>
                 {
-                    b.Property<Guid>("NotFileGroupId")
+                    b.Property<Guid>("TagId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<int>("DefaultKind")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
 
                     b.Property<DateTimeOffset?>("DeleteTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("Depth")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("FileGroupDescription")
-                        .HasColumnType("text");
-
-                    b.Property<string>("FileGroupName")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<string>("FileGroupTags")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("FileIdentity")
-                        .HasColumnType("integer");
-
                     b.Property<string>("FileIds")
                         .IsRequired()
+                        .HasMaxLength(-1)
                         .HasColumnType("text");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid?>("ParentGroupId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("TagDescription")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("TagName")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
 
                     b.Property<DateTimeOffset>("UpdateTime")
                         .HasColumnType("timestamp with time zone");
@@ -227,17 +208,84 @@ namespace FileDev.Infrastructure.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
-                    b.HasKey("NotFileGroupId");
-
-                    b.HasIndex("ParentGroupId");
+                    b.HasKey("TagId");
 
                     b.HasIndex("UserId")
-                        .HasDatabaseName("IX_NotFileGroup_UserId");
+                        .HasDatabaseName("IX_NotFileTag_UserId");
 
-                    b.HasIndex("UserId", "ParentGroupId", "FileGroupName")
-                        .HasDatabaseName("IX_NotFileGroup_UserId_ParentGroupId_FileGroupName");
+                    b.HasIndex("UserId", "DefaultKind")
+                        .HasDatabaseName("IX_NotFileTag_UserId_DefaultKind");
 
-                    b.ToTable("NotFileGroup", (string)null);
+                    b.HasIndex("UserId", "TagName")
+                        .IsUnique()
+                        .HasDatabaseName("IX_NotFileTag_UserId_TagName");
+
+                    b.ToTable("NotFileTag", (string)null);
+                });
+
+            modelBuilder.Entity("FileDev.Domain.Entities.NotFileVolume", b =>
+                {
+                    b.Property<string>("VolumeId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Kind")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("ObjectCount")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("PartCount")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("RootPath")
+                        .IsRequired()
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
+
+                    b.Property<string>("TenantId")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<long>("TotalBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("VolumeId");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("IX_NotFileVolume_TenantId");
+
+                    b.HasIndex("VolumeId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_NotFileVolume_VolumeId");
+
+                    b.ToTable("NotFileVolume", (string)null);
+                });
+
+            modelBuilder.Entity("FileDev.Domain.Entities.UserFileInfo", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("TotalQuotaBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset>("UpdateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("UsedBytes")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("UserFileInfo", (string)null);
                 });
 
             modelBuilder.Entity("FileDev.Infrastructure.Idempotent.ClientRequest", b =>
@@ -256,21 +304,6 @@ namespace FileDev.Infrastructure.Migrations
                     b.HasKey("ClientRequestId");
 
                     b.ToTable("ClientRequest", (string)null);
-                });
-
-            modelBuilder.Entity("FileDev.Domain.Entities.NotFileGroup", b =>
-                {
-                    b.HasOne("FileDev.Domain.Entities.NotFileGroup", "Parent")
-                        .WithMany("Children")
-                        .HasForeignKey("ParentGroupId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Parent");
-                });
-
-            modelBuilder.Entity("FileDev.Domain.Entities.NotFileGroup", b =>
-                {
-                    b.Navigation("Children");
                 });
 #pragma warning restore 612, 618
         }

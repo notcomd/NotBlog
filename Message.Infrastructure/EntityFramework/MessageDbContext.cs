@@ -1,4 +1,5 @@
 using MessageEntity = Message.Domain.Entities.Chat.Message;
+using Message.Domain.Entities.Announcement;
 
 namespace Message.Infrastructure.EntityFramework;
 
@@ -38,6 +39,8 @@ public class MessageDbContext : DbContext, IUnitOfWork
     public DbSet<UserFollow> UserFollows { get; set; } = null!;
     public DbSet<UserInfo> UserInfos { get; set; } = null!;
     public DbSet<UserSignIn> UserSignIns { get; set; } = null!;
+
+    public DbSet<Announcement> Announcements { get; set; } = null!;
 
 
     public IUnitOfWork UnitOfWork => this;

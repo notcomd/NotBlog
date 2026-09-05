@@ -8,4 +8,6 @@ public record UploadImageViaGrpcCommand(
     string FileName,
     byte[] Content,
     string? Description,
-    bool ValidateFormat) : IRequest<UploadImageResult>;
+    bool ValidateFormat,
+    Guid? ContentId = null,
+    ContentReferenceType? ContentType = null) : IRequest<UploadImageResult>;

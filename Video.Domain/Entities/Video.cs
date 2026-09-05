@@ -84,13 +84,14 @@ public class Videos : Entity<Guid>, IAggregateRoot
     /// <summary>
     /// 添加视频评论
     /// </summary>
+    /// <param name="reviewGuid">评论 Guid（由调用方生成，便于追踪/通知）</param>
     /// <param name="userGuid">用户Guid</param>
     /// <param name="rootReview">是否为回复</param>
     /// <param name="videoReviewBody">评论内容</param>
     /// <param name="videoImage">图片</param>
-    public void AddByVideoReview(Guid userGuid, Guid? rootReview, string? videoReviewBody, List<VideoImage>? videoImage)
+    public void AddByVideoReview(Guid reviewGuid, Guid userGuid, Guid? rootReview, string? videoReviewBody, List<VideoImage>? videoImage)
     {
-        VideoReviews!.Add(new VideoReview(VideoGuid, userGuid, rootReview, videoReviewBody,
+        VideoReviews!.Add(new VideoReview(reviewGuid, VideoGuid, userGuid, rootReview, videoReviewBody,
             videoImage is { Count: < 9 and > 0 } ? videoImage : null));
     }
 

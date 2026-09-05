@@ -34,15 +34,11 @@ public class VideoReviewDbContextConfiguration : IEntityTypeConfiguration<VideoR
                 x.Property(s => s.UpdateAt).HasJsonPropertyName("VideoControlUpdateTime");
             });
         });
-        builder.OwnsOne(en => en.VideoQuote, x =>
+        builder.OwnsOne(en => en.Quote, x =>
         {
             x.ToJson();
-            x.Property(s => s.Upvote).HasJsonPropertyName("c_Upvote");
-            x.Property(s => s.Stars).HasJsonPropertyName("c_Stars");
-            x.Property(s => s.Watch).HasJsonPropertyName("c_Watch");
-            x.Property(s => s.Down).HasJsonPropertyName("c_Down");
-            x.Property(s => s.Ballot).HasJsonPropertyName("c_Ballot");
-            x.Property(s => s.Share).HasJsonPropertyName("c_Share");
+            x.Property(s => s.Like).HasJsonPropertyName("c_Like");
+            x.Property(s => s.Dislike).HasJsonPropertyName("c_Dislike");
         });
         builder.OwnsOne(en => en.TimeSpace, x =>
         {

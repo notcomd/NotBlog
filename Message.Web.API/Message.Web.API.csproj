@@ -7,9 +7,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="13.4.6" />
-        <PackageReference Include="Aspire.RabbitMQ.Client" Version="13.4.6" />
-        <PackageReference Include="Aspire.StackExchange.Redis.DistributedCaching" Version="13.4.6" />
+        <PackageReference Include="Aspire.MongoDB.Driver" Version="13.5.3" />
+        <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="13.5.3" />
+        <PackageReference Include="Aspire.RabbitMQ.Client" Version="13.5.3" />
+        <PackageReference Include="Aspire.StackExchange.Redis.DistributedCaching" Version="13.5.3" />
         <PackageReference Include="Google.Protobuf" Version="3.35.1" />
         <PackageReference Include="Grpc.Net.Client" Version="2.83.0" />
         <PackageReference Include="Grpc.Net.ClientFactory" Version="2.83.0" />
@@ -37,7 +38,7 @@
       <ProjectReference Include="..\Message.Infrastructure\Message.Infrastructure.csproj" />
       <ProjectReference Include="..\NotBlog.ServiceDefaults\NotBlog.ServiceDefaults.csproj" />
       <ProjectReference Include="..\CacheMemory\CacheMemory.csproj" />
-      <ProjectReference Include="..\Eventbus\EventBus.csproj"/>
+      <ProjectReference Include="..\Eventbus\EventBus.csproj" />
     </ItemGroup>
 
     <ItemGroup>

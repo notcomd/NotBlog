@@ -18,14 +18,13 @@ public class MarkdownSearchQueryHandler(
 
         var viewer = request.ViewerGuid;
 
-        // 分页直接下推 SQL。注：MarkDownContent.Contains 会被翻译为 LIKE '%kw%'，
-        // 前导通配符无法走索引，对 1MB 级正文列是全表扫描——建议后续引入 PG 全文检索
-        // （tsvector + GIN）或外部搜索索引替代。
+        // 分页直接下推 SQL。正文已文件化（不存 DB），搜索仅匹配元数据（名称）；
+        // 如需全文检索，后续引入 PG tsvector + GIN 或外部搜索索引。
         var markdowns = await dbContext.Markdowns.AsNoTracking()
             .Where(m => !m.IsDelete
                         && m.Status == MarkStatus.MarkApproved
                         && (m.MarkDownAuth == MarkDownAuth.PublicMark || m.MarkUserGuid == viewer)
-                        && (m.MarkDownName.Contains(keyword) || m.MarkDownContent.Contains(keyword)))
+                        && m.MarkDownName.Contains(keyword))
             .OrderByDescending(m => m.CreateAt)
             .Skip(Math.Max(0, request.Skip))
             .Take(Math.Clamp(request.Take, 1, 100))
@@ -37,6 +36,7 @@ public class MarkdownSearchQueryHandler(
                 MarkDownGuid = m.MarkDownGuid,
                 Name = m.MarkDownName,
                 Tags = [.. m.MarkDownTagboard],
+                CoverUrl = m.CoverUrl,
                 Auth = m.MarkDownAuth.ToString(),
                 Status = m.Status.ToString(),
                 CreateAt = m.CreateAt,

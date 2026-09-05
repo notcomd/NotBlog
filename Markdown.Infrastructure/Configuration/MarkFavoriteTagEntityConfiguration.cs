@@ -5,10 +5,9 @@ public class MarkFavoriteTagEntityConfiguration : IEntityTypeConfiguration<MarkF
     public void Configure(EntityTypeBuilder<MarkFavoriteTag> builder)
     {
         builder.Ignore(en => en.DomainEvents);
-
+        builder.Ignore(x=>x.Id);
         builder.ToTable("MarkFavoriteTag");
-        builder.Property(x => x.Id).UseHiLo("MarkFavoriteTagGuid");
-        builder.HasKey(x => x.Id);
+        builder.HasKey(x => x.MarkFavoriteTagGuid);
 
         builder.Property(x => x.MarkFavoriteTagGuid).IsRequired();
         builder.Property(x => x.UserGuid).IsRequired();

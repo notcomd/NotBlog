@@ -26,7 +26,7 @@ public static class FileDownloadApi
     private static async Task<IResult> DownloadFileAsync(
         string path,
         [FromServices] INotFileStorageService storage,
-        HttpContext context)
+        [FromServices] HttpContext context)
     {
         if (string.IsNullOrWhiteSpace(path))
             return Results.NotFound();

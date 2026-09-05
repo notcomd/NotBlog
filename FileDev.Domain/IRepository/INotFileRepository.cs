@@ -41,4 +41,7 @@ public interface INotFileRepository:IRepository<NotFile, IUnitOfWork>
     /// <param name="fileUri">物理文件 URI</param>
     /// <param name="excludeFileId">排除当前文件（自身不参与计数）</param>
     Task<int> CountActiveRefsByFileUriAsync(Uri fileUri, Guid excludeFileId);
+
+    /// <summary>按文件 ID 批量查询未删除文件，用于标签下文件列表。</summary>
+    Task<IEnumerable<NotFile>> GetFilesByIdsAsync(IEnumerable<Guid> fileIds);
 }

@@ -13,6 +13,7 @@ public static class UserInfoMappingExtensions
         Experience = userInfo.Experience,
         BackgroundCoverUrl = userInfo.BackgroundCoverUrl,
         AvatarUrl = userInfo.AvatarUrl,
+        Bio = userInfo.Bio,
         UpdateTime = userInfo.UpdateTime
     };
 }

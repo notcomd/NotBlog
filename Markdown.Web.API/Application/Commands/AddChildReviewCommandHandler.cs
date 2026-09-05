@@ -31,6 +31,22 @@ public class AddChildReviewCommandHandler(
             await markdownRepository.AddChildReviewAsync(request.MarkDownGuid, request.ParentReviewGuid, childReview);
             await markdownRepository.UnitOfWork.SaveChangesAsync(cancellationToken);
 
+            // 回复通知（D-5：子评论通知被回复的父评论作者；本人回复自己不通知，Message 侧亦会过滤）
+            var markdown = await markdownRepository.FindMarkDownAsync(request.MarkDownGuid);
+            var parentReview = await markdownRepository.GetReviewByIdAsync(request.ParentReviewGuid);
+            if (markdown is not null && parentReview is not null && parentReview.UserId != request.UserId)
+            {
+                await EventPublishing.PublishSafelyAsync(eventBus, new MarkdownCommentPublishedIntegrationEvent(
+                    request.MarkDownGuid,
+                    markdown.MarkDownName,
+                    childReview.MarkReviewGuid,
+                    ParentReviewGuid: request.ParentReviewGuid,
+                    CommentContent: TruncatePreview(request.Content),
+                    ActorUserId: request.UserId,
+                    TargetUserId: parentReview.UserId,
+                    OccurredAt: childReview.MarkReviewTime), logger);
+            }
+
             // 发布集成事件（总线故障不拖垮业务，P1-6）
             await EventPublishing.PublishSafelyAsync(eventBus, new ChildReviewAddedIntegrationEvent(
                 request.ParentReviewGuid,
@@ -43,6 +59,17 @@ public class AddChildReviewCommandHandler(
             logger.LogInformation("子评论已创建：{ChildGuid} -> 父评论 {ParentGuid}", childReview.MarkReviewGuid, request.ParentReviewGuid);
             return childReview.MarkReviewGuid;
         });
+    }
+
+    /// <summary>
+    ///     评论内容预览截断（供通知文案使用；空内容/图片评论回退占位符）
+    /// </summary>
+    private static string TruncatePreview(string? content, int max = 50)
+    {
+        if (string.IsNullOrWhiteSpace(content))
+            return "[图片评论]";
+
+        return content.Length <= max ? content : content[..max] + "…";
     }
 
 }

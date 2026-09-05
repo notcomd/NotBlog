@@ -8,9 +8,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 
 
-
-
-
 builder.AddRabbitMQClient("EventBus");
 
 ///本地运行

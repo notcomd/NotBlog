@@ -26,6 +26,12 @@ public class MarkDownDbContext(DbContextOptions<MarkDownDbContext> options, INot
 
     public DbSet<MarkFavoriteTag> MarkFavoriteTags { get; set; }
 
+    public DbSet<MarkDocumentLike> MarkDocumentLikes { get; set; }
+
+    public DbSet<MarkCoin> MarkCoins { get; set; }
+
+    public DbSet<MarkReviewDislike> MarkReviewDislikes { get; set; }
+
 
     /// <summary>
     /// 保存更改并分发领域事件
@@ -53,7 +59,6 @@ public class MarkDownDbContext(DbContextOptions<MarkDownDbContext> options, INot
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfiguration(new MarkDownEntityConfiguration());
         modelBuilder.ApplyConfiguration(new MarkReviewEntityConfiguration());
-        modelBuilder.ApplyConfiguration(new ReviewImageEntityConfiguration());
         modelBuilder.ApplyConfiguration(new MarkFavoriteEntityConfiguration());
         modelBuilder.ApplyConfiguration(new MarkFavoriteTagEntityConfiguration());
 
@@ -70,6 +75,42 @@ public class MarkDownDbContext(DbContextOptions<MarkDownDbContext> options, INot
         {
             entity.ToTable("MarkReviewLike");
             entity.Property(x => x.Id).UseHiLo("MarkReviewLikeGuid");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.MarkReviewGuid).IsRequired();
+            entity.Property(x => x.UserId).IsRequired();
+            entity.HasIndex(x => new { x.MarkReviewGuid, x.UserId }).IsUnique();
+            entity.HasIndex(x => x.MarkReviewGuid);
+        });
+
+        // MarkDocumentLike 文档点赞记录表配置（唯一约束实现点赞去重）
+        modelBuilder.Entity<MarkDocumentLike>(entity =>
+        {
+            entity.ToTable("MarkDocumentLike");
+            entity.Property(x => x.Id).UseHiLo("MarkDocumentLikeGuid");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.MarkDownGuid).IsRequired();
+            entity.Property(x => x.UserId).IsRequired();
+            entity.HasIndex(x => new { x.MarkDownGuid, x.UserId }).IsUnique();
+            entity.HasIndex(x => x.MarkDownGuid);
+        });
+
+        // MarkCoin 文档打赏记录表配置（唯一约束：一用户对一篇文档仅可投币一次，防重复累计与刷热度）
+        modelBuilder.Entity<MarkCoin>(entity =>
+        {
+            entity.ToTable("MarkCoin");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.MarkDownGuid).IsRequired();
+            entity.Property(x => x.UserId).IsRequired();
+            entity.Property(x => x.Amount).IsRequired().HasDefaultValue(0L);
+            entity.HasIndex(x => x.MarkDownGuid);
+            entity.HasIndex(x => new { x.MarkDownGuid, x.UserId }).IsUnique();
+        });
+
+        // MarkReviewDislike 评论踩记录表配置（唯一约束实现踩去重）
+        modelBuilder.Entity<MarkReviewDislike>(entity =>
+        {
+            entity.ToTable("MarkReviewDislike");
+            entity.Property(x => x.Id).UseHiLo("MarkReviewDislikeGuid");
             entity.HasKey(x => x.Id);
             entity.Property(x => x.MarkReviewGuid).IsRequired();
             entity.Property(x => x.UserId).IsRequired();

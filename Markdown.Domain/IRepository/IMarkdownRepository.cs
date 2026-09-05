@@ -107,9 +107,9 @@ public interface IMarkdownRepository : IRepository<MarkDown, IUnitOfWork>
     Task<MarkReview> AddChildReviewAsync(Guid markDownGuid, Guid parentReviewGuid, MarkReview childReview);
 
     /// <summary>
-    ///     评论点赞 +1（同一用户对同一评论仅能点赞一次），返回最新点赞数（F-10.5）
+    ///     评论点赞 +1（同一用户对同一评论仅能点赞一次，唯一约束防并发重复），返回计数与是否首次
     /// </summary>
-    Task<long> LikeReviewAsync(Guid reviewGuid, Guid userId);
+    Task<InteractionResult> LikeReviewAsync(Guid reviewGuid, Guid userId);
 
     /// <summary>
     ///     取消评论点赞 -1（不低于 0，未点赞时幂等返回当前计数），返回最新点赞数（F-10.5）
@@ -120,4 +120,51 @@ public interface IMarkdownRepository : IRepository<MarkDown, IUnitOfWork>
     ///     评论浏览量 +1（线程安全），返回最新浏览数（F-10.5）
     /// </summary>
     Task<long> IncreaseReviewViewAsync(Guid reviewGuid);
+
+    // ===== 文档交互计数（文件化重构后新增，收藏命令事务内调用） =====
+
+    /// <summary>
+    ///     更新文档收藏计数（收藏 +1 / 取消收藏 -1，下限钳制 0）。
+    ///     不单独提交，由调用方与收藏记录变更在同一 SaveChanges 内提交，保证计数与记录原子一致
+    /// </summary>
+    Task UpdateFavoriteCountAsync(Guid markDownGuid, long delta);
+
+    // ===== 文档交互计数（阶段 2 端点：浏览/点赞/分享/硬币） =====
+
+    /// <summary>
+    ///     文档点赞 +1（同一用户对同一文档仅能点赞一次，唯一约束防并发重复），返回计数与是否首次
+    /// </summary>
+    Task<InteractionResult> LikeDocumentAsync(Guid markDownGuid, Guid userId);
+
+    /// <summary>
+    ///     取消文档点赞 -1（不低于 0，未点赞时幂等返回当前计数），返回最新点赞数
+    /// </summary>
+    Task<long> RemoveLikeDocumentAsync(Guid markDownGuid, Guid userId);
+
+    /// <summary>
+    ///     文档浏览量 +1（原子 SQL 更新），返回最新浏览数
+    /// </summary>
+    Task<long> IncreaseDocumentViewAsync(Guid markDownGuid);
+
+    /// <summary>
+    ///     文档分享 +1，返回最新分享数
+    /// </summary>
+    Task<long> AddDocumentShareAsync(Guid markDownGuid);
+
+    /// <summary>
+    ///     文档打赏硬币（一用户一文档一次：记录 MarkCoin 流水 + 计数增加），重复投币幂等返回现总额，返回计数与是否首次
+    /// </summary>
+    Task<InteractionResult> CoinDocumentAsync(Guid markDownGuid, Guid userId, long amount);
+
+    // ===== 评论踩（阶段 2 端点） =====
+
+    /// <summary>
+    ///     评论踩 +1（同一用户对同一评论仅能踩一次，唯一约束防并发重复），返回计数与是否首次
+    /// </summary>
+    Task<InteractionResult> DislikeReviewAsync(Guid reviewGuid, Guid userId);
+
+    /// <summary>
+    ///     取消评论踩 -1（不低于 0，未踩时幂等返回当前计数），返回最新踩数
+    /// </summary>
+    Task<long> RemoveDislikeReviewAsync(Guid reviewGuid, Guid userId);
 }

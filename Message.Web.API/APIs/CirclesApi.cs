@@ -101,6 +101,12 @@ public static class CirclesApi
             .WithSummary("圈子帖子流")
             .Produces<ApiResponse<PagedResult<CommunityPostDto>>>();
 
+        // ── 社区聊天 ──
+        group.MapGet("/{circleGuid}/session", GetCircleSessionAsync)
+            .WithSummary("获取社区聊天会话")
+            .WithDescription("获取社区对应的 Channel 聊天会话（仅成员可见）")
+            .Produces<ApiResponse<SessionDto>>();
+
         return group;
     }
 
@@ -565,6 +571,56 @@ public static class CirclesApi
         catch (Exception ex)
         {
             return Results.Json(ApiResponse<PagedResult<CommunityPostDto>>.Error($"获取圈子帖子失败: {ex.Message}"), statusCode: 500);
+        }
+    }
+
+    /// <summary>
+    /// 获取社区聊天会话（Channel 类型）。
+    /// <para>访问控制：仅社区成员可见；会话名投影为社区名（与群聊方案A一致）。</para>
+    /// </summary>
+    private static async Task<IResult> GetCircleSessionAsync(
+        Guid circleGuid,
+        [FromServices] ICurrentUserService currentUser,
+        [FromServices] ICircleRepository circleRepository,
+        [FromServices] IChatSessionRepository sessionRepository,
+        CancellationToken ct)
+    {
+        try
+        {
+            var circle = await circleRepository.GetByIdAsync(circleGuid);
+            if (circle is null)
+                return Results.Ok(ApiResponse<SessionDto>.NotFound("圈子不存在"));
+
+            var userId = currentUser.GetUserId();
+            if (!await circleRepository.IsMemberAsync(circleGuid, userId))
+                return Results.Ok(ApiResponse<SessionDto>.Forbidden("仅社区成员可访问社区聊天"));
+
+            var session = await sessionRepository.GetByCircleIdAsync(circleGuid);
+            if (session is null)
+                return Results.Ok(ApiResponse<SessionDto>.NotFound("社区聊天会话不存在"));
+
+            var state = session.MemberStates.TryGetValue(userId, out var st) ? st : null;
+            var dto = new SessionDto
+            {
+                SessionId = session.SessionId,
+                SessionType = session.SessionType,
+                SessionName = circle.Name,
+                GroupId = session.GroupId,
+                CircleId = session.CircleId,
+                CreatorId = session.CreatorId,
+                Participants = session.Participants.ToList(),
+                LastMessageId = session.LastMessageId,
+                LastMessageContent = session.LastMessageContent,
+                LastMessageTime = session.LastMessageTime,
+                CreatedTime = session.CreatedTime,
+                IsPinned = state?.IsPinned ?? false,
+                IsMuted = state?.IsMuted ?? false
+            };
+            return Results.Ok(ApiResponse<SessionDto>.Ok(dto));
+        }
+        catch (Exception ex)
+        {
+            return Results.Json(ApiResponse<SessionDto>.Error($"获取社区聊天会话失败: {ex.Message}"), statusCode: 500);
         }
     }
 }

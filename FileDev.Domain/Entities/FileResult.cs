@@ -25,7 +25,7 @@ public class FileResult
             FileId = file.FileId,
             UserId = file.UserId,
             FileName = file.FileName,
-            FileTags = new HashSet<string>(file.FileTags),
+            FileTags = [.. file.FileTags],
             FileDescription = file.FileDescription,
             FileSize = file.FileSize,
             FileUri = file.FileUri,

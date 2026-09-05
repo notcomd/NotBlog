@@ -18,6 +18,21 @@ public interface INotFileService
         NotFileStorageOptions options, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// 上传成功后占用用户存储额度（原子 UPDATE，配额不足抛 <see cref="FileDev.Domain.Exception.FileQuotaExceededException"/>）。
+    /// 与文件元数据创建在同一请求事务内提交。
+    /// </summary>
+    /// <param name="userId">用户 ID。</param>
+    /// <param name="bytes">本次写入文件字节数。</param>
+    Task OccupyQuotaAsync(Guid userId, long bytes, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 删除文件后释放用户存储额度（原子 UPDATE，结果不低于 0；记录不存在时忽略）。
+    /// </summary>
+    /// <param name="userId">用户 ID。</param>
+    /// <param name="bytes">释放字节数（即被删除文件的 FileSize）。</param>
+    Task ReleaseQuotaAsync(Guid userId, long bytes, CancellationToken cancellationToken = default);
+
+    /// <summary>
     ///  创建文件
     /// </summary>
     /// <param name="userId"></param>
@@ -32,7 +47,8 @@ public interface INotFileService
     /// <returns>落库文件实体（含真实 FileId，供上层响应映射使用）</returns>
     Task<NotFile> CreateFileAsync(Guid userId, string fileName, HashSet<string>? fileTags,
         string fileDescription, FileType fileType, long fileSize, Uri fileUri, string fileMd5,
-        FileIdentity fileIdentity = FileIdentity.FilePrivate);
+        FileIdentity fileIdentity = FileIdentity.FilePrivate,
+        NotFileStorageResponse? storageMeta = null, FileSource source = FileSource.UserRepository);
 
     /// <summary>
     ///  获取用户所有文件
@@ -62,10 +78,10 @@ public interface INotFileService
         string fileDescription, FileIdentity fileIdentity, string fileMd5);
 
     /// <summary>
-    ///  删除文件
+    ///  删除文件（软删并释放占用额度）
     /// </summary>
     /// <param name="fileId"></param>
     /// <param name="userId"></param>
     /// <returns></returns>
-    Task DeleteFileAsync(Guid fileId, Guid userId);
+    Task DeleteFileAsync(Guid fileId, Guid userId, CancellationToken cancellationToken = default);
 }

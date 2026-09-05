@@ -14,25 +14,17 @@ namespace NotBlog_Yarp.Permission;
 ///   - 事件：Identity 权限 CRUD 后秒级感知
 ///   - 轮询（PermissionMappingRefresher）：兜底防漏
 /// </summary>
-public class PermissionUpdatedEventHandler
+public class PermissionUpdatedEventHandler(
+    PermissionRouteMap routeMap,
+    IPermissionServiceClient client,
+    PermissionMappingStore store,
+    ILogger<PermissionUpdatedEventHandler> logger)
     : IIntegrationEventHandler<PermissionUpdatedIntegrationEvent>
 {
-    private readonly PermissionRouteMap _routeMap;
-    private readonly IPermissionServiceClient _client;
-    private readonly PermissionMappingStore _store;
-    private readonly ILogger<PermissionUpdatedEventHandler> _logger;
-
-    public PermissionUpdatedEventHandler(
-        PermissionRouteMap routeMap,
-        IPermissionServiceClient client,
-        PermissionMappingStore store,
-        ILogger<PermissionUpdatedEventHandler> logger)
-    {
-        _routeMap = routeMap ?? throw new ArgumentNullException(nameof(routeMap));
-        _client = client ?? throw new ArgumentNullException(nameof(client));
-        _store = store ?? throw new ArgumentNullException(nameof(store));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    }
+    private readonly PermissionRouteMap _routeMap = routeMap ?? throw new ArgumentNullException(nameof(routeMap));
+    private readonly IPermissionServiceClient _client = client ?? throw new ArgumentNullException(nameof(client));
+    private readonly PermissionMappingStore _store = store ?? throw new ArgumentNullException(nameof(store));
+    private readonly ILogger<PermissionUpdatedEventHandler> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
     public async Task Handler(PermissionUpdatedIntegrationEvent @event)
     {

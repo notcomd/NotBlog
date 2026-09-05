@@ -23,4 +23,10 @@ public class UpdateMarkdownRequest
     /// 标签列表（可选，传 null 表示不修改标签）
     /// </summary>
     public List<string>? Tags { get; set; }
+
+    /// <summary>
+    /// 封面图片 URL（可选；null=不修改，空串=清除封面）
+    /// </summary>
+    [StringLength(2048, ErrorMessage = "封面 URL 长度不能超过 2048 个字符")]
+    public string? CoverUrl { get; set; }
 }

@@ -6,10 +6,10 @@ namespace NotBlog_Yarp.Permission;
 public sealed record PermissionCheckResult
 {
     /// <summary>是否拥有指定权限</summary>
-    public bool HasPermission { get; init; }
+    public bool HasPermission { get; private init; }
 
     /// <summary>数据范围序列化值（格式: "type|value1,value2,..."），默认 "0|"</summary>
-    public Dictionary<string, HashSet<string>> DataScope { get; init; } = new() { { "0", new HashSet<string>() } };
+    public Dictionary<string, HashSet<string>> DataScope { get; private init; } = new() { { "0", new HashSet<string>() } };
 
     /// <summary>权限被拒绝</summary>
     public static PermissionCheckResult Denied() => new() { HasPermission = false };

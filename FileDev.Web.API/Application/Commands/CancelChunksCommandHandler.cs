@@ -14,7 +14,6 @@ public class CancelChunksCommandHandler(
         if (request.UserId == Guid.Empty)
             throw new ArgumentException("用户ID不能为空");
 
-        // S-08：仅上传任务所有者可取消
         var record = await chunkManager.GetUploadStatusAsync(request.FileKey, cancellationToken);
         if (record == null)
             throw new NotFileNotFoundException($"未找到上传任务: {request.FileKey}");

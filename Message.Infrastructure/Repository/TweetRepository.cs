@@ -162,9 +162,38 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
             .CountAsync();
     }
 
+    public async Task<long> GetLikeTotalByAuthorAsync(Guid authorGuid)
+    {
+        return await DbSet
+            .Where(t => t.AuthorGuid == authorGuid && t.TweetStatus == TweetStatus.Approved)
+            .SumAsync(t => (long)t.LikeCount);
+    }
+
+    public async Task<IEnumerable<Tweet>> GetVisibleByIdsAsync(IEnumerable<Guid> tweetGuids, Guid viewerId, IEnumerable<Guid> followingIds)
+    {
+        var ids = tweetGuids.Distinct().ToArray();
+        if (ids.Length == 0)
+            return [];
+
+        var visible = await ApplyVisibleTo(
+                DbSet.Where(t => ids.Contains(t.TweetGuid)),
+                viewerId, followingIds)
+            .ToListAsync();
+
+        // 还原传入顺序（互动列表按收藏时间倒序）
+        var byId = visible.ToDictionary(t => t.TweetGuid);
+        return ids.Select(id => byId.GetValueOrDefault(id)).Where(t => t is not null).Cast<Tweet>();
+    }
+
     public async Task<int> GetPendingAuditCountAsync()
     {
         return await DbSet.CountAsync(t => t.TweetStatus == TweetStatus.Pending);
+    }
+
+    /// <summary>全量推文总数（运营统计用，不分状态）</summary>
+    public async Task<int> GetCountAllAsync()
+    {
+        return await DbSet.CountAsync();
     }
 
     public async Task<int> GetTimelineCountAsync(IEnumerable<Guid> authorGuids, Guid viewerId, IEnumerable<Guid> followingIds)

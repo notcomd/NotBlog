@@ -12,7 +12,7 @@ public class NotFileEntityConfiguration: IEntityTypeConfiguration<NotFile>
         builder.ToTable("NotFile");
         //builder.Property(x => x.Id).UseHiLo("NotFileSeq");
         builder.Ignore(x=>x.Id);
-        builder.HasKey(xn => xn.Id);
+        builder.HasKey(xn => xn.FileId);
 
         // FileId 是业务主键（GUID），必须唯一且常用于点查，添加唯一索引
         builder.HasIndex(x => x.FileId)
@@ -40,5 +40,20 @@ public class NotFileEntityConfiguration: IEntityTypeConfiguration<NotFile>
         builder.Property(x => x.FileDescription).HasMaxLength(2000);
         builder.Property(x => x.FileMd5).HasMaxLength(128);
         builder.Property(x => x.FileUri).HasMaxLength(1024);
+
+        // ---- 与 Lite 对齐的存储元数据 ----
+        // ContentHash 用于去重比对与存储校验，固定 64 位十六进制（SHA-256）
+        builder.Property(x => x.ContentHash).HasMaxLength(64);
+        // 存储层（Hot/Cold）按整型存储，避免字符串低效比对
+        builder.Property(x => x.Tier).HasConversion<int>();
+        // 物理分片所在卷 ID（"v{n}" 或空串），索引加速按卷统计
+        builder.Property(x => x.VolumeId).HasMaxLength(64);
+        builder.HasIndex(x => x.VolumeId)
+            .HasDatabaseName("IX_NotFile_VolumeId");
+
+        // 来源域（用户仓库 / 内容附件）按整型存储，仓库列表/统计按来源过滤
+        builder.Property(x => x.Source).HasConversion<int>();
+        builder.HasIndex(x => new { x.UserId, x.Source })
+            .HasDatabaseName("IX_NotFile_UserId_Source");
     }
 }

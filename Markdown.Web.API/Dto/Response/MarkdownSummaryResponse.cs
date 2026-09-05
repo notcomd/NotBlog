@@ -11,6 +11,8 @@ public class MarkdownSummaryResponse
 
     public List<string> Tags { get; set; } = new();
 
+    public string? CoverUrl { get; set; }
+
     public string Auth { get; set; } = null!;
 
     public string Status { get; set; } = null!;

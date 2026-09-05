@@ -8,6 +8,7 @@ public class UserSafety : Entity<int>
         UserGuid = userGuid;
         BlackOrWhite = BlackOrWhite.AuthorityWhite;
         UserStatus = UserStatus.Normal;
+        IsTwoFactorEnabled = true;
     }
 
     public UserSafety(Guid userGuid, string securityStamp, string passwordSalt) : this(userGuid)
@@ -53,11 +54,17 @@ public class UserSafety : Entity<int>
     /// </summary>
     public DateTimeOffset? LockOutEnd { get; private set; }
 
+    /// <summary>
+    /// 二次验证（两步验证）开关：默认开启。
+    /// 开启时使用密码登入需额外输入邮箱验证码；关闭后密码登入免验证码。
+    /// </summary>
+    public bool IsTwoFactorEnabled { get; private set; }
 
     public bool IsLockedOut => LockOutEnd.HasValue && LockOutEnd.Value > DateTimeOffset.UtcNow;
 
     public static UserSafety CreateByUserSafety(Guid UserGuid, string? securityStamp, string? passwordSalt,
-        BlackOrWhite blackOrWhite = BlackOrWhite.AuthorityWhite, UserStatus userStatus = UserStatus.Normal)
+        BlackOrWhite blackOrWhite = BlackOrWhite.AuthorityWhite, UserStatus userStatus = UserStatus.Normal,
+        bool isTwoFactorEnabled = true)
     {
         if (string.IsNullOrEmpty(passwordSalt) && string.IsNullOrEmpty(securityStamp))
             throw new ArgumentException("At least one of passwordSalt or securityStamp must be provided",
@@ -69,7 +76,8 @@ public class UserSafety : Entity<int>
             SecurityStamp = securityStamp,
             PasswordSalt = passwordSalt,
             BlackOrWhite = blackOrWhite,
-            UserStatus = userStatus
+            UserStatus = userStatus,
+            IsTwoFactorEnabled = isTwoFactorEnabled
         };
 
         return userSafety;
@@ -109,5 +117,14 @@ public class UserSafety : Entity<int>
         if (string.IsNullOrWhiteSpace(newSecurityStamp))
             throw new ArgumentException("Security stamp cannot be null or empty", nameof(newSecurityStamp));
         SecurityStamp = newSecurityStamp;
+    }
+
+    /// <summary>
+    /// 修改二次验证（两步验证）开启状态。
+    /// </summary>
+    /// <param name="enabled">是否开启：开启后使用密码登入需额外输入邮箱验证码；关闭后免验证码</param>
+    public void ChangeByTwoFactorEnabled(bool enabled)
+    {
+        IsTwoFactorEnabled = enabled;
     }
 }

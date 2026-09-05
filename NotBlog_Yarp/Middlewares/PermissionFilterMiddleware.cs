@@ -16,27 +16,19 @@ namespace NotBlog_Yarp.Middlewares;
 ///   4. 调用权限服务组合查询（CheckAndGetScopeAsync，单次往返）
 ///   5. 无权限 → 403 JSON；有权限 → DataScope 存入 Items，放行
 /// </summary>
-public class PermissionFilterMiddleware
+public class PermissionFilterMiddleware(
+    RequestDelegate next,
+    PermissionRouteMap routeMap,
+    ILogger<PermissionFilterMiddleware> logger,
+    IOptions<PermissionOptions> permissionOptions)
 {
-    private readonly RequestDelegate _next;
-    private readonly PermissionRouteMap _routeMap;
-    private readonly ILogger<PermissionFilterMiddleware> _logger;
-    private readonly IOptions<PermissionOptions> _permissionOptions;
+    private readonly RequestDelegate _next = next ?? throw new ArgumentNullException(nameof(next));
+    private readonly PermissionRouteMap _routeMap = routeMap ?? throw new ArgumentNullException(nameof(routeMap));
+    private readonly ILogger<PermissionFilterMiddleware> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly IOptions<PermissionOptions> _permissionOptions = permissionOptions ?? throw new ArgumentNullException(nameof(permissionOptions));
 
     /// <summary>HttpContext.Items 中存储 DataScope 的键</summary>
     public const string DataScopeItemKey = "NotBlog.DataScope";
-
-    public PermissionFilterMiddleware(
-        RequestDelegate next,
-        PermissionRouteMap routeMap,
-        ILogger<PermissionFilterMiddleware> logger,
-        IOptions<PermissionOptions> permissionOptions)
-    {
-        _next = next ?? throw new ArgumentNullException(nameof(next));
-        _routeMap = routeMap ?? throw new ArgumentNullException(nameof(routeMap));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _permissionOptions = permissionOptions ?? throw new ArgumentNullException(nameof(permissionOptions));
-    }
 
     public async Task InvokeAsync(
         HttpContext context, IPermissionServiceClient permissionClient)
@@ -44,7 +36,7 @@ public class PermissionFilterMiddleware
         var path = context.Request.Path.Value ?? "/";
         var method = context.Request.Method;
 
-        // 1. 公开路径直接放行
+        
         if (_routeMap.IsPublicPath(path))
         {
             _logger.LogDebug("[PermissionFilter] 公开路径放行 Path={Path}", path);
@@ -52,10 +44,10 @@ public class PermissionFilterMiddleware
             return;
         }
 
-        // 2. 需要鉴权的路径
+        
         if (_routeMap.TryMatch(path, method, out var permissionCode))
         {
-            // 2.1 必须已认证 — 触发 JWT Bearer Challenge（设置 WWW-Authenticate 头）
+            
             if (context.User.Identity?.IsAuthenticated != true)
             {
                 _logger.LogWarning("[PermissionFilter] 未认证拒绝 Path={Path}", path);
@@ -67,7 +59,7 @@ public class PermissionFilterMiddleware
                 return;
             }
 
-            // 2.2 获取并验证 userId
+            
             var userId = GetUserId(context.User);
             if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
             {
@@ -77,7 +69,7 @@ public class PermissionFilterMiddleware
                 return;
             }
 
-            // 2.3 组合查询：权限检查 + DataScope（单次往返，减少延迟）
+            
             PermissionCheckResult result;
             try
             {
@@ -90,7 +82,7 @@ public class PermissionFilterMiddleware
                     "[PermissionFilter] 权限服务调用异常 UserId={UserId} Code={Code}（FailPolicy={Policy}）",
                     userId, permissionCode, _permissionOptions.Value.FailPolicy);
 
-                // F-12：FailPolicy=Open 时降级放行（记录日志并继续），Closed 时拒绝 403
+                
                 if (_permissionOptions.Value.FailOpen)
                 {
                     _logger.LogWarning(

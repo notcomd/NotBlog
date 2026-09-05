@@ -37,6 +37,7 @@ public static class ServiceCollectionExtensions
         RegisterAuthentication(services, configuration);
         RegisterFileStorageGrpc(services, configuration);
         RegisterApplicationServices(services);
+        RegisterTurnCredentials(services, configuration);
         RegisterCors(services, configuration, environment);
 
         return services;
@@ -130,6 +131,16 @@ public static class ServiceCollectionExtensions
 
         // 通话会话存储与状态机（Singleton：Redis 存储 + IHubContext 推送；连接查询经作用域工厂解析）
         services.AddSingleton<CallSessionStore>();
+    }
+
+    /// <summary>
+    /// WebRTC TURN 限时凭证注册。
+    /// 生命周期：<see cref="TurnCredentialService"/> 仅依赖只读配置快照，注册为 Singleton。
+    /// </summary>
+    private static void RegisterTurnCredentials(IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<TurnServiceOptions>(configuration.GetSection(TurnServiceOptions.SectionName));
+        services.AddSingleton<TurnCredentialService>();
     }
 
     /// <summary>

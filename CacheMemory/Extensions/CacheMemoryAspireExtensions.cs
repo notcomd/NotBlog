@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+
 using CacheMemory.Core;
 using CacheMemory.Providers;
 using CacheMemory.Service;
@@ -25,6 +27,23 @@ namespace CacheMemory.Extensions;
 /// </remarks>
 public static class CacheMemoryAspireExtensions
 {
+    /// <summary>
+    /// 进程内健康检查注册锁：同一宿主可能重复调用 AddCacheMemory 多次，
+    /// 避免向 HealthCheckService 重复注册同名检查导致启动失败。
+    /// </summary>
+    private static readonly ConcurrentDictionary<string, byte> RegisteredHealthChecks = new();
+
+    /// <summary>
+    /// 幂等注册 CacheMemory 健康检查（同名检查重复注册会抛 ArgumentException）。
+    /// </summary>
+    internal static void TryRegisterCacheMemoryHealthCheck(IServiceCollection services)
+    {
+        if (RegisteredHealthChecks.TryAdd(CacheMemoryHealthCheck.Name, 0))
+        {
+            services.AddHealthChecks()
+                .AddCheck<CacheMemoryHealthCheck>(CacheMemoryHealthCheck.Name, tags: ["redis", "cache"]);
+        }
+    }
     /// <summary>
     /// 注册 CacheMemory Redis 缓存服务（Aspire 风格）。
     /// 自动从 Aspire 的 ConnectionStrings 配置节读取指定名称的连接字符串。
@@ -59,9 +78,8 @@ public static class CacheMemoryAspireExtensions
         // 2. 注册核心服务
         RegisterCoreServices(builder.Services, options);
 
-        // 3. 注册健康检查
-        builder.Services.AddHealthChecks()
-            .AddCheck<CacheMemoryHealthCheck>(CacheMemoryHealthCheck.Name, tags: ["redis", "cache"]);
+        // 3. 幂等注册健康检查（多次调用 AddCacheMemory 不会重复注册同名检查）
+        TryRegisterCacheMemoryHealthCheck(builder.Services);
 
         return builder;
     }
@@ -116,8 +134,7 @@ public static class CacheMemoryAspireExtensions
 
         RegisterCoreServices(builder.Services, options);
 
-        builder.Services.AddHealthChecks()
-            .AddCheck<CacheMemoryHealthCheck>(CacheMemoryHealthCheck.Name, tags: ["redis", "cache"]);
+        TryRegisterCacheMemoryHealthCheck(builder.Services);
 
         return builder;
     }
@@ -140,8 +157,7 @@ public static class CacheMemoryAspireExtensions
 
         RegisterCoreServices(builder.Services, options);
 
-        builder.Services.AddHealthChecks()
-            .AddCheck<CacheMemoryHealthCheck>(CacheMemoryHealthCheck.Name, tags: ["redis", "cache"]);
+        TryRegisterCacheMemoryHealthCheck(builder.Services);
 
         return builder;
     }

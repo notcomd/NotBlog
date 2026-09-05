@@ -36,6 +36,7 @@ public class MessageHub : Hub<IMessageClient>
     private readonly  MessageCacheService _redisCache;
     private readonly INotMediator _mediator;
     private readonly IMessageFriendsRepository _friendsRepository;
+    private readonly IMessageRecallPolicy _recallPolicy;
 
     public MessageHub(
         IMessageRepository messageRepository,
@@ -52,7 +53,8 @@ public class MessageHub : Hub<IMessageClient>
         SessionCacheService sessionCache,
          MessageCacheService redisCache,
         INotMediator mediator,
-        IMessageFriendsRepository friendsRepository)
+        IMessageFriendsRepository friendsRepository,
+        IMessageRecallPolicy recallPolicy)
     {
         _messageRepository = messageRepository;
         _sessionRepository = sessionRepository;
@@ -69,6 +71,7 @@ public class MessageHub : Hub<IMessageClient>
         _redisCache = redisCache;
         _mediator = mediator;
         _friendsRepository = friendsRepository;
+        _recallPolicy = recallPolicy;
     }
 
     // ═══════════════════════════════════════════════════════
@@ -336,7 +339,7 @@ public class MessageHub : Hub<IMessageClient>
             var recalled = await _messageRepository.GetByIdAsync(messageId);
             if (recalled is null)
                 throw new KeyNotFoundException("消息不存在");
-            recalled.Recall(userId, RecallReason.UserRequest, null);
+            recalled.Recall(userId, RecallReason.UserRequest, null, _recallPolicy);
             await _messageRepository.UpdateAsync(recalled);
             await _unitOfWork.SaveEntitiesAsync(Context.ConnectionAborted);
             await Clients.Caller.MessageRecalled(messageId);
@@ -534,7 +537,7 @@ public class MessageHub : Hub<IMessageClient>
         {
             return await _fileStorageGrpcClient.MergeChunksAsync(
                 request.FileKey, userId, request.FileName, request.Description,
-                Context.ConnectionAborted);
+                contentId: null, contentType: null, ct: Context.ConnectionAborted);
         }
         catch (Exception ex)
         {

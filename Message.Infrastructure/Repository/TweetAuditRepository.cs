@@ -49,4 +49,25 @@ public class TweetAuditRepository : ITweetAuditRepository
     {
         return await _dbSet.CountAsync(a => a.TweetGuid == tweetGuid);
     }
+
+    /// <summary>管理端操作日志分页（全部操作者，按时间倒序）</summary>
+    public async Task<IEnumerable<TweetAuditLog>> GetPagedAsync(int page = 1, int pageSize = 20)
+    {
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 10;
+        if (pageSize > 100) pageSize = 100;
+
+        return await _dbSet
+            .AsNoTracking()
+            .OrderByDescending(a => a.AuditTime)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+    }
+
+    /// <summary>管理端操作日志总数</summary>
+    public async Task<int> GetCountAsync()
+    {
+        return await _dbSet.CountAsync();
+    }
 }

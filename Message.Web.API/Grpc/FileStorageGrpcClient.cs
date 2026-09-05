@@ -49,6 +49,7 @@ public class FileStorageGrpcClient : IFileStorageGrpcClient
     public async Task<UploadFileResult> UploadFileAsync(
         Guid userId, string fileName, byte[] content,
         string? description = null, string? expectedMd5 = null,
+        Guid? contentId = null, ContentReferenceType? contentType = null,
         CancellationToken ct = default)
     {
         if (content.Length == 0)
@@ -63,7 +64,9 @@ public class FileStorageGrpcClient : IFileStorageGrpcClient
                 FileContent = ByteString.CopyFrom(content),
                 FileDescription = description ?? string.Empty,
                 FileIdentity = FileIdentity.FilePrivate,
-                ExpectedMd5 = expectedMd5 ?? string.Empty
+                ExpectedMd5 = expectedMd5 ?? string.Empty,
+                ContentId = contentId?.ToString() ?? string.Empty,
+                ContentType = MapContentType(contentType)
             };
 
             var response = await ExecuteWithRetryAsync(
@@ -91,6 +94,7 @@ public class FileStorageGrpcClient : IFileStorageGrpcClient
     public async Task<UploadImageResult> UploadImageAsync(
         Guid userId, string fileName, byte[] content,
         string? description = null, bool validateFormat = true,
+        Guid? contentId = null, ContentReferenceType? contentType = null,
         CancellationToken ct = default)
     {
         if (content.Length == 0)
@@ -107,7 +111,9 @@ public class FileStorageGrpcClient : IFileStorageGrpcClient
                 FileIdentity = FileIdentity.FilePrivate,
                 ValidateFormat = validateFormat,
                 MaxWidth = 3840,
-                MaxHeight = 2160
+                MaxHeight = 2160,
+                ContentId = contentId?.ToString() ?? string.Empty,
+                ContentType = MapContentType(contentType)
             };
 
             var response = await ExecuteWithRetryAsync(
@@ -251,6 +257,7 @@ public class FileStorageGrpcClient : IFileStorageGrpcClient
 
     public async Task<MergeChunksResult> MergeChunksAsync(
         string fileKey, Guid userId, string? fileName = null, string? description = null,
+        Guid? contentId = null, ContentReferenceType? contentType = null,
         CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(fileKey))
@@ -263,7 +270,9 @@ public class FileStorageGrpcClient : IFileStorageGrpcClient
                 FileKey = fileKey,
                 UserId = userId.ToString(),
                 FileName = fileName ?? string.Empty,
-                FileDescription = description ?? string.Empty
+                FileDescription = description ?? string.Empty,
+                ContentId = contentId?.ToString() ?? string.Empty,
+                ContentType = MapContentType(contentType)
             };
 
             var response = await ExecuteWithRetryAsync(
@@ -639,6 +648,16 @@ public class FileStorageGrpcClient : IFileStorageGrpcClient
         _ = operation;
         return ex.Message;
     }
+
+    /// <summary>将应用层内容引用类型映射为 gRPC 契约的 ContentType，空引用回退为 NONE</summary>
+    private static FileDev.Web.API.Grpc.ContentType MapContentType(ContentReferenceType? contentType) =>
+        contentType switch
+        {
+            ContentReferenceType.Post => FileDev.Web.API.Grpc.ContentType.Post,
+            ContentReferenceType.Markdown => FileDev.Web.API.Grpc.ContentType.Markdown,
+            ContentReferenceType.Video => FileDev.Web.API.Grpc.ContentType.Video,
+            _ => FileDev.Web.API.Grpc.ContentType.None
+        };
 
     /// <summary>解析相对 URI，空串返回 null</summary>
     private static Uri? ToUri(string uri) => string.IsNullOrWhiteSpace(uri) ? null : new Uri(uri, UriKind.Relative);

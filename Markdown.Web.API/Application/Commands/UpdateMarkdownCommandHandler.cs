@@ -1,10 +1,11 @@
 namespace Markdown.Web.API.Application.Commands;
 
 /// <summary>
-/// 更新 Markdown 文档命令处理器
+/// 更新 Markdown 文档命令处理器（文件化：更新前从文件流读取旧内容做历史快照，正文变更走文件存储）
 /// </summary>
 public class UpdateMarkdownCommandHandler(
     IMarkdownRepository markdownRepository,
+    IMarkdownContentStore contentStore,
     ILogger<UpdateMarkdownCommandHandler> logger) :  IRequestHandler<UpdateMarkdownCommand, bool>
 {
     public async Task<bool> Handler(UpdateMarkdownCommand request, CancellationToken cancellationToken)
@@ -31,27 +32,55 @@ public class UpdateMarkdownCommandHandler(
             throw new InvalidOperationException("已删除的文档无法修改");
         }
 
-        // 4. 创建历史版本快照（聚合根内部管理，EF Core 级联持久化）
-        markdown.CreateHistorySnapshot();
+        // 4. 创建历史版本快照（正文已文件化：从文件存储读取当前旧内容作为快照）
+        var oldFileId = markdown.FileId;
+        var oldContent = await contentStore.ReadAsync(oldFileId, cancellationToken);
+        if (oldContent is not null)
+        {
+            markdown.CreateHistorySnapshot(oldContent);
+        }
+        else
+        {
+            logger.LogWarning("文档 {MarkDownGuid} 正文文件 {FileId} 不存在，跳过历史快照",
+                request.MarkDownGuid, oldFileId);
+        }
 
         // 5. 计算内容哈希
         var contentHash = request.MarkDownHash ?? ComputeSha256(request.MarkDownContent);
 
-        // 6. 更新文档内容
+        // 6. 保存新正文文件，更新元数据（文件引用）
+        var fileId = await contentStore.SaveAsync(request.MarkDownContent, request.MarkDownGuid, cancellationToken);
+        var fileSize = Encoding.UTF8.GetByteCount(request.MarkDownContent);
+
         await markdown.UpdateByMarkDownAsync(
             request.MarkDownName,
-            request.MarkDownContent,
+            fileId,
+            fileId,
+            fileSize,
+            ".md",
             contentHash);
 
-        // 7. 更新标签（如果提供）
+        // 7. 更新标签（如果提供）与封面（null 不修改，空串清除）
         if (request.Tags is not null)
         {
             markdown.ClearTags();
             markdown.AddTags(request.Tags);
         }
 
+        markdown.UpdateCoverUrl(request.CoverUrl);
+
         // 8. 通过 UnitOfWork 保存更改
         await markdownRepository.UnitOfWork.SaveChangesAsync(cancellationToken);
+
+        // 9. 清理旧正文文件（历史快照已存 DB 全文，旧文件无引用价值；删除失败不影响业务）
+        try
+        {
+            await contentStore.DeleteAsync(oldFileId, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "清理旧正文文件失败：{FileId}", oldFileId);
+        }
 
         logger.LogInformation("Markdown 文档已更新：{MarkDownGuid}", request.MarkDownGuid);
         return true;

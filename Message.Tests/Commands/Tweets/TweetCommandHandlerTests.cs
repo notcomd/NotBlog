@@ -180,7 +180,7 @@ public class TweetCommandHandlerTests
 
         var circleRepository = new Mock<ICircleRepository>();
         circleRepository.Setup(r => r.GetMemberAsync(circleGuid, circleOwner))
-            .ReturnsAsync(new CircleMember(circleGuid, circleOwner, CircleMemberRole.Owner));
+            .ReturnsAsync(new CircleMember(circleGuid, circleOwner, role: CircleMemberRole.Owner));
 
         var currentUser = new Mock<ICurrentUserService>();
         var handler = new DeleteTweetCommandHandler(
@@ -210,7 +210,7 @@ public class TweetCommandHandlerTests
 
         var circleRepository = new Mock<ICircleRepository>();
         circleRepository.Setup(r => r.GetMemberAsync(circleGuid, circleAdmin))
-            .ReturnsAsync(new CircleMember(circleGuid, circleAdmin, CircleMemberRole.Admin));
+            .ReturnsAsync(new CircleMember(circleGuid, circleAdmin, role: CircleMemberRole.Admin));
 
         var currentUser = new Mock<ICurrentUserService>();
         var handler = new DeleteTweetCommandHandler(
@@ -234,7 +234,7 @@ public class TweetCommandHandlerTests
 
         var circleRepository = new Mock<ICircleRepository>();
         circleRepository.Setup(r => r.GetMemberAsync(circleGuid, plainMember))
-            .ReturnsAsync(new CircleMember(circleGuid, plainMember, CircleMemberRole.Member));
+            .ReturnsAsync(new CircleMember(circleGuid, plainMember, role: CircleMemberRole.Member));
 
         var currentUser = new Mock<ICurrentUserService>();
         var handler = new DeleteTweetCommandHandler(

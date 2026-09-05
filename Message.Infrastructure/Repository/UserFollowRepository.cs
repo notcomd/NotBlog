@@ -49,6 +49,14 @@ public class UserFollowRepository(MessageDbContext context) : IUserFollowReposit
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<Guid>> GetFollowerIdsAsync(Guid userGuid)
+    {
+        return await DbSet
+            .Where(f => f.FolloweeGuid == userGuid)
+            .Select(f => f.FollowerGuid)
+            .ToListAsync();
+    }
+
     public async Task<int> GetFollowingCountAsync(Guid userGuid)
     {
         return await DbSet.CountAsync(f => f.FollowerGuid == userGuid);

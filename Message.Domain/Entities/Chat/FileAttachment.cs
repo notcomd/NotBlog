@@ -174,6 +174,35 @@ public class FileAttachment : Entity<Guid>
     }
 
     /// <summary>
+    /// 从持久化数据重建文件附件（Mongo 投影读取路径）。
+    /// <para>重构已校验、已持久化的实体，不重复触发构造校验。</para>
+    /// </summary>
+    public static FileAttachment Rebuild(
+        Guid attachmentId, Guid messageId, Guid fileId, string fileName, string fileType, long fileSize,
+        Uri fileUri, Uri? thumbnailUri, string? mimeType, string? description,
+        DateTime uploadTime, DateTime? downloadTime, int downloadCount, bool isDeleted)
+    {
+        var attachment = new FileAttachment
+        {
+            AttachmentId = attachmentId,
+            MessageId = messageId,
+            UploadTime = uploadTime
+        };
+        attachment.FileId = fileId;
+        attachment.FileName = fileName;
+        attachment.FileType = fileType;
+        attachment.FileSize = fileSize;
+        attachment.FileUri = fileUri;
+        attachment.ThumbnailUri = thumbnailUri;
+        attachment.MimeType = mimeType;
+        attachment.Description = description;
+        attachment.DownloadTime = downloadTime;
+        attachment.DownloadCount = downloadCount;
+        attachment.IsDeleted = isDeleted;
+        return attachment;
+    }
+
+    /// <summary>
     /// 获取格式化后的文件大小
     /// </summary>
     /// <returns>格式化后的文件大小</returns>

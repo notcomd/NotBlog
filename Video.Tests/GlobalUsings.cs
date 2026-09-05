@@ -1,0 +1,11 @@
+global using CacheMemory.Core;
+global using Microsoft.Extensions.Logging.Abstractions;
+global using Moq;
+global using NotMediator.Abstractions;
+global using NUnit.Framework;
+global using Video.Domain.Cache;
+global using Video.Domain.Entities;
+global using Video.Domain.IRepository;
+global using Video.Domain.ValueObjects;
+global using Video.Web.API.Application.Commands;
+global using Video.Web.API.Application.IntegrationEvents.Events;

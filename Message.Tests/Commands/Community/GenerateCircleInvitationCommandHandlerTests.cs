@@ -45,7 +45,7 @@ public class GenerateCircleInvitationCommandHandlerTests
 
     private void SetupMember(Guid userId, CircleMemberRole role, CircleMemberStatus status = CircleMemberStatus.Active)
     {
-        var member = new CircleMember(CircleGuid, userId, role);
+        var member = new CircleMember(CircleGuid, userId, role: role);
         if (status == CircleMemberStatus.Left)
             member.MarkLeft();
         else if (status == CircleMemberStatus.Banned)

@@ -10,7 +10,7 @@ namespace Identity.Domain.Entities.ClientAggregate;
 /// </summary>
 public class NotClient : Entity<int>, IAggregateRoot
 {
-    // ── 构造函数 ──
+
 
     protected NotClient()
     {
@@ -67,87 +67,81 @@ public class NotClient : Entity<int>, IAggregateRoot
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    // ── 标识 ──
 
-    /// <summary>内部数据库主键</summary>
     public Guid NotClientId { get; init; } = Guid.CreateVersion7();
 
-    /// <summary>OAuth 2.0 client_id（对外暴露的客户端标识符）</summary>
+
     public string ClientId { get; private set; } = null!;
 
-    // ── 应用基本信息 ──
 
-    /// <summary>应用名称（对应 RFC 7591 §2 中的 client_name）</summary>
+
+
     public string ApplicationName { get; private set; } = null!;
 
-    /// <summary>应用描述（对应 client_description）</summary>
+
     public string? ApplicationDescription { get; private set; }
 
-    /// <summary>应用图标 URL（对应 logo_uri）</summary>
+
     public string? ApplicationIcon { get; private set; }
 
-    /// <summary>应用主页 URL（对应 client_uri）</summary>
+
     public string? HomepageUri { get; private set; }
 
-    /// <summary>隐私政策 URL（对应 policy_uri）</summary>
+
     public string? PrivacyPolicyUri { get; private set; }
 
-    /// <summary>服务条款 URL（对应 tos_uri）</summary>
+
     public string? TermsOfServiceUri { get; private set; }
 
-    // ── 联系方式 ──
 
-    /// <summary>联系邮箱（对应 contacts）</summary>
     public string? ContactEmail { get; private set; }
 
-    // ── OAuth 2.0 核心字段 ──
 
-    /// <summary>客户端密钥（加密存储，对应 client_secret）</summary>
     public string ClientSecret { get; private set; } = null!;
 
-    /// <summary>授权回调地址（对应 redirect_uris，至少一个）</summary>
+
     public HashSet<string> RedirectUris { get; private set; } = [];
 
-    /// <summary>登出后回调地址（对应 post_logout_redirect_uris，OpenID Connect）</summary>
+
     public HashSet<string> PostLogoutRedirectUris { get; private set; } = [];
 
-    /// <summary>允许的授权范围（对应 scope）</summary>
+
     public HashSet<string> AllowedScopes { get; private set; } = [];
 
-    /// <summary>允许的授权模式（对应 grant_types）</summary>
+
     public HashSet<string> AllowedGrantTypes { get; private set; } = [];
 
     // ── 安全与类型 ──
 
-    /// <summary>应用类型（Web/SPA/Native/Desktop/Service）</summary>
+
     public ApplicationType ApplicationType { get; private set; }
 
-    /// <summary>Token 端点认证方式（client_secret_basic / client_secret_post / private_key_jwt / none）</summary>
+
     public string TokenEndpointAuthMethod { get; private set; } = null!;
 
-    /// <summary>是否强制 PKCE（Public Client 必须启用）</summary>
+
     public bool RequirePkce { get; private set; }
 
-    /// <summary>是否要求用户同意授权</summary>
+
     public bool RequireConsent { get; private set; }
 
-    /// <summary>允许的 CORS 来源（Web/SPA 客户端使用）</summary>
+
     public HashSet<string>? AllowedCorsOrigins { get; private set; }
 
     // ── 状态与审计 ──
 
-    /// <summary>客户端状态（Active / Disabled / Revoked）</summary>
+
     public ClientStatus Status { get; private set; }
 
-    /// <summary>注册时间</summary>
+
     public DateTimeOffset CreatedAt { get; init; }
 
-    /// <summary>最后更新时间</summary>
+
     public DateTimeOffset UpdatedAt { get; private set; }
 
     // ── 领域行为 ──
 
-    /// <summary>更新客户端密钥（密钥轮换）</summary>
+
     public void RotateSecret(string newSecret)
     {
         if (string.IsNullOrWhiteSpace(newSecret))
@@ -156,7 +150,7 @@ public class NotClient : Entity<int>, IAggregateRoot
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    /// <summary>更新应用基本信息</summary>
+
     public void UpdateApplicationInfo(
         string? applicationName = null,
         string? applicationDescription = null,
@@ -183,7 +177,7 @@ public class NotClient : Entity<int>, IAggregateRoot
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    /// <summary>更新允许的授权类型</summary>
+
     public void UpdateGrantTypes(HashSet<string> grantTypes)
     {
         if (grantTypes is null || grantTypes.Count == 0)
@@ -192,7 +186,7 @@ public class NotClient : Entity<int>, IAggregateRoot
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    /// <summary>更新允许的授权范围</summary>
+
     public void UpdateScopes(HashSet<string> scopes)
     {
         if (scopes is null || scopes.Count == 0)
@@ -201,7 +195,7 @@ public class NotClient : Entity<int>, IAggregateRoot
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    /// <summary>更新重定向 URI</summary>
+
     public void UpdateRedirectUris(HashSet<string> redirectUris)
     {
         if (redirectUris is null || redirectUris.Count == 0)
@@ -210,7 +204,7 @@ public class NotClient : Entity<int>, IAggregateRoot
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    /// <summary>添加重定向 URI</summary>
+
     public void AddRedirectUri(string uri)
     {
         if (string.IsNullOrWhiteSpace(uri))
@@ -219,7 +213,7 @@ public class NotClient : Entity<int>, IAggregateRoot
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    /// <summary>移除重定向 URI</summary>
+
     public void RemoveRedirectUri(string uri)
     {
         if (!RedirectUris.Remove(uri))
@@ -236,7 +230,7 @@ public class NotClient : Entity<int>, IAggregateRoot
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    /// <summary>禁用客户端</summary>
+
     public void Disable()
     {
         if (Status != ClientStatus.Active)
@@ -279,10 +273,11 @@ public class NotClient : Entity<int>, IAggregateRoot
         return AllowedGrantTypes.Contains(grantType);
     }
 
-    /// <summary>是否为公共客户端（Public Client：SPA / Native / Desktop）</summary>
+
     public bool IsPublicClient => ApplicationType is ApplicationType.SPA
         or ApplicationType.Native
         or ApplicationType.Desktop;
+
 
     /// <summary>是否为机密客户端（Confidential Client：Web / Service）</summary>
     public bool IsConfidentialClient => !IsPublicClient;

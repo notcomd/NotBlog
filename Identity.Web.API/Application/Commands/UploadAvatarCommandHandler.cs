@@ -25,11 +25,18 @@ public class UploadAvatarCommandHandler
 
     public UploadAvatarCommandHandler(
         FileStorage.FileStorageClient grpcClient,
-        ILogger<UploadAvatarCommandHandler> logger)
+        ILogger<UploadAvatarCommandHandler> logger,
+        IUserRepository userRepository,
+        IOutboxStore outboxStore)
     {
         _grpcClient = grpcClient ?? throw new ArgumentNullException(nameof(grpcClient));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+        _outboxStore = outboxStore ?? throw new ArgumentNullException(nameof(outboxStore));
     }
+
+    private readonly IUserRepository _userRepository;
+    private readonly IOutboxStore _outboxStore;
 
     public async Task<UploadAvatarResult> Handler(
         UploadAvatarCommand command, CancellationToken cancellationToken)
@@ -111,6 +118,41 @@ public class UploadAvatarCommandHandler
             "[UploadAvatar] 头像上传成功: UserId={UserId}, FileId={FileId}, " +
             "Width={Width}, Height={Height}, Format={Format}",
             command.UserId, response.FileId, response.Width, response.Height, response.Format);
+
+        // ── 6. 持久化头像 + 发布头像更新事件（Identity 为唯一真相源，Message UserInfo 消费同步） ──
+        // 失败仅记日志：头像文件已上传成功，不应让元数据同步失败回滚上传结果
+        if (Uri.TryCreate(response.FileUri, UriKind.RelativeOrAbsolute, out var avatarUri))
+        {
+            try
+            {
+                var user = await _userRepository.FindOneByUserAsync(command.UserId);
+                if (user is not null)
+                {
+                    user.ChangeByAvatar(avatarUri);
+                    await _userRepository.UpdateByUserAsync(user);
+                    await _userRepository.UnitOfWork.SaveChangesAsync(cancellationToken);
+                }
+                else
+                {
+                    _logger.LogWarning("[UploadAvatar] 未找到用户 {UserId}，头像未持久化至用户记录", command.UserId);
+                }
+
+                await _outboxStore.StoreAsync(
+                    new OutboxMessage(nameof(UploadByUserAvatarIntegrationEvent),
+                        new UploadByUserAvatarIntegrationEvent(command.UserId, avatarUri)),
+                    cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "[UploadAvatar] 头像元数据持久化/事件发布失败: UserId={UserId}, FileUri={FileUri}",
+                    command.UserId, response.FileUri);
+            }
+        }
+        else
+        {
+            _logger.LogWarning("[UploadAvatar] FileDev 返回的 FileUri 非法，跳过元数据同步: {FileUri}", response.FileUri);
+        }
 
         return new UploadAvatarResult(
             response.FileId,

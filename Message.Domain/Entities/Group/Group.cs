@@ -305,11 +305,14 @@ public class Group : Entity<Guid>, IAggregateRoot
         var oldOwner = _members.FirstOrDefault(m => m.UserId == OwnerId);
         var newOwner = _members.FirstOrDefault(m => m.UserId == newOwnerId);
 
-        if (oldOwner is null || newOwner is null)
-            throw new KeyNotFoundException("成员不存在");
+        if (newOwner is null)
+            throw new KeyNotFoundException("新群主不存在");
+        if (oldOwner is null)
+            throw new KeyNotFoundException("原群主不存在");
 
+        // 新群主角色置 Owner，原群主降为普通成员（修复：此前 PromoteToAdmin 仅提升为管理员，语义错误）
         oldOwner.DemoteToMember();
-        newOwner.PromoteToAdmin();
+        newOwner.BecomeOwner();
         OwnerId = newOwnerId;
         AddDomainEvent(new GroupOwnershipTransferredEvent(GroupId, oldOwner.UserId, newOwnerId));
     }
@@ -358,19 +361,8 @@ public class Group : Entity<Guid>, IAggregateRoot
     /// <exception cref="KeyNotFoundException"></exception>
     public bool HasPermission(Guid userId, GroupPermission permission)
     {
+        // 角色权限能力内聚于 GroupMember.Can，聚合根仅负责委托（高内聚低耦合）
         var member = GetMember(userId);
-        if (member is null) return false;
-
-        return permission switch
-        {
-            GroupPermission.SendMessage => member.CanSendMessage(),
-            GroupPermission.InviteMember => AllowMemberInvite || member.Role != GroupMemberRole.Member,
-            GroupPermission.EditGroupInfo => AllowMemberEditInfo || member.Role != GroupMemberRole.Member,
-            GroupPermission.RemoveMember => member.Role != GroupMemberRole.Member,
-            GroupPermission.MuteMember => member.Role == GroupMemberRole.Admin || member.Role == GroupMemberRole.Owner,
-            GroupPermission.BanMember => member.Role == GroupMemberRole.Admin || member.Role == GroupMemberRole.Owner,
-            GroupPermission.TransferOwnership => member.Role == GroupMemberRole.Owner,
-            _ => false
-        };
+        return member is not null && member.Can(permission, AllowMemberInvite, AllowMemberEditInfo);
     }
 }

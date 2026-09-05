@@ -12,27 +12,19 @@ namespace NotBlog_Yarp.Permission;
 ///
 /// 作为 IHostedService，应用启动后自动执行，不阻塞启动流程。
 /// </summary>
-public class PermissionMappingInitializer : BackgroundService
+public class PermissionMappingInitializer(
+    PermissionRouteMap routeMap,
+    IPermissionServiceClient client,
+    PermissionMappingStore store,
+    IOptions<PermissionOptions> options,
+    ILogger<PermissionMappingInitializer> logger)
+    : BackgroundService
 {
-    private readonly PermissionRouteMap _routeMap;
-    private readonly IPermissionServiceClient _client;
-    private readonly PermissionMappingStore _store;
-    private readonly IOptions<PermissionOptions> _options;
-    private readonly ILogger<PermissionMappingInitializer> _logger;
-
-    public PermissionMappingInitializer(
-        PermissionRouteMap routeMap,
-        IPermissionServiceClient client,
-        PermissionMappingStore store,
-        IOptions<PermissionOptions> options,
-        ILogger<PermissionMappingInitializer> logger)
-    {
-        _routeMap = routeMap ?? throw new ArgumentNullException(nameof(routeMap));
-        _client = client ?? throw new ArgumentNullException(nameof(client));
-        _store = store ?? throw new ArgumentNullException(nameof(store));
-        _options = options ?? throw new ArgumentNullException(nameof(options));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    }
+    private readonly PermissionRouteMap _routeMap = routeMap ?? throw new ArgumentNullException(nameof(routeMap));
+    private readonly IPermissionServiceClient _client = client ?? throw new ArgumentNullException(nameof(client));
+    private readonly PermissionMappingStore _store = store ?? throw new ArgumentNullException(nameof(store));
+    private readonly IOptions<PermissionOptions> _options = options ?? throw new ArgumentNullException(nameof(options));
+    private readonly ILogger<PermissionMappingInitializer> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {

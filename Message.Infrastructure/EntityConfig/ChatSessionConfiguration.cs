@@ -16,9 +16,6 @@ public class ChatSessionConfiguration : IEntityTypeConfiguration<ChatSession>
             .IsRequired()
             .HasConversion<string>();
 
-        builder.Property(s => s.SessionName)
-            .HasMaxLength(200);
-
         builder.Property(s => s.CreatorId)
             .IsRequired();
 
@@ -26,12 +23,6 @@ public class ChatSessionConfiguration : IEntityTypeConfiguration<ChatSession>
             .IsRequired();
 
         builder.Property(s => s.IsDismissed)
-            .IsRequired();
-
-        builder.Property(s => s.IsPinned)
-            .IsRequired();
-
-        builder.Property(s => s.IsMuted)
             .IsRequired();
 
         builder.Property(s => s.LastMessageContent)
@@ -45,12 +36,14 @@ public class ChatSessionConfiguration : IEntityTypeConfiguration<ChatSession>
         builder.Property(s => s.Participants)
             .HasColumnName("Participants")
             .HasColumnType("uuid[]");
-        builder.Ignore(s => s.UnreadCount);
-        builder.Ignore(s => s.LastReadTime);
+        builder.Ignore(s => s.MemberStates);
 
         builder.HasIndex(s => s.CreatorId);
         builder.HasIndex(s => s.GroupId)
             .IsUnique()
             .HasFilter("\"GroupId\" IS NOT NULL");
+        builder.HasIndex(s => s.CircleId)
+            .IsUnique()
+            .HasFilter("\"CircleId\" IS NOT NULL");
     }
 }

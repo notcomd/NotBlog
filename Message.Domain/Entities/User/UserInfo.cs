@@ -69,9 +69,22 @@ public class UserInfo : Entity<Guid>, IAggregateRoot
 
     public Uri? AvatarUrl { get; private set; }
 
+    /// <summary>个人签名（可空；空白视为未设置）</summary>
+    public string? Bio { get; private set; }
+
     public DateTimeOffset CreateTime { get; init; }
 
     public DateTimeOffset UpdateTime { get; private set; }
+
+    /// <summary>更新个人签名（空白清除；不得超过 200 字符）</summary>
+    public void UpdateBio(string? bio)
+    {
+        if (bio?.Length > 200)
+            throw new ArgumentException("个人签名不能超过200个字符", nameof(bio));
+
+        Bio = string.IsNullOrWhiteSpace(bio) ? null : bio.Trim();
+        UpdateTime = DateTimeOffset.UtcNow;
+    }
 
     /// <summary>更新背景封面（空白视为清除）</summary>
     public void UpdateBackgroundCover(Uri? url)

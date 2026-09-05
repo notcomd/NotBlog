@@ -10,5 +10,11 @@ public class ChunkMergeRequest
 
     /// <summary>文件描述</summary>
     public string? Description { get; init; }
+
+    /// <summary>所属业务内容ID（发帖/文档/视频ID），非空时透传给 FileDev 建立内容附件弱引用</summary>
+    public Guid? ContentId { get; init; }
+
+    /// <summary>内容附件引用类型，需与 <see cref="ContentId"/> 同传</summary>
+    public Grpc.ContentReferenceType? ContentType { get; init; }
 }
 

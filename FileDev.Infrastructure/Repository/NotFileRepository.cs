@@ -1,4 +1,5 @@
 using FileDev.Domain.Entities;
+using FileDev.Domain.Enum;
 using FileDev.Domain.Exception;
 using FileDev.Domain.IRepository;
 using FileDev.Infrastructure.EntityFramework;
@@ -35,9 +36,10 @@ public class NotFileRepository(NotFileDbContext notFileDbContext) : INotFileRepo
         if (Guid.Empty == userId)
             throw new NotFileException("userId is null");
         // 在 DB 层过滤 IsDeleted，避免加载已删除文件到内存后再过滤（原实现在 Service 层内存过滤，低效）
+        // 方案 C：仓库列表仅返回用户文件仓库（Source=UserRepository），内容附件由业务侧维护
         return await _notFileDbContext.NotFiles
             .AsNoTracking()
-            .Where(x => x.UserId.Equals(userId) && !x.IsDeleted)
+            .Where(x => x.UserId.Equals(userId) && !x.IsDeleted && x.Source == FileSource.UserRepository)
             .ToListAsync();
     }
 
@@ -120,5 +122,20 @@ public class NotFileRepository(NotFileDbContext notFileDbContext) : INotFileRepo
     {
         return await _notFileDbContext.NotFiles
             .CountAsync(f => f.FileUri == fileUri && !f.IsDeleted && f.FileId != excludeFileId);
+    }
+
+    /// <summary>按文件 ID 批量查询未删除文件，用于标签下文件列表。</summary>
+    public async Task<IEnumerable<NotFile>> GetFilesByIdsAsync(IEnumerable<Guid> fileIds)
+    {
+        if (fileIds is null)
+            throw new NotFileException("fileIds is null");
+        var idSet = fileIds as HashSet<Guid> ?? [.. fileIds];
+        if (idSet.Count == 0)
+            return [];
+
+        return await _notFileDbContext.NotFiles
+            .AsNoTracking()
+            .Where(x => idSet.Contains(x.FileId) && !x.IsDeleted)
+            .ToListAsync();
     }
 }

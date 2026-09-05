@@ -31,8 +31,8 @@ public class MessageFriendsConfiguration : IEntityTypeConfiguration<MessageFrien
         builder.Property(f => f.CreatedTime)
             .IsRequired();
 
-        builder.Property(f => f.IsBlocked)
-            .IsRequired();
+        // IsBlocked 已收敛为由 Status 派生的只读视图，EF 不再映射该列（保留既有表结构，避免破坏性迁移）
+        builder.Ignore(f => f.IsBlocked);
 
         builder.Property(f => f.IsMuted)
             .IsRequired();

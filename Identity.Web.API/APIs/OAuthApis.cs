@@ -1,6 +1,4 @@
-using System.Security.Claims;
 using Identity.Domain.Dto.OAuth;
-using Identity.Web.API.Application.IntegrationEvents.Events;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -99,13 +97,14 @@ public static class OAuthApis
                 request.RedirectUri,
                 request.State
             );
-
-            // S-19：新用户注册事件写入 Outbox（后台 Publisher 投递，避免进程崩溃丢失）
+            
             if (response.IsNewUser)
             {
                 await outboxStore.StoreAsync(new OutboxMessage(
                     nameof(RegisterByUserIntegrationEvent),
-                    new RegisterByUserIntegrationEvent(response.UserInfo.UserId)), ct);
+                    new RegisterByUserIntegrationEvent(response.UserInfo.UserId,
+                        response.UserInfo.Email, response.UserInfo.UserName,
+                        response.UserInfo.AvatarUrl)), ct);
                 await dbContext.SaveChangesAsync(ct);
                 logger.LogInformation(
                     "OAuth 新用户注册，已写入 Outbox：Provider={Provider}, UserId={UserId}",
@@ -116,7 +115,6 @@ public static class OAuthApis
         }
         catch (InvalidOperationException ex)
         {
-            // S-11：state 校验失败 / PKCE code_verifier 缺失等业务拒绝
             return Results.BadRequest(new { error = ex.Message });
         }
         catch (HttpRequestException ex)
@@ -173,7 +171,7 @@ public static class OAuthApis
         if (userId is null)
             return Results.Unauthorized();
 
-        // F-07：返回当前用户真实的绑定列表
+        
         var linked = await oauthService.GetLinkedAccountsAsync(userId.Value);
         var result = linked.Select(x => new
         {
@@ -198,7 +196,6 @@ public static class OAuthApis
 
         try
         {
-            // F-07：真实解绑链路——校验归属后删除 UserExternalLogin 绑定记录
             await oauthService.UnlinkExternalLoginFromUserAsync(userId.Value, provider, providerUserId);
             return Results.Ok(new { message = "External account unlinked successfully" });
         }

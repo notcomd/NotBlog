@@ -3,7 +3,7 @@ using Markdown.Domain.Entities;
 namespace Markdown.Tests;
 
 /// <summary>
-///     MarkQuote 评论互动计数值对象测试：增减、下限钳制、总互动、非法参数
+///     MarkQuote 文档交互计数值对象测试：增减、下限钳制、热度、总互动、非法参数
 /// </summary>
 [TestFixture]
 public class MarkQuoteTests
@@ -13,10 +13,11 @@ public class MarkQuoteTests
     {
         var q = new MarkQuote();
         Assert.That(q.LoveSome, Is.Zero);
-        Assert.That(q.ReviewSome, Is.Zero);
-        Assert.That(q.CommentSome, Is.Zero);
+        Assert.That(q.FavoriteSome, Is.Zero);
         Assert.That(q.ShareSome, Is.Zero);
+        Assert.That(q.CoinSome, Is.Zero);
         Assert.That(q.ViewSome, Is.Zero);
+        Assert.That(q.HeatScore, Is.Zero);
     }
 
     [Test]
@@ -25,9 +26,9 @@ public class MarkQuoteTests
         var q = new MarkQuote();
         Assert.That(q.AddLove(), Is.EqualTo(1));
         Assert.That(q.AddLove(3), Is.EqualTo(4));
-        Assert.That(q.AddReview(2), Is.EqualTo(2));
-        Assert.That(q.AddComment(), Is.EqualTo(1));
+        Assert.That(q.AddFavorite(), Is.EqualTo(1));
         Assert.That(q.AddShare(), Is.EqualTo(1));
+        Assert.That(q.AddCoin(), Is.EqualTo(1));
         Assert.That(q.AddView(5), Is.EqualTo(5));
     }
 
@@ -38,13 +39,34 @@ public class MarkQuoteTests
         Assert.That(q.RemoveLove(), Is.EqualTo(1));
         Assert.That(q.RemoveLove(), Is.EqualTo(0));
         Assert.That(q.RemoveLove(), Is.EqualTo(0), "下限钳制为 0，不出现负数");
+
+        var q2 = new MarkQuote(favoriteSome: 1);
+        Assert.That(q2.RemoveFavorite(), Is.EqualTo(0));
     }
 
     [Test]
-    public void 总互动数为点赞加回复加评论加分享()
+    public void 总互动数为点赞加收藏加分享加硬币()
     {
-        var q = new MarkQuote(loveSome: 1, reviewSome: 2, commentSome: 3, shareSome: 4, viewSome: 100);
+        var q = new MarkQuote(loveSome: 1, favoriteSome: 2, shareSome: 3, coinSome: 4, viewSome: 100);
         Assert.That(q.GetTotalInteractions(), Is.EqualTo(10), "浏览数不计入互动总数");
+    }
+
+    [Test]
+    public void RemoveCoin递减且下限钳制为零()
+    {
+        var q = new MarkQuote(coinSome: 3);
+        Assert.That(q.RemoveCoin(2), Is.EqualTo(1));
+        Assert.That(q.RemoveCoin(5), Is.EqualTo(0), "下限钳制为 0，不出现负数");
+        Assert.Throws<ArgumentOutOfRangeException>(() => q.RemoveCoin(-1));
+    }
+
+    [Test]
+    public void 热度分可设置与读取()
+    {
+        var q = new MarkQuote();
+        q.SetHeatScore(88.5);
+        Assert.That(q.HeatScore, Is.EqualTo(88.5));
+        Assert.Throws<ArgumentOutOfRangeException>(() => q.SetHeatScore(-1));
     }
 
     [Test]
@@ -54,6 +76,8 @@ public class MarkQuoteTests
         Assert.Throws<ArgumentOutOfRangeException>(() => q.AddLove(-1));
         Assert.Throws<ArgumentOutOfRangeException>(() => q.RemoveLove(-1));
         Assert.Throws<ArgumentOutOfRangeException>(() => q.AddView(-5));
+        Assert.Throws<ArgumentOutOfRangeException>(() => q.AddCoin(-1));
+        Assert.Throws<ArgumentOutOfRangeException>(() => q.RemoveFavorite(-1));
     }
 
     [Test]
@@ -61,6 +85,7 @@ public class MarkQuoteTests
     {
         Assert.Throws<ArgumentOutOfRangeException>(() => new MarkQuote(loveSome: -1));
         Assert.Throws<ArgumentOutOfRangeException>(() => new MarkQuote(viewSome: -1));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new MarkQuote(coinSome: -1));
     }
 
     [Test]

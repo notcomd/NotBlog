@@ -5,7 +5,7 @@ namespace Message.Domain.ValueObjects.Message;
 /// 位置消息内容值对象。
 /// 不可变，封装经纬度与位置名称，经纬度范围在构造时校验。
 /// </summary>
-public class LocationContent : ValueObject
+public class LocationContent : MessageContent
 {
     private LocationContent(double latitude, double longitude, string locationName)
     {
@@ -27,6 +27,8 @@ public class LocationContent : ValueObject
     public double Longitude { get; }
     public string LocationName { get; }
 
+    public override MessageType MessageType => MessageType.MessageLocation;
+
     public static LocationContent Create(double latitude, double longitude, string locationName)
         => new(latitude, longitude, locationName);
 
@@ -36,4 +38,6 @@ public class LocationContent : ValueObject
         yield return Longitude;
         yield return LocationName;
     }
+
+    public override string ToSessionSummary() => $"[位置] {LocationName}";
 }

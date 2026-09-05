@@ -14,5 +14,11 @@ public class UserSafetyEntityTypeConfiguration : IEntityTypeConfiguration<UserSa
         builder.HasKey(x => x.UserSafetyGuid);
         builder.Property(x => x.UserGuid).HasColumnName("user_guid")
             .IsRequired();
+
+        // 二次验证默认开启：历史数据迁移时默认同步为 true
+        builder.Property(x => x.IsTwoFactorEnabled)
+            .HasColumnName("is_two_factor_enabled")
+            .IsRequired()
+            .HasDefaultValue(true);
     }
 }

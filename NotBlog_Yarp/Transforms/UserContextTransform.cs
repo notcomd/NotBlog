@@ -6,15 +6,8 @@ namespace NotBlog_Yarp.Transforms;
 /// <summary>
 /// 注册 UserContextTransform 到所有路由
 /// </summary>
-public class UserContextTransformProvider : ITransformProvider
+public class UserContextTransformProvider(ILogger<UserContextTransformProvider> logger) : ITransformProvider
 {
-    private readonly ILogger<UserContextTransformProvider> _logger;
-
-    public UserContextTransformProvider(ILogger<UserContextTransformProvider> logger)
-    {
-        _logger = logger;
-    }
-
     public void ValidateRoute(TransformRouteValidationContext context) { }
 
     public void ValidateCluster(TransformClusterValidationContext context) { }
@@ -69,21 +62,21 @@ public class UserContextTransformProvider : ITransformProvider
                         context.ProxyRequest.Headers.Add("X-Data-Scope", scopeValue);
                 }
 
-                _logger.LogDebug(
+                logger.LogDebug(
                     "[Transform] OK   | Path={Path} | X-User-Id={UserId} | X-User-Roles={Roles}",
                     path, userId, string.Join(",", roles));
             }
             else
             {
                 var claimTypes = string.Join(", ", user.Claims.Select(c => c.Type).Distinct());
-                _logger.LogWarning(
+                logger.LogWarning(
                     "[Transform] NULL | Path={Path} | Auth=OK 但 UserId 为空 | ClaimTypes=[{ClaimTypes}]",
                     path, claimTypes);
             }
         }
         else
         {
-            _logger.LogDebug("[Transform] SKIP | Path={Path} | Auth=未认证", path);
+            logger.LogDebug("[Transform] SKIP | Path={Path} | Auth=未认证", path);
         }
 
         return ValueTask.CompletedTask;

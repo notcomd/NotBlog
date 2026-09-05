@@ -132,4 +132,36 @@ public class CircleRepository(MessageDbContext context) : ICircleRepository
     {
         return await DbSet.AnyAsync(c => c.CircleGuid == circleGuid && c.Status == CircleStatus.Active);
     }
+
+    /// <summary>管理端全量圈子分页（含已解散，keyword 模糊匹配名称，按创建时间倒序）</summary>
+    public async Task<IEnumerable<Circle>> GetPagedAsync(string? keyword, int page = 1, int pageSize = 20)
+    {
+        if (pageSize < 1) pageSize = 10;
+        if (pageSize > 100) pageSize = 100;
+
+        var query = DbSet.AsNoTracking();
+        if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            var pattern = $"%{EscapeLike(keyword.Trim())}%";
+            query = query.Where(c => EF.Functions.Like(c.Name, pattern));
+        }
+
+        return await query
+            .OrderByDescending(c => c.CreateTime)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+    }
+
+    /// <summary>管理端全量圈子总数（含已解散，与 GetPagedAsync 同条件）</summary>
+    public async Task<int> GetTotalCountAsync(string? keyword)
+    {
+        var query = DbSet.AsNoTracking();
+        if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            var pattern = $"%{EscapeLike(keyword.Trim())}%";
+            query = query.Where(c => EF.Functions.Like(c.Name, pattern));
+        }
+        return await query.CountAsync();
+    }
 }

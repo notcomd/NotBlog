@@ -16,10 +16,13 @@ public interface IFileStorageGrpcClient
     /// <param name="content">文件内容</param>
     /// <param name="description">文件描述</param>
     /// <param name="expectedMd5">预期 MD5（可选，用于一致性校验）</param>
+    /// <param name="contentId">所属业务内容ID（发帖/文档/视频ID），非空时透传给 FileDev 建立内容附件弱引用</param>
+    /// <param name="contentType">内容附件引用类型，需与 <paramref name="contentId"/> 同传</param>
     /// <param name="ct">取消令牌</param>
     Task<UploadFileResult> UploadFileAsync(
         Guid userId, string fileName, byte[] content,
         string? description = null, string? expectedMd5 = null,
+        Guid? contentId = null, ContentReferenceType? contentType = null,
         CancellationToken ct = default);
 
     /// <summary>
@@ -28,6 +31,7 @@ public interface IFileStorageGrpcClient
     Task<UploadImageResult> UploadImageAsync(
         Guid userId, string fileName, byte[] content,
         string? description = null, bool validateFormat = true,
+        Guid? contentId = null, ContentReferenceType? contentType = null,
         CancellationToken ct = default);
 
     /// <summary>
@@ -56,6 +60,7 @@ public interface IFileStorageGrpcClient
     /// </summary>
     Task<MergeChunksResult> MergeChunksAsync(
         string fileKey, Guid userId, string? fileName = null, string? description = null,
+        Guid? contentId = null, ContentReferenceType? contentType = null,
         CancellationToken ct = default);
 
     /// <summary>

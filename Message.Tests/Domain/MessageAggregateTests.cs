@@ -1,7 +1,10 @@
 using Message.Domain.Entities.Chat;
 using Message.Domain.Enums;
 using Message.Domain.Events;
+using Message.Domain.IServices;
+using Message.Domain.ValueObjects.Message;
 using Commons.SeedWork;
+using Message.Infrastructure.Services;
 using DomainMessage = Message.Domain.Entities.Chat.Message;
 
 namespace Message.Tests.Domain;
@@ -15,6 +18,7 @@ public class MessageAggregateTests
 {
     private static readonly Guid SessionId = Guid.NewGuid();
     private static readonly Guid SenderId = Guid.NewGuid();
+    private static readonly IMessageRecallPolicy RecallPolicy = new DefaultMessageRecallPolicy();
 
     [Test]
     public void CreateTextMessage_应初始化待发送状态并触发领域事件()
@@ -23,7 +27,7 @@ public class MessageAggregateTests
 
         Assert.That(message.MessageType, Is.EqualTo(MessageType.MessageText));
         Assert.That(message.Status, Is.EqualTo(MessageStatus.Pending));
-        Assert.That(message.Content, Is.EqualTo("你好"));
+        Assert.That(((TextContent)message.Content).Value, Is.EqualTo("你好"));
         Assert.That(message.IsRecalled, Is.False);
         Assert.That(message.DomainEvents,
             Has.One.TypeOf<MessageSentEvent>(), "创建消息必须产生 MessageSentEvent 领域事件");
@@ -36,9 +40,10 @@ public class MessageAggregateTests
         var message = DomainMessage.CreateImageMessage(SessionId, SenderId, uri, "配图", "https://example.com/t.png");
 
         Assert.That(message.MessageType, Is.EqualTo(MessageType.MessageImage));
-        Assert.That(message.MediaUri, Is.EqualTo(uri));
-        Assert.That(message.Caption, Is.EqualTo("配图"));
-        Assert.That(message.ThumbnailUri, Is.EqualTo("https://example.com/t.png"));
+        var content = (ImageContent)message.Content;
+        Assert.That(content.MediaUri, Is.EqualTo(uri));
+        Assert.That(content.Caption, Is.EqualTo("配图"));
+        Assert.That(content.ThumbnailUri, Is.EqualTo("https://example.com/t.png"));
     }
 
     [Test]
@@ -54,9 +59,10 @@ public class MessageAggregateTests
         var message = DomainMessage.CreateLinkMessage(SessionId, SenderId, "https://example.com/a", "标题", "描述");
 
         Assert.That(message.MessageType, Is.EqualTo(MessageType.MessageLink));
-        Assert.That(message.LinkUrl, Is.EqualTo("https://example.com/a"));
-        Assert.That(message.LinkTitle, Is.EqualTo("标题"));
-        Assert.That(message.LinkDescription, Is.EqualTo("描述"));
+        var content = (LinkContent)message.Content;
+        Assert.That(content.Url.ToString(), Is.EqualTo("https://example.com/a"));
+        Assert.That(content.Title, Is.EqualTo("标题"));
+        Assert.That(content.Description, Is.EqualTo("描述"));
     }
 
     [Test]
@@ -93,7 +99,7 @@ public class MessageAggregateTests
     {
         var message = DomainMessage.CreateTextMessage(SessionId, SenderId, "你好");
 
-        message.Recall(SenderId, RecallReason.UserRequest, "你好");
+        message.Recall(SenderId, RecallReason.UserRequest, "你好", RecallPolicy);
 
         Assert.That(message.IsRecalled, Is.True);
         Assert.That(message.Status, Is.EqualTo(MessageStatus.Recalled));
@@ -109,7 +115,7 @@ public class MessageAggregateTests
             .GetProperty(nameof(DomainMessage.SentTime))!
             .SetValue(message, DateTime.UtcNow.AddMinutes(-10));
 
-        Assert.That(() => message.Recall(SenderId, RecallReason.UserRequest, "你好"),
+        Assert.That(() => message.Recall(SenderId, RecallReason.UserRequest, "你好", RecallPolicy),
             Throws.InvalidOperationException.With.Message.Contains("超过撤回时限"));
     }
 
@@ -117,9 +123,9 @@ public class MessageAggregateTests
     public void Recall_重复撤回应抛出异常()
     {
         var message = DomainMessage.CreateTextMessage(SessionId, SenderId, "你好");
-        message.Recall(SenderId, RecallReason.UserRequest, "你好");
+        message.Recall(SenderId, RecallReason.UserRequest, "你好", RecallPolicy);
 
-        Assert.That(() => message.Recall(SenderId, RecallReason.UserRequest, "你好"),
+        Assert.That(() => message.Recall(SenderId, RecallReason.UserRequest, "你好", RecallPolicy),
             Throws.InvalidOperationException.With.Message.Contains("已撤回"));
     }
 

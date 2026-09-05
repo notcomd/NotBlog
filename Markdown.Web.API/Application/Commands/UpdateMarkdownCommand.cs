@@ -9,5 +9,6 @@ public record UpdateMarkdownCommand(
     string MarkDownName,
     string MarkDownContent,
     string? MarkDownHash = null,
-    IEnumerable<string>? Tags = null
+    IEnumerable<string>? Tags = null,
+    string? CoverUrl = null
 ) : IRequest<bool>, ICommandRequest;

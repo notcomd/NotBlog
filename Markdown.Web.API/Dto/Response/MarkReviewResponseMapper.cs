@@ -1,7 +1,7 @@
 namespace Markdown.Web.API.Dto.Response;
 
 /// <summary>
-///     MarkReview / MarkQuote 实体 → 响应 DTO 映射
+///     MarkReview / ReviewQuote 实体 → 响应 DTO 映射
 /// </summary>
 public static class MarkReviewResponseMapper
 {
@@ -12,19 +12,21 @@ public static class MarkReviewResponseMapper
         UserId = review.UserId,
         Content = review.MarkReviewContent ?? string.Empty,
         Auth = review.MarkReviewAuth.ToString(),
+        ReviewImages = review.ReviewImages is { Count: > 0 }
+            ? [.. review.ReviewImages.Select(i => i.ImageUrl.ToString())]
+            : null,
         ReviewTime = review.MarkReviewTime,
         IsDeleted = review.IsDelete,
         ChildReviewCount = review.MarkReviews?.Count ?? 0,
-        Quote = review.MarkQuote is not null ? MapToMarkQuoteResponse(review.MarkQuote) : null
+        Quote = review.ReviewQuote is not null ? MapToReviewQuoteResponse(review.ReviewQuote) : null
     };
 
-    public static MarkQuoteResponse MapToMarkQuoteResponse(MarkQuote quote) => new()
+    public static ReviewQuoteResponse MapToReviewQuoteResponse(ReviewQuote quote) => new()
     {
         LoveCount = quote.LoveSome,
-        ReplyCount = quote.ReviewSome,
-        CommentCount = quote.CommentSome,
-        ShareCount = quote.ShareSome,
         ViewCount = quote.ViewSome,
+        ReplyCount = quote.ReplySome,
+        DislikeCount = quote.DislikeSome,
         TotalInteractions = quote.GetTotalInteractions()
     };
 }

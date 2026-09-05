@@ -31,8 +31,8 @@ public sealed class CallSessionStore
     /// <summary>通话状态兜底 TTL（防止 Redis 残留泄漏；正常结束会主动清理）</summary>
     private static readonly TimeSpan CallTtl = TimeSpan.FromHours(6);
 
-    /// <summary>响铃超时：超时无人应答由服务端惰性终结</summary>
-    private static readonly TimeSpan RingingTimeout = TimeSpan.FromSeconds(30);
+    /// <summary>响铃超时：超时无人应答由服务端惰性终结（非 readonly：测试经反射覆盖超时窗口）</summary>
+    private static TimeSpan RingingTimeout = TimeSpan.FromSeconds(30);
 
     private readonly  MessageCacheService _cache;
     private readonly IHubContext<CallHub, ICallClient> _hub;

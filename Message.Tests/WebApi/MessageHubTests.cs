@@ -13,10 +13,10 @@ using Message.Web.API.Hubs;
 using Message.Web.API.Services;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
+using CacheMemory.Core;
 using Moq;
 using NotMediator.Abstractions;
 using Message.Tests.TestHelpers;
-using StackExchange.Redis;
 using System.Security.Claims;
 using DomainMessage = Message.Domain.Entities.Chat.Message;
 
@@ -54,7 +54,7 @@ public class MessageHubTests
         _harness.ConnectionCommandService.Verify(m => m.AddConnectionAsync(UserId, "conn-test"), Times.Once);
         // Q-05：在线状态经 UserStatusCacheService 写入 Redis（message:online:users 集合）
         _harness.UserStatusDb.Verify(d => d.SetAddAsync("message:online:users", UserId.ToString(),
-            It.IsAny<CommandFlags>()), Times.Once);
+            It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Test]
@@ -92,7 +92,7 @@ public class MessageHubTests
         _harness.ConnectionCommandService.Verify(m => m.RemoveConnectionAsync(UserId, "conn-test"), Times.Once);
         // Q-05：离线状态经 UserStatusCacheService 写入 Redis（从 message:online:users 集合移除）
         _harness.UserStatusDb.Verify(d => d.SetRemoveAsync("message:online:users", UserId.ToString(),
-            It.IsAny<CommandFlags>()), Times.Once);
+            It.IsAny<CancellationToken>()), Times.Once);
     }
 
     // ─────────────────────────── 会话消息 ───────────────────────────
@@ -376,7 +376,7 @@ public class MessageHubTests
         public Mock<IMessageClient> DeliveryProxy { get; }
         public Mock<IMessageClient> GroupProxy { get; }
         public Mock<IMessageClient> CallerProxy { get; }
-        public Mock<IDatabase> UserStatusDb { get; }
+        public Mock<IRedisCacheService> UserStatusDb { get; }
         public Mock<IMessageFriendsRepository> FriendsRepository { get; }
         public Mock<HubCallerContext> Context { get; }
         public Dictionary<object, object?> Items { get; } = new();
@@ -387,7 +387,7 @@ public class MessageHubTests
             DeliveryProxy = CreateProxy();
             GroupProxy = CreateProxy();
             CallerProxy = CreateProxy();
-            UserStatusDb = new Mock<IDatabase>();
+            UserStatusDb = new Mock<IRedisCacheService>();
             Mediator = new Mock<INotMediator>();
             FriendsRepository = new Mock<IMessageFriendsRepository>();
             // R-09：默认无好友（在线状态推送静默完成）
@@ -473,7 +473,8 @@ public class MessageHubTests
                 CacheServicesTestFactory.CreateSessionCache(),
                 CacheServicesTestFactory.CreateRedisCache(),
                 Mediator.Object,
-                FriendsRepository.Object)
+                FriendsRepository.Object,
+                new DefaultMessageRecallPolicy())
             {
                 Context = Context.Object,
                 Clients = clients.Object,

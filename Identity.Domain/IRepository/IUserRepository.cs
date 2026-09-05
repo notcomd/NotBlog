@@ -66,4 +66,16 @@ public interface IUserRepository : IRepository<User, IUnitOfWork>
     /// <param name="user"></param>
     /// <returns></returns>
     Task DeleteByUserAsync(User user);
+
+    /// <summary>
+    /// 管理员分页查询用户（keyword 模糊匹配邮箱/用户名/手机号；返回安全投影，不含任何敏感字段）
+    /// </summary>
+    /// <param name="keyword">搜索关键字（可为空）</param>
+    /// <param name="page">页码（从 1 开始）</param>
+    /// <param name="pageSize">每页条数</param>
+    /// <returns>分页用户列表</returns>
+    Task<(ICollection<AdminUserBrief> Items, int Total)> GetPagedUsersAsync(string? keyword, int page, int pageSize);
+
+    /// <summary>检查邮箱是否已被注册（管理员创建用户前的唯一性校验）</summary>
+    Task<bool> ExistsByEmailAsync(string email);
 }

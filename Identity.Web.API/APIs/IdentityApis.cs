@@ -1,17 +1,19 @@
 using System.Security.Claims;
 using CacheMemory.Core;
 using Identity.Web.API.Application.Commands;
+using Identity.Web.API.Application.IntegrationEvents.Events;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Notcomd.EventBus.Outbox;
 using Notcomd.Token.JWT.Core;
 
 namespace Identity.Web.API.APIs;
 
 public static class IdentityApis
 {
-    /// <summary>S-13：登录 IP 级限流阈值（10 次/分钟）</summary>
+    
     private const int LoginRateLimitPerMinute = 10;
     private const string LoginRateLimitKeyPrefix = "login:rate:";
 
@@ -19,14 +21,23 @@ public static class IdentityApis
     {
         var route = routeBuilder.MapGroup("/identity").WithHttpLogging(HttpLoggingFields.All);
 
-        route.MapPost("/Register", Register).WithHttpLogging(HttpLoggingFields.All);
-
+        // 统一登录/注册：邮箱 + 验证码（未注册邮箱自动注册并下发初始密码）
         route.MapPost("/Login", Login).WithHttpLogging(HttpLoggingFields.All);
 
         route.MapPost("/GenerateCode", GenerateCode).WithHttpLogging(HttpLoggingFields.All);
 
         // S-20：改密端点要求已认证；未认证请求由认证中间件返回 401
         route.MapPost("/ChangeByPassword", ChangeByPassword)
+            .RequireAuthorization()
+            .WithHttpLogging(HttpLoggingFields.All);
+
+        // 更新当前登录用户的安全信息（如二次验证开关）：要求已认证
+        route.MapPost("/UserSafety", UpdateUserSafety)
+            .RequireAuthorization()
+            .WithHttpLogging(HttpLoggingFields.All);
+
+        // 读取当前登录用户的二次验证开关状态：要求已认证
+        route.MapGet("/UserSafety", GetUserSafety)
             .RequireAuthorization()
             .WithHttpLogging(HttpLoggingFields.All);
 
@@ -52,46 +63,17 @@ public static class IdentityApis
     }
 
     /// <summary>
-    /// 注册
+    /// 统一登录/注册接口：POST /identity/Login { email, password?, code? }。
+    /// 携带密码 → 密码登入（开启二次验证的用户需同时携带 code）；
+    /// 仅携带验证码 → 验证码登入，未注册邮箱自动注册（CQRS：LogInCommand + RegisterByEmailCommand）。
+    /// 新注册用户在签发 Token 后发布 RegisterByUserIntegrationEvent（Outbox），通知下游服务初始化关联数据。
     /// </summary>
-    /// <param name="registerRequest">注册请求</param>
-    /// <returns>注册结果</returns>
-    private static async Task<IResult> Register([FromServices] IdentityService identityService,
-        [FromBody] RegisterRequest registerRequest,
-        HttpContext httpContext)
-    {
-        var userdata = await identityService.UserRepository.FindOneByUserAsync(registerRequest.UserEmail);
-
-        if (userdata is not null)
-        {
-            return Results.BadRequest("用户已存在");
-        }
-
-        var command = new RegisterByUserCommand(registerRequest.UserPassword, registerRequest.VerificationCode,
-            registerRequest.UserEmail);
-
-        var registerIdentity = new IdentifiedCommand<RegisterByUserCommand, bool>(
-            GetIdempotencyKey(httpContext), command);
-
-        var result = await identityService.NotMediator.SendAsync(registerIdentity);
-        if (result)
-        {
-            return Results.Ok(new { message = "注册成功" });
-        }
-        else
-        {
-            return Results.BadRequest("注册失败");
-        }
-    }
-
-
     private static async Task<IResult> Login([FromServices] IdentityService identityService,
         [FromServices] IRedisCacheService redisCacheService,
+        [FromServices] IOutboxStore outboxStore,
         [FromBody] LoginRequest loginRequest,
         HttpContext httpContext)
     {
-        // S-13：登录 IP 级限流（10 次/分钟；Redis 原子计数，窗口内首请求设置 TTL，超限返回 429）
-        // P9：取 X-Forwarded-For 客户端 IP（网关后限流不再全员同源）
         var ip = httpContext.GetClientIp();
         var window = DateTimeOffset.UtcNow.ToString("yyyyMMddHHmm");
         var rateKey = $"{LoginRateLimitKeyPrefix}{ip}:{window}";
@@ -103,9 +85,35 @@ public static class IdentityApis
             return Results.Json(new { error = "登录尝试过于频繁，请稍后再试" },
                 statusCode: StatusCodes.Status429TooManyRequests);
 
-        var data = await identityService.UserService
-            .LogInByCheckPasswordAsync(loginRequest.Email, loginRequest.Password, loginRequest.Code);
-        return Results.Ok(data);
+        // 密码登入与验证码登入至少二选一
+        if (string.IsNullOrWhiteSpace(loginRequest.Password) && string.IsNullOrWhiteSpace(loginRequest.Code))
+            return Results.BadRequest(new { error = "请提供密码或邮箱验证码" });
+
+        var command = new LogInCommand(loginRequest.Email, loginRequest.Password, loginRequest.Code);
+
+        var data = await identityService.NotMediator.SendAsync(command);
+
+        if (data is null || data.Token is null)
+            return Results.Json(new { error = "邮箱、密码或验证码错误" },
+                statusCode: StatusCodes.Status401Unauthorized);
+
+        // 新注册用户：发布注册集成事件，通知 FileDev / Message 等下游服务初始化关联数据（含邮箱/昵称/头像）
+        if (data.IsNewUser)
+        {
+            await outboxStore.StoreAsync(new OutboxMessage(
+                nameof(RegisterByUserIntegrationEvent),
+                new RegisterByUserIntegrationEvent(data.UserId, data.UserEmail ?? string.Empty,
+                    data.UserName, data.AvatarUrl)), default);
+        }
+
+        return Results.Ok(new
+        {
+            data.Token!.AccessToken,
+            data.Token.RefreshToken,
+            data.Token.TokenType,
+            ExpiresAt = data.Token.ExpiresAt,
+            IsNewUser = data.IsNewUser
+        });
     }
 
     /// <summary>
@@ -234,5 +242,58 @@ public static class IdentityApis
         {
             return Results.BadRequest("修改密码失败");
         }
+    }
+
+
+    /// <summary>
+    /// 更新当前登录用户的安全信息（如二次验证开关）。
+    /// 要求已认证（RequireAuthorization，未认证返回 401）；身份仅取自认证后的 NameIdentifier Claim。
+    /// 关闭二次验证（置 false）为降级操作，必须携带密码或邮箱验证码二次确认。
+    /// </summary>
+    private static async Task<IResult> UpdateUserSafety([FromServices] IdentityService identityService,
+        [FromBody] UpdateUserSafetyRequest request,
+        HttpContext httpContext)
+    {
+        var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim is null || !Guid.TryParse(userIdClaim.Value, out var userId))
+            return Results.Unauthorized();
+
+        if (request.IsTwoFactorEnabled is null)
+            return Results.BadRequest(new { error = "没有需要更新的安全信息" });
+
+        var disabling = !request.IsTwoFactorEnabled.Value;
+        if (disabling && string.IsNullOrWhiteSpace(request.Password) && string.IsNullOrWhiteSpace(request.Code))
+            return Results.BadRequest(new { error = "关闭二次验证需提供密码或邮箱验证码进行二次确认" });
+
+        var ok = await identityService.UserService.UpdateUserSafetyAsync(
+            userId, request.IsTwoFactorEnabled, request.Password, request.Code);
+        if (!ok)
+            return Results.BadRequest(new
+            {
+                error = disabling ? "二次确认失败，密码或验证码不正确" : "用户不存在或更新失败"
+            });
+
+        return Results.Ok(new
+        {
+            message = disabling ? "二次验证已关闭" : "二次验证已开启",
+            IsTwoFactorEnabled = request.IsTwoFactorEnabled
+        });
+    }
+
+    /// <summary>
+    /// 读取当前登录用户的二次验证开关状态。要求已认证。
+    /// </summary>
+    private static async Task<IResult> GetUserSafety([FromServices] IdentityService identityService,
+        HttpContext httpContext)
+    {
+        var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim is null || !Guid.TryParse(userIdClaim.Value, out var userId))
+            return Results.Unauthorized();
+
+        var isTwoFactorEnabled = await identityService.UserService.GetUserSafetyAsync(userId);
+        if (isTwoFactorEnabled is null)
+            return Results.BadRequest(new { error = "用户不存在" });
+
+        return Results.Ok(new { IsTwoFactorEnabled = isTwoFactorEnabled });
     }
 }

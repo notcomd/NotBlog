@@ -1,18 +1,26 @@
 namespace FileDev.Domain.Entities;
 
 /// <summary>
-/// 分片上传任务记录实体，用于跟踪大文件分片上传的完整生命周期并支持断点续传。
+/// 分片上传任务记录文档，用于跟踪大文件分片上传的完整生命周期并支持断点续传。
+/// <para>
+/// 方案 B 后本类为 MongoDB 文档（非 EF 实体）：作为 <c>MongoFileChunkRepository</c> 的文档类型，
+/// 采用 <c>$addToSet</c> 原子加分片索引（天然去重、跨实例安全），无领域事件、无工作单元语义。
+/// 状态转移（Uploading/Merged/Cancelled）由仓储原子更新驱动，故不在此保留内存行为方法。
+/// </para>
 /// </summary>
-public class FileChunkRecord : Entity<int>, IAggregateRoot
+public class FileChunkRecord
 {
-    private FileChunkRecord()
+    /// <summary>仅供 MongoDB 驱动反序列化使用的参数化空构造。</summary>
+    public FileChunkRecord()
     {
         RecordId = Guid.CreateVersion7();
-        UploadedChunks = new List<int>();
+        UploadedChunks = [];
+        FileTags = [];
         CreatedAt = DateTimeOffset.UtcNow;
         Status = ChunkUploadStatus.Pending;
     }
 
+    /// <summary>业务初始化构造（含参数校验），分片上传任务初始化时使用。</summary>
     public FileChunkRecord(
         string fileKey,
         Guid userId,
@@ -53,81 +61,38 @@ public class FileChunkRecord : Entity<int>, IAggregateRoot
         FileDescription = fileDescription;
     }
 
-    public Guid RecordId { get; init; }
+    /// <summary>文档主键（MongoDB _id，BsonId）</summary>
+    public Guid RecordId { get; set; }
 
-    /// <summary>分片上传任务的唯一标识（如: userId/timestamp_filename）</summary>
-    public string FileKey { get; private set; } = null!;
+    /// <summary>分片上传任务的唯一标识（如: userId/timestamp_filename），业务唯一键</summary>
+    public string FileKey { get; set; } = null!;
 
-    public Guid UserId { get; private set; }
+    public Guid UserId { get; set; }
 
-    public string FileName { get; private set; } = null!;
+    public string FileName { get; set; } = null!;
 
-    public long TotalSize { get; private set; }
+    public long TotalSize { get; set; }
 
-    public int ChunkSize { get; private set; }
+    public int ChunkSize { get; set; }
 
-    public int TotalChunks { get; private set; }
+    public int TotalChunks { get; set; }
 
-    /// <summary>已完成上传的分片索引集合</summary>
-    public List<int> UploadedChunks { get; private set; }
+    /// <summary>已完成上传的分片索引集合（MongoDB 数组，$addToSet 原子追加）</summary>
+    public List<int> UploadedChunks { get; set; }
 
-    public string FileMd5 { get; private set; } = null!;
+    public string FileMd5 { get; set; } = null!;
 
-    public FileType FileType { get; private set; }
+    public FileType FileType { get; set; }
 
-    public FileIdentity FileIdentity { get; private set; }
+    public FileIdentity FileIdentity { get; set; }
 
-    public HashSet<string> FileTags { get; private set; } = [];
+    public HashSet<string> FileTags { get; set; } = [];
 
-    public string? FileDescription { get; private set; }
+    public string? FileDescription { get; set; }
 
-    public ChunkUploadStatus Status { get; private set; }
+    public ChunkUploadStatus Status { get; set; }
 
-    public DateTimeOffset CreatedAt { get; init; }
+    public DateTimeOffset CreatedAt { get; set; }
 
-    public DateTimeOffset? CompletedAt { get; private set; }
-
-    /// <summary>标记分片已上传（幂等：重复上传同一分片不会产生重复记录）</summary>
-    public void MarkChunkUploaded(int chunkIndex)
-    {
-        if (chunkIndex < 0 || chunkIndex >= TotalChunks)
-            throw new ArgumentOutOfRangeException(nameof(chunkIndex),
-                $"分片索引 {chunkIndex} 超出范围 [0, {TotalChunks - 1}]");
-
-        // 幂等检查：已上传过的分片直接返回，避免断点续传时产生重复记录
-        if (UploadedChunks.Contains(chunkIndex))
-            return;
-
-        UploadedChunks.Add(chunkIndex);
-
-        if (Status == ChunkUploadStatus.Pending)
-            Status = ChunkUploadStatus.Uploading;
-    }
-
-    /// <summary>检查所有分片是否已上传完毕</summary>
-    public bool AreAllChunksUploaded() => UploadedChunks.Count >= TotalChunks;
-
-    /// <summary>标记合并完成</summary>
-    public void MarkMerged()
-    {
-        if (!AreAllChunksUploaded())
-            throw new InvalidOperationException(
-                $"还有 {TotalChunks - UploadedChunks.Count} 个分片未上传，无法合并");
-
-        Status = ChunkUploadStatus.Merged;
-        CompletedAt = DateTimeOffset.UtcNow;
-    }
-
-    /// <summary>标记失败</summary>
-    public void MarkFailed()
-    {
-        Status = ChunkUploadStatus.Failed;
-    }
-
-    /// <summary>标记取消</summary>
-    public void MarkCancelled()
-    {
-        Status = ChunkUploadStatus.Cancelled;
-        CompletedAt = DateTimeOffset.UtcNow;
-    }
+    public DateTimeOffset? CompletedAt { get; set; }
 }

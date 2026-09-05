@@ -48,6 +48,7 @@ global using Message.Web.API.Application.Queries.Reports;
 global using Message.Web.API.Application.Queries.Sessions;
 global using Message.Web.API.Application.Queries.Tweets;
 global using Message.Web.API.Application.Queries.UserInfo;
+global using Message.Web.API.Application.Queries.Users;
 global using Message.Web.API.Extensions;
 global using Message.Web.API.Grpc;
 global using Message.Web.API.Hubs;

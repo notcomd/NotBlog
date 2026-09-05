@@ -13,4 +13,5 @@ public interface ITweetInteractionRepository
     Task<TweetInteraction> AddAsync(TweetInteraction interaction);
     Task DeleteAsync(Guid tweetGuid, Guid userGuid, InteractionType type);
     Task<int> GetCountByTweetAsync(Guid tweetGuid, InteractionType type);
+    Task<int> GetCountByUserAsync(Guid userGuid, InteractionType type);
 }

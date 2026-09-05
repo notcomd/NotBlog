@@ -7,4 +7,6 @@ public record MergeChunksCommand(
     string FileKey,
     Guid UserId,
     string? FileName,
-    string? Description) : IRequest<MergeChunksResult>;
+    string? Description,
+    Guid? ContentId = null,
+    ContentReferenceType? ContentType = null) : IRequest<MergeChunksResult>;
