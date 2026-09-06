@@ -105,3 +105,15 @@ public record DeleteRoleCommand(Guid RoleGuid)
     public string IdProperty => nameof(RoleGuid);
     public string IdValue => RoleGuid.ToString();
 }
+
+/// <summary>
+/// 全量替换角色的直连权限（树形授权：permissionIds 可含目录码与叶子码，
+/// 授权目录 = 自动放行其全部子孙，判定由 PermissionChecker 前缀段匹配完成）。
+/// 保存后自动吊销持有该角色的全部用户会话（强制重新登录以刷新 JWT 权限 claim）。
+/// </summary>
+public record SetRolePermissionsCommand(Guid RoleGuid, IReadOnlyList<Guid> PermissionIds)
+    : IRequest<bool>, ILoggableCommand
+{
+    public string IdProperty => nameof(RoleGuid);
+    public string IdValue => RoleGuid.ToString();
+}

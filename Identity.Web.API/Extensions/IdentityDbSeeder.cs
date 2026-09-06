@@ -48,6 +48,7 @@ public class IdentityDbSeeder : IDbSeeder<IdentityDbContext>
     {
         await SeedPermissionsAsync(context);
         await SeedRolesAsync(context);
+        await SeedDefaultRoleGroupsAsync(context);
         await SeedRolePermissionsAsync(context);
         await SeedInitialAdminAsync(context);
     }
@@ -174,6 +175,65 @@ public class IdentityDbSeeder : IDbSeeder<IdentityDbContext>
         _logger.LogInformation("已创建 {Count} 个系统默认角色: {Roles}",
             defaultRoles.Count,
             string.Join(", ", defaultRoles.Select(r => $"{r.RoleName}({r.RoleCode})")));
+    }
+
+    /// <summary>
+    /// 默认角色组（幂等：组 code 已存在则跳过，不覆盖用户手改）：
+    ///   管理员组（ROOT/ADMIN）、普通用户组（USER）、访客组（GUEST/UNKNOWN）
+    /// 角色与组双向挂接（Roles.RoleGroupGuids 与 RoleGroup.RoleGuids 同步）。
+    ///
+    /// ⚠️ 组权限保持为空——权限单一来源是「角色直连」（SeedRolePermissionsAsync +
+    /// 管理端 PUT /role/{roleId}/permissions 树形授权）。
+    /// 若默认组也授与角色相同的权限，会产生双通道授权：管理端缩减角色权限时
+    /// 组继承仍持有旧权限，撤权失效且难排查。组级授权留给未来专门的组授权端点。
+    /// </summary>
+    private async Task SeedDefaultRoleGroupsAsync(IdentityDbContext context)
+    {
+        var existingCodes = await context.RoleGroups
+            .Where(g => !g.IsDeleted)
+            .Select(g => g.RoleGroupCode)
+            .ToListAsync();
+        var existing = new HashSet<string>(existingCodes, StringComparer.OrdinalIgnoreCase);
+        if (existing.Contains("admin_group") && existing.Contains("user_group") && existing.Contains("guest_group"))
+        {
+            _logger.LogInformation("默认角色组已就绪，跳过");
+            return;
+        }
+
+        var roles = await context.Roles
+            .Where(r => !r.IsDeleted && r.RoleStatus == RoleStatus.Normal)
+            .ToListAsync();
+
+        // 组定义：code → (名称, 默认角色 code)
+        var groups = new (string Code, string Name, string[] RoleCodes)[]
+        {
+            ("admin_group", "管理员组", ["ROOT", "ADMIN"]),
+            ("user_group", "普通用户组", ["USER"]),
+            ("guest_group", "访客组", ["GUEST", "UNKNOWN"])
+        };
+
+        var created = 0;
+        foreach (var (code, name, roleCodes) in groups)
+        {
+            if (existing.Contains(code))
+                continue;
+
+            var roleGroup = new RoleGroup(name, code);
+            foreach (var role in roles.Where(r => roleCodes.Contains(r.RoleCode, StringComparer.OrdinalIgnoreCase)))
+            {
+                roleGroup.AddRole(role.RoleGuid);
+                role.AddToRoleGroup(roleGroup.RoleGroupGuid);
+            }
+
+            context.RoleGroups.Add(roleGroup);
+            created++;
+        }
+
+        if (created > 0)
+        {
+            await context.SaveChangesAsync();
+            _logger.LogInformation("已创建 {Count} 个默认角色组", created);
+        }
     }
 
     /// <summary>默认角色-权限分配（已有任何分配则跳过）：ROOT/ADMIN 全量、USER 排除审计与身份管理、GUEST/UNKNOWN 不分配</summary>

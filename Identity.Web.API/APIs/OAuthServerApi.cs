@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text.Json;
@@ -163,6 +164,8 @@ public static class OAuthServerApi
         [FromServices] IUserRepository userRepository,
         [FromServices] IUserRoleRepository userRoleRepository,
         [FromServices] IJwtTokenService jwtTokenService,
+        [FromServices] ITokenSessionService tokenSessionService,
+        [FromServices] IPermissionChecker permissionChecker,
         [FromServices] IOptions<JwtOptions> jwtOptions,
         HttpContext httpContext,
         CancellationToken ct)
@@ -174,9 +177,9 @@ public static class OAuthServerApi
         {
             "authorization_code" => await TokenByAuthorizationCodeAsync(
                 form, clientRepository, redisCacheService, userRepository, userRoleRepository,
-                jwtTokenService, jwtOptions.Value, httpContext, ct),
+                jwtTokenService, permissionChecker, jwtOptions.Value, httpContext, ct),
             "refresh_token" => await TokenByRefreshTokenAsync(
-                form, clientRepository, jwtTokenService, jwtOptions.Value, ct),
+                form, clientRepository, jwtTokenService, tokenSessionService, jwtOptions.Value, ct),
             "client_credentials" => await TokenByClientCredentialsAsync(
                 form, clientRepository, jwtTokenService, jwtOptions.Value, httpContext, ct),
             _ => OAuthError("unsupported_grant_type", $"不支持的 grant_type: {grantType}", 400)
@@ -193,6 +196,7 @@ public static class OAuthServerApi
         IUserRepository userRepository,
         IUserRoleRepository userRoleRepository,
         IJwtTokenService jwtTokenService,
+        IPermissionChecker permissionChecker,
         JwtOptions jwtOptions,
         HttpContext httpContext,
         CancellationToken ct)
@@ -264,6 +268,13 @@ public static class OAuthServerApi
             new("scope", authCode.Scope)
         };
 
+        // 权限集合 + 数据范围 claim（网关本地判定，与登录主链路一致；空权限也写空 claim → 网关本地拒绝）
+        var oauthPermissions = await permissionChecker.GetUserPermissionsAsync(user.UserGuid, ct);
+        claims.Add(new Claim(PermissionClaimTypes.Permissions,
+            string.Join(',', oauthPermissions.OrderBy(x => x, StringComparer.Ordinal))));
+        var oauthScope = await permissionChecker.GetUserDataScopeAsync(user.UserGuid, ct);
+        claims.Add(new Claim(PermissionClaimTypes.DataScope, oauthScope.ToClaimValue()));
+
         var tokenResult = await jwtTokenService.BuildTokenAsync(claims, jwtOptions);
 
         return Results.Ok(BuildTokenResponse(tokenResult, authCode.Scope));
@@ -276,6 +287,7 @@ public static class OAuthServerApi
         IFormCollection form,
         INotClientRepository clientRepository,
         IJwtTokenService jwtTokenService,
+        ITokenSessionService tokenSessionService,
         JwtOptions jwtOptions,
         CancellationToken ct)
     {
@@ -295,11 +307,43 @@ public static class OAuthServerApi
         try
         {
             var tokenResult = await jwtTokenService.RefreshTokenAsync(refreshToken, jwtOptions);
+            await RegisterRefreshedOAuthSessionAsync(tokenSessionService, tokenResult, jwtOptions, ct);
             return Results.Ok(BuildTokenResponse(tokenResult, null));
         }
         catch (Exception ex) when (ex is SecurityTokenException or ArgumentException)
         {
             return OAuthError("invalid_grant", $"刷新 Token 失败: {ex.Message}", 401);
+        }
+    }
+
+    /// <summary>
+    /// 登记 OAuth refresh 换发的新 token 对（吊销盲区修复，与 /api/identity/refresh 同语义）
+    /// </summary>
+    private static async Task RegisterRefreshedOAuthSessionAsync(
+        ITokenSessionService tokenSessionService,
+        TokenResult tokenResult,
+        JwtOptions jwtOptions,
+        CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(tokenResult.AccessToken))
+            return;
+
+        try
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var jwt = handler.ReadJwtToken(tokenResult.AccessToken);
+            var idClaim = jwt.Claims.FirstOrDefault(c =>
+                c.Type is "nameid" or ClaimTypes.NameIdentifier or "sub" or "id");
+            if (idClaim is null || !Guid.TryParse(idClaim.Value, out var userGuid))
+                return; // client_credentials 无用户 → 无需登记
+
+            await tokenSessionService.RegisterAsync(userGuid, tokenResult,
+                TimeSpan.FromSeconds(jwtOptions.ExpireSeconds),
+                TimeSpan.FromSeconds(jwtOptions.RefreshTokenExpireSeconds), ct);
+        }
+        catch (Exception)
+        {
+            // 登记失败不影响刷新结果
         }
     }
 

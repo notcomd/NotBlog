@@ -155,4 +155,16 @@ public class UserRepository(IdentityDbContext userDbContext)
         return await userDbContext.Users.AnyAsync(u => u.UserEmail == email.Trim());
     }
 
+    public async Task<List<Guid>> FindUserGuidsByRoleAsync(Guid roleGuid, CancellationToken ct = default)
+    {
+        if (roleGuid == Guid.Empty)
+            return [];
+
+        return await userDbContext.Users
+            .AsNoTracking()
+            .Where(u => u.UserRoleGuid.Contains(roleGuid))
+            .Select(u => u.UserGuid)
+            .ToListAsync(ct);
+    }
+
 }

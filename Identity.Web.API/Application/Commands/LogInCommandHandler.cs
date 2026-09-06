@@ -8,7 +8,7 @@ namespace Identity.Web.API.Application.Commands;
 /// 统一登录命令处理器（登录/注册二合一）：
 /// 1. 密码登入：锁定检查 → 密码校验（失败原子递增失败计数，达阈值锁定）→ 二次验证（开启用户校验并一次性消费邮箱验证码）；
 /// 2. 验证码登入：校验并一次性消费验证码 → 查无用户则派发 <see cref="RegisterByEmailCommand"/> 自动注册 → 锁定检查；
-/// 3. 公共尾部：构建 Claims → 签发 AccessToken/RefreshToken → 登记多设备会话。
+/// 3. 公共尾部：构建 Claims（含权限集合 + 数据范围，供网关本地判定）→ 签发 AccessToken/RefreshToken → 登记多设备会话。
 /// 增（自动注册）改（失败计数/锁定）事务统一经本命令以 UnitOfWork 提交，不再散落在基础设施服务中；
 /// 邮件仅入后台队列（P6），不占用数据库事务做 SMTP 外部 IO。
 /// </summary>
@@ -20,6 +20,7 @@ public class LogInCommandHandler(
     ITokenSessionService tokenSessionService,
     IOptionsSnapshot<JwtOptions> optionsSnapshot,
     INotMediator mediator,
+    IPermissionChecker permissionChecker,
     ILogger<LogInCommandHandler> logger)
     : IRequestHandler<LogInCommand, LogInCommandResult?>
 {
@@ -49,7 +50,6 @@ public class LogInCommandHandler(
     /// </summary>
     private async Task<AuthenticatedUser> LogInByEmailCodeAsync(LogInCommand request, CancellationToken cancellationToken)
     {
-        // 校验并一次性消费验证码（放入缓存即视为已下发）
         if (!await ConsumeEmailCodeAsync(request.Email, request.Code, cancellationToken))
             return new(null, false);
 
@@ -57,7 +57,6 @@ public class LogInCommandHandler(
         var isNewUser = false;
         if (userData is null)
         {
-            // 陌生邮箱 → 自动注册：注册命令创建账号并生成初始密码邮件下发
             var registered = await mediator.SendAsync(new RegisterByEmailCommand(request.Email), cancellationToken);
             if (registered is null)
                 return new(null, false);
@@ -147,7 +146,7 @@ public class LogInCommandHandler(
         try
         {
             var roleName = await GetRoleNameAsync(userData.UserRoleGuid);
-            var claims = BuildClaims(userData, roleName.ToHashSet());
+            var claims = await BuildClaimsAsync(userData, roleName.ToHashSet());
 
             var config = optionsSnapshot.Value;
             var tokenData = await jwtTokenService.BuildTokenAsync(claims, config);
@@ -172,9 +171,9 @@ public class LogInCommandHandler(
     }
 
     /// <summary>
-    /// 从用户实体构建 JWT Claims。
+    /// 从用户实体构建 JWT Claims（含权限集合 + 数据范围 claim，网关据此本地判定，不再每请求回调 Identity）
     /// </summary>
-    private static List<Claim> BuildClaims(User userData, HashSet<string> roleName)
+    private async Task<List<Claim>> BuildClaimsAsync(User userData, HashSet<string> roleName)
     {
         var claims = new List<Claim>
         {
@@ -188,6 +187,16 @@ public class LogInCommandHandler(
 
         if (!string.IsNullOrEmpty(userData.PhoneNumber?.PhoneCode))
             claims.Add(new Claim(ClaimTypes.MobilePhone, userData.PhoneNumber.PhoneCode));
+
+        // 权限集合（角色直连 + 组继承，去重，逗号分隔；授权目录码自动覆盖子孙的判定在网关按前缀段匹配）
+        // 空权限也写入空 claim：网关据此本地拒绝，避免无 claim 时回退远程校验
+        var permissions = await permissionChecker.GetUserPermissionsAsync(userData.UserGuid);
+        claims.Add(new Claim(PermissionClaimTypes.Permissions,
+            string.Join(',', permissions.OrderBy(x => x, StringComparer.Ordinal))));
+
+        // 数据范围（Root/Admin → All，其余 Own）
+        var scope = await permissionChecker.GetUserDataScopeAsync(userData.UserGuid);
+        claims.Add(new Claim(PermissionClaimTypes.DataScope, scope.ToClaimValue()));
 
         return claims;
     }

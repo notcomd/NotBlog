@@ -20,7 +20,8 @@ public class OAuthService(
     IOptionsSnapshot<OAuthOptions> oauthOptions,
     ILogger<OAuthService> logger,
     IOptionsSnapshot<JwtOptions> jwtOptions,
-    ITokenSessionService tokenSessionService)
+    ITokenSessionService tokenSessionService,
+    IPermissionChecker permissionChecker)
     : IOAuthService
 {
     private const string OAuthStateKeyPrefix = "oauth:state";
@@ -282,6 +283,13 @@ public class OAuthService(
             new(ClaimTypes.Role, roleName),
             new("UserGuid", user.UserGuid.ToString())
         };
+
+        // 权限集合 + 数据范围 claim（网关本地判定，与登录主链路一致；空权限也写空 claim → 网关本地拒绝）
+        var permissions = await permissionChecker.GetUserPermissionsAsync(user.UserGuid);
+        claims.Add(new Claim(PermissionClaimTypes.Permissions,
+            string.Join(',', permissions.OrderBy(x => x, StringComparer.Ordinal))));
+        var dataScope = await permissionChecker.GetUserDataScopeAsync(user.UserGuid);
+        claims.Add(new Claim(PermissionClaimTypes.DataScope, dataScope.ToClaimValue()));
 
         // 使用 BuildTokenAsync 获取完整 TokenResult（含 RefreshToken），与原命令链路一致
         var tokenResult = await jwtTokenService.BuildTokenAsync(claims, _jwtOptions);

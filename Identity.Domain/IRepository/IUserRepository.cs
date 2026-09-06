@@ -78,4 +78,9 @@ public interface IUserRepository : IRepository<User, IUnitOfWork>
 
     /// <summary>检查邮箱是否已被注册（管理员创建用户前的唯一性校验）</summary>
     Task<bool> ExistsByEmailAsync(string email);
+
+    /// <summary>
+    /// 反查持有指定角色的全部用户 GUID（User.UserRoleGuid uuid[] 包含匹配；权限变更后吊销会话用）
+    /// </summary>
+    Task<List<Guid>> FindUserGuidsByRoleAsync(Guid roleGuid, CancellationToken ct = default);
 }

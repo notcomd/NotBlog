@@ -94,6 +94,16 @@ public class Roles : Entity<Guid>, IAggregateRoot
     }
 
     /// <summary>
+    /// 全量替换角色直连权限（管理端树形授权入口；目录码允许入库，判定侧前缀段匹配自动覆盖子孙）
+    /// </summary>
+    public void ReplacePermissions(IEnumerable<Permission> permissions)
+    {
+        Permissions.Clear();
+        foreach (var permission in permissions)
+            Permissions.Add(permission);
+    }
+
+    /// <summary>
     /// 将角色加入指定的角色组
     /// </summary>
     public void AddToRoleGroup(Guid roleGroupGuid)

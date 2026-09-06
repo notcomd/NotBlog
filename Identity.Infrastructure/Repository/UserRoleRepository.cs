@@ -15,6 +15,16 @@ public class UserRoleRepository(IdentityDbContext userRoleDbContext) : IUserRole
         return await userRoleDbContext.FindAsync<Roles>(guid);
     }
 
+    public async ValueTask<Roles?> FindByUserRoleWithPermissionsAsync(Guid roleGuid)
+    {
+        // ⚠️ 用 FirstOrDefault：Include(Permissions) 集合导航会把父行 join 展开成多行，
+        // SingleOrDefaultAsync 在子权限多于 1 条时抛 "Sequence contains more than one element"
+        return await userRoleDbContext.Roles
+            .Include(r => r.Permissions)
+            .Where(r => r.RoleGuid == roleGuid)
+            .FirstOrDefaultAsync();
+    }
+
     public async ValueTask<HashSet<Roles>?> FindByUserRoleAsync(HashSet<Guid>? roleGuid)
     {
         if (roleGuid is null || roleGuid.Count == 0)

@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using CacheMemory.Core;
 using Identity.Web.API.Application.Commands;
@@ -85,7 +86,7 @@ public static class IdentityApis
             return Results.Json(new { error = "登录尝试过于频繁，请稍后再试" },
                 statusCode: StatusCodes.Status429TooManyRequests);
 
-        // 密码登入与验证码登入至少二选一
+
         if (string.IsNullOrWhiteSpace(loginRequest.Password) && string.IsNullOrWhiteSpace(loginRequest.Code))
             return Results.BadRequest(new { error = "请提供密码或邮箱验证码" });
 
@@ -97,7 +98,6 @@ public static class IdentityApis
             return Results.Json(new { error = "邮箱、密码或验证码错误" },
                 statusCode: StatusCodes.Status401Unauthorized);
 
-        // 新注册用户：发布注册集成事件，通知 FileDev / Message 等下游服务初始化关联数据（含邮箱/昵称/头像）
         if (data.IsNewUser)
         {
             await outboxStore.StoreAsync(new OutboxMessage(
@@ -111,29 +111,68 @@ public static class IdentityApis
             data.Token!.AccessToken,
             data.Token.RefreshToken,
             data.Token.TokenType,
-            ExpiresAt = data.Token.ExpiresAt,
-            IsNewUser = data.IsNewUser
+            data.Token.ExpiresAt,
+            data.IsNewUser
         });
     }
 
     /// <summary>
     /// S-12 刷新 Token：校验 RefreshToken（格式/签名/过期/黑名单）后返回新的 AccessToken/RefreshToken 对。
     /// 单次使用：刷新成功后旧 RefreshToken 进入黑名单，二次使用即被拒绝。
+    /// 刷新成功后把新 token 对登记进会话（P3 + 权限吊销盲区修复）——仅登录时登记的话，
+    /// 刷新换发的 token 不在 auth:session 内，授权变更吊销（RevokeAllSessionsAsync）无法覆盖，
+    /// 旧权限 claim 最长残留到 refresh 过期（7 天）。
     /// </summary>
     private static async Task<IResult> Refresh(
         [FromServices] IJwtTokenService jwtTokenService,
+        [FromServices] ITokenSessionService tokenSessionService,
+        [FromServices] ILoggerFactory loggerFactory,
         [FromServices] IOptions<JwtOptions> jwtOptions,
         [FromBody] RefreshTokenRequest request)
     {
         try
         {
             var result = await jwtTokenService.RefreshTokenAsync(request.RefreshToken, jwtOptions.Value);
+            await RegisterRefreshedSessionAsync(tokenSessionService, result, jwtOptions.Value,
+                loggerFactory.CreateLogger("IdentityApis.Refresh"));
             return Results.Ok(result);
         }
         catch (SecurityTokenException ex)
         {
             return Results.Json(new { error = ex.Message },
                 statusCode: StatusCodes.Status401Unauthorized);
+        }
+    }
+
+    /// <summary>
+    /// 登记刷新换发的新 token 对（与新登录同一会话体系；从新 access token 解析 userId——自签 token 可信）
+    /// </summary>
+    private static async Task RegisterRefreshedSessionAsync(
+        ITokenSessionService tokenSessionService,
+        TokenResult result,
+        JwtOptions jwtOptions,
+        ILogger logger)
+    {
+        if (string.IsNullOrWhiteSpace(result.AccessToken))
+            return;
+
+        try
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var jwt = handler.ReadJwtToken(result.AccessToken);
+            var idClaim = jwt.Claims.FirstOrDefault(c =>
+                c.Type is "nameid" or ClaimTypes.NameIdentifier or "sub" or "id");
+            if (idClaim is null || !Guid.TryParse(idClaim.Value, out var userGuid))
+                return;
+
+            await tokenSessionService.RegisterAsync(userGuid, result,
+                TimeSpan.FromSeconds(jwtOptions.ExpireSeconds),
+                TimeSpan.FromSeconds(jwtOptions.RefreshTokenExpireSeconds));
+        }
+        catch (Exception ex)
+        {
+            // 登记失败不影响刷新结果（吊销覆盖降级为仅黑名单，与未登记的历史行为一致）
+            logger.LogWarning(ex, "[Refresh] 刷新后会话登记失败，吊销覆盖不完整");
         }
     }
 
