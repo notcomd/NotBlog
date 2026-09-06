@@ -1,11 +1,8 @@
-using Identity.Web.API.Application.IntegrationEvents.Events;
-using Notcomd.EventBus.Core;
 
 namespace Identity.Web.API.Application.Commands;
 
 public class CreatePermissionCommandHandler(
     IPermissionRepository permissionRepository,
-    IEventBus eventBus,
     ILogger<CreatePermissionCommandHandler> logger)
     : IRequestHandler<CreatePermissionCommand, CreatePermissionResult>
 {
@@ -39,9 +36,6 @@ public class CreatePermissionCommandHandler(
         await permissionRepository.AddAsync(permission, ct);
         await permissionRepository.UnitOfWork.SaveEntitiesAsync(ct);
 
-        // 发布权限变更事件，网关订阅后自动刷新路由映射
-        await eventBus.PublishAsync(new PermissionUpdatedIntegrationEvent(permission.PermissionId, "create"));
-
         logger.LogInformation("[CreatePermission] 创建成功: Code={Code}, Id={Id}, Type={Type}, ParentId={ParentId}",
             permission.PermissionCode, permission.PermissionId, permission.PermissionType, permission.ParentId);
 
@@ -51,7 +45,6 @@ public class CreatePermissionCommandHandler(
 
 public class UpdatePermissionCommandHandler(
     IPermissionRepository permissionRepository,
-    IEventBus eventBus,
     ILogger<UpdatePermissionCommandHandler> logger)
     : IRequestHandler<UpdatePermissionCommand, bool>
 {
@@ -85,8 +78,6 @@ public class UpdatePermissionCommandHandler(
         await permissionRepository.UpdateAsync(permission, ct);
         await permissionRepository.UnitOfWork.SaveEntitiesAsync(ct);
 
-        await eventBus.PublishAsync(new PermissionUpdatedIntegrationEvent(command.PermissionId, "update"));
-
         logger.LogInformation("[UpdatePermission] 更新成功: Id={Id}", command.PermissionId);
         return true;
     }
@@ -115,7 +106,6 @@ public class UpdatePermissionCommandHandler(
 
 public class DeletePermissionCommandHandler(
     IPermissionRepository permissionRepository,
-    IEventBus eventBus,
     ILogger<DeletePermissionCommandHandler> logger)
     : IRequestHandler<DeletePermissionCommand, bool>
 {
@@ -135,8 +125,6 @@ public class DeletePermissionCommandHandler(
             throw new InvalidOperationException($"权限 '{command.PermissionId}' 不存在");
 
         await permissionRepository.UnitOfWork.SaveEntitiesAsync(ct);
-
-        await eventBus.PublishAsync(new PermissionUpdatedIntegrationEvent(command.PermissionId, "delete"));
 
         logger.LogInformation("[DeletePermission] 软删除成功: Id={Id}", command.PermissionId);
         return true;

@@ -11,7 +11,8 @@ public static class MarkdownApi
     public static void MapMarkdownApis(this WebApplication app)
     {
         // ===== MarkDown 文档端点 =====
-        var markdownGroup = app.MapGroup("/api/markdown");
+        var markdownGroup = app.MapGroup("/api/markdown")
+            .RequireResourcePermissions("api:markdown");
 
         // POST: 创建文章（需认证）
         markdownGroup.MapPost("/", CreateAsync)

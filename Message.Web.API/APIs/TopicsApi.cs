@@ -12,7 +12,8 @@ public static class TopicsApi
     {
         var group = app.MapGroup("/api/topics")
             .WithTags("Topics")
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .RequireResourcePermissions("api:topic");
 
         group.MapPost("/", CreateTopicAsync)
             .WithSummary("创建话题")

@@ -152,6 +152,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 
 app.UseAuthorization();
+app.UsePermissionEnforcement();
 
 
 app.MapMarkdownApis();

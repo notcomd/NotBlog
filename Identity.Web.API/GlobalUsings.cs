@@ -26,6 +26,7 @@ global using Notcomd.EventBus.Core;
 global using Notcomd.EventBus.Outbox;
 global using Notcomd.EventBus.Extension;
 global using Notcomd.NotEmail.Extensions;
+global using Notcomd.Token.JWT.Extensions;
 global using Notcomd.Token.JWT.Security;
 global using NotMediator.Mediator;
 global using NotMediator.Abstractions;

@@ -142,6 +142,7 @@ using (var scope = app.Services.CreateScope())
 app.UseNotBlogPipeline();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UsePermissionEnforcement();
 app.UseMiddleware<FileCheckTypeMiddleware>();
 app.MapDefaultEndpoints();
 
@@ -152,7 +153,9 @@ if (app.Environment.IsDevelopment())
 }
 
 // S-08：文件存储 HTTP API 全部要求 JWT 认证（匿名访问 → 401）
-var fileStorageGroup = app.MapGroup("/api/filestorage").RequireAuthorization();
+var fileStorageGroup = app.MapGroup("/api/filestorage")
+    .RequireAuthorization()
+    .RequireResourcePermissions("api:file");
 fileStorageGroup.MapFileChunkApis();
 fileStorageGroup.MapStreamUploadApis();
 fileStorageGroup.MapDedupApis();

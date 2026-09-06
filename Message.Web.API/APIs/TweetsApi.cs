@@ -21,7 +21,8 @@ public static class TweetsApi
     {
         var group = app.MapGroup("/api/tweets")
             .WithTags("Tweets")
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .RequireResourcePermissions("api:tweet");
 
         // POST / — 创建推文
         group.MapPost("/", CreateTweetAsync)

@@ -21,7 +21,8 @@ public static class FriendsApi
     {
         var group = app.MapGroup("/api/friends")
             .WithTags("Friends")
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .RequireResourcePermissions("api:friend");
 
         // 1. POST /request — 发送好友请求
         group.MapPost("/request", SendFriendRequestAsync)

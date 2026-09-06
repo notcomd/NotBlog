@@ -22,6 +22,7 @@ public static class TurnApi
 
         // GET /api/turn/credentials — 获取 WebRTC TURN 限时凭证
         group.MapGet("/credentials", GetCredentialsAsync)
+            .RequirePermission("api:turn:read")
             .WithSummary("获取 TURN 限时凭证")
             .WithDescription("按 coturn use-auth-secret 规范签发限时 username + credential，供 RTCPeerConnection 使用")
             .Produces<TurnCredentialsDto>()

@@ -9,6 +9,7 @@ public static class VideoEndpoints
     public static RouteGroupBuilder MapVideoEndpoints(this IEndpointRouteBuilder routes)
     {
         var group = routes.MapGroup("/api/video")
+            .RequireResourcePermissions("api:video")
             .WithTags("Video");
 
         // --- GET ---

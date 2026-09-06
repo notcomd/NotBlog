@@ -22,6 +22,7 @@ public static class VideoReviewEndpoints
     public static RouteGroupBuilder MapVideoReviewEndpoints(this IEndpointRouteBuilder routes)
     {
         var group = routes.MapGroup("/api/videoreview")
+            .RequireResourcePermissions("api:videoreview")
             .WithTags("VideoReview");
 
         group.MapPost("/", AddVideoReviewAsync)

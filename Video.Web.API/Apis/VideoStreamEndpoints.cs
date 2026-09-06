@@ -9,6 +9,7 @@ public static class VideoStreamEndpoints
     public static RouteGroupBuilder MapVideoStreamEndpoints(this IEndpointRouteBuilder routes)
     {
         var group = routes.MapGroup("/api/videostream")
+            .RequireResourcePermissions("api:videostream")
             .WithTags("VideoStream");
 
         group.MapGet("/{videoGuid:guid}", StreamVideoAsync)

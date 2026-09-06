@@ -10,7 +10,9 @@ public static class MarkFavoriteApi
     /// </summary>
     public static void MapMarkFavoriteApi(this WebApplication app)
     {
-        var favoriteGroup = app.MapGroup("/api/favorites").RequireAuthorization();
+        var favoriteGroup = app.MapGroup("/api/favorites")
+            .RequireAuthorization()
+            .RequireResourcePermissions("api:favorite");
 
         // POST: 添加收藏（已收藏时合并标签，幂等）
         favoriteGroup.MapPost("/", AddFavoriteAsync)

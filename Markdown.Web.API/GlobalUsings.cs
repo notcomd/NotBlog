@@ -12,6 +12,7 @@ global using NotMediator.Abstractions;
 global using NotMediator.Mediator;
 global using Notcomd.EventBus.Core;
 global using Notcomd.EventBus.Extension;
+global using Notcomd.Token.JWT.Extensions;
 global using Markdown.Web.API.Application.Commands;
 global using Markdown.Web.API.Application.IntegrationEvents;
 global using Markdown.Web.API.Application.IntegrationEvents.IntegrationEventHandlers;

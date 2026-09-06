@@ -9,6 +9,7 @@ public static class VideoWatchStatsEndpoints
     public static RouteGroupBuilder MapVideoWatchStatsEndpoints(this IEndpointRouteBuilder routes)
     {
         var group = routes.MapGroup("/api/videowatch")
+            .RequireResourcePermissions("api:videowatch")
             .WithTags("VideoWatchStats");
 
         // POST 开始/更新观看进度（S-18：仅登录用户，UserGuid 由服务端解析，不信任客户端）

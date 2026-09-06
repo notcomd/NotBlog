@@ -13,18 +13,21 @@ public static class RoleApi
             .WithHttpLogging(HttpLoggingFields.All);
 
         route.MapPost(string.Empty, CreateRoleAsync)
+            .RequirePermission("api:identity:manage")
             .RequireAuthorization("AdminOnly")
             .WithDescription("创建角色")
             .Produces<CreateRoleResult>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest);
 
         route.MapPut("/{roleId:guid}", UpdateRoleAsync)
+            .RequirePermission("api:identity:manage")
             .RequireAuthorization("AdminOnly")
             .WithDescription("更新角色")
             .Produces<bool>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest);
 
         route.MapDelete("/{roleId:guid}", DeleteRoleAsync)
+            .RequirePermission("api:identity:manage")
             .RequireAuthorization("AdminOnly")
             .WithDescription("删除角色（软删除）")
             .Produces<bool>(StatusCodes.Status200OK)
@@ -32,11 +35,13 @@ public static class RoleApi
 
         // ── 角色-权限分配（树形授权；PUT 全量覆盖，可含目录码，授权目录=放行全部子孙）──
         route.MapGet("/{roleId:guid}/permissions", GetRolePermissionsAsync)
+            .RequirePermission("api:identity:read")
             .RequireAuthorization("AdminOnly")
             .WithDescription("获取角色当前已授权权限 ID 列表（管理端树形勾选回显）")
             .Produces<List<RolePermissionItemDto>>(StatusCodes.Status200OK);
 
         route.MapPut("/{roleId:guid}/permissions", SetRolePermissionsAsync)
+            .RequirePermission("api:identity:manage")
             .RequireAuthorization("AdminOnly")
             .WithDescription("全量覆盖角色权限（permissionIds 可含目录码；保存后吊销持该角色用户的会话）")
             .Produces<bool>(StatusCodes.Status200OK)

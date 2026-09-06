@@ -15,6 +15,7 @@ public static class AvatarApi
             .WithHttpLogging(HttpLoggingFields.All);
 
         route.MapPost("/upload", UploadAvatarAsync)
+            .RequirePermission("api:identity:create")
             .WithName("UploadAvatar")
             .WithDescription("上传用户头像")
             .WithHttpLogging(HttpLoggingFields.All)

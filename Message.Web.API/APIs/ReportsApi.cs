@@ -22,7 +22,8 @@ public static class ReportsApi
     {
         var group = app.MapGroup("/api/reports")
             .WithTags("Reports")
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .RequireResourcePermissions("api:report");
 
         // POST / — 提交举报
         group.MapPost("/", SubmitReportAsync)

@@ -15,6 +15,7 @@ public static class UsersApi
 
         // GET /{userGuid} — 用户公开信息（个人主页）
         group.MapGet("/{userGuid}", GetUserProfileAsync)
+            .RequirePermission("api:userinfo:read")
             .WithSummary("用户公开信息")
             .WithDescription("获取指定用户的资料、关注/粉丝计数、作品数与获赞总数，以及当前登录用户是否已关注对方")
             .Produces<ApiResponse<UserProfileDto>>();

@@ -21,29 +21,34 @@ public static class ClientApi
             .WithHttpLogging(HttpLoggingFields.All);
 
         route.MapPost(string.Empty, CreateClientAsync)
+            .RequirePermission("api:identity:manage")
             .RequireAuthorization("AdminOnly")
             .WithDescription("创建 OAuth 客户端（client_secret 仅返回一次）")
             .Produces<CreateNotClientResult>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest);
 
         route.MapGet(string.Empty, GetClientsAsync)
+            .RequirePermission("api:identity:read")
             .RequireAuthorization("AdminOnly")
             .WithDescription("获取全部 OAuth 客户端（不含密钥）")
             .Produces<IReadOnlyList<ClientInfoDto>>(StatusCodes.Status200OK);
 
         route.MapGet("/{clientId:guid}", GetClientAsync)
+            .RequirePermission("api:identity:read")
             .RequireAuthorization("AdminOnly")
             .WithDescription("获取客户端详情（不含密钥）")
             .Produces<ClientInfoDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         route.MapPut("/{clientId:guid}", UpdateClientAsync)
+            .RequirePermission("api:identity:manage")
             .RequireAuthorization("AdminOnly")
             .WithDescription("更新客户端信息（null 字段不修改）")
             .Produces<bool>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest);
 
         route.MapDelete("/{clientId:guid}", RevokeClientAsync)
+            .RequirePermission("api:identity:manage")
             .RequireAuthorization("AdminOnly")
             .WithDescription("吊销客户端（不可恢复）")
             .Produces<bool>(StatusCodes.Status200OK)

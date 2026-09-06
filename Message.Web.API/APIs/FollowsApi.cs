@@ -12,7 +12,8 @@ public static class FollowsApi
     {
         var group = app.MapGroup("/api/follows")
             .WithTags("Follows")
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .RequireResourcePermissions("api:follow");
 
         group.MapPost("/{userGuid}", FollowUserAsync)
             .WithSummary("关注用户")

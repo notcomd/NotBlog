@@ -10,6 +10,7 @@ public static class VideoBarrageEndpoints
     public static RouteGroupBuilder MapVideoBarrageEndpoints(this IEndpointRouteBuilder routes)
     {
         var group = routes.MapGroup("/api/videobarrage")
+            .RequireResourcePermissions("api:videobarrage")
             .WithTags("VideoBarrage");
 
         group.MapPost("/", AddBarrageAsync)

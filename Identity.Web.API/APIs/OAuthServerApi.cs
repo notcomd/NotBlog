@@ -37,6 +37,7 @@ public static class OAuthServerApi
 
         // 授权端点：要求用户已登录（与外部 OAuth 回调端点区分）
         group.MapGet("/authorize", Authorize)
+            .RequirePermission("api:identity:read")
             .RequireAuthorization()
             .WithName("OAuthAuthorize")
             .WithDescription("OAuth 2.0 授权端点（授权码模式，需登录；支持 PKCE）");

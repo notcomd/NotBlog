@@ -225,6 +225,7 @@ ResourcesBanner.PrintStartupBanner();
 app.MapDefaultEndpoints();
 
 app.UseNotBlogPipeline();
+app.UsePermissionEnforcement();
 
 
 if (app.Environment.IsDevelopment())
@@ -268,7 +269,9 @@ app.MapGet("api/email/authorize", async (OutlookTokenService svc) =>
         expires_in_seconds = (int)(result.ExpiresOn - DateTimeOffset.UtcNow).TotalSeconds,
         message = result.Message
     });
-}).RequireAuthorization("AdminOnly");
+})
+    .RequireAuthorization("AdminOnly")
+    .RequirePermission("api:identity:manage");
 
 app.MapControllers();
 

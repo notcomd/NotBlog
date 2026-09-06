@@ -9,8 +9,10 @@ public static class UserManagerApi
     {
         var route = routeBuilder.MapGroup("/user-manager").WithHttpLogging(HttpLoggingFields.All);
 
-        route.MapGet("/GetUserInfo", GetUserInfo).WithHttpLogging(HttpLoggingFields.All);
-        route.MapGet("/GetUserAllAsync", GetUserAllAsync).WithHttpLogging(HttpLoggingFields.All);
+        route.MapGet("/GetUserInfo", GetUserInfo)
+            .RequirePermission("api:identity:read").WithHttpLogging(HttpLoggingFields.All);
+        route.MapGet("/GetUserAllAsync", GetUserAllAsync)
+            .RequirePermission("api:identity:read").WithHttpLogging(HttpLoggingFields.All);
         return route;
     }
 

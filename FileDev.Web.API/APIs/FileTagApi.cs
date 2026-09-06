@@ -13,7 +13,9 @@ public static class FileTagApi
 
     public static RouteGroupBuilder FileTagApis(this RouteGroupBuilder routeGroupBuilder)
     {
-        var route = routeGroupBuilder.MapGroup("/filestorage/tags").RequireAuthorization();
+        var route = routeGroupBuilder.MapGroup("/filestorage/tags")
+            .RequireAuthorization()
+            .RequireResourcePermissions("api:file");
 
         route.MapPost("/", CreateTagAsync)
             .WithHttpLogging(HttpLoggingFields.RequestPath | HttpLoggingFields.ResponseStatusCode, 1, 1);

@@ -11,7 +11,8 @@ public static class UserInfoApi
     {
         var group = app.MapGroup("/api/user-info")
             .WithTags("UserInfo")
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .RequireResourcePermissions("api:userinfo");
 
         // GET /me — 我的用户资料（不存在返回默认等级1/硬币0）
         group.MapGet("/me", GetMyInfoAsync)

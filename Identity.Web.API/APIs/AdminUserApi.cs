@@ -25,21 +25,25 @@ public static class AdminUserApi
 
         // GET /users — 用户分页列表（keyword 模糊匹配邮箱/用户名/手机号）
         route.MapGet("/users", ListUsersAsync)
+            .RequirePermission("api:identity:read")
             .WithSummary("用户列表（管理员）")
             .WithDescription("分页查询全部用户，支持按邮箱/用户名/手机号关键字过滤");
 
         // POST /users — 创建用户（邮箱 + 初始密码）
         route.MapPost("/users", CreateUserAsync)
+            .RequirePermission("api:identity:manage")
             .WithSummary("创建用户（管理员）")
             .WithDescription("以邮箱 + 初始密码创建账号，邮箱重复返回 400");
 
         // POST /users/{userGuid}/ban — 封禁用户
         route.MapPost("/users/{userGuid:guid}/ban", BanUserAsync)
+            .RequirePermission("api:identity:manage")
             .WithSummary("封禁用户（管理员）")
             .WithDescription("将用户锁定至远期，锁定期间禁止登录");
 
         // DELETE /users/{userGuid} — 删除（停用）用户
         route.MapDelete("/users/{userGuid:guid}", DeleteUserAsync)
+            .RequirePermission("api:identity:manage")
             .WithSummary("删除用户（管理员）")
             .WithDescription("永久封禁并停止登录（不做物理删除以避免外键连锁）");
 

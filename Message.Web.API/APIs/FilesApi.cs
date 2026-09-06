@@ -29,7 +29,8 @@ public static class FilesApi
     {
         var group = app.MapGroup("/api/files")
             .WithTags("Files")
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .RequireResourcePermissions("api:file");
 
         // 1. POST /upload — 小文件上传（multipart/form-data，走 FileDev gRPC）
         group.MapPost("/upload", UploadSmallFileAsync)

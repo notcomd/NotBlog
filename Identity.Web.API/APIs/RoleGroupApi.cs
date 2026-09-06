@@ -13,18 +13,21 @@ public static class RoleGroupApi
             .WithHttpLogging(HttpLoggingFields.All);
 
         route.MapPost(string.Empty, CreateRoleGroupAsync)
+            .RequirePermission("api:identity:manage")
             .RequireAuthorization("AdminOnly")
             .WithDescription("创建角色组")
             .Produces<CreateRoleGroupResult>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest);
 
         route.MapPut("/{groupId:guid}", UpdateRoleGroupAsync)
+            .RequirePermission("api:identity:manage")
             .RequireAuthorization("AdminOnly")
             .WithDescription("更新角色组")
             .Produces<bool>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest);
 
         route.MapDelete("/{groupId:guid}", DeleteRoleGroupAsync)
+            .RequirePermission("api:identity:manage")
             .RequireAuthorization("AdminOnly")
             .WithDescription("删除角色组（软删除）")
             .Produces<bool>(StatusCodes.Status200OK)

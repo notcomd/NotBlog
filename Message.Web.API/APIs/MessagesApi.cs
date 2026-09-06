@@ -22,7 +22,8 @@ public static class MessagesApi
     public static RouteGroupBuilder MapMessagesApi(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/messages")
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .RequireResourcePermissions("api:message");
 
         // 1. POST / — 发送消息
         group.MapPost("/", SendMessageAsync)

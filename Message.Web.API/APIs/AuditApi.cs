@@ -22,7 +22,8 @@ public static class AuditApi
     {
         var group = app.MapGroup("/api/audit")
             .WithTags("Audit")
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .RequireResourcePermissions("api:audit");
 
         group.MapGet("/tweets/pending", GetPendingTweetsAsync)
             .WithSummary("获取待审核推文列表")

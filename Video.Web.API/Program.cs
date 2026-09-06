@@ -112,6 +112,9 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
+// 权限强制（服务内本地判定，读 JWT permissions claim）
+app.UsePermissionEnforcement();
+
 // --- MiniAPI Endpoint Registration ---
 app.MapAddVideoEndpoints();
 app.MapVideoEndpoints();

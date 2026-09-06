@@ -44,8 +44,6 @@ var rabbitmq = builder.AddRabbitMQ("EventBus")
 
 
 
-var gatewayInternalApiKey = builder.Configuration["GatewayInternal:ApiKey"];
-
 
 var filedev = builder.AddProject<FileDev_Web_API>("filedev-web-api")
     .WithReference(notfileDb)
@@ -64,8 +62,6 @@ var identity = builder.AddProject<Identity_Web_API>("identity-web-api")
     .WaitFor(postgres);
 
 
-if (!string.IsNullOrEmpty(gatewayInternalApiKey))
-    identity.WithEnvironment("GATEWAY_INTERNAL_API_KEY", gatewayInternalApiKey);
 
 
 var message = builder.AddProject<Message_Web_API>("message-web-api")
@@ -114,17 +110,12 @@ var video = builder.AddProject<Video_Web_API>("video-web-api")
 
 
 var gateway = builder.AddProject<NotBlog_Yarp>("notblog-yarp-gateway")
+    // 2026-09-06 权限验证下沉各服务：网关透明转发，不再需要 Redis/RabbitMQ/内部调用凭证
     .WithReference(identity)
     .WithReference(message)
     .WithReference(markdown)
     .WithReference(video)
-    .WithReference(filedev)
-    .WithReference(redis)      // 权限映射 Redis 主存（PermissionMappingStore）
-    .WithReference(rabbitmq);  // 订阅 PermissionUpdatedIntegrationEvent（事件驱动刷新映射）
-
-
-if (!string.IsNullOrEmpty(gatewayInternalApiKey))
-    gateway.WithEnvironment("GATEWAY_INTERNAL_API_KEY", gatewayInternalApiKey);
+    .WithReference(filedev);
 
 
 // var frontend = builder.AddProject<Not>("notblog-frontend")

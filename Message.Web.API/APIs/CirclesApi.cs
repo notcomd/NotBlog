@@ -15,7 +15,8 @@ public static class CirclesApi
     {
         var group = app.MapGroup("/api/circles")
             .WithTags("Circles")
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .RequireResourcePermissions("api:circle");
 
         // ── 字面量路由优先（避免与 {circleGuid} 冲突）──
         group.MapPost("/join", JoinCircleAsync)

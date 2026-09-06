@@ -19,7 +19,8 @@ public static class GroupsApi
     public static RouteGroupBuilder MapGroupsApi(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/groups")
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .RequireResourcePermissions("api:group");
 
         // 1. POST / — 创建群组
         group.MapPost("/", CreateGroupAsync)

@@ -20,18 +20,21 @@ public static class AnnouncementsApi
 
         // GET / — 有效公报列表（分页，未撤回，按时间倒序）
         group.MapGet("/", GetActiveAnnouncementsAsync)
+            .RequirePermission("api:notification:read")
             .WithSummary("有效公报列表")
             .WithDescription("获取当前有效的公报列表（不含已撤回），支持分页")
             .Produces<ApiResponse<PagedResult<object>>>();
 
         // POST / — 发布公报（管理员）
         group.MapPost("/", CreateAnnouncementAsync)
+            .RequirePermission("api:audit:create")
             .WithSummary("发布公报（管理员）")
             .Accepts<CreateAnnouncementRequest>("application/json")
             .Produces<ApiResponse<Guid>>();
 
         // POST /{announcementGuid}/recall — 撤回公报（管理员）
         group.MapPost("/{announcementGuid:guid}/recall", RecallAnnouncementAsync)
+            .RequirePermission("api:audit:create")
             .WithSummary("撤回公报（管理员）")
             .Produces<ApiResponse>();
 

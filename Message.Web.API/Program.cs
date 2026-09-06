@@ -119,6 +119,7 @@ app.UseExceptionHandling();
 app.UseAuthentication();
 app.UseUserContext();
 app.UseAuthorization();
+app.UsePermissionEnforcement();
 
 app.MapAuditApi();
 app.MapCommentsApi();

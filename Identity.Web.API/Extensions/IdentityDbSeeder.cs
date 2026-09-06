@@ -18,6 +18,9 @@ public class IdentityDbSeeder : IDbSeeder<IdentityDbContext>
     private readonly ILogger<IdentityDbSeeder> _logger;
     private readonly IConfiguration _configuration;
 
+    /// <summary>本次 SeedPermissionsAsync 新增的叶子码（存量库增量补授权用）</summary>
+    private readonly List<string> _newlyAddedLeafCodes = new();
+
     /// <summary>权限码 → 中文名（资源段）</summary>
     private static readonly IReadOnlyDictionary<string, string> ResourceNames =
         new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -123,6 +126,8 @@ public class IdentityDbSeeder : IDbSeeder<IdentityDbContext>
                 byCode[code] = permission;
                 toAdd.Add(permission);
                 addedCount++;
+                if (isLeaf)
+                    _newlyAddedLeafCodes.Add(code);
             }
             else if (!node.IsDeleted && node.ParentId is null)
             {
@@ -248,6 +253,7 @@ public class IdentityDbSeeder : IDbSeeder<IdentityDbContext>
         if (roles.Any(r => r.Permissions.Count > 0))
         {
             _logger.LogInformation("角色-权限分配已存在，跳过");
+            await SeedIncrementalNewPermissionsAsync(context, roles);
             return;
         }
 
@@ -289,6 +295,59 @@ public class IdentityDbSeeder : IDbSeeder<IdentityDbContext>
         await context.SaveChangesAsync();
         var stats = roles.Select(r => $"{r.RoleName}:{r.Permissions.Count}").ToList();
         _logger.LogInformation("已初始化角色-权限分配: {Stats}", string.Join(", ", stats));
+    }
+
+    /// <summary>
+    /// 增量补授本次新增的叶子码（如 api:turn:read）：
+    /// 存量库已有角色分配时主授权逻辑整体跳过（幂等），新码永远不会被授予；
+    /// 此处只补「Seeder 本次新建」的 Api 叶子，不触碰任何既有授权——管理员手动撤权不受影响。
+    /// ROOT/ADMIN 全量补；USER 沿用排除规则（api:audit:*、api:identity:manage）；GUEST/UNKNOWN 不补。
+    /// </summary>
+    private async Task SeedIncrementalNewPermissionsAsync(
+        IdentityDbContext context, List<Roles> roles)
+    {
+        if (_newlyAddedLeafCodes.Count == 0)
+            return;
+
+        var newPermissions = await context.Permissions
+            .Where(p => p.PermissionType == PermissionType.Api && !p.IsDeleted
+                        && _newlyAddedLeafCodes.Contains(p.PermissionCode))
+            .ToListAsync();
+        if (newPermissions.Count == 0)
+            return;
+
+        var changed = false;
+        foreach (var role in roles)
+        {
+            var upper = role.RoleCode.ToUpperInvariant();
+            if (upper is not ("ROOT" or "ADMIN" or "USER"))
+                continue;
+
+            var granted = role.Permissions
+                .Select(p => p.PermissionCode)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var permission in newPermissions)
+            {
+                if (upper == "USER"
+                    && (permission.PermissionCode.StartsWith("api:audit:", StringComparison.OrdinalIgnoreCase)
+                        || permission.PermissionCode.Equals("api:identity:manage", StringComparison.OrdinalIgnoreCase)))
+                    continue;
+                if (granted.Add(permission.PermissionCode))
+                {
+                    role.Permissions.Add(permission);
+                    changed = true;
+                }
+            }
+        }
+
+        if (!changed)
+            return;
+
+        await context.SaveChangesAsync();
+        _logger.LogInformation(
+            "已为默认角色增量补授新增权限码 {Count} 个: {Codes}",
+            _newlyAddedLeafCodes.Count, string.Join(", ", _newlyAddedLeafCodes));
     }
 
     /// <summary>

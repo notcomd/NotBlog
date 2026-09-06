@@ -21,7 +21,8 @@ public static class CommentsApi
     {
         var group = app.MapGroup("/api/comments")
             .WithTags("Comments")
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .RequireResourcePermissions("api:comment");
 
         
         group.MapPost("/", AddCommentAsync)

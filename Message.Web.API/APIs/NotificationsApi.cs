@@ -11,7 +11,8 @@ public static class NotificationsApi
     {
         var group = app.MapGroup("/api/notifications")
             .WithTags("Notifications")
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .RequireResourcePermissions("api:notification");
 
         // GET / — 我的通知列表（分页，可按未读过滤）
         group.MapGet("/", GetNotificationsAsync)

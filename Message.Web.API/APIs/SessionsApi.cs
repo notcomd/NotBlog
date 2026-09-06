@@ -21,7 +21,8 @@ public static class SessionsApi
     {
         var group = app.MapGroup("/api/sessions")
             .WithTags("Sessions")
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .RequireResourcePermissions("api:session");
 
         // POST / — 创建会话
         group.MapPost("/", CreateSessionAsync)

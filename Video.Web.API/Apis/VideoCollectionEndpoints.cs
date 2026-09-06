@@ -9,6 +9,7 @@ public static class VideoCollectionEndpoints
     public static RouteGroupBuilder MapVideoCollectionEndpoints(this IEndpointRouteBuilder routes)
     {
         var group = routes.MapGroup("/api/videocollection")
+            .RequireResourcePermissions("api:videocollection")
             .WithTags("VideoCollection");
 
         // GET 查询所有收藏

@@ -9,6 +9,7 @@ public static class AddVideoEndpoints
     public static RouteGroupBuilder MapAddVideoEndpoints(this IEndpointRouteBuilder routes)
     {
         var group = routes.MapGroup("/api/addvideo")
+            .RequireResourcePermissions("api:addvideo")
             .WithTags("AddVideo")
             .DisableAntiforgery();
 
