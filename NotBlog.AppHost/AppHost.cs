@@ -118,7 +118,9 @@ var gateway = builder.AddProject<NotBlog_Yarp>("notblog-yarp-gateway")
     .WithReference(message)
     .WithReference(markdown)
     .WithReference(video)
-    .WithReference(filedev);
+    .WithReference(filedev)
+    .WithReference(redis)      // 权限映射 Redis 主存（PermissionMappingStore）
+    .WithReference(rabbitmq);  // 订阅 PermissionUpdatedIntegrationEvent（事件驱动刷新映射）
 
 
 if (!string.IsNullOrEmpty(gatewayInternalApiKey))

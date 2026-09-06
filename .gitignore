@@ -38,3 +38,9 @@ TestResults/
 
 # Aspire 部署工件（docker-compose.yaml / .env 等生成物，由 aspire publish 重新生成）
 aspire-output/
+
+# Yarp 网关权限映射运行时缓存（PermissionMappingStore 本地 JSON 回退，启动后自动生成）
+NotBlog_Yarp/permission-mappings.json
+
+# 运行时调试日志
+debug.log
