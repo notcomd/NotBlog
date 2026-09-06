@@ -19,7 +19,17 @@ public class PermissionRepository(IdentityDbContext dbContext) : IPermissionRepo
     {
         return await dbContext.Permissions
             .Where(p => !p.IsDeleted)
-            .OrderBy(p => p.CreatedAt)
+            .OrderBy(p => p.SortOrder)
+            .ThenBy(p => p.CreatedAt)
+            .ToListAsync(ct);
+    }
+
+    public async Task<List<Permission>> GetChildrenAsync(Guid parentId, CancellationToken ct = default)
+    {
+        return await dbContext.Permissions
+            .Where(p => p.ParentId == parentId)
+            .OrderBy(p => p.SortOrder)
+            .ThenBy(p => p.CreatedAt)
             .ToListAsync(ct);
     }
 

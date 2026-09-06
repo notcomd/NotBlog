@@ -5,10 +5,11 @@ namespace Identity.Web.API.Application.Commands;
 public record CreatePermissionCommand(
     string PermissionCode,
     string PermissionName,
-    string PermissionType,
-    string? MenuPath = null,
-    string? ApiMethod = null,
-    string? ApiUrl = null
+    PermissionType PermissionType,
+    Guid? ParentId = null,
+    string? Url = null,
+    string? Icon = null,
+    int SortOrder = 0
 ) : IRequest<CreatePermissionResult>, ILoggableCommand
 {
     public string IdProperty => nameof(PermissionCode);
@@ -17,13 +18,18 @@ public record CreatePermissionCommand(
 
 public record CreatePermissionResult(Guid PermissionId, string PermissionCode);
 
+/// <summary>
+/// 更新权限。语义：PermissionName/PermissionType/Url/Icon/SortOrder 传 null 表示不修改
+/// （Url/Icon 传空串表示清除）；ParentId 传 null 表示不修改父节点，Guid.Empty 表示移至根。
+/// </summary>
 public record UpdatePermissionCommand(
     Guid PermissionId,
-    string PermissionName,
-    string PermissionType,
-    string? MenuPath = null,
-    string? ApiMethod = null,
-    string? ApiUrl = null
+    string? PermissionName = null,
+    PermissionType? PermissionType = null,
+    Guid? ParentId = null,
+    string? Url = null,
+    string? Icon = null,
+    int? SortOrder = null
 ) : IRequest<bool>, ILoggableCommand
 {
     public string IdProperty => nameof(PermissionId);

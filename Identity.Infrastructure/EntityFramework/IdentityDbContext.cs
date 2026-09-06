@@ -70,7 +70,7 @@ public class IdentityDbContext : DbContext, IUnitOfWork
         modelBuilder.ApplyConfiguration(new NotClientEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new UserExternalLoginEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new ClientRequestTypeConfiguration());
-        modelBuilder.ApplyConfiguration(new PermissionEntityTypeConfigurtion());
+        modelBuilder.ApplyConfiguration(new PermissionEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new UserLoginHistoryEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new OutboxMessageTypeConfiguration());
     }

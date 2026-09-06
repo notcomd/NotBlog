@@ -8,7 +8,8 @@ namespace Identity.Web.API.Extensions;
 /// <summary>
 /// Identity 数据库种子数据初始化器。
 /// 启动时自动完成（均幂等，重复运行安全）：
-/// ① 权限映射初始数据：appsettings PermissionMappings → Permissions 表（按 Code 去重补齐）；
+/// ① 权限映射初始数据：appsettings PermissionMappings → Permissions 表（按 Code 去重补齐，
+///    并按 code 段前缀自动构建权限树：目录节点 PermissionType=Menu，叶子 PermissionType=Api）；
 /// ② 系统默认角色（已有角色则跳过）；
 /// ③ 默认角色-权限分配：ROOT/ADMIN 全量、USER 排除审计与身份管理、GUEST/UNKNOWN 不分配（已有分配则跳过）。
 /// </summary>
@@ -51,7 +52,13 @@ public class IdentityDbSeeder : IDbSeeder<IdentityDbContext>
         await SeedInitialAdminAsync(context);
     }
 
-    /// <summary>权限映射初始数据：appsettings PermissionMappings → Permissions 表（按 Code 幂等补齐）</summary>
+    /// <summary>
+    /// 权限映射初始数据：appsettings PermissionMappings → Permissions 表（按 Code 幂等补齐），
+    /// 并按 code 段前缀自动构建权限树：
+    ///   api:tweet:read → api(Menu 根) → api:tweet(Menu 目录) → api:tweet:read(Api 叶子)
+    /// 幂等规则：只补不删；已存在节点不动其名称/类型；已存在但未挂父（ParentId 为 null）的
+    /// 节点按 code 前缀补挂到目录下——目录已存在而叶子为空挂父属首次建树，此后不再变动。
+    /// </summary>
     private async Task SeedPermissionsAsync(IdentityDbContext context)
     {
         var mappings = _configuration.GetSection("PermissionMappings").Get<List<PermissionMappingItem>>();
@@ -65,27 +72,89 @@ public class IdentityDbSeeder : IDbSeeder<IdentityDbContext>
             .Select(m => m.Code)
             .Where(c => !string.IsNullOrWhiteSpace(c))
             .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(c => c, StringComparer.OrdinalIgnoreCase)
             .ToList();
-
-        var existing = await context.Permissions
-            .Where(p => codes.Contains(p.PermissionCode))
-            .Select(p => p.PermissionCode)
-            .ToListAsync();
-
-        var toAdd = codes
-            .Except(existing, StringComparer.OrdinalIgnoreCase)
-            .Select(code => new Permission(code, ResolvePermissionName(code), "api"))
-            .ToList();
-
-        if (toAdd.Count == 0)
-        {
-            _logger.LogInformation("权限初始数据已就绪（{Count} 个权限码）", existing.Count);
+        if (codes.Count == 0)
             return;
+
+        // 收集全部需要存在的节点：叶子码 + 其每级段前缀（目录）
+        // 例 api:tweet:read → [api, api:tweet] 为目录，api:tweet:read 为叶子
+        var required = new List<(string Code, bool IsLeaf, int SortOrder)>();
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var code in codes)
+        {
+            var segments = code.Split(':');
+            for (var depth = 1; depth <= segments.Length; depth++)
+            {
+                var prefix = string.Join(':', segments.Take(depth));
+                if (seen.Add(prefix))
+                    required.Add((prefix, depth == segments.Length, required.Count));
+            }
         }
 
-        await context.Permissions.AddRangeAsync(toAdd);
-        await context.SaveChangesAsync();
-        _logger.LogInformation("已写入 {Count} 个权限初始数据（共 {Total} 个权限码）", toAdd.Count, codes.Count);
+        // ⚠️ 查询范围必须覆盖 required 中的全部 code（目录节点含段前缀，不在叶子 codes 集合内），
+        // 否则目录节点每次启动都被当作「不存在」重复创建，破坏幂等
+        var allCodes = required.Select(r => r.Code).ToList();
+        var existing = await context.Permissions
+            .Where(p => allCodes.Contains(p.PermissionCode))
+            .ToListAsync();
+        var byCode = new Dictionary<string, Permission>(StringComparer.OrdinalIgnoreCase);
+        foreach (var e in existing)
+            byCode[e.PermissionCode] = e;
+
+        var toAdd = new List<Permission>();
+        var addedCount = 0;
+        var linkedCount = 0;
+
+        // required 已按段深升序（父先于子），逐节点补齐并挂接
+        foreach (var (code, isLeaf, sortOrder) in required)
+        {
+            if (!byCode.TryGetValue(code, out var node))
+            {
+                var type = isLeaf ? PermissionType.Api : PermissionType.Menu;
+                var parent = ResolveParentCode(code);
+                var permission = new Permission(
+                    code,
+                    ResolvePermissionName(code),
+                    type,
+                    parent is not null && byCode.TryGetValue(parent, out var parentNode) ? parentNode.PermissionId : null,
+                    null, null, sortOrder);
+                byCode[code] = permission;
+                toAdd.Add(permission);
+                addedCount++;
+            }
+            else if (!node.IsDeleted && node.ParentId is null)
+            {
+                // 已存在但未挂父：按 code 前缀补挂（父目录需已存在——required 段深升序保证其先被处理）
+                var parent = ResolveParentCode(code);
+                if (parent is not null && byCode.TryGetValue(parent, out var parentNode))
+                {
+                    node.ChangeParent(parentNode.PermissionId);
+                    linkedCount++;
+                }
+            }
+        }
+
+        if (toAdd.Count > 0)
+        {
+            await context.Permissions.AddRangeAsync(toAdd);
+            await context.SaveChangesAsync();
+        }
+        else if (linkedCount > 0)
+        {
+            await context.SaveChangesAsync();
+        }
+
+        _logger.LogInformation(
+            "权限初始数据就绪：共 {Total} 个权限码，本次新增 {Added} 个节点，补挂父节点 {Linked} 个",
+            codes.Count, addedCount, linkedCount);
+    }
+
+    /// <summary>取 code 的父目录 code（去掉末段；无父返回 null）</summary>
+    private static string? ResolveParentCode(string code)
+    {
+        var idx = code.LastIndexOf(':');
+        return idx <= 0 ? null : code[..idx];
     }
 
     /// <summary>系统默认角色（已存在则跳过）</summary>
@@ -135,16 +204,18 @@ public class IdentityDbSeeder : IDbSeeder<IdentityDbContext>
             {
                 case "ROOT":
                 case "ADMIN":
-                    foreach (var p in permissions)
-                        role.Permissions.Add(p);
-                    break;
-
                 case "USER":
+                    // ⚠️ 只授叶子（PermissionType.Api）：目录/菜单节点不直接入库授权——
+                    // 否则 "api:audit" 目录码不匹配 StartsWith("api:audit:") 排除规则，
+                    // 前缀段匹配会让 USER 放行全部审计权限（权限提升漏洞）。
+                    // 目录级授权留给管理端按树勾选（RolePermissions 存目录码 + 前缀匹配自动覆盖子孙）。
                     foreach (var p in permissions)
                     {
-                        if (p.PermissionCode.StartsWith("api:audit:", StringComparison.OrdinalIgnoreCase))
+                        if (p.PermissionType != PermissionType.Api)
                             continue;
-                        if (p.PermissionCode.Equals("api:identity:manage", StringComparison.OrdinalIgnoreCase))
+                        if (role.RoleCode.ToUpperInvariant() == "USER"
+                            && (p.PermissionCode.StartsWith("api:audit:", StringComparison.OrdinalIgnoreCase)
+                                || p.PermissionCode.Equals("api:identity:manage", StringComparison.OrdinalIgnoreCase)))
                             continue;
                         role.Permissions.Add(p);
                     }
@@ -213,15 +284,20 @@ public class IdentityDbSeeder : IDbSeeder<IdentityDbContext>
         _logger.LogInformation("已创建初始化管理用户: {Email}（角色 Root）", email);
     }
 
-    /// <summary>权限码 → 中文名（如 api:tweet:read → 推文-读取）</summary>
+    /// <summary>
+    /// 权限码 → 中文名：
+    ///   api → 接口（根目录）；api:tweet → 推文（模块目录）；api:tweet:read → 推文-读取（叶子）
+    /// </summary>
     private static string ResolvePermissionName(string code)
     {
         var parts = code.Split(':');
-        if (parts.Length < 3)
-            return code;
+        if (parts.Length == 1)
+            return parts[0].Equals("api", StringComparison.OrdinalIgnoreCase) ? "接口" : parts[0].ToUpperInvariant();
+        if (parts.Length == 2)
+            return ResourceNames.TryGetValue(parts[1], out var rn) ? rn : parts[1];
 
-        var resourceName = ResourceNames.TryGetValue(parts[1], out var rn) ? rn : parts[1];
-        var actionName = ActionNames.TryGetValue(parts[2], out var an) ? an : parts[2];
+        var resourceName = ResourceNames.TryGetValue(parts[1], out var resource) ? resource : parts[1];
+        var actionName = ActionNames.TryGetValue(parts[^1], out var action) ? action : parts[^1];
         return $"{resourceName}-{actionName}";
     }
 

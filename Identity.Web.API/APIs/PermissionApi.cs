@@ -136,6 +136,45 @@ public static class PermissionApi
         }
     }
 
+    /// <summary>
+    /// GET /api/identity/permission/permission/tree — 权限树查询（管理端渲染/勾选用）
+    /// 返回未删除节点组装成的森林（根节点列表，children 嵌套）。
+    /// </summary>
+    private static async Task<IResult> GetPermissionTreeAsync(
+        [FromServices] IPermissionRepository permissionRepository,
+        CancellationToken ct)
+    {
+        var all = await permissionRepository.GetAllAsync(ct);
+        if (all.Count == 0)
+            return Results.Ok(new List<PermissionTreeNodeDto>());
+
+        // 第一遍：浅层 DTO 字典（children 待挂接）
+        var nodes = new Dictionary<Guid, PermissionTreeNodeDto>(all.Count);
+        foreach (var p in all)
+            nodes[p.PermissionId] = new PermissionTreeNodeDto(
+                p.PermissionId,
+                p.ParentId,
+                p.PermissionCode,
+                p.PermissionName,
+                p.PermissionType,
+                p.Url,
+                p.Icon,
+                p.SortOrder);
+
+        // 第二遍：按 SortOrder 顺序（GetAllAsync 已排序）把子节点挂到父的 Children
+        var roots = new List<PermissionTreeNodeDto>();
+        foreach (var p in all)
+        {
+            var node = nodes[p.PermissionId];
+            if (p.ParentId is { } parentId && nodes.TryGetValue(parentId, out var parent))
+                parent.Children.Add(node);
+            else
+                roots.Add(node); // 父缺失/已删除 → 提升为根（防悬挂节点不可达）
+        }
+
+        return Results.Ok(roots);
+    }
+
     // ──────────── 网关映射查询（已有）────────────
 
     /// <summary>
@@ -252,4 +291,20 @@ public sealed record PermissionCheckRequest
     public Guid UserId { get; init; }
 
     public string PermissionCode { get; init; } = string.Empty;
+}
+
+/// <summary>
+/// 权限树节点 DTO（children 递归嵌套；PermissionType 序列化为数字 1/2/3）
+/// </summary>
+public sealed record PermissionTreeNodeDto(
+    Guid PermissionId,
+    Guid? ParentId,
+    string PermissionCode,
+    string PermissionName,
+    PermissionType PermissionType,
+    string? Url,
+    string? Icon,
+    int SortOrder)
+{
+    public List<PermissionTreeNodeDto> Children { get; } = new();
 }

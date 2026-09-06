@@ -11,7 +11,9 @@ namespace Identity.Infrastructure.Services;
 ///   2. 查询匹配的 Roles（过滤已删除/禁用）
 ///   3. 收集直连 Permissions（过滤已删除）
 ///   4. 从 Roles 中收集 RoleGroupGuids → 查询 RoleGroups → Permissions（组继承，过滤已删除）
-///   5. 合并去重 → 判断是否包含目标 permission_code
+///   5. 合并去重 → 前缀段匹配目标 permission_code：
+///      授权集合中任意码 a 命中目标码 code ⟺ a == code 或 code.StartsWith(a + ":")
+///      （树状权限：授权目录/父节点 = 自动放行其全部子孙，如授权 api:tweet 即放行 api:tweet:read）
 /// 
 /// 数据范围判定:
 ///   Root/Admin 角色 → DataScopeType.All
@@ -62,7 +64,10 @@ public class PermissionChecker : IPermissionChecker
         {
             // P4：统一走缓存后的权限集合（直连 + 组继承，去重），一次缓存命中替代多次 DB 查询
             var permissions = await GetUserPermissionsAsync(userId, ct);
-            var hasPermission = permissions.Contains(permissionCode);
+            // 树状权限：前缀段匹配——授权集合含目标码自身，或含其某个祖先段码（目录授权覆盖子孙）
+            var hasPermission = permissions.Any(granted =>
+                string.Equals(permissionCode, granted, StringComparison.OrdinalIgnoreCase)
+                || permissionCode.StartsWith(granted + ":", StringComparison.OrdinalIgnoreCase));
 
             _logger.LogDebug(
                 "[PermissionChecker] Result={Result} UserId={UserId} Code={PermissionCode}",
@@ -124,7 +129,8 @@ public class PermissionChecker : IPermissionChecker
                     .ToListAsync(ct)
                 : [];
 
-            var allCodes = new HashSet<string>(directCodes);
+            // 授权码集合：叶子码与目录码并存（授权目录 = 覆盖其子孙，判定时前缀段匹配）
+            var allCodes = new HashSet<string>(directCodes, StringComparer.OrdinalIgnoreCase);
             foreach (var code in groupCodes)
                 allCodes.Add(code);
 
