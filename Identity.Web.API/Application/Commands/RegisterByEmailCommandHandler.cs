@@ -27,10 +27,11 @@ public class RegisterByEmailCommandHandler(
         var user = await User.CreateByEmailUser(
             userRole.RoleGuid, request.Email, initialPassword, null, null);
         await userRepository.AddOneByUserAsync(user);
-
+         userRole.AddUserGuid(user.UserGuid);
         try
         {
             await userRepository.UnitOfWork.SaveChangesAsync(cancellationToken);
+            await userRoleRepository.UnitOfWork.SaveChangesAsync(cancellationToken);
         }
         catch (DbUpdateException)
         {
