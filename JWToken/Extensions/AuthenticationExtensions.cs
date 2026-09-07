@@ -6,7 +6,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Notcomd.Token.JWT.Core;
-using SecurityAlgorithms = Notcomd.Token.JWT.Core.SecurityAlgorithms;
 
 namespace Notcomd.Token.JWT.Extensions;
 
@@ -29,7 +28,8 @@ public static class AuthenticationExtensions
             .AddJwtBearer(x =>
             {
                 x.TokenValidationParameters = BuildValidationParameters(options);
-                AttachBlacklistCheck(x);
+                // ⚠️ 勿在 AttachBlacklistCheck 之后整体覆盖 x.Events：OnTokenValidated 黑名单检查会丢失
+                AttachBlacklistCheck(x, logAuthenticationFailed: true);
             });
     }
 
@@ -81,19 +81,6 @@ public static class AuthenticationExtensions
             "JWT 签名密钥未配置：请在环境变量 JWT_PRIVATE_KEY（或配置 JwtOptions:PrivateKey）中设置。");
     }
 
-    private static string ResolveEnvironmentPrivateKey(string? environmentKey)
-    {
-        if (!string.IsNullOrWhiteSpace(environmentKey))
-            return environmentKey;
-
-        var envKey = Environment.GetEnvironmentVariable(environmentKey);
-        if (!string.IsNullOrWhiteSpace(envKey))
-            return envKey;
-
-        throw new InvalidOperationException(
-            "JWT 签名密钥未配置：请在环境变量  JwtOptions:PrivateKey）中设置。");
-    }
-
     /// <summary>
     /// 注册 JWT 服务（不注册认证中间件，适用于微服务客户端场景）JWT_PRIVATE_KEY（或配置
     /// </summary>
@@ -107,41 +94,67 @@ public static class AuthenticationExtensions
     /// <summary>
     /// 接入黑名单校验（S-12）：Token 被吊销（RevokeTokenAsync）或 RefreshToken 被使用后，
     /// 即使签名有效也会在 OnTokenValidated 阶段被拒绝。
-    /// 注意：黑名单当前为进程内实现，多实例部署需替换为 Redis 共享存储后即可全局生效，
-    /// JwtBearer 挂接逻辑无需改动。
+    /// 合并进既有 x.Events（若宿主已设置）而非整体覆盖；宿主在 PostConfigure 中改动
+    /// JwtBearerOptions.Events 时必须保留 OnTokenValidated（见 Message 的 Hub access_token 配置）。
+    /// 注意：黑名单当前为进程内实现，多实例/跨服务部署需替换为 Redis 共享存储后即可全局生效。
     /// </summary>
-    private static void AttachBlacklistCheck(JwtBearerOptions x)
+    private static void AttachBlacklistCheck(JwtBearerOptions x, bool logAuthenticationFailed = false)
     {
-        x.Events = new JwtBearerEvents
+        var events = x.Events ?? new JwtBearerEvents();
+
+        // 保留宿主既有钩子（如 Message PostConfigure 的 OnMessageReceived）
+        var previousValidated = events.OnTokenValidated;
+        events.OnTokenValidated = async context =>
         {
-            OnTokenValidated = context =>
-            {
-                var tokenService = context.HttpContext.RequestServices.GetService<IJwtTokenService>();
-                if (tokenService is null)
-                    return Task.CompletedTask;
-
-                var rawToken = context.SecurityToken is JwtSecurityToken jwt
-                    ? jwt.RawData
-                    : context.Request.Headers.Authorization.ToString()
-                        .Replace("Bearer ", string.Empty, StringComparison.OrdinalIgnoreCase)
-                        .Trim();
-
-                if (tokenService.IsRevoked(rawToken))
-                    context.Fail("Token 已吊销，请重新登录");
-
-                return Task.CompletedTask;
-            }
+            if (previousValidated is not null)
+                await previousValidated(context);
+            await CheckBlacklistAsync(context);
         };
+
+        if (logAuthenticationFailed)
+        {
+            var previousFailed = events.OnAuthenticationFailed;
+            events.OnAuthenticationFailed = async context =>
+            {
+                if (previousFailed is not null)
+                    await previousFailed(context);
+                Console.WriteLine($"JWT验证失败: {context.Exception.Message}");
+            };
+        }
+
+        x.Events = events;
+    }
+
+    /// <summary>黑名单校验（吊销的 AccessToken / 已使用的 RefreshToken 即使签名有效也被拒绝）</summary>
+    private static Task CheckBlacklistAsync(TokenValidatedContext context)
+    {
+        var tokenService = context.HttpContext.RequestServices.GetService<IJwtTokenService>();
+        if (tokenService is null)
+            return Task.CompletedTask;
+
+        var rawToken = context.SecurityToken is JwtSecurityToken jwt
+            ? jwt.RawData
+            : context.Request.Headers.Authorization.ToString()
+                .Replace("Bearer ", string.Empty, StringComparison.OrdinalIgnoreCase)
+                .Trim();
+
+        if (tokenService.IsRevoked(rawToken))
+            context.Fail("Token 已吊销，请重新登录");
+
+        return Task.CompletedTask;
     }
 
     private static TokenValidationParameters BuildValidationParameters(JwtOptions options)
     {
         var audience = options.Audiences ?? options.Issuer;
+        // ⚠️ HS384 是 HMAC-SHA384（对称），此前误映射为 EcdsaSha384（非对称）——
+        // 未设 ValidAlgorithms 时被宽松放过未暴露；现修正并用 ValidAlgorithms 收紧
+        // 为与签发侧完全一致的算法白名单（配置漂移立即显形，防算法混淆）。
         var algorithm = options.Algorithm switch
         {
-            "HS384" => SecurityAlgorithms.HmacSha384,
-            "HS512" => SecurityAlgorithms.HmacSha512,
-            _ => SecurityAlgorithms.HmacSha256
+            "HS384" => Microsoft.IdentityModel.Tokens.SecurityAlgorithms.HmacSha384,
+            "HS512" => Microsoft.IdentityModel.Tokens.SecurityAlgorithms.HmacSha512,
+            _ => Microsoft.IdentityModel.Tokens.SecurityAlgorithms.HmacSha256
         };
 
         return new TokenValidationParameters
@@ -153,7 +166,7 @@ public static class AuthenticationExtensions
             ValidIssuer = options.Issuer,
             ValidAudience = audience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(options.PrivateKey)),
-            TokenDecryptionKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(options.PrivateKey)),
+            ValidAlgorithms = [algorithm],
             ClockSkew = TimeSpan.FromSeconds(options.ClockSkewSeconds)
         };
     }

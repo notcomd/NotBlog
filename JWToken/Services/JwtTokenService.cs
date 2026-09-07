@@ -8,7 +8,6 @@ using System.Text.Json;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Notcomd.Token.JWT.Core;
-using SecurityAlgorithms = Notcomd.Token.JWT.Core.SecurityAlgorithms;
 
 namespace Notcomd.Token.JWT;
 
@@ -40,7 +39,7 @@ public class JwtTokenService : IJwtTokenService
     /// </summary>
     public string BuilderTokenAsync(IEnumerable<Claim> claims, JwtOptions configuration)
     {
-        var result = BuildTokenInternal(claims, configuration);
+        var result = BuildTokenInternal(claims, configuration, DateTime.UtcNow);
         return new JwtSecurityTokenHandler().WriteToken(result);
     }
 
@@ -54,7 +53,7 @@ public class JwtTokenService : IJwtTokenService
         var now = DateTime.UtcNow;
         var expiry = now.AddSeconds(configuration.ExpireSeconds);
 
-        var token = BuildTokenInternal(claims, configuration);
+        var token = BuildTokenInternal(claims, configuration, now);
         var accessToken = new JwtSecurityTokenHandler().WriteToken(token);
 
         var refreshToken = GenerateRefreshToken(claims, configuration, now);
@@ -171,16 +170,31 @@ public class JwtTokenService : IJwtTokenService
 
     public Task RevokeTokenAsync(string token, DateTimeOffset? expiresAt = null)
     {
-        var capacity = _options.Value.BlacklistCapacity;
-        // LRU 淘汰：超过容量时清空一半
+        var capacity = Math.Max(_options.Value.BlacklistCapacity, 1);
+        var retention = expiresAt ?? DateTimeOffset.UtcNow.AddHours(24);
+
         if (_blacklist.Count >= capacity)
         {
-            var keysToRemove = _blacklist.OrderBy(kv => kv.Value).Take(capacity / 2).Select(kv => kv.Key);
-            foreach (var key in keysToRemove)
+            // 1) 先清理已过期条目（防内存泄漏；旧实现直接按过期时刻 LRU 会误删
+            //    「尚未过期」的有效吊销，令被吊销 token 复活）
+            var now = DateTimeOffset.UtcNow;
+            foreach (var key in _blacklist.Where(kv => kv.Value <= now).Select(kv => kv.Key).ToList())
                 _blacklist.TryRemove(key, out _);
+
+            // 2) 仍超容量才按「最早过期」淘汰（此时剩余均未过期，属于容量兜底降级）
+            if (_blacklist.Count >= capacity)
+            {
+                var keysToRemove = _blacklist
+                    .OrderBy(kv => kv.Value)
+                    .Take(Math.Max(capacity / 2, 1))
+                    .Select(kv => kv.Key)
+                    .ToList();
+                foreach (var key in keysToRemove)
+                    _blacklist.TryRemove(key, out _);
+            }
         }
 
-        _blacklist[token] = expiresAt ?? DateTimeOffset.UtcNow.AddHours(24);
+        _blacklist[token] = retention;
         return Task.CompletedTask;
     }
 
@@ -193,21 +207,34 @@ public class JwtTokenService : IJwtTokenService
         if (string.IsNullOrWhiteSpace(token))
             return true;
 
-        return _blacklist.ContainsKey(token);
+        if (_blacklist.TryGetValue(token, out var expiresAt))
+        {
+            // 条目已过保留期：token 自身必然也已过期（吊销保留期 = token 有效期终点），
+            // 惰性移除防泄漏，返回 false 与「自然过期」语义一致
+            if (expiresAt <= DateTimeOffset.UtcNow)
+            {
+                _blacklist.TryRemove(token, out _);
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
-    private JwtSecurityToken BuildTokenInternal(IEnumerable<Claim> claims, JwtOptions config)
+    private JwtSecurityToken BuildTokenInternal(
+        IEnumerable<Claim> claims, JwtOptions config, DateTime now)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config.PrivateKey));
         var algorithm = config.Algorithm switch
         {
-            "HS384" => SecurityAlgorithms.HmacSha384,
-            "HS512" => SecurityAlgorithms.HmacSha512,
-            _ => SecurityAlgorithms.HmacSha256
+            "HS384" => Microsoft.IdentityModel.Tokens.SecurityAlgorithms.HmacSha384,
+            "HS512" => Microsoft.IdentityModel.Tokens.SecurityAlgorithms.HmacSha512,
+            _ => Microsoft.IdentityModel.Tokens.SecurityAlgorithms.HmacSha256
         };
 
         var signingCredentials = new SigningCredentials(key, algorithm);
-        var now = DateTime.UtcNow;
         var audience = ResolveAudience(config);
 
         return new JwtSecurityToken(

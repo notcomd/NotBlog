@@ -54,6 +54,9 @@ public static class ServiceCollectionExtensions
         // （覆盖全部 Hub 路径：/MessageHub、/CommunityHub、/CallHub）
         services.PostConfigure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
         {
+            // ⚠️ 保留 AddJwtAuthentication 挂接的 OnTokenValidated（黑名单/吊销检查）——
+            // 整体 new JwtBearerEvents 会把该钩子覆盖掉（JWT 吊销在 Message 端失效）
+            var blacklistCheck = options.Events?.OnTokenValidated;
             options.Events = new JwtBearerEvents
             {
                 OnMessageReceived = context =>
@@ -66,7 +69,8 @@ public static class ServiceCollectionExtensions
                     }
 
                     return Task.CompletedTask;
-                }
+                },
+                OnTokenValidated = blacklistCheck ?? (_ => Task.CompletedTask)
             };
         });
     }
