@@ -37,6 +37,10 @@ builder.Configuration.ConfigureReviewContentOptions();
 builder.Services.Configure<GrpcClientOptions>(
     builder.Configuration.GetSection(GrpcClientOptions.SectionName));
 
+// FileDev gRPC 命名 HttpClient：ServiceDefaults 已为其注入服务发现（解析服务名 filedev-web-api）
+// 与标准重试/日志管道；真正的 gRPC Channel 在 UploadVideoViaGrpcCommandHandler 内构建（需自定义消息大小上限）。
+builder.Services.AddHttpClient(UploadVideoViaGrpcCommandHandler.FileDevGrpcHttpClientName);
+
 // Add HTTP client for streaming proxy to FileDev
 builder.Services.AddHttpClient("FileDevProxy", client =>
 {

@@ -73,11 +73,14 @@ builder.Services.RemoveAbstractHandlerRegistrations(); // 移除抽象泛型基�
 builder.Services.AddScoped<IdentityService>();
 
 // ═══ gRPC 客户端注册（调用 FileDev 文件服务） ═══
+// 优先经 Aspire 服务发现解析服务名（filedev-web-api，与 AppHost 注册名一致）；
+// 脱离 AppHost 独立运行时，用 appsettings FileStorageGrpc:Address 作为兜底地址（如 https://localhost:9093）。
 builder.Services.AddGrpcClient<Identity.Web.API.Grpc.FileStorage.FileStorageClient>(o =>
 {
-    var grpcAddress = builder.Configuration["FileStorageGrpc:Address"]
-        ?? "https://localhost:5002";
-    o.Address = new Uri(grpcAddress);
+    var configuredAddress = builder.Configuration["FileStorageGrpc:Address"];
+    o.Address = new Uri(string.IsNullOrWhiteSpace(configuredAddress)
+        ? "https://filedev-web-api"
+        : configuredAddress);
 })
 .ConfigurePrimaryHttpMessageHandler(() =>
 {

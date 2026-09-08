@@ -17,9 +17,16 @@ public class UploadVideoViaGrpcCommandHandler(
     IVideoCacheService cacheService,
     ILogger<UploadVideoViaGrpcCommandHandler> logger,
     IOptionsSnapshot<GrpcClientOptions> grpcOptions,
+    IHttpClientFactory httpClientFactory,
     IHttpContextAccessor httpContextAccessor)
     : IRequestHandler<UploadVideoViaGrpcCommand, UploadVideoViaGrpcResult>
 {
+    /// <summary>FileDev gRPC 的命名 HttpClient 名（Program.cs 已注册，ServiceDefaults 注入服务发现）。</summary>
+    public const string FileDevGrpcHttpClientName = "filedev-web-api";
+
+    /// <summary>FileDev gRPC 虚拟主机名（与 AppHost 注册服务名一致，经 Aspire 服务发现解析）。</summary>
+    private const string FileDevGrpcVirtualHost = "https://filedev-web-api";
+
     public async Task<UploadVideoViaGrpcResult> Handler(UploadVideoViaGrpcCommand command,
         CancellationToken cancellationToken)
     {
@@ -27,9 +34,17 @@ public class UploadVideoViaGrpcCommandHandler(
 
         try
         {
-            using var channel = GrpcChannel.ForAddress(grpcOptions.Value.FileDevGrpcAddress,
+            // 地址优先经 Aspire 服务发现解析服务名；独立运行时用 GrpcClient:FileDevGrpcAddress 配置兜底（如 https://localhost:9093）
+            var configuredAddress = grpcOptions.Value.FileDevGrpcAddress;
+            var targetAddress = string.IsNullOrWhiteSpace(configuredAddress)
+                ? FileDevGrpcVirtualHost
+                : configuredAddress;
+
+            using var channel = GrpcChannel.ForAddress(targetAddress,
                 new GrpcChannelOptions
                 {
+                    // 复用命名 HttpClient：携带 ServiceDefaults 注入的服务发现解析器 / 证书处理管道
+                    HttpClient = httpClientFactory.CreateClient(FileDevGrpcHttpClientName),
                     MaxReceiveMessageSize = grpcOptions.Value.MaxMessageSizeMb * 1024 * 1024,
                     MaxSendMessageSize = grpcOptions.Value.MaxMessageSizeMb * 1024 * 1024
                 });
@@ -160,6 +175,6 @@ public class UploadVideoViaGrpcCommandHandler(
 public class GrpcClientOptions
 {
     public const string SectionName = "GrpcClient";
-    public string FileDevGrpcAddress { get; set; } = "https://localhost:5001";
+    public string FileDevGrpcAddress { get; set; } = "https://localhost:9093";
     public int MaxMessageSizeMb { get; set; } = 512;
 }
