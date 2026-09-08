@@ -1,4 +1,4 @@
-namespace Message.Web.API.APIs;
+﻿namespace Message.Web.API.APIs;
 
 /// <summary>
 /// 用户资料接口（静态函数模式 + CQRS）。
@@ -18,37 +18,37 @@ public static class UserInfoApi
         group.MapGet("/me", GetMyInfoAsync)
             .WithSummary("我的用户资料")
             .WithDescription("获取当前用户的等级、硬币余额、背景封面；未创建过资料时返回默认值")
-            .Produces<ApiResponse<UserInfoDto>>();
+            .Produces<ApiResponseResult<UserInfoDto>>();
 
         // PUT /me/background — 更新背景封面（空白清除）
         group.MapPut("/me/background", UpdateBackgroundAsync)
             .WithSummary("更新背景封面")
             .Accepts<UpdateBackgroundCoverRequest>("application/json")
-            .Produces<ApiResponse>();
+            .Produces<ApiResponseResult>();
 
         // PUT /me/bio — 更新个人签名（空白清除）
         group.MapPut("/me/bio", UpdateBioAsync)
             .WithSummary("更新个人签名")
             .Accepts<UpdateUserBioRequest>("application/json")
-            .Produces<ApiResponse>();
+            .Produces<ApiResponseResult>();
 
         // POST /sign-in — 每日签到（+250 经验）
         group.MapPost("/sign-in", SignInAsync)
             .WithSummary("每日签到")
             .WithDescription("签到获得 250 经验并自动升级；每日一次，重复签到返回 400")
-            .Produces<ApiResponse<SignInResultDto>>();
+            .Produces<ApiResponseResult<SignInResultDto>>();
 
         // POST /me/coins/add — 增加硬币
         group.MapPost("/me/coins/add", AddCoinsAsync)
             .WithSummary("增加硬币")
             .Accepts<CoinAmountRequest>("application/json")
-            .Produces<ApiResponse>();
+            .Produces<ApiResponseResult>();
 
         // POST /me/coins/consume — 扣除硬币（余额不足 400）
         group.MapPost("/me/coins/consume", ConsumeCoinsAsync)
             .WithSummary("扣除硬币")
             .Accepts<CoinAmountRequest>("application/json")
-            .Produces<ApiResponse>();
+            .Produces<ApiResponseResult>();
 
         return group;
     }
@@ -61,11 +61,11 @@ public static class UserInfoApi
         try
         {
             var dto = await mediator.SendAsync(new GetMyUserInfoQuery(currentUser.GetUserId()), ct);
-            return Results.Ok(ApiResponse<UserInfoDto>.Ok(dto));
+            return Results.Ok(ApiResponseResult<UserInfoDto>.Ok(dto));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<UserInfoDto>.Error($"获取用户资料失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<UserInfoDto>.Error($"获取用户资料失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -77,15 +77,15 @@ public static class UserInfoApi
         try
         {
             var result = await mediator.SendAsync(new SignInCommand(currentUser.GetUserId()), ct);
-            return Results.Ok(ApiResponse<SignInResultDto>.Ok(result));
+            return Results.Ok(ApiResponseResult<SignInResultDto>.Ok(result));
         }
         catch (InvalidOperationException ex)
         {
-            return Results.Ok(ApiResponse<SignInResultDto>.BadRequest(ex.Message));
+            return Results.Json(ApiResponseResult<SignInResultDto>.BadRequest(ex.Message), statusCode: 400);
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<SignInResultDto>.Error($"签到失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<SignInResultDto>.Error($"签到失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -98,15 +98,15 @@ public static class UserInfoApi
         try
         {
             await mediator.SendAsync(new UpdateBackgroundCoverCommand(currentUser.GetUserId(), request.BackgroundCoverUrl), ct);
-            return Results.Ok(ApiResponse.Ok("背景封面已更新"));
+            return Results.Ok(ApiResponseResult.Ok("背景封面已更新"));
         }
         catch (ArgumentException ex)
         {
-            return Results.Ok(ApiResponse.BadRequest(ex.Message));
+            return Results.Json(ApiResponseResult.BadRequest(ex.Message), statusCode: 400);
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse.Error($"更新背景封面失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult.Error($"更新背景封面失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -119,15 +119,15 @@ public static class UserInfoApi
         try
         {
             await mediator.SendAsync(new UpdateUserBioCommand(currentUser.GetUserId(), request.Bio), ct);
-            return Results.Ok(ApiResponse.Ok("个人签名已更新"));
+            return Results.Ok(ApiResponseResult.Ok("个人签名已更新"));
         }
         catch (ArgumentException ex)
         {
-            return Results.Ok(ApiResponse.BadRequest(ex.Message));
+            return Results.Json(ApiResponseResult.BadRequest(ex.Message), statusCode: 400);
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse.Error($"更新个人签名失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult.Error($"更新个人签名失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -140,15 +140,15 @@ public static class UserInfoApi
         try
         {
             await mediator.SendAsync(new AddUserCoinsCommand(currentUser.GetUserId(), request.Amount), ct);
-            return Results.Ok(ApiResponse.Ok("硬币已增加"));
+            return Results.Ok(ApiResponseResult.Ok("硬币已增加"));
         }
         catch (ArgumentException ex)
         {
-            return Results.Ok(ApiResponse.BadRequest(ex.Message));
+            return Results.Json(ApiResponseResult.BadRequest(ex.Message), statusCode: 400);
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse.Error($"增加硬币失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult.Error($"增加硬币失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -161,19 +161,19 @@ public static class UserInfoApi
         try
         {
             await mediator.SendAsync(new ConsumeUserCoinsCommand(currentUser.GetUserId(), request.Amount), ct);
-            return Results.Ok(ApiResponse.Ok("硬币已扣除"));
+            return Results.Ok(ApiResponseResult.Ok("硬币已扣除"));
         }
         catch (ArgumentException ex)
         {
-            return Results.Ok(ApiResponse.BadRequest(ex.Message));
+            return Results.Json(ApiResponseResult.BadRequest(ex.Message), statusCode: 400);
         }
         catch (InvalidOperationException ex)
         {
-            return Results.Ok(ApiResponse.BadRequest(ex.Message));
+            return Results.Json(ApiResponseResult.BadRequest(ex.Message), statusCode: 400);
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse.Error($"扣除硬币失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult.Error($"扣除硬币失败: {ex.Message}"), statusCode: 500);
         }
     }
 }

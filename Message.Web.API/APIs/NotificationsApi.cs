@@ -1,4 +1,4 @@
-namespace Message.Web.API.APIs;
+﻿namespace Message.Web.API.APIs;
 
 /// <summary>
 /// 站内通知接口（静态函数模式 + CQRS，R-04）。
@@ -18,23 +18,23 @@ public static class NotificationsApi
         group.MapGet("/", GetNotificationsAsync)
             .WithSummary("我的通知列表")
             .WithDescription("获取当前用户的通知列表，支持分页与未读过滤")
-            .Produces<ApiResponse<PagedResult<NotificationDto>>>();
+            .Produces<ApiResponseResult<PagedResult<NotificationDto>>>();
 
         // GET /unread-count — 未读数
         group.MapGet("/unread-count", GetUnreadCountAsync)
             .WithSummary("未读通知数")
             .WithDescription("获取当前用户的未读通知数量")
-            .Produces<ApiResponse<int>>();
+            .Produces<ApiResponseResult<int>>();
 
         // PUT /read-all — 全部已读
         group.MapPut("/read-all", MarkAllReadAsync)
             .WithSummary("全部标记已读")
-            .Produces<ApiResponse>();
+            .Produces<ApiResponseResult>();
 
         // PUT /{notifyGuid}/read — 单条已读
         group.MapPut("/{notifyGuid}/read", MarkReadAsync)
             .WithSummary("标记单条通知已读")
-            .Produces<ApiResponse>();
+            .Produces<ApiResponseResult>();
 
         return group;
     }
@@ -59,11 +59,11 @@ public static class NotificationsApi
                 Page = paged.Page,
                 PageSize = paged.PageSize
             };
-            return Results.Ok(ApiResponse<PagedResult<NotificationDto>>.Ok(result));
+            return Results.Ok(ApiResponseResult<PagedResult<NotificationDto>>.Ok(result));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<PagedResult<NotificationDto>>.Error($"获取通知列表失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<PagedResult<NotificationDto>>.Error($"获取通知列表失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -75,11 +75,11 @@ public static class NotificationsApi
         try
         {
             var count = await mediator.SendAsync(new GetUnreadNotificationCountQuery(currentUser.GetUserId()), ct);
-            return Results.Ok(ApiResponse<int>.Ok(count));
+            return Results.Ok(ApiResponseResult<int>.Ok(count));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<int>.Error($"获取未读数失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<int>.Error($"获取未读数失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -91,11 +91,11 @@ public static class NotificationsApi
         try
         {
             await mediator.SendAsync(new MarkAllNotificationsReadCommand(currentUser.GetUserId()), ct);
-            return Results.Ok(ApiResponse.Ok("全部通知已标记为已读"));
+            return Results.Ok(ApiResponseResult.Ok("全部通知已标记为已读"));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse.Error($"标记全部已读失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult.Error($"标记全部已读失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -108,19 +108,19 @@ public static class NotificationsApi
         try
         {
             await mediator.SendAsync(new MarkNotificationReadCommand(notifyGuid, currentUser.GetUserId()), ct);
-            return Results.Ok(ApiResponse.Ok("通知已标记为已读"));
+            return Results.Ok(ApiResponseResult.Ok("通知已标记为已读"));
         }
         catch (KeyNotFoundException ex)
         {
-            return Results.NotFound(ApiResponse.NotFound(ex.Message));
+            return Results.NotFound(ApiResponseResult.NotFound(ex.Message));
         }
         catch (UnauthorizedAccessException ex)
         {
-            return Results.Json(ApiResponse.Forbidden(ex.Message), statusCode: 403);
+            return Results.Json(ApiResponseResult.Forbidden(ex.Message), statusCode: 403);
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse.Error($"标记已读失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult.Error($"标记已读失败: {ex.Message}"), statusCode: 500);
         }
     }
 }

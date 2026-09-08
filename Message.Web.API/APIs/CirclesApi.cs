@@ -1,4 +1,4 @@
-
+﻿
 namespace Message.Web.API.APIs;
 
 /// <summary>
@@ -22,91 +22,91 @@ public static class CirclesApi
         group.MapPost("/join", JoinCircleAsync)
             .WithSummary("凭邀请码/链接加入圈子")
             .Accepts<JoinCircleRequest>("application/json")
-            .Produces<ApiResponse<Guid>>();
+            .Produces<ApiResponseResult<Guid>>();
 
         group.MapGet("/invitations/my", GetMyInvitationsAsync)
             .WithSummary("我收到的直邀列表")
-            .Produces<ApiResponse<PagedResult<CircleInvitationDto>>>();
+            .Produces<ApiResponseResult<PagedResult<CircleInvitationDto>>>();
 
         group.MapPost("/invitations/{inviteGuid}/accept", AcceptInvitationAsync)
             .WithSummary("接受直邀")
-            .Produces<ApiResponse<Guid>>();
+            .Produces<ApiResponseResult<Guid>>();
 
         group.MapPost("/invitations/{inviteGuid}/reject", RejectInvitationAsync)
             .WithSummary("拒绝直邀")
-            .Produces<ApiResponse>();
+            .Produces<ApiResponseResult>();
 
         // GET / — 圈子发现（活跃圈子列表 + 名称搜索；R-12）
         group.MapGet("/", GetCirclesAsync)
             .WithSummary("圈子发现列表")
             .WithDescription("获取活跃圈子列表，支持名称关键词搜索与分页")
-            .Produces<ApiResponse<PagedResult<CircleDto>>>();
+            .Produces<ApiResponseResult<PagedResult<CircleDto>>>();
 
         group.MapGet("/my", GetMyCirclesAsync)
             .WithSummary("我加入的圈子列表")
-            .Produces<ApiResponse<List<CircleDto>>>();
+            .Produces<ApiResponseResult<List<CircleDto>>>();
 
         // ── 圈子 CRUD ──
         group.MapPost("/", CreateCircleAsync)
             .WithSummary("创建圈子")
             .Accepts<CreateCircleRequest>("application/json")
-            .Produces<ApiResponse<Guid>>();
+            .Produces<ApiResponseResult<Guid>>();
 
         group.MapGet("/{circleGuid}", GetCircleAsync)
             .WithSummary("圈子详情")
-            .Produces<ApiResponse<CircleDto>>();
+            .Produces<ApiResponseResult<CircleDto>>();
 
         group.MapPut("/{circleGuid}", UpdateCircleAsync)
             .WithSummary("更新圈子信息")
             .Accepts<UpdateCircleRequest>("application/json")
-            .Produces<ApiResponse>();
+            .Produces<ApiResponseResult>();
 
         group.MapDelete("/{circleGuid}", DissolveCircleAsync)
             .WithSummary("解散圈子")
-            .Produces<ApiResponse>();
+            .Produces<ApiResponseResult>();
 
         // ── 邀请管理 ──
         group.MapPost("/{circleGuid}/invitations", GenerateInvitationAsync)
             .WithSummary("生成邀请（码/链接/直邀）")
             .Accepts<GenerateInvitationRequest>("application/json")
-            .Produces<ApiResponse<CircleInvitationResult>>();
+            .Produces<ApiResponseResult<CircleInvitationResult>>();
 
         group.MapGet("/{circleGuid}/invitations", GetInvitationsAsync)
             .WithSummary("圈子的邀请列表（圈主/管理员）")
-            .Produces<ApiResponse<PagedResult<CircleInvitationDto>>>();
+            .Produces<ApiResponseResult<PagedResult<CircleInvitationDto>>>();
 
         group.MapDelete("/{circleGuid}/invitations/{inviteGuid}", RevokeInvitationAsync)
             .WithSummary("撤销邀请")
-            .Produces<ApiResponse>();
+            .Produces<ApiResponseResult>();
 
         // ── 成员管理 ──
         group.MapGet("/{circleGuid}/members", GetMembersAsync)
             .WithSummary("圈子成员列表")
-            .Produces<ApiResponse<PagedResult<CircleMemberDto>>>();
+            .Produces<ApiResponseResult<PagedResult<CircleMemberDto>>>();
 
         group.MapPost("/{circleGuid}/members/{userGuid}/role", SetMemberRoleAsync)
             .WithSummary("设置/取消管理员")
             .Accepts<SetCircleMemberRoleRequest>("application/json")
-            .Produces<ApiResponse>();
+            .Produces<ApiResponseResult>();
 
         group.MapDelete("/{circleGuid}/members/{userGuid}", RemoveMemberAsync)
             .WithSummary("移出成员")
-            .Produces<ApiResponse>();
+            .Produces<ApiResponseResult>();
 
         group.MapPost("/{circleGuid}/transfer", TransferOwnershipAsync)
             .WithSummary("转移圈主")
-            .Produces<ApiResponse>();
+            .Produces<ApiResponseResult>();
 
         // ── 圈子内容 ──
         group.MapGet("/{circleGuid}/posts", GetCirclePostsAsync)
             .WithSummary("圈子帖子流")
-            .Produces<ApiResponse<PagedResult<CommunityPostDto>>>();
+            .Produces<ApiResponseResult<PagedResult<CommunityPostDto>>>();
 
         // ── 社区聊天 ──
         group.MapGet("/{circleGuid}/session", GetCircleSessionAsync)
             .WithSummary("获取社区聊天会话")
             .WithDescription("获取社区对应的 Channel 聊天会话（仅成员可见）")
-            .Produces<ApiResponse<SessionDto>>();
+            .Produces<ApiResponseResult<SessionDto>>();
 
         return group;
     }
@@ -122,11 +122,11 @@ public static class CirclesApi
             var circleId = await mediator.SendAsync(new CreateCircleCommand(
                 currentUser.GetUserId(), request.Name, request.Description,
                 request.AvatarUrl, request.CoverUrl, request.MaxMembers), ct);
-            return Results.Ok(ApiResponse<Guid>.Created(circleId, "圈子创建成功"));
+            return Results.Ok(ApiResponseResult<Guid>.Created(circleId, "圈子创建成功"));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<Guid>.Error($"创建圈子失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<Guid>.Error($"创建圈子失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -151,11 +151,11 @@ public static class CirclesApi
                 Page = paged.Page,
                 PageSize = paged.PageSize
             };
-            return Results.Ok(ApiResponse<PagedResult<CircleDto>>.Ok(result));
+            return Results.Ok(ApiResponseResult<PagedResult<CircleDto>>.Ok(result));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<PagedResult<CircleDto>>.Error($"获取圈子列表失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<PagedResult<CircleDto>>.Error($"获取圈子列表失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -168,11 +168,11 @@ public static class CirclesApi
         {
             var circles = await mediator.SendAsync(new GetUserCirclesQuery(currentUser.GetUserId()), ct);
             var dtos = circles.Select(c => c.ToDto(currentUser.GetUserId())).ToList();
-            return Results.Ok(ApiResponse<List<CircleDto>>.Ok(dtos));
+            return Results.Ok(ApiResponseResult<List<CircleDto>>.Ok(dtos));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<List<CircleDto>>.Error($"获取圈子列表失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<List<CircleDto>>.Error($"获取圈子列表失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -187,14 +187,14 @@ public static class CirclesApi
             var userId = currentUser.GetUserId();
             var result = await mediator.SendAsync(new GetCircleQuery(circleGuid, userId), ct);
             if (result.Circle is null)
-                return Results.Ok(ApiResponse<CircleDto>.NotFound("圈子不存在"));
+                return Results.Json(ApiResponseResult<CircleDto>.NotFound("圈子不存在"), statusCode: 404);
 
             var dto = result.Circle.ToDto(userId);
-            return Results.Ok(ApiResponse<CircleDto>.Ok(dto));
+            return Results.Ok(ApiResponseResult<CircleDto>.Ok(dto));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<CircleDto>.Error($"获取圈子详情失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<CircleDto>.Error($"获取圈子详情失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -209,19 +209,19 @@ public static class CirclesApi
         {
             await mediator.SendAsync(new UpdateCircleCommand(
                 currentUser.GetUserId(), circleGuid, request.Name, request.Description, request.AvatarUrl, request.CoverUrl), ct);
-            return Results.Ok(ApiResponse.Ok("圈子信息已更新"));
+            return Results.Ok(ApiResponseResult.Ok("圈子信息已更新"));
         }
         catch (UnauthorizedAccessException ex)
         {
-            return Results.Ok(ApiResponse.Forbidden(ex.Message));
+            return Results.Json(ApiResponseResult.Forbidden(ex.Message), statusCode: 403);
         }
         catch (KeyNotFoundException ex)
         {
-            return Results.Ok(ApiResponse.NotFound(ex.Message));
+            return Results.Json(ApiResponseResult.NotFound(ex.Message), statusCode: 404);
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse.Error($"更新圈子失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult.Error($"更新圈子失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -234,19 +234,19 @@ public static class CirclesApi
         try
         {
             await mediator.SendAsync(new DissolveCircleCommand(currentUser.GetUserId(), circleGuid), ct);
-            return Results.Ok(ApiResponse.Ok("圈子已解散"));
+            return Results.Ok(ApiResponseResult.Ok("圈子已解散"));
         }
         catch (UnauthorizedAccessException ex)
         {
-            return Results.Ok(ApiResponse.Forbidden(ex.Message));
+            return Results.Json(ApiResponseResult.Forbidden(ex.Message), statusCode: 403);
         }
         catch (KeyNotFoundException ex)
         {
-            return Results.Ok(ApiResponse.NotFound(ex.Message));
+            return Results.Json(ApiResponseResult.NotFound(ex.Message), statusCode: 404);
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse.Error($"解散圈子失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult.Error($"解散圈子失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -261,19 +261,19 @@ public static class CirclesApi
         {
             var result = await mediator.SendAsync(new GenerateCircleInvitationCommand(
                 currentUser.GetUserId(), circleGuid, request.Type, request.InviteeGuid, request.TtlHours), ct);
-            return Results.Ok(ApiResponse<CircleInvitationResult>.Created(result, "邀请生成成功"));
+            return Results.Ok(ApiResponseResult<CircleInvitationResult>.Created(result, "邀请生成成功"));
         }
         catch (UnauthorizedAccessException ex)
         {
-            return Results.Ok(ApiResponse<CircleInvitationResult>.Forbidden(ex.Message));
+            return Results.Json(ApiResponseResult<CircleInvitationResult>.Forbidden(ex.Message), statusCode: 403);
         }
         catch (KeyNotFoundException ex)
         {
-            return Results.Ok(ApiResponse<CircleInvitationResult>.NotFound(ex.Message));
+            return Results.Json(ApiResponseResult<CircleInvitationResult>.NotFound(ex.Message), statusCode: 404);
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<CircleInvitationResult>.Error($"生成邀请失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<CircleInvitationResult>.Error($"生成邀请失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -295,15 +295,15 @@ public static class CirclesApi
                 Page = paged.Page,
                 PageSize = paged.PageSize
             };
-            return Results.Ok(ApiResponse<PagedResult<CircleInvitationDto>>.Ok(dto));
+            return Results.Ok(ApiResponseResult<PagedResult<CircleInvitationDto>>.Ok(dto));
         }
         catch (UnauthorizedAccessException ex)
         {
-            return Results.Ok(ApiResponse<PagedResult<CircleInvitationDto>>.Forbidden(ex.Message));
+            return Results.Json(ApiResponseResult<PagedResult<CircleInvitationDto>>.Forbidden(ex.Message), statusCode: 403);
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<PagedResult<CircleInvitationDto>>.Error($"获取邀请列表失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<PagedResult<CircleInvitationDto>>.Error($"获取邀请列表失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -317,19 +317,19 @@ public static class CirclesApi
         try
         {
             await mediator.SendAsync(new RevokeCircleInvitationCommand(currentUser.GetUserId(), inviteGuid), ct);
-            return Results.Ok(ApiResponse.Ok("邀请已撤销"));
+            return Results.Ok(ApiResponseResult.Ok("邀请已撤销"));
         }
         catch (UnauthorizedAccessException ex)
         {
-            return Results.Ok(ApiResponse.Forbidden(ex.Message));
+            return Results.Json(ApiResponseResult.Forbidden(ex.Message), statusCode: 403);
         }
         catch (KeyNotFoundException ex)
         {
-            return Results.Ok(ApiResponse.NotFound(ex.Message));
+            return Results.Json(ApiResponseResult.NotFound(ex.Message), statusCode: 404);
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse.Error($"撤销邀请失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult.Error($"撤销邀请失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -345,19 +345,19 @@ public static class CirclesApi
             var circleId =  await mediator.SendAsync(new JoinCircleCommand(currentUser.GetUserId(), request.Code, request.Token), ct);
             var data=await circleInvitation.GetByCodeAsync(request.Code?? throw new ArgumentNullException("null"));
             await mediator.SendAsync(new RemoveCircleMemberCommand(data!.InviteGuid,currentUser.GetUserId(),circleId),ct);
-            return Results.Ok(ApiResponse<Guid>.Ok(circleId, "加入圈子成功"));
+            return Results.Ok(ApiResponseResult<Guid>.Ok(circleId, "加入圈子成功"));
         }
         catch (UnauthorizedAccessException ex)
         {
-            return Results.Ok(ApiResponse<Guid>.Forbidden(ex.Message));
+            return Results.Json(ApiResponseResult<Guid>.Forbidden(ex.Message), statusCode: 403);
         }
         catch (KeyNotFoundException ex)
         {
-            return Results.Ok(ApiResponse<Guid>.NotFound(ex.Message));
+            return Results.Json(ApiResponseResult<Guid>.NotFound(ex.Message), statusCode: 404);
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<Guid>.Error($"加入圈子失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<Guid>.Error($"加入圈子失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -378,11 +378,11 @@ public static class CirclesApi
                 Page = paged.Page,
                 PageSize = paged.PageSize
             };
-            return Results.Ok(ApiResponse<PagedResult<CircleInvitationDto>>.Ok(dto));
+            return Results.Ok(ApiResponseResult<PagedResult<CircleInvitationDto>>.Ok(dto));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<PagedResult<CircleInvitationDto>>.Error($"获取我的邀请失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<PagedResult<CircleInvitationDto>>.Error($"获取我的邀请失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -395,19 +395,19 @@ public static class CirclesApi
         try
         {
             var circleId = await mediator.SendAsync(new AcceptCircleInvitationCommand(currentUser.GetUserId(), inviteGuid), ct);
-            return Results.Ok(ApiResponse<Guid>.Ok(circleId, "已加入圈子"));
+            return Results.Ok(ApiResponseResult<Guid>.Ok(circleId, "已加入圈子"));
         }
         catch (UnauthorizedAccessException ex)
         {
-            return Results.Ok(ApiResponse<Guid>.Forbidden(ex.Message));
+            return Results.Json(ApiResponseResult<Guid>.Forbidden(ex.Message), statusCode: 403);
         }
         catch (KeyNotFoundException ex)
         {
-            return Results.Ok(ApiResponse<Guid>.NotFound(ex.Message));
+            return Results.Json(ApiResponseResult<Guid>.NotFound(ex.Message), statusCode: 404);
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<Guid>.Error($"接受邀请失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<Guid>.Error($"接受邀请失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -420,19 +420,19 @@ public static class CirclesApi
         try
         {
             await mediator.SendAsync(new RejectCircleInvitationCommand(currentUser.GetUserId(), inviteGuid), ct);
-            return Results.Ok(ApiResponse.Ok("已拒绝邀请"));
+            return Results.Ok(ApiResponseResult.Ok("已拒绝邀请"));
         }
         catch (UnauthorizedAccessException ex)
         {
-            return Results.Ok(ApiResponse.Forbidden(ex.Message));
+            return Results.Json(ApiResponseResult.Forbidden(ex.Message), statusCode: 403);
         }
         catch (KeyNotFoundException ex)
         {
-            return Results.Ok(ApiResponse.NotFound(ex.Message));
+            return Results.Json(ApiResponseResult.NotFound(ex.Message), statusCode: 404);
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse.Error($"拒绝邀请失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult.Error($"拒绝邀请失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -454,15 +454,15 @@ public static class CirclesApi
                 Page = paged.Page,
                 PageSize = paged.PageSize
             };
-            return Results.Ok(ApiResponse<PagedResult<CircleMemberDto>>.Ok(dto));
+            return Results.Ok(ApiResponseResult<PagedResult<CircleMemberDto>>.Ok(dto));
         }
         catch (UnauthorizedAccessException ex)
         {
-            return Results.Ok(ApiResponse<PagedResult<CircleMemberDto>>.Forbidden(ex.Message));
+            return Results.Json(ApiResponseResult<PagedResult<CircleMemberDto>>.Forbidden(ex.Message), statusCode: 403);
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<PagedResult<CircleMemberDto>>.Error($"获取成员列表失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<PagedResult<CircleMemberDto>>.Error($"获取成员列表失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -477,19 +477,19 @@ public static class CirclesApi
         try
         {
             await mediator.SendAsync(new SetCircleMemberRoleCommand(currentUser.GetUserId(), circleGuid, userGuid, request.Role), ct);
-            return Results.Ok(ApiResponse.Ok("成员角色已更新"));
+            return Results.Ok(ApiResponseResult.Ok("成员角色已更新"));
         }
         catch (UnauthorizedAccessException ex)
         {
-            return Results.Ok(ApiResponse.Forbidden(ex.Message));
+            return Results.Json(ApiResponseResult.Forbidden(ex.Message), statusCode: 403);
         }
         catch (KeyNotFoundException ex)
         {
-            return Results.Ok(ApiResponse.NotFound(ex.Message));
+            return Results.Json(ApiResponseResult.NotFound(ex.Message), statusCode: 404);
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse.Error($"设置成员角色失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult.Error($"设置成员角色失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -503,19 +503,19 @@ public static class CirclesApi
         try
         {
             await mediator.SendAsync(new RemoveCircleMemberCommand(currentUser.GetUserId(), circleGuid, userGuid), ct);
-            return Results.Ok(ApiResponse.Ok("成员已移出"));
+            return Results.Ok(ApiResponseResult.Ok("成员已移出"));
         }
         catch (UnauthorizedAccessException ex)
         {
-            return Results.Ok(ApiResponse.Forbidden(ex.Message));
+            return Results.Json(ApiResponseResult.Forbidden(ex.Message), statusCode: 403);
         }
         catch (KeyNotFoundException ex)
         {
-            return Results.Ok(ApiResponse.NotFound(ex.Message));
+            return Results.Json(ApiResponseResult.NotFound(ex.Message), statusCode: 404);
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse.Error($"移出成员失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult.Error($"移出成员失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -529,19 +529,19 @@ public static class CirclesApi
         try
         {
             await mediator.SendAsync(new TransferCircleOwnershipCommand(currentUser.GetUserId(), circleGuid, request.NewOwnerGuid), ct);
-            return Results.Ok(ApiResponse.Ok("圈主已转移"));
+            return Results.Ok(ApiResponseResult.Ok("圈主已转移"));
         }
         catch (UnauthorizedAccessException ex)
         {
-            return Results.Ok(ApiResponse.Forbidden(ex.Message));
+            return Results.Json(ApiResponseResult.Forbidden(ex.Message), statusCode: 403);
         }
         catch (KeyNotFoundException ex)
         {
-            return Results.Ok(ApiResponse.NotFound(ex.Message));
+            return Results.Json(ApiResponseResult.NotFound(ex.Message), statusCode: 404);
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse.Error($"转移圈主失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult.Error($"转移圈主失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -563,15 +563,15 @@ public static class CirclesApi
                 Page = paged.Page,
                 PageSize = paged.PageSize
             };
-            return Results.Ok(ApiResponse<PagedResult<CommunityPostDto>>.Ok(dto));
+            return Results.Ok(ApiResponseResult<PagedResult<CommunityPostDto>>.Ok(dto));
         }
         catch (UnauthorizedAccessException ex)
         {
-            return Results.Ok(ApiResponse<PagedResult<CommunityPostDto>>.Forbidden(ex.Message));
+            return Results.Json(ApiResponseResult<PagedResult<CommunityPostDto>>.Forbidden(ex.Message), statusCode: 403);
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<PagedResult<CommunityPostDto>>.Error($"获取圈子帖子失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<PagedResult<CommunityPostDto>>.Error($"获取圈子帖子失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -590,15 +590,15 @@ public static class CirclesApi
         {
             var circle = await circleRepository.GetByIdAsync(circleGuid);
             if (circle is null)
-                return Results.Ok(ApiResponse<SessionDto>.NotFound("圈子不存在"));
+                return Results.Json(ApiResponseResult<SessionDto>.NotFound("圈子不存在"), statusCode: 404);
 
             var userId = currentUser.GetUserId();
             if (!await circleRepository.IsMemberAsync(circleGuid, userId))
-                return Results.Ok(ApiResponse<SessionDto>.Forbidden("仅社区成员可访问社区聊天"));
+                return Results.Json(ApiResponseResult<SessionDto>.Forbidden("仅社区成员可访问社区聊天"), statusCode: 403);
 
             var session = await sessionRepository.GetByCircleIdAsync(circleGuid);
             if (session is null)
-                return Results.Ok(ApiResponse<SessionDto>.NotFound("社区聊天会话不存在"));
+                return Results.Json(ApiResponseResult<SessionDto>.NotFound("社区聊天会话不存在"), statusCode: 404);
 
             var state = session.MemberStates.TryGetValue(userId, out var st) ? st : null;
             var dto = new SessionDto
@@ -617,11 +617,11 @@ public static class CirclesApi
                 IsPinned = state?.IsPinned ?? false,
                 IsMuted = state?.IsMuted ?? false
             };
-            return Results.Ok(ApiResponse<SessionDto>.Ok(dto));
+            return Results.Ok(ApiResponseResult<SessionDto>.Ok(dto));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<SessionDto>.Error($"获取社区聊天会话失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<SessionDto>.Error($"获取社区聊天会话失败: {ex.Message}"), statusCode: 500);
         }
     }
 }

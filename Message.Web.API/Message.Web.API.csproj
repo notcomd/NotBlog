@@ -34,6 +34,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Commons\Commons.csproj" />
       <ProjectReference Include="..\JWToken\JWToken.csproj" />
       <ProjectReference Include="..\Message.Infrastructure\Message.Infrastructure.csproj" />
       <ProjectReference Include="..\NotBlog.ServiceDefaults\NotBlog.ServiceDefaults.csproj" />

@@ -1,3 +1,4 @@
+using Commons.Result;
 using FileDev.Domain.Entities;
 using FileDev.Domain.IRepository;
 using Microsoft.AspNetCore.HttpLogging;
@@ -54,7 +55,7 @@ public static class AdminFileApi
         CancellationToken ct = default)
     {
         if (!IsAdmin(context))
-            return Results.Json(new { ok = false, error = "仅管理员可查看文件列表" }, statusCode: 403);
+            return Results.Json(ApiResponseResult.Failure("仅管理员可查看文件列表", 403), statusCode: 403);
 
         try
         {
@@ -93,7 +94,7 @@ public static class AdminFileApi
         }
         catch (Exception ex)
         {
-            return Results.Json(new { ok = false, error = $"获取文件列表失败: {ex.Message}" }, statusCode: 500);
+            return Results.Json(ApiResponseResult.Failure($"获取文件列表失败: {ex.Message}", 500), statusCode: 500);
         }
     }
 
@@ -105,13 +106,13 @@ public static class AdminFileApi
         CancellationToken ct = default)
     {
         if (!IsAdmin(context))
-            return Results.Json(new { ok = false, error = "仅管理员可删除文件" }, statusCode: 403);
+            return Results.Json(ApiResponseResult.Failure("仅管理员可删除文件", 403), statusCode: 403);
 
         try
         {
             var file = await notFileRepository.GetFileByIdAsync(fileId);
             if (file is null || file.IsDeleted)
-                return Results.NotFound(new { ok = false, error = "文件不存在" });
+                return Results.NotFound(ApiResponseResult.NotFound("文件不存在"));
 
             // 软删（SoftDelete 触发 DeleteFileEvent，级联物理清理）
             file.SoftDelete();
@@ -126,7 +127,7 @@ public static class AdminFileApi
         }
         catch (Exception ex)
         {
-            return Results.Json(new { ok = false, error = $"删除文件失败: {ex.Message}" }, statusCode: 500);
+            return Results.Json(ApiResponseResult.Failure($"删除文件失败: {ex.Message}", 500), statusCode: 500);
         }
     }
 }

@@ -1,4 +1,6 @@
 
+using Commons.Result;
+
 namespace Video.Web.API.Apis;
 
 /// <summary>
@@ -42,14 +44,13 @@ public static class VideoCollectionEndpoints
         {
             var collections = await videoServiceDI.VideoCollectionRepository
                 .FindByVideoCollectionListAsync();
-            return Results.Ok(new VideoResult<List<VideoCollection>>(
-                VideoResultType.VideoResultOk, 200, "Success.", collections));
+            return Results.Ok(collections);
         }
         catch (Exception ex)
         {
             videoServiceDI.Logger.LogError(ex, "Failed to get video collections");
             return Results.Json(
-                new VideoResult<string>(VideoResultType.VideoResultInternalServerError, 500, ex.Message, null),
+                ApiResponseResult<string>.Failure(ex.Message, 500),
                 statusCode: 500);
         }
     }
@@ -64,17 +65,16 @@ public static class VideoCollectionEndpoints
                 .FindByVideoCollectionAsync(collectionGuid);
             if (collection is null)
                 return Results.Json(
-                    new VideoResult<string>(VideoResultType.VideoResultNotFound, 404, "Collection not found.", null),
+                    ApiResponseResult<string>.Failure("Collection not found.", 404),
                     statusCode: 404);
 
-            return Results.Ok(new VideoResult<VideoCollection>(
-                VideoResultType.VideoResultOk, 200, "Success.", collection));
+            return Results.Ok(collection);
         }
         catch (Exception ex)
         {
             videoServiceDI.Logger.LogError(ex, "Failed to get collection {CollectionGuid}", collectionGuid);
             return Results.Json(
-                new VideoResult<string>(VideoResultType.VideoResultInternalServerError, 500, ex.Message, null),
+                ApiResponseResult<string>.Failure(ex.Message, 500),
                 statusCode: 500);
         }
     }
@@ -94,8 +94,7 @@ public static class VideoCollectionEndpoints
         {
             if (request.VideoGuid == Guid.Empty || collectionGuid == Guid.Empty)
                 return Results.Json(
-                    new VideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
-                        "VideoGuid and CollectionGuid are required.", null),
+                    ApiResponseResult<string>.Failure("VideoGuid and CollectionGuid are required.", 400),
                     statusCode: 400);
 
             // 收藏者身份由服务端解析，禁止信任客户端传入的 UserGuid
@@ -109,22 +108,20 @@ public static class VideoCollectionEndpoints
 
             if (!result.Success)
                 return Results.Json(
-                    new VideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
-                        result.ErrorMessage ?? "Failed to add video to collection.", null),
+                    ApiResponseResult<string>.Failure(result.ErrorMessage ?? "Failed to add video to collection.", 400),
                     statusCode: 400);
 
             logger.LogInformation("Video {VideoGuid} added to collection {CollectionGuid}",
                 request.VideoGuid, collectionGuid);
 
-            return Results.Ok(new VideoResult<string>(VideoResultType.VideoResultOk, 200,
-                "Video added to collection.", "OK"));
+            return Results.Ok("OK");
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to add video {VideoGuid} to collection {CollectionGuid}",
                 request.VideoGuid, collectionGuid);
             return Results.Json(
-                new VideoResult<string>(VideoResultType.VideoResultInternalServerError, 500, ex.Message, null),
+                ApiResponseResult<string>.Failure(ex.Message, 500),
                 statusCode: 500);
         }
     }
@@ -152,22 +149,20 @@ public static class VideoCollectionEndpoints
 
             if (!result.Success)
                 return Results.Json(
-                    new VideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
-                        result.ErrorMessage ?? "Failed to remove video from collection.", null),
+                    ApiResponseResult<string>.Failure(result.ErrorMessage ?? "Failed to remove video from collection.", 400),
                     statusCode: 400);
 
             logger.LogInformation("Video {VideoGuid} removed from collection {CollectionGuid}",
                 videoGuid, collectionGuid);
 
-            return Results.Ok(new VideoResult<string>(VideoResultType.VideoResultOk, 200,
-                "Video removed from collection.", "OK"));
+            return Results.Ok("OK");
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to remove video {VideoGuid} from collection {CollectionGuid}",
                 videoGuid, collectionGuid);
             return Results.Json(
-                new VideoResult<string>(VideoResultType.VideoResultInternalServerError, 500, ex.Message, null),
+                ApiResponseResult<string>.Failure(ex.Message, 500),
                 statusCode: 500);
         }
     }

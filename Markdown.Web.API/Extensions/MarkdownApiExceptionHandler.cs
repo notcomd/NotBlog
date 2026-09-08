@@ -26,8 +26,9 @@ public class MarkdownApiExceptionHandler : IExceptionHandler
             return false;
 
         httpContext.Response.StatusCode = statusCode;
+        // 输出统一信封（含业务异常消息），包装中间件据此透传，避免二次包装
         await httpContext.Response.WriteAsJsonAsync(
-            new ApiResponse { Success = false, Message = exception.Message }, cancellationToken);
+            ApiResponseResult.Failure(exception.Message, statusCode), cancellationToken);
         return true;
     }
 }

@@ -116,6 +116,10 @@ app.UseCors();
 app.UseHttpsRedirection();
 
 app.UseExceptionHandling();
+
+// 统一响应包装（ApiResponseResult 信封）：位于异常处理之后、认证之前，包装所有 /api JSON 端点响应
+app.UseApiResponseWrapping();
+
 app.UseAuthentication();
 app.UseUserContext();
 app.UseAuthorization();

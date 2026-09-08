@@ -1,4 +1,4 @@
-
+﻿
 namespace Message.Web.API.APIs;
 
 /// <summary>
@@ -17,23 +17,23 @@ public static class FollowsApi
 
         group.MapPost("/{userGuid}", FollowUserAsync)
             .WithSummary("关注用户")
-            .Produces<ApiResponse>();
+            .Produces<ApiResponseResult>();
 
         group.MapDelete("/{userGuid}", UnfollowUserAsync)
             .WithSummary("取消关注")
-            .Produces<ApiResponse>();
+            .Produces<ApiResponseResult>();
 
         group.MapGet("/following", GetFollowingAsync)
             .WithSummary("我关注的人")
-            .Produces<ApiResponse<PagedResult<UserFollowDto>>>();
+            .Produces<ApiResponseResult<PagedResult<UserFollowDto>>>();
 
         group.MapGet("/followers", GetFollowersAsync)
             .WithSummary("我的粉丝")
-            .Produces<ApiResponse<PagedResult<UserFollowDto>>>();
+            .Produces<ApiResponseResult<PagedResult<UserFollowDto>>>();
 
         group.MapGet("/feed", GetFeedAsync)
             .WithSummary("关注 Feed（我 + 关注者的全局帖）")
-            .Produces<ApiResponse<PagedResult<CommunityPostDto>>>();
+            .Produces<ApiResponseResult<PagedResult<CommunityPostDto>>>();
 
         return group;
     }
@@ -47,15 +47,15 @@ public static class FollowsApi
         try
         {
             await mediator.SendAsync(new FollowUserCommand(currentUser.GetUserId(), userGuid), ct);
-            return Results.Ok(ApiResponse.Ok("关注成功"));
+            return Results.Ok(ApiResponseResult.Ok("关注成功"));
         }
         catch (InvalidOperationException ex)
         {
-            return Results.Ok(ApiResponse.BadRequest(ex.Message));
+            return Results.Json(ApiResponseResult.BadRequest(ex.Message), statusCode: 400);
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse.Error($"关注失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult.Error($"关注失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -68,15 +68,15 @@ public static class FollowsApi
         try
         {
             await mediator.SendAsync(new UnfollowUserCommand(currentUser.GetUserId(), userGuid), ct);
-            return Results.Ok(ApiResponse.Ok("已取消关注"));
+            return Results.Ok(ApiResponseResult.Ok("已取消关注"));
         }
         catch (KeyNotFoundException ex)
         {
-            return Results.Ok(ApiResponse.NotFound(ex.Message));
+            return Results.Json(ApiResponseResult.NotFound(ex.Message), statusCode: 404);
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse.Error($"取消关注失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult.Error($"取消关注失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -90,11 +90,11 @@ public static class FollowsApi
         try
         {
             var paged = await mediator.SendAsync(new GetFollowingQuery(currentUser.GetUserId(), page, pageSize), ct);
-            return Results.Ok(ApiResponse<PagedResult<UserFollowDto>>.Ok(MapFollows(paged, f => f.FolloweeGuid)));
+            return Results.Ok(ApiResponseResult<PagedResult<UserFollowDto>>.Ok(MapFollows(paged, f => f.FolloweeGuid)));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<PagedResult<UserFollowDto>>.Error($"获取关注列表失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<PagedResult<UserFollowDto>>.Error($"获取关注列表失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -108,11 +108,11 @@ public static class FollowsApi
         try
         {
             var paged = await mediator.SendAsync(new GetFollowersQuery(currentUser.GetUserId(), page, pageSize), ct);
-            return Results.Ok(ApiResponse<PagedResult<UserFollowDto>>.Ok(MapFollows(paged, f => f.FollowerGuid)));
+            return Results.Ok(ApiResponseResult<PagedResult<UserFollowDto>>.Ok(MapFollows(paged, f => f.FollowerGuid)));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<PagedResult<UserFollowDto>>.Error($"获取粉丝列表失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<PagedResult<UserFollowDto>>.Error($"获取粉丝列表失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -133,11 +133,11 @@ public static class FollowsApi
                 Page = paged.Page,
                 PageSize = paged.PageSize
             };
-            return Results.Ok(ApiResponse<PagedResult<CommunityPostDto>>.Ok(dto));
+            return Results.Ok(ApiResponseResult<PagedResult<CommunityPostDto>>.Ok(dto));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<PagedResult<CommunityPostDto>>.Error($"获取关注 Feed 失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<PagedResult<CommunityPostDto>>.Error($"获取关注 Feed 失败: {ex.Message}"), statusCode: 500);
         }
     }
 

@@ -99,6 +99,9 @@ app.MapDefaultEndpoints();
 // S-16：全局异常脱敏（无内部路径/堆栈泄漏），必须位于管道最前
 app.UseNotBlogExceptionHandler();
 
+// 统一 API 响应包装：/api 下 JSON 响应自动包装为 {statusCode,message,responseData,isSuccess,responseDateTime} 信封
+app.UseApiResponseWrapping();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

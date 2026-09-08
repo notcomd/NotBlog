@@ -1,4 +1,4 @@
-namespace Markdown.Web.API.Apis;
+﻿namespace Markdown.Web.API.Apis;
 
 /// <summary>
 ///     Markdown 博客文章 API（文章主资源：CRUD + 列表 + 搜索）
@@ -17,87 +17,87 @@ public static class MarkdownApi
         // POST: 创建文章（需认证）
         markdownGroup.MapPost("/", CreateAsync)
             .RequireAuthorization()
-            .Produces<ApiResponse<MarkdownResponse>>(StatusCodes.Status201Created)
-            .Produces<ApiResponse>(StatusCodes.Status400BadRequest)
+            .Produces<ApiResponseResult<MarkdownResponse>>(StatusCodes.Status201Created)
+            .Produces<ApiResponseResult>(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status401Unauthorized);
 
         // GET: 获取文章列表（无需认证，仅返回公开文档）
         markdownGroup.MapGet("/", GetAllAsync)
-            .Produces<ApiResponse<List<MarkdownResponse>>>(StatusCodes.Status200OK);
+            .Produces<ApiResponseResult<List<MarkdownResponse>>>(StatusCodes.Status200OK);
 
         // GET: 获取文章详情（无需认证，元数据 + 交互统计，不含正文）
         markdownGroup.MapGet("/{markDownGuid:guid}", GetAsync)
-            .Produces<ApiResponse<MarkdownResponse>>(StatusCodes.Status200OK)
-            .Produces<ApiResponse>(StatusCodes.Status404NotFound);
+            .Produces<ApiResponseResult<MarkdownResponse>>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult>(StatusCodes.Status404NotFound);
 
         // GET: 获取文章正文（文件化存储，流式返回；权限校验与详情一致）
         markdownGroup.MapGet("/{markDownGuid:guid}/content", GetContentAsync)
-            .Produces<ApiResponse<string>>(StatusCodes.Status200OK)
-            .Produces<ApiResponse>(StatusCodes.Status404NotFound);
+            .Produces<ApiResponseResult<string>>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult>(StatusCodes.Status404NotFound);
 
         // POST: 文档浏览 +1（无需认证，公开文档可匿名浏览）
         markdownGroup.MapPost("/{markDownGuid:guid}/view", AddViewAsync)
-            .Produces<ApiResponse<long>>(StatusCodes.Status200OK)
-            .Produces<ApiResponse>(StatusCodes.Status404NotFound);
+            .Produces<ApiResponseResult<long>>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult>(StatusCodes.Status404NotFound);
 
         // POST: 文档点赞（需认证，同一用户仅可点赞一次）
         markdownGroup.MapPost("/{markDownGuid:guid}/like", LikeDocumentAsync)
             .RequireAuthorization()
-            .Produces<ApiResponse<long>>(StatusCodes.Status200OK)
-            .Produces<ApiResponse>(StatusCodes.Status404NotFound)
+            .Produces<ApiResponseResult<long>>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult>(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized);
 
         // POST: 取消文档点赞（需认证，未点赞时幂等返回）
         markdownGroup.MapPost("/{markDownGuid:guid}/unlike", UnlikeDocumentAsync)
             .RequireAuthorization()
-            .Produces<ApiResponse<long>>(StatusCodes.Status200OK)
-            .Produces<ApiResponse>(StatusCodes.Status404NotFound)
+            .Produces<ApiResponseResult<long>>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult>(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized);
 
         // POST: 文档分享 +1（需认证）
         markdownGroup.MapPost("/{markDownGuid:guid}/share", ShareDocumentAsync)
             .RequireAuthorization()
-            .Produces<ApiResponse<long>>(StatusCodes.Status200OK)
-            .Produces<ApiResponse>(StatusCodes.Status404NotFound)
+            .Produces<ApiResponseResult<long>>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult>(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized);
 
         // POST: 文档打赏硬币（需认证，数量 1~100）
         markdownGroup.MapPost("/{markDownGuid:guid}/coin", CoinDocumentAsync)
             .RequireAuthorization()
-            .Produces<ApiResponse<long>>(StatusCodes.Status200OK)
-            .Produces<ApiResponse>(StatusCodes.Status400BadRequest)
-            .Produces<ApiResponse>(StatusCodes.Status404NotFound)
+            .Produces<ApiResponseResult<long>>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult>(StatusCodes.Status400BadRequest)
+            .Produces<ApiResponseResult>(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized);
 
         // PUT: 更新文章（需认证）
         markdownGroup.MapPut("/{markDownGuid:guid}", UpdateAsync)
             .RequireAuthorization()
-            .Produces<ApiResponse<MarkdownResponse>>(StatusCodes.Status200OK)
-            .Produces<ApiResponse>(StatusCodes.Status400BadRequest)
-            .Produces<ApiResponse>(StatusCodes.Status403Forbidden)
-            .Produces<ApiResponse>(StatusCodes.Status404NotFound)
+            .Produces<ApiResponseResult<MarkdownResponse>>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult>(StatusCodes.Status400BadRequest)
+            .Produces<ApiResponseResult>(StatusCodes.Status403Forbidden)
+            .Produces<ApiResponseResult>(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized);
 
         // DELETE: 删除文章（需认证，软删除）
         markdownGroup.MapDelete("/{markDownGuid:guid}", DeleteAsync)
             .RequireAuthorization()
-            .Produces<ApiResponse>(StatusCodes.Status200OK)
-            .Produces<ApiResponse>(StatusCodes.Status403Forbidden)
-            .Produces<ApiResponse>(StatusCodes.Status404NotFound)
+            .Produces<ApiResponseResult>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult>(StatusCodes.Status403Forbidden)
+            .Produces<ApiResponseResult>(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized);
 
         // GET: 文章列表（分页/按标签/按用户，摘要投影，仅已审核通过）
         markdownGroup.MapGet("/list", GetListAsync)
-            .Produces<ApiResponse<List<MarkdownSummaryResponse>>>(StatusCodes.Status200OK);
+            .Produces<ApiResponseResult<List<MarkdownSummaryResponse>>>(StatusCodes.Status200OK);
 
         // GET: 文章搜索（摘要投影，仅已审核通过）
         markdownGroup.MapGet("/search", SearchAsync)
-            .Produces<ApiResponse<List<MarkdownSummaryResponse>>>(StatusCodes.Status200OK)
-            .Produces<ApiResponse>(StatusCodes.Status400BadRequest);
+            .Produces<ApiResponseResult<List<MarkdownSummaryResponse>>>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult>(StatusCodes.Status400BadRequest);
 
         // GET: 热点榜（Redis ZSet 直读，miss 单飞重建；Redis 故障降级 DB 计算）
         markdownGroup.MapGet("/hot", GetHotBoardAsync)
-            .Produces<ApiResponse<List<MarkdownHotResponse>>>(StatusCodes.Status200OK);
+            .Produces<ApiResponseResult<List<MarkdownHotResponse>>>(StatusCodes.Status200OK);
 
         // ===== 子资源：审核 / 评论 / 历史版本 =====
         MarkdownAuditApi.MapMarkdownAuditApi(markdownGroup);
@@ -115,16 +115,16 @@ public static class MarkdownApi
         [FromServices]IMarkdownRepository markdownRepository)
     {
         if (string.IsNullOrWhiteSpace(request.Name))
-            return Results.BadRequest(ApiResponse.Error("文章名称不能为空"));
+            return Results.BadRequest(ApiResponseResult.Error("文章名称不能为空"));
         if (string.IsNullOrWhiteSpace(request.Content))
-            return Results.BadRequest(ApiResponse.Error("文章内容不能为空"));
+            return Results.BadRequest(ApiResponseResult.Error("文章内容不能为空"));
         if (!MarkdownApiHelpers.TryValidateTags(request.Tags, out var tagError))
-            return Results.BadRequest(ApiResponse.Error(tagError ?? "标签校验失败"));
+            return Results.BadRequest(ApiResponseResult.Error(tagError ?? "标签校验失败"));
 
         var userId = currentUserService.GetUserId();
         var auth = MarkdownApiHelpers.ParseAuth(request.Auth);
         if (auth is null)
-            return Results.BadRequest(ApiResponse.Error("非法的文章权限类型"));
+            return Results.BadRequest(ApiResponseResult.Error("非法的文章权限类型"));
 
         var command = new CreateMarkdownCommand(
             userId,
@@ -143,7 +143,7 @@ public static class MarkdownApi
 
         var response = MarkdownResponseMapper.MapToMarkdownResponse(created);
         return Results.Created($"/api/markdown/{created.MarkDownGuid}",
-            ApiResponse<MarkdownResponse>.Created(response, "文章创建成功"));
+            ApiResponseResult<MarkdownResponse>.Created(response, "文章创建成功"));
     }
 
     /// <summary>
@@ -172,7 +172,7 @@ public static class MarkdownApi
                 UpdateAt = m.UpdateAt
             })
             .ToList();
-        return Results.Ok(ApiResponse<List<MarkdownSummaryResponse>>.Ok(responses));
+        return Results.Ok(ApiResponseResult<List<MarkdownSummaryResponse>>.Ok(responses));
     }
 
     /// <summary>
@@ -195,7 +195,7 @@ public static class MarkdownApi
             })
             .ToList();
 
-        return Results.Ok(ApiResponse<List<MarkdownHotResponse>>.Ok(response));
+        return Results.Ok(ApiResponseResult<List<MarkdownHotResponse>>.Ok(response));
     }
 
     /// <summary>
@@ -211,12 +211,12 @@ public static class MarkdownApi
     {
         var markdown = await markdownRepository.FindMarkDownAsync(markDownGuid);
         if (markdown is null || markdown.IsDelete)
-            return Results.NotFound(ApiResponse<long>.NotFound("文章不存在"));
+            return Results.NotFound(ApiResponseResult<long>.NotFound("文章不存在"));
 
         var viewerGuid = MarkdownApiHelpers.TryGetCurrentUserId(currentUserService) ?? Guid.Empty;
         if (!markdown.HasPermission(viewerGuid) ||
             (!markdown.IsApproved && markdown.MarkUserGuid != viewerGuid))
-            return Results.NotFound(ApiResponse<long>.NotFound("文章不存在"));
+            return Results.NotFound(ApiResponseResult<long>.NotFound("文章不存在"));
 
         // 防刷（阶段 3）：已登录用户 24h 窗口去重；新 Set 自动设 TTL 防膨胀
         var userId = MarkdownApiHelpers.TryGetCurrentUserId(currentUserService);
@@ -234,7 +234,7 @@ public static class MarkdownApi
                 else
                 {
                     // 重复浏览：返回当前计数，不递增
-                    return Results.Ok(ApiResponse<long>.Ok(markdown.MarkQuote.ViewSome));
+                    return Results.Ok(ApiResponseResult<long>.Ok(markdown.MarkQuote.ViewSome));
                 }
             }
         }
@@ -243,7 +243,7 @@ public static class MarkdownApi
 
         // 热度分实时刷新（失败不影响浏览计数，定时重建兜底）
         await hotBoardService.UpdateScoreAsync(markDownGuid);
-        return Results.Ok(ApiResponse<long>.Ok(count));
+        return Results.Ok(ApiResponseResult<long>.Ok(count));
     }
 
     /// <summary>
@@ -264,7 +264,7 @@ public static class MarkdownApi
         if (markdown is null || markdown.IsDelete ||
             (!markdown.IsApproved && markdown.MarkUserGuid != userId) ||
             !markdown.HasPermission(userId))
-            return Results.NotFound(ApiResponse<long>.NotFound("文章不存在"));
+            return Results.NotFound(ApiResponseResult<long>.NotFound("文章不存在"));
 
         var result = await markdownRepository.LikeDocumentAsync(markDownGuid, userId);
 
@@ -281,7 +281,7 @@ public static class MarkdownApi
 
         // 热度分实时刷新（失败不影响点赞，定时重建兜底）
         await hotBoardService.UpdateScoreAsync(markDownGuid);
-        return Results.Ok(ApiResponse<long>.Ok(result.Count, "点赞成功"));
+        return Results.Ok(ApiResponseResult<long>.Ok(result.Count, "点赞成功"));
     }
 
     /// <summary>
@@ -300,13 +300,13 @@ public static class MarkdownApi
         if (markdown is null || markdown.IsDelete ||
             (!markdown.IsApproved && markdown.MarkUserGuid != userId) ||
             !markdown.HasPermission(userId))
-            return Results.NotFound(ApiResponse<long>.NotFound("文章不存在"));
+            return Results.NotFound(ApiResponseResult<long>.NotFound("文章不存在"));
 
         var count = await markdownRepository.RemoveLikeDocumentAsync(markDownGuid, userId);
 
         // 热度分实时刷新（失败不影响取消点赞，定时重建兜底）
         await hotBoardService.UpdateScoreAsync(markDownGuid);
-        return Results.Ok(ApiResponse<long>.Ok(count, "已取消点赞"));
+        return Results.Ok(ApiResponseResult<long>.Ok(count, "已取消点赞"));
     }
 
     /// <summary>
@@ -325,13 +325,13 @@ public static class MarkdownApi
         if (markdown is null || markdown.IsDelete ||
             (!markdown.IsApproved && markdown.MarkUserGuid != userId) ||
             !markdown.HasPermission(userId))
-            return Results.NotFound(ApiResponse<long>.NotFound("文章不存在"));
+            return Results.NotFound(ApiResponseResult<long>.NotFound("文章不存在"));
 
         var count = await markdownRepository.AddDocumentShareAsync(markDownGuid);
 
         // 热度分实时刷新（失败不影响分享，定时重建兜底）
         await hotBoardService.UpdateScoreAsync(markDownGuid);
-        return Results.Ok(ApiResponse<long>.Ok(count, "分享成功"));
+        return Results.Ok(ApiResponseResult<long>.Ok(count, "分享成功"));
     }
 
     /// <summary>
@@ -349,14 +349,14 @@ public static class MarkdownApi
         var userId = currentUserService.GetUserId();
 
         if (request.Amount is < 1 or > 100)
-            return Results.BadRequest(ApiResponse.Error("打赏数量必须在 1~100 之间"));
+            return Results.BadRequest(ApiResponseResult.Error("打赏数量必须在 1~100 之间"));
 
         // 越权防护：与点赞一致
         var markdown = await markdownRepository.FindMarkDownAsync(markDownGuid);
         if (markdown is null || markdown.IsDelete ||
             (!markdown.IsApproved && markdown.MarkUserGuid != userId) ||
             !markdown.HasPermission(userId))
-            return Results.NotFound(ApiResponse<long>.NotFound("文章不存在"));
+            return Results.NotFound(ApiResponseResult<long>.NotFound("文章不存在"));
 
         var result = await markdownRepository.CoinDocumentAsync(markDownGuid, userId, request.Amount);
 
@@ -373,7 +373,7 @@ public static class MarkdownApi
 
         // 热度分实时刷新（失败不影响打赏，定时重建兜底）
         await hotBoardService.UpdateScoreAsync(markDownGuid);
-        return Results.Ok(ApiResponse<long>.Ok(result.Count, result.IsFirst ? "打赏成功" : "您已打赏过该文章，不重复累计"));
+        return Results.Ok(ApiResponseResult<long>.Ok(result.Count, result.IsFirst ? "打赏成功" : "您已打赏过该文章，不重复累计"));
     }
 
     /// <summary>
@@ -388,19 +388,19 @@ public static class MarkdownApi
         var markdown = await markdownRepository.FindMarkDownAsync(markDownGuid);
 
         if (markdown is null || markdown.IsDelete)
-            return Results.NotFound(ApiResponse<string>.NotFound("文章不存在"));
+            return Results.NotFound(ApiResponseResult<string>.NotFound("文章不存在"));
 
         // 越权防护（与 GetAsync 一致）：权限校验 + 审核门控双重要求
         var viewerGuid = MarkdownApiHelpers.TryGetCurrentUserId(currentUserService) ?? Guid.Empty;
         if (!markdown.HasPermission(viewerGuid) ||
             (!markdown.IsApproved && markdown.MarkUserGuid != viewerGuid))
-            return Results.NotFound(ApiResponse<string>.NotFound("文章不存在"));
+            return Results.NotFound(ApiResponseResult<string>.NotFound("文章不存在"));
 
         var content = await contentStore.ReadAsync(markdown.FileId);
         if (content is null)
-            return Results.NotFound(ApiResponse<string>.NotFound("文章正文文件不存在"));
+            return Results.NotFound(ApiResponseResult<string>.NotFound("文章正文文件不存在"));
 
-        return Results.Ok(ApiResponse<string>.Ok(content));
+        return Results.Ok(ApiResponseResult<string>.Ok(content));
     }
 
     /// <summary>
@@ -414,7 +414,7 @@ public static class MarkdownApi
         var markdown = await markdownRepository.FindMarkDownAsync(markDownGuid);
 
         if (markdown is null || markdown.IsDelete)
-            return Results.NotFound(ApiResponse<MarkdownResponse>.NotFound("文章不存在"));
+            return Results.NotFound(ApiResponseResult<MarkdownResponse>.NotFound("文章不存在"));
 
         // 越权防护（S-10）：权限校验 + 审核门控（F-10.2）双重要求。
         // 私有/受保护文档非所有者一律 404（含已审核通过的私有文档）；
@@ -422,10 +422,10 @@ public static class MarkdownApi
         var viewerGuid = MarkdownApiHelpers.TryGetCurrentUserId(currentUserService) ?? Guid.Empty;
         if (!markdown.HasPermission(viewerGuid) ||
             (!markdown.IsApproved && markdown.MarkUserGuid != viewerGuid))
-            return Results.NotFound(ApiResponse<MarkdownResponse>.NotFound("文章不存在"));
+            return Results.NotFound(ApiResponseResult<MarkdownResponse>.NotFound("文章不存在"));
 
         var response = MarkdownResponseMapper.MapToMarkdownResponse(markdown);
-        return Results.Ok(ApiResponse<MarkdownResponse>.Ok(response));
+        return Results.Ok(ApiResponseResult<MarkdownResponse>.Ok(response));
     }
 
     /// <summary>
@@ -439,11 +439,11 @@ public static class MarkdownApi
        [FromServices] IMarkdownRepository markdownRepository)
     {
         if (string.IsNullOrWhiteSpace(request.Name))
-            return Results.BadRequest(ApiResponse.Error("文章名称不能为空"));
+            return Results.BadRequest(ApiResponseResult.Error("文章名称不能为空"));
         if (string.IsNullOrWhiteSpace(request.Content))
-            return Results.BadRequest(ApiResponse.Error("文章内容不能为空"));
+            return Results.BadRequest(ApiResponseResult.Error("文章内容不能为空"));
         if (!MarkdownApiHelpers.TryValidateTags(request.Tags, out var tagError))
-            return Results.BadRequest(ApiResponse.Error(tagError ?? "标签校验失败"));
+            return Results.BadRequest(ApiResponseResult.Error(tagError ?? "标签校验失败"));
 
         var userId = currentUserService.GetUserId();
 
@@ -463,10 +463,10 @@ public static class MarkdownApi
         var markdown = await markdownRepository.FindMarkDownAsync(markDownGuid);
 
         if (markdown is null || markdown.IsDelete)
-            return Results.NotFound(ApiResponse<MarkdownResponse>.NotFound("文章不存在"));
+            return Results.NotFound(ApiResponseResult<MarkdownResponse>.NotFound("文章不存在"));
 
         var response = MarkdownResponseMapper.MapToMarkdownResponse(markdown);
-        return Results.Ok(ApiResponse<MarkdownResponse>.Ok(response, "文章更新成功"));
+        return Results.Ok(ApiResponseResult<MarkdownResponse>.Ok(response, "文章更新成功"));
     }
 
     /// <summary>
@@ -484,7 +484,7 @@ public static class MarkdownApi
         var result = await  notMediator.SendAsync(command);
 
         return result
-            ? Results.Ok(ApiResponse.Ok("文章已删除"))
+            ? Results.Ok(ApiResponseResult.Ok("文章已删除"))
             : Results.StatusCode(500);
     }
 
@@ -507,7 +507,7 @@ public static class MarkdownApi
             ViewerGuid: MarkdownApiHelpers.TryGetCurrentUserId(currentUserService));
 
         var result = await notMediator.SendAsync(query);
-        return Results.Ok(ApiResponse<List<MarkdownSummaryResponse>>.Ok(result));
+        return Results.Ok(ApiResponseResult<List<MarkdownSummaryResponse>>.Ok(result));
     }
 
     /// <summary>
@@ -521,7 +521,7 @@ public static class MarkdownApi
        [FromServices] ICurrentUserService currentUserService)
     {
         if (string.IsNullOrWhiteSpace(keyword))
-            return Results.BadRequest(ApiResponse.Error("搜索关键字不能为空"));
+            return Results.BadRequest(ApiResponseResult.Error("搜索关键字不能为空"));
 
         var query = new MarkdownSearchQuery(
             keyword.Trim(),
@@ -530,6 +530,6 @@ public static class MarkdownApi
             ViewerGuid: MarkdownApiHelpers.TryGetCurrentUserId(currentUserService));
 
         var result = await notMediator.SendAsync(query);
-        return Results.Ok(ApiResponse<List<MarkdownSummaryResponse>>.Ok(result));
+        return Results.Ok(ApiResponseResult<List<MarkdownSummaryResponse>>.Ok(result));
     }
 }

@@ -20,6 +20,7 @@ global using Markdown.Web.API.Application.Queries;
 global using Markdown.Web.API.Dto.Request;
 global using Markdown.Web.API.Services;
 global using Markdown.Web.API.Dto.Response;
+global using Commons.Result;
 global using Microsoft.AspNetCore.Mvc;
 global using Markdown.Web.API.Background;
 global using Markdown.Domain.Enum;

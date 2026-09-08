@@ -1,4 +1,4 @@
-using Message.Domain.IServices;
+﻿using Message.Domain.IServices;
 using Message.Web.API.Dto.Call;
 
 namespace Message.Web.API.APIs;
@@ -6,7 +6,7 @@ namespace Message.Web.API.APIs;
 /// <summary>
 /// WebRTC TURN 限时凭证接口。
 /// <para>
-/// 返回**原始 <see cref="TurnCredentialsDto"/>**（非 <see cref="ApiResponse{T}"/> 外层包裹）：
+/// 返回**原始 <see cref="TurnCredentialsDto"/>**（非 <see cref="ApiResponseResult{T}"/> 外层包裹）：
 /// 该接口由浏览器端 <c>getIceServers</c> 直接消费，需严格匹配 <c>{ urls, username, credential }</c> 结构，
 /// 不引入业务响应封装，避免前端额外解包。
 /// </para>

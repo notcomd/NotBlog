@@ -1,3 +1,4 @@
+using Commons.Result;
 using FileDev.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 using NotMediator;
@@ -28,9 +29,9 @@ public static class StreamUploadApis
         return router;
     }
 
-    private static IResult Unauthorized() => Results.Json(new { ok = false, error = "未认证" }, statusCode: 401);
-    private static IResult BadRequest(string error) => Results.Json(new { ok = false, error }, statusCode: 400);
-    private static IResult InternalError() => Results.Json(new { ok = false, error = "请求处理失败" }, statusCode: 500);
+    private static IResult Unauthorized() => Results.Json(ApiResponseResult.Failure("未认证", 401), statusCode: 401);
+    private static IResult BadRequest(string error) => Results.Json(ApiResponseResult.Failure(error, 400), statusCode: 400);
+    private static IResult InternalError() => Results.Json(ApiResponseResult.Failure("请求处理失败", 500), statusCode: 500);
 
     /// <summary>
     /// 流式上传

@@ -1,4 +1,4 @@
-namespace Markdown.Web.API.Apis;
+﻿namespace Markdown.Web.API.Apis;
 
 /// <summary>
 ///     Markdown 历史版本 API（列表 / 详情 / 删除 / 还原，挂文章组下）
@@ -14,27 +14,27 @@ public static class MarkdownHistoryApi
 
         // GET: 获取文档的所有历史版本（无需认证）
         historyGroup.MapGet("/", GetHistoryAsync)
-            .Produces<ApiResponse<List<OldMarkDownResponse>>>(StatusCodes.Status200OK);
+            .Produces<ApiResponseResult<List<OldMarkDownResponse>>>(StatusCodes.Status200OK);
 
         // GET: 获取单个历史版本详情（无需认证）
         historyGroup.MapGet("/{oldMarkDownGuid:guid}", GetHistoryDetailAsync)
-            .Produces<ApiResponse<OldMarkDownResponse>>(StatusCodes.Status200OK)
-            .Produces<ApiResponse>(StatusCodes.Status404NotFound);
+            .Produces<ApiResponseResult<OldMarkDownResponse>>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult>(StatusCodes.Status404NotFound);
 
         // DELETE: 删除历史版本（需认证，软删除）
         historyGroup.MapDelete("/{oldMarkDownGuid:guid}", DeleteHistoryAsync)
             .RequireAuthorization()
-            .Produces<ApiResponse>(StatusCodes.Status200OK)
-            .Produces<ApiResponse>(StatusCodes.Status404NotFound)
+            .Produces<ApiResponseResult>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult>(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized);
 
         // POST: 从历史版本还原（仅作者）
         historyGroup.MapPost("/{oldMarkDownGuid:guid}/restore", RestoreAsync)
             .RequireAuthorization()
-            .Produces<ApiResponse>(StatusCodes.Status200OK)
-            .Produces<ApiResponse>(StatusCodes.Status400BadRequest)
-            .Produces<ApiResponse>(StatusCodes.Status403Forbidden)
-            .Produces<ApiResponse>(StatusCodes.Status404NotFound)
+            .Produces<ApiResponseResult>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult>(StatusCodes.Status400BadRequest)
+            .Produces<ApiResponseResult>(StatusCodes.Status403Forbidden)
+            .Produces<ApiResponseResult>(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized);
     }
 
@@ -53,11 +53,11 @@ public static class MarkdownHistoryApi
         if (markdown is null || markdown.IsDelete ||
             !markdown.HasPermission(viewerGuid) ||
             (!markdown.IsApproved && markdown.MarkUserGuid != viewerGuid))
-            return Results.NotFound(ApiResponse<List<OldMarkDownResponse>>.NotFound("文章不存在"));
+            return Results.NotFound(ApiResponseResult<List<OldMarkDownResponse>>.NotFound("文章不存在"));
 
         var oldVersions = await markdownRepository.GetOldMarkDownsByMarkDownGuidAsync(markDownGuid);
         var responses = oldVersions.Select(OldMarkDownMapper.MapToOldMarkDownResponse).ToList();
-        return Results.Ok(ApiResponse<List<OldMarkDownResponse>>.Ok(responses));
+        return Results.Ok(ApiResponseResult<List<OldMarkDownResponse>>.Ok(responses));
     }
 
     /// <summary>
@@ -71,7 +71,7 @@ public static class MarkdownHistoryApi
         var oldVersion = await markdownRepository.GetOldMarkDownByGuidAsync(oldMarkDownGuid);
 
         if (oldVersion is null || oldVersion.IsDelete)
-            return Results.NotFound(ApiResponse<OldMarkDownResponse>.NotFound("历史版本不存在"));
+            return Results.NotFound(ApiResponseResult<OldMarkDownResponse>.NotFound("历史版本不存在"));
 
         // 越权防护：权限校验 + 审核门控双重要求（与 GetAsync 一致）
         var markdown = await markdownRepository.FindMarkDownAsync(oldVersion.MarkDownGuid);
@@ -79,10 +79,10 @@ public static class MarkdownHistoryApi
         if (markdown is null || markdown.IsDelete ||
             !markdown.HasPermission(viewerGuid) ||
             (!markdown.IsApproved && markdown.MarkUserGuid != viewerGuid))
-            return Results.NotFound(ApiResponse<OldMarkDownResponse>.NotFound("历史版本不存在"));
+            return Results.NotFound(ApiResponseResult<OldMarkDownResponse>.NotFound("历史版本不存在"));
 
         var response = OldMarkDownMapper.MapToOldMarkDownResponse(oldVersion);
-        return Results.Ok(ApiResponse<OldMarkDownResponse>.Ok(response));
+        return Results.Ok(ApiResponseResult<OldMarkDownResponse>.Ok(response));
     }
 
     /// <summary>
@@ -104,7 +104,7 @@ public static class MarkdownHistoryApi
 
         await markdownRepository.DeleteOldMarkDownAsync(oldMarkDownGuid);
         await markdownRepository.UnitOfWork.SaveChangesAsync(CancellationToken.None);
-        return Results.Ok(ApiResponse.Ok("历史版本已删除"));
+        return Results.Ok(ApiResponseResult.Ok("历史版本已删除"));
     }
 
     /// <summary>
@@ -120,7 +120,7 @@ public static class MarkdownHistoryApi
         var result = await notMediator.SendAsync(new RestoreMarkdownCommand(markDownGuid, oldMarkDownGuid, userId));
 
         return result
-            ? Results.Ok(ApiResponse.Ok("历史版本已还原"))
+            ? Results.Ok(ApiResponseResult.Ok("历史版本已还原"))
             : Results.StatusCode(500);
     }
 }

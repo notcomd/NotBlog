@@ -28,88 +28,88 @@ public static class FriendsApi
         group.MapPost("/request", SendFriendRequestAsync)
             .WithSummary("发送好友请求")
             .WithDescription("向指定用户发送好友请求")
-            .Produces<ApiResponse<Guid>>()
+            .Produces<ApiResponseResult<Guid>>()
             .Accepts<SendFriendRequestRequest>("application/json");
 
         // 2. PUT /request/{friendId} — 处理好友请求
         group.MapPut("/request/{friendId}", HandleFriendRequestAsync)
             .WithSummary("处理好友请求")
             .WithDescription("接受或拒绝好友请求")
-            .Produces<ApiResponse>()
+            .Produces<ApiResponseResult>()
             .Accepts<HandleFriendRequestRequest>("application/json");
 
         // 3. GET / — 获取好友列表
         group.MapGet("/", GetFriendsAsync)
             .WithSummary("获取好友列表")
             .WithDescription("获取当前用户的所有好友")
-            .Produces<ApiResponse<IEnumerable<FriendDto>>>();
+            .Produces<ApiResponseResult<IEnumerable<FriendDto>>>();
 
         // 4. GET /requests — 获取收到的好友请求
         group.MapGet("/requests", GetPendingRequestsAsync)
             .WithSummary("获取收到的好友请求")
             .WithDescription("获取当前用户收到的待处理好友请求")
-            .Produces<ApiResponse<IEnumerable<FriendRequestDto>>>();
+            .Produces<ApiResponseResult<IEnumerable<FriendRequestDto>>>();
 
         // 5. GET /sent-requests — 获取发出的好友请求
         group.MapGet("/sent-requests", GetSentRequestsAsync)
             .WithSummary("获取发出的好友请求")
             .WithDescription("获取当前用户发出的待处理好友请求")
-            .Produces<ApiResponse<IEnumerable<FriendRequestDto>>>();
+            .Produces<ApiResponseResult<IEnumerable<FriendRequestDto>>>();
 
         // 6. DELETE /{friendId} — 删除好友
         group.MapDelete("/{friendId}", DeleteFriendAsync)
             .WithSummary("删除好友")
             .WithDescription("删除指定好友关系")
-            .Produces<ApiResponse>();
+            .Produces<ApiResponseResult>();
 
         // 7. PUT /{friendId}/block — 屏蔽/取消屏蔽好友
         group.MapPut("/{friendId}/block", SetBlockStatusAsync)
             .WithSummary("屏蔽/取消屏蔽好友")
             .WithDescription("屏蔽或取消屏蔽指定好友")
-            .Produces<ApiResponse>();
+            .Produces<ApiResponseResult>();
 
         // 8. PUT /{friendId}/remark — 更新好友备注
         group.MapPut("/{friendId}/remark", UpdateFriendRemarkAsync)
             .WithSummary("更新好友备注")
             .WithDescription("更新指定好友的备注名称")
-            .Produces<ApiResponse>()
+            .Produces<ApiResponseResult>()
             .Accepts<UpdateFriendRemarkRequest>("application/json");
 
         // 9. PUT /{friendId}/star — 星标/取消星标好友
         group.MapPut("/{friendId}/star", SetStarStatusAsync)
             .WithSummary("星标/取消星标好友")
             .WithDescription("星标或取消星标指定好友")
-            .Produces<ApiResponse>();
+            .Produces<ApiResponseResult>();
 
         // 10. PUT /{friendId}/mute — 静音/取消静音好友
         group.MapPut("/{friendId}/mute", SetMuteStatusAsync)
             .WithSummary("静音/取消静音好友")
             .WithDescription("静音或取消静音指定好友")
-            .Produces<ApiResponse>();
+            .Produces<ApiResponseResult>();
 
         // 11. GET /blocked — 获取已屏蔽好友列表
         group.MapGet("/blocked", GetBlockedUsersAsync)
             .WithSummary("获取已屏蔽好友列表")
             .WithDescription("获取当前用户已屏蔽的好友列表")
-            .Produces<ApiResponse<IEnumerable<FriendDto>>>();
+            .Produces<ApiResponseResult<IEnumerable<FriendDto>>>();
 
         // 12. GET /starred — 获取星标好友列表
         group.MapGet("/starred", GetStarredFriendsAsync)
             .WithSummary("获取星标好友列表")
             .WithDescription("获取当前用户已星标的好友列表")
-            .Produces<ApiResponse<IEnumerable<FriendDto>>>();
+            .Produces<ApiResponseResult<IEnumerable<FriendDto>>>();
 
         // 13. GET /count — 获取好友数量
         group.MapGet("/count", GetFriendCountAsync)
             .WithSummary("获取好友数量")
             .WithDescription("获取当前用户的好友总数")
-            .Produces<ApiResponse<int>>();
+            .Produces<ApiResponseResult<int>>();
 
         // 14. GET /search — 搜索好友
         group.MapGet("/search", SearchFriendsAsync)
             .WithSummary("搜索好友")
             .WithDescription("按搜索词查找好友")
-            .Produces<ApiResponse<IEnumerable<FriendDto>>>();
+            .Produces<ApiResponseResult<IEnumerable<FriendDto>>>();
 
         return group;
     }
@@ -135,11 +135,11 @@ public static class FriendsApi
             var friendshipId = await mediator.SendAsync(
                 new SendFriendRequestCommand(userId, request.FriendId), ct);
 
-            return Results.Ok(ApiResponse<Guid>.Created(friendshipId, "好友请求已发送"));
+            return Results.Ok(ApiResponseResult<Guid>.Created(friendshipId, "好友请求已发送"));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<Guid>.Error($"发送好友请求失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<Guid>.Error($"发送好友请求失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -165,11 +165,11 @@ public static class FriendsApi
             var userId = currentUser.GetUserId();
             await mediator.SendAsync(new HandleFriendRequestCommand(userId, friendId, request.Accept), ct);
 
-            return Results.Ok(ApiResponse.Ok(request.Accept ? "好友请求已接受" : "好友请求已拒绝"));
+            return Results.Ok(ApiResponseResult.Ok(request.Accept ? "好友请求已接受" : "好友请求已拒绝"));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse.Error($"处理好友请求失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult.Error($"处理好友请求失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -189,11 +189,11 @@ public static class FriendsApi
         {
             var userId = currentUser.GetUserId();
             var friends = await mediator.SendAsync(new GetFriendsQuery(userId), ct);
-            return Results.Ok(ApiResponse<IEnumerable<FriendDto>>.Ok(friends.Select(MapToDto)));
+            return Results.Ok(ApiResponseResult<IEnumerable<FriendDto>>.Ok(friends.Select(MapToDto)));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<IEnumerable<FriendDto>>.Error($"获取好友列表失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<IEnumerable<FriendDto>>.Error($"获取好友列表失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -213,11 +213,11 @@ public static class FriendsApi
         {
             var userId = currentUser.GetUserId();
             var requests = await mediator.SendAsync(new GetPendingRequestsQuery(userId), ct);
-            return Results.Ok(ApiResponse<IEnumerable<FriendRequestDto>>.Ok(requests.Select(MapRequestToDto)));
+            return Results.Ok(ApiResponseResult<IEnumerable<FriendRequestDto>>.Ok(requests.Select(MapRequestToDto)));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<IEnumerable<FriendRequestDto>>.Error($"获取好友请求失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<IEnumerable<FriendRequestDto>>.Error($"获取好友请求失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -237,11 +237,11 @@ public static class FriendsApi
         {
             var userId = currentUser.GetUserId();
             var requests = await mediator.SendAsync(new GetSentRequestsQuery(userId), ct);
-            return Results.Ok(ApiResponse<IEnumerable<FriendRequestDto>>.Ok(requests.Select(MapRequestToDto)));
+            return Results.Ok(ApiResponseResult<IEnumerable<FriendRequestDto>>.Ok(requests.Select(MapRequestToDto)));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<IEnumerable<FriendRequestDto>>.Error($"获取已发送好友请求失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<IEnumerable<FriendRequestDto>>.Error($"获取已发送好友请求失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -264,15 +264,15 @@ public static class FriendsApi
         {
             var userId = currentUser.GetUserId();
             await mediator.SendAsync(new DeleteFriendCommand(userId, friendId), ct);
-            return Results.Ok(ApiResponse.Ok("好友已删除"));
+            return Results.Ok(ApiResponseResult.Ok("好友已删除"));
         }
         catch (KeyNotFoundException)
         {
-            return Results.Json(ApiResponse.NotFound("好友关系不存在"), statusCode: 404);
+            return Results.Json(ApiResponseResult.NotFound("好友关系不存在"), statusCode: 404);
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse.Error($"删除好友失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult.Error($"删除好友失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -298,11 +298,11 @@ public static class FriendsApi
             var userId = currentUser.GetUserId();
             await mediator.SendAsync(new BlockFriendCommand(userId, friendId, block), ct);
 
-            return Results.Ok(ApiResponse.Ok(block ? "用户已屏蔽" : "用户已取消屏蔽"));
+            return Results.Ok(ApiResponseResult.Ok(block ? "用户已屏蔽" : "用户已取消屏蔽"));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse.Error($"屏蔽好友操作失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult.Error($"屏蔽好友操作失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -327,11 +327,11 @@ public static class FriendsApi
         {
             var userId = currentUser.GetUserId();
             await mediator.SendAsync(new UpdateFriendRemarkCommand(userId, friendId, request.Remark), ct);
-            return Results.Ok(ApiResponse.Ok("备注已更新"));
+            return Results.Ok(ApiResponseResult.Ok("备注已更新"));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse.Error($"更新好友备注失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult.Error($"更新好友备注失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -357,11 +357,11 @@ public static class FriendsApi
             var userId = currentUser.GetUserId();
             await mediator.SendAsync(new StarFriendCommand(userId, friendId, star), ct);
 
-            return Results.Ok(ApiResponse.Ok(star ? "好友已星标" : "好友已取消星标"));
+            return Results.Ok(ApiResponseResult.Ok(star ? "好友已星标" : "好友已取消星标"));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse.Error($"星标好友操作失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult.Error($"星标好友操作失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -387,11 +387,11 @@ public static class FriendsApi
             var userId = currentUser.GetUserId();
             await mediator.SendAsync(new MuteFriendCommand(userId, friendId, mute), ct);
 
-            return Results.Ok(ApiResponse.Ok(mute ? "好友已静音" : "好友已取消静音"));
+            return Results.Ok(ApiResponseResult.Ok(mute ? "好友已静音" : "好友已取消静音"));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse.Error($"静音好友操作失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult.Error($"静音好友操作失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -411,11 +411,11 @@ public static class FriendsApi
         {
             var userId = currentUser.GetUserId();
             var users = await mediator.SendAsync(new GetBlockedUsersQuery(userId), ct);
-            return Results.Ok(ApiResponse<IEnumerable<FriendDto>>.Ok(users.Select(MapToDto)));
+            return Results.Ok(ApiResponseResult<IEnumerable<FriendDto>>.Ok(users.Select(MapToDto)));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<IEnumerable<FriendDto>>.Error($"获取已屏蔽好友列表失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<IEnumerable<FriendDto>>.Error($"获取已屏蔽好友列表失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -435,11 +435,11 @@ public static class FriendsApi
         {
             var userId = currentUser.GetUserId();
             var friends = await mediator.SendAsync(new GetStarredFriendsQuery(userId), ct);
-            return Results.Ok(ApiResponse<IEnumerable<FriendDto>>.Ok(friends.Select(MapToDto)));
+            return Results.Ok(ApiResponseResult<IEnumerable<FriendDto>>.Ok(friends.Select(MapToDto)));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<IEnumerable<FriendDto>>.Error($"获取星标好友列表失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<IEnumerable<FriendDto>>.Error($"获取星标好友列表失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -459,11 +459,11 @@ public static class FriendsApi
         {
             var userId = currentUser.GetUserId();
             var count = await mediator.SendAsync(new GetFriendCountQuery(userId), ct);
-            return Results.Ok(ApiResponse<int>.Ok(count));
+            return Results.Ok(ApiResponseResult<int>.Ok(count));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<int>.Error($"获取好友数量失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<int>.Error($"获取好友数量失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -485,11 +485,11 @@ public static class FriendsApi
         {
             var userId = currentUser.GetUserId();
             var friends = await mediator.SendAsync(new SearchFriendsQuery(userId, searchTerm), ct);
-            return Results.Ok(ApiResponse<IEnumerable<FriendDto>>.Ok(friends.Select(MapToDto)));
+            return Results.Ok(ApiResponseResult<IEnumerable<FriendDto>>.Ok(friends.Select(MapToDto)));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<IEnumerable<FriendDto>>.Error($"搜索好友失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<IEnumerable<FriendDto>>.Error($"搜索好友失败: {ex.Message}"), statusCode: 500);
         }
     }
 

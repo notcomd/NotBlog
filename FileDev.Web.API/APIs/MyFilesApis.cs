@@ -1,3 +1,4 @@
+using Commons.Result;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 
@@ -33,7 +34,7 @@ public static class MyFilesApis
     {
         var userId = FileApiHelpers.GetUserId(context);
         if (userId == null)
-            return Results.Json(new { ok = false, error = "未认证" }, statusCode: 401);
+            return Results.Json(ApiResponseResult.Failure("未认证", 401), statusCode: 401);
 
         try
         {
@@ -64,7 +65,7 @@ public static class MyFilesApis
         catch (Exception ex)
         {
             fileServicesDi.Logger.LogError(ex, "获取我的文件列表失败: {UserId}", userId.Value);
-            return Results.Json(new { ok = false, error = "获取文件列表失败" }, statusCode: 500);
+            return Results.Json(ApiResponseResult.Failure("获取文件列表失败", 500), statusCode: 500);
         }
     }
 

@@ -1,4 +1,4 @@
-namespace Markdown.Web.API.Apis;
+﻿namespace Markdown.Web.API.Apis;
 
 /// <summary>
 ///     Markdown 评论 API（顶级评论 / 子评论 / 点赞，挂文章组下）
@@ -15,74 +15,74 @@ public static class MarkdownReviewApi
         // POST: 创建评论（需认证）
         reviewGroup.MapPost("/", CreateReviewAsync)
             .RequireAuthorization()
-            .Produces<ApiResponse<MarkReviewResponse>>(StatusCodes.Status201Created)
-            .Produces<ApiResponse>(StatusCodes.Status400BadRequest)
-            .Produces<ApiResponse>(StatusCodes.Status404NotFound)
+            .Produces<ApiResponseResult<MarkReviewResponse>>(StatusCodes.Status201Created)
+            .Produces<ApiResponseResult>(StatusCodes.Status400BadRequest)
+            .Produces<ApiResponseResult>(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized);
 
         // GET: 获取文档的所有顶级评论（无需认证）
         reviewGroup.MapGet("/", GetReviewsAsync)
-            .Produces<ApiResponse<List<MarkReviewResponse>>>(StatusCodes.Status200OK)
-            .Produces<ApiResponse>(StatusCodes.Status404NotFound);
+            .Produces<ApiResponseResult<List<MarkReviewResponse>>>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult>(StatusCodes.Status404NotFound);
 
         // GET: 获取单条评论详情（无需认证）
         reviewGroup.MapGet("/detail/{reviewGuid:guid}", GetReviewAsync)
-            .Produces<ApiResponse<MarkReviewResponse>>(StatusCodes.Status200OK)
-            .Produces<ApiResponse>(StatusCodes.Status404NotFound);
+            .Produces<ApiResponseResult<MarkReviewResponse>>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult>(StatusCodes.Status404NotFound);
 
         // GET: 获取评论的子评论（无需认证）
         reviewGroup.MapGet("/{reviewGuid:guid}/children", GetChildReviewsAsync)
-            .Produces<ApiResponse<List<MarkReviewResponse>>>(StatusCodes.Status200OK);
+            .Produces<ApiResponseResult<List<MarkReviewResponse>>>(StatusCodes.Status200OK);
 
         // PUT: 更新评论（需认证）
         reviewGroup.MapPut("/{reviewGuid:guid}", UpdateReviewAsync)
             .RequireAuthorization()
-            .Produces<ApiResponse>(StatusCodes.Status200OK)
-            .Produces<ApiResponse>(StatusCodes.Status400BadRequest)
-            .Produces<ApiResponse>(StatusCodes.Status403Forbidden)
-            .Produces<ApiResponse>(StatusCodes.Status404NotFound)
+            .Produces<ApiResponseResult>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult>(StatusCodes.Status400BadRequest)
+            .Produces<ApiResponseResult>(StatusCodes.Status403Forbidden)
+            .Produces<ApiResponseResult>(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized);
 
         // DELETE: 删除评论（需认证，软删除）
         reviewGroup.MapDelete("/{reviewGuid:guid}", DeleteReviewAsync)
             .RequireAuthorization()
-            .Produces<ApiResponse>(StatusCodes.Status200OK)
-            .Produces<ApiResponse>(StatusCodes.Status403Forbidden)
-            .Produces<ApiResponse>(StatusCodes.Status404NotFound)
+            .Produces<ApiResponseResult>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult>(StatusCodes.Status403Forbidden)
+            .Produces<ApiResponseResult>(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized);
 
         // POST: 添加子评论（父评论 Guid + 内容，F-10.4）
         reviewGroup.MapPost("/{reviewGuid:guid}/children", AddChildReviewAsync)
             .RequireAuthorization()
-            .Produces<ApiResponse<Guid>>(StatusCodes.Status201Created)
-            .Produces<ApiResponse>(StatusCodes.Status400BadRequest)
-            .Produces<ApiResponse>(StatusCodes.Status404NotFound)
+            .Produces<ApiResponseResult<Guid>>(StatusCodes.Status201Created)
+            .Produces<ApiResponseResult>(StatusCodes.Status400BadRequest)
+            .Produces<ApiResponseResult>(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized);
 
         // POST: 评论点赞/取消点赞（计数接线 F-10.5）
         reviewGroup.MapPost("/{reviewGuid:guid}/like", LikeReviewAsync)
             .RequireAuthorization()
-            .Produces<ApiResponse<long>>(StatusCodes.Status200OK)
-            .Produces<ApiResponse>(StatusCodes.Status404NotFound)
+            .Produces<ApiResponseResult<long>>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult>(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized);
 
         reviewGroup.MapPost("/{reviewGuid:guid}/unlike", UnlikeReviewAsync)
             .RequireAuthorization()
-            .Produces<ApiResponse<long>>(StatusCodes.Status200OK)
-            .Produces<ApiResponse>(StatusCodes.Status404NotFound)
+            .Produces<ApiResponseResult<long>>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult>(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized);
 
         // 踩 / 取消踩（阶段 2：ReviewQuote.DislikeCount）
         reviewGroup.MapPost("/{reviewGuid:guid}/dislike", DislikeReviewAsync)
             .RequireAuthorization()
-            .Produces<ApiResponse<long>>(StatusCodes.Status200OK)
-            .Produces<ApiResponse>(StatusCodes.Status404NotFound)
+            .Produces<ApiResponseResult<long>>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult>(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized);
 
         reviewGroup.MapPost("/{reviewGuid:guid}/undislike", UndislikeReviewAsync)
             .RequireAuthorization()
-            .Produces<ApiResponse<long>>(StatusCodes.Status200OK)
-            .Produces<ApiResponse>(StatusCodes.Status404NotFound)
+            .Produces<ApiResponseResult<long>>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult>(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized);
     }
 
@@ -98,7 +98,7 @@ public static class MarkdownReviewApi
         [FromServices]HttpContext httpContext)
     {
         if (string.IsNullOrWhiteSpace(request.Content))
-            return Results.BadRequest(ApiResponse.Error("评论内容不能为空"));
+            return Results.BadRequest(ApiResponseResult.Error("评论内容不能为空"));
 
         var reviewImages = MarkdownApiHelpers.MapReviewImages(request.ReviewImages);
 
@@ -109,11 +109,11 @@ public static class MarkdownReviewApi
         if (markdown is null || markdown.IsDelete ||
             (!markdown.IsApproved && markdown.MarkUserGuid != userId) ||
             !markdown.HasPermission(userId))
-            return Results.NotFound(ApiResponse<Guid>.NotFound("文章不存在"));
+            return Results.NotFound(ApiResponseResult<Guid>.NotFound("文章不存在"));
 
         var reviewAuth = MarkdownApiHelpers.ParseReviewAuth(request.Auth);
         if (reviewAuth is null)
-            return Results.BadRequest(ApiResponse.Error("非法的评论权限类型"));
+            return Results.BadRequest(ApiResponseResult.Error("非法的评论权限类型"));
 
         var command = new CreateMarkReviewCommand(
             markDownGuid,
@@ -127,7 +127,7 @@ public static class MarkdownReviewApi
 
         return Results.Created(
             $"/api/markdown/{markDownGuid}/reviews/detail/{reviewGuid}",
-            ApiResponse<Guid>.Created(reviewGuid, "评论创建成功"));
+            ApiResponseResult<Guid>.Created(reviewGuid, "评论创建成功"));
     }
 
     /// <summary>
@@ -145,14 +145,14 @@ public static class MarkdownReviewApi
         if (markdown is null || markdown.IsDelete ||
             (!markdown.IsApproved && markdown.MarkUserGuid != (userId ?? Guid.Empty)) ||
             !markdown.HasPermission(userId ?? Guid.Empty))
-            return Results.NotFound(ApiResponse<List<MarkReviewResponse>>.NotFound("文章不存在"));
+            return Results.NotFound(ApiResponseResult<List<MarkReviewResponse>>.NotFound("文章不存在"));
 
         var reviews = await markdownRepository.GetReviewsByMarkdownIdAsync(markDownGuid);
         var responses = reviews
             .Where(r => MarkdownApiHelpers.IsReviewVisible(r, userId))
             .Select(MarkReviewResponseMapper.MapToMarkReviewResponse)
             .ToList();
-        return Results.Ok(ApiResponse<List<MarkReviewResponse>>.Ok(responses));
+        return Results.Ok(ApiResponseResult<List<MarkReviewResponse>>.Ok(responses));
     }
 
     /// <summary>
@@ -166,7 +166,7 @@ public static class MarkdownReviewApi
         var review = await markdownRepository.GetReviewByIdAsync(reviewGuid);
 
         if (review is null || review.IsDelete)
-            return Results.NotFound(ApiResponse<MarkReviewResponse>.NotFound("评论不存在"));
+            return Results.NotFound(ApiResponseResult<MarkReviewResponse>.NotFound("评论不存在"));
 
         var userId = MarkdownApiHelpers.TryGetCurrentUserId(currentUserService);
 
@@ -175,16 +175,16 @@ public static class MarkdownReviewApi
         if (markdown is null || markdown.IsDelete ||
             (!markdown.IsApproved && markdown.MarkUserGuid != (userId ?? Guid.Empty)) ||
             !markdown.HasPermission(userId ?? Guid.Empty))
-            return Results.NotFound(ApiResponse<MarkReviewResponse>.NotFound("评论不存在"));
+            return Results.NotFound(ApiResponseResult<MarkReviewResponse>.NotFound("评论不存在"));
 
         if (!MarkdownApiHelpers.IsReviewVisible(review, userId))
-            return Results.NotFound(ApiResponse<MarkReviewResponse>.NotFound("评论不存在"));
+            return Results.NotFound(ApiResponseResult<MarkReviewResponse>.NotFound("评论不存在"));
 
         // 浏览量计数接线（F-10.5）：读取评论详情时浏览数 +1（ExecuteUpdate 原子更新，无需 SaveChanges）
         await markdownRepository.IncreaseReviewViewAsync(reviewGuid);
 
         var response = MarkReviewResponseMapper.MapToMarkReviewResponse(review);
-        return Results.Ok(ApiResponse<MarkReviewResponse>.Ok(response));
+        return Results.Ok(ApiResponseResult<MarkReviewResponse>.Ok(response));
     }
 
     /// <summary>
@@ -200,23 +200,23 @@ public static class MarkdownReviewApi
         // 越权防护：父评论及其所属文档需对当前用户可见
         var parent = await markdownRepository.GetReviewByIdAsync(reviewGuid);
         if (parent is null || parent.IsDelete)
-            return Results.NotFound(ApiResponse<List<MarkReviewResponse>>.NotFound("评论不存在"));
+            return Results.NotFound(ApiResponseResult<List<MarkReviewResponse>>.NotFound("评论不存在"));
 
         var markdown = await markdownRepository.FindMarkDownAsync(parent.MarkDownGuid);
         if (markdown is null || markdown.IsDelete ||
             (!markdown.IsApproved && markdown.MarkUserGuid != (userId ?? Guid.Empty)) ||
             !markdown.HasPermission(userId ?? Guid.Empty))
-            return Results.NotFound(ApiResponse<List<MarkReviewResponse>>.NotFound("评论不存在"));
+            return Results.NotFound(ApiResponseResult<List<MarkReviewResponse>>.NotFound("评论不存在"));
 
         if (!MarkdownApiHelpers.IsReviewVisible(parent, userId))
-            return Results.NotFound(ApiResponse<List<MarkReviewResponse>>.NotFound("评论不存在"));
+            return Results.NotFound(ApiResponseResult<List<MarkReviewResponse>>.NotFound("评论不存在"));
 
         var childReviews = await markdownRepository.GetChildReviewsAsync(reviewGuid);
         var responses = childReviews
             .Where(r => MarkdownApiHelpers.IsReviewVisible(r, userId))
             .Select(MarkReviewResponseMapper.MapToMarkReviewResponse)
             .ToList();
-        return Results.Ok(ApiResponse<List<MarkReviewResponse>>.Ok(responses));
+        return Results.Ok(ApiResponseResult<List<MarkReviewResponse>>.Ok(responses));
     }
 
     /// <summary>
@@ -230,7 +230,7 @@ public static class MarkdownReviewApi
        [FromServices] HttpContext httpContext)
     {
         if (string.IsNullOrWhiteSpace(request.Content))
-            return Results.BadRequest(ApiResponse.Error("评论内容不能为空"));
+            return Results.BadRequest(ApiResponseResult.Error("评论内容不能为空"));
 
         var userId = currentUserService.GetUserId();
         var command = new UpdateMarkReviewCommand(reviewGuid, userId, request.Content,
@@ -239,7 +239,7 @@ public static class MarkdownReviewApi
         var result = await notMediator.SendAsync(command);
 
         return result
-            ? Results.Ok(ApiResponse.Ok("评论更新成功"))
+            ? Results.Ok(ApiResponseResult.Ok("评论更新成功"))
             : Results.StatusCode(500);
     }
 
@@ -258,7 +258,7 @@ public static class MarkdownReviewApi
         var result = await notMediator.SendAsync(command);
 
         return result
-            ? Results.Ok(ApiResponse.Ok("评论已删除"))
+            ? Results.Ok(ApiResponseResult.Ok("评论已删除"))
             : Results.StatusCode(500);
     }
 
@@ -275,7 +275,7 @@ public static class MarkdownReviewApi
        [FromServices] HttpContext httpContext)
     {
         if (string.IsNullOrWhiteSpace(request.Content))
-            return Results.BadRequest(ApiResponse.Error("评论内容不能为空"));
+            return Results.BadRequest(ApiResponseResult.Error("评论内容不能为空"));
 
         var reviewImages = MarkdownApiHelpers.MapReviewImages(request.ReviewImages);
 
@@ -286,11 +286,11 @@ public static class MarkdownReviewApi
         if (markdown is null || markdown.IsDelete ||
             (!markdown.IsApproved && markdown.MarkUserGuid != userId) ||
             !markdown.HasPermission(userId))
-            return Results.NotFound(ApiResponse<Guid>.NotFound("文章不存在"));
+            return Results.NotFound(ApiResponseResult<Guid>.NotFound("文章不存在"));
 
         var reviewAuth = MarkdownApiHelpers.ParseReviewAuth(request.Auth);
         if (reviewAuth is null)
-            return Results.BadRequest(ApiResponse.Error("非法的评论权限类型"));
+            return Results.BadRequest(ApiResponseResult.Error("非法的评论权限类型"));
 
         var command = new AddChildReviewCommand(
             markDownGuid,
@@ -305,7 +305,7 @@ public static class MarkdownReviewApi
 
         return Results.Created(
             $"/api/markdown/{markDownGuid}/reviews/{reviewGuid}/children/{childGuid}",
-            ApiResponse<Guid>.Created(childGuid, "子评论创建成功"));
+            ApiResponseResult<Guid>.Created(childGuid, "子评论创建成功"));
     }
 
     /// <summary>
@@ -323,13 +323,13 @@ public static class MarkdownReviewApi
         // 越权防护（P1-2）：评论不可见（已删除）或所属文档不可读（私有/未过审）一律 404
         var review = await markdownRepository.GetReviewByIdAsync(reviewGuid);
         if (review is null || review.IsDelete)
-            return Results.NotFound(ApiResponse<long>.NotFound("评论不存在"));
+            return Results.NotFound(ApiResponseResult<long>.NotFound("评论不存在"));
 
         var markdown = await markdownRepository.FindMarkDownAsync(review.MarkDownGuid);
         if (markdown is null || markdown.IsDelete ||
             (!markdown.IsApproved && markdown.MarkUserGuid != userId) ||
             !markdown.HasPermission(userId))
-            return Results.NotFound(ApiResponse<long>.NotFound("评论不存在"));
+            return Results.NotFound(ApiResponseResult<long>.NotFound("评论不存在"));
 
         var result = await markdownRepository.LikeReviewAsync(reviewGuid, userId);
 
@@ -345,7 +345,7 @@ public static class MarkdownReviewApi
                 loggerFactory.CreateLogger("MarkdownReviewApi.LikeReview"));
         }
 
-        return Results.Ok(ApiResponse<long>.Ok(result.Count, "点赞成功"));
+        return Results.Ok(ApiResponseResult<long>.Ok(result.Count, "点赞成功"));
     }
 
     /// <summary>
@@ -363,13 +363,13 @@ public static class MarkdownReviewApi
         // 越权防护（与点赞一致）：评论不可见或所属文档不可读一律 404
         var review = await markdownRepository.GetReviewByIdAsync(reviewGuid);
         if (review is null || review.IsDelete)
-            return Results.NotFound(ApiResponse<long>.NotFound("评论不存在"));
+            return Results.NotFound(ApiResponseResult<long>.NotFound("评论不存在"));
 
         var markdown = await markdownRepository.FindMarkDownAsync(review.MarkDownGuid);
         if (markdown is null || markdown.IsDelete ||
             (!markdown.IsApproved && markdown.MarkUserGuid != userId) ||
             !markdown.HasPermission(userId))
-            return Results.NotFound(ApiResponse<long>.NotFound("评论不存在"));
+            return Results.NotFound(ApiResponseResult<long>.NotFound("评论不存在"));
 
         var result = await markdownRepository.DislikeReviewAsync(reviewGuid, userId);
 
@@ -384,7 +384,7 @@ public static class MarkdownReviewApi
                 loggerFactory.CreateLogger("MarkdownReviewApi.DislikeReview"));
         }
 
-        return Results.Ok(ApiResponse<long>.Ok(result.Count, "踩成功"));
+        return Results.Ok(ApiResponseResult<long>.Ok(result.Count, "踩成功"));
     }
 
     /// <summary>
@@ -400,16 +400,16 @@ public static class MarkdownReviewApi
         // 越权防护（与点赞一致）
         var review = await markdownRepository.GetReviewByIdAsync(reviewGuid);
         if (review is null || review.IsDelete)
-            return Results.NotFound(ApiResponse<long>.NotFound("评论不存在"));
+            return Results.NotFound(ApiResponseResult<long>.NotFound("评论不存在"));
 
         var markdown = await markdownRepository.FindMarkDownAsync(review.MarkDownGuid);
         if (markdown is null || markdown.IsDelete ||
             (!markdown.IsApproved && markdown.MarkUserGuid != userId) ||
             !markdown.HasPermission(userId))
-            return Results.NotFound(ApiResponse<long>.NotFound("评论不存在"));
+            return Results.NotFound(ApiResponseResult<long>.NotFound("评论不存在"));
 
         var count = await markdownRepository.RemoveDislikeReviewAsync(reviewGuid, userId);
-        return Results.Ok(ApiResponse<long>.Ok(count, "已取消踩"));
+        return Results.Ok(ApiResponseResult<long>.Ok(count, "已取消踩"));
     }
 
     /// <summary>
@@ -425,15 +425,15 @@ public static class MarkdownReviewApi
         // 越权防护（P1-2）：与点赞一致——评论不可见或所属文档不可读一律 404
         var review = await markdownRepository.GetReviewByIdAsync(reviewGuid);
         if (review is null || review.IsDelete)
-            return Results.NotFound(ApiResponse<long>.NotFound("评论不存在"));
+            return Results.NotFound(ApiResponseResult<long>.NotFound("评论不存在"));
 
         var markdown = await markdownRepository.FindMarkDownAsync(review.MarkDownGuid);
         if (markdown is null || markdown.IsDelete ||
             (!markdown.IsApproved && markdown.MarkUserGuid != userId) ||
             !markdown.HasPermission(userId))
-            return Results.NotFound(ApiResponse<long>.NotFound("评论不存在"));
+            return Results.NotFound(ApiResponseResult<long>.NotFound("评论不存在"));
 
         var count = await markdownRepository.RemoveLikeReviewAsync(reviewGuid, userId);
-        return Results.Ok(ApiResponse<long>.Ok(count, "已取消点赞"));
+        return Results.Ok(ApiResponseResult<long>.Ok(count, "已取消点赞"));
     }
 }

@@ -1,4 +1,4 @@
-namespace Message.Web.API.APIs;
+﻿namespace Message.Web.API.APIs;
 
 /// <summary>
 /// 用户公开信息接口（静态函数模式 + CQRS）。
@@ -18,7 +18,7 @@ public static class UsersApi
             .RequirePermission("api:userinfo:read")
             .WithSummary("用户公开信息")
             .WithDescription("获取指定用户的资料、关注/粉丝计数、作品数与获赞总数，以及当前登录用户是否已关注对方")
-            .Produces<ApiResponse<UserProfileDto>>();
+            .Produces<ApiResponseResult<UserProfileDto>>();
 
         return group;
     }
@@ -33,11 +33,11 @@ public static class UsersApi
         {
             var userId = currentUser.IsAuthenticated ? currentUser.GetUserId() : Guid.Empty;
             var dto = await mediator.SendAsync(new GetUserProfileQuery(userGuid, userId), ct);
-            return Results.Ok(ApiResponse<UserProfileDto>.Ok(dto));
+            return Results.Ok(ApiResponseResult<UserProfileDto>.Ok(dto));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<UserProfileDto>.Error($"获取用户信息失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<UserProfileDto>.Error($"获取用户信息失败: {ex.Message}"), statusCode: 500);
         }
     }
 }

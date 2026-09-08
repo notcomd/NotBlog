@@ -1,5 +1,4 @@
 using System.Net;
-using System.Text.Json;
 
 namespace Message.Web.API.Middleware;
 public class ExceptionHandlingMiddleware
@@ -51,13 +50,8 @@ public class ExceptionHandlingMiddleware
 
         response.StatusCode = (int)statusCode;
 
-        var apiResponse = ApiResponse.Error(message, (int)statusCode);
-        var options = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        };
-
-        await response.WriteAsync(JsonSerializer.Serialize(apiResponse, options));
+        // 输出统一信封（与 ApiResponseResult 契约一致），包装中间件据此透传，避免二次包装
+        await response.WriteAsJsonAsync(ApiResponseResult.Failure(message, (int)statusCode));
     }
 }
 

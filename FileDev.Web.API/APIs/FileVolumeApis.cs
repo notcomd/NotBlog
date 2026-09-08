@@ -1,3 +1,4 @@
+using Commons.Result;
 using FileDev.Domain.IServices;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,7 +24,7 @@ public static class FileVolumeApis
         return router;
     }
 
-    private static IResult BadRequest(string error) => Results.Json(new { ok = false, error }, statusCode: 400);
+    private static IResult BadRequest(string error) => Results.Json(ApiResponseResult.Failure(error, 400), statusCode: 400);
 
     private static Task<IResult> ListVolumesAsync(
         [FromServices] INotFileVolumeService volumeService,
@@ -107,7 +108,7 @@ public static class FileVolumeApis
         }
         catch (Exception)
         {
-            return Results.Json(new { ok = false, error = "请求处理失败" }, statusCode: 500);
+            return Results.Json(ApiResponseResult.Failure("请求处理失败", 500), statusCode: 500);
         }
     }
 

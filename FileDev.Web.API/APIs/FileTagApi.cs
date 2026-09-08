@@ -1,3 +1,4 @@
+using Commons.Result;
 using FileDev.Web.API.Dto;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Mvc;
@@ -45,12 +46,12 @@ public static class FileTagApi
         var logger = loggerFactory.CreateLogger("FileTagApi");
         var userGuid = FileApiHelpers.GetUserId(httpContext);
         if (userGuid == null)
-            return Results.Json(new { ok = false, error = "未认证" }, statusCode: 401);
+            return Results.Json(ApiResponseResult.Failure("未认证", 401), statusCode: 401);
 
         try
         {
             if (body == null || string.IsNullOrWhiteSpace(body.Name))
-                return Results.Json(new { ok = false, error = "标签名称不能为空" }, statusCode: 400);
+                return Results.Json(ApiResponseResult.Failure("标签名称不能为空", 400), statusCode: 400);
 
             var command = new CreateTagCommand(userGuid.Value, body.Name.Trim(), body.Description);
             var identified = new IdentifiedCommand<CreateTagCommand, bool>(
@@ -61,7 +62,7 @@ public static class FileTagApi
         catch (Exception ex)
         {
             logger.LogError(ex, "创建标签失败: UserId={UserId}, Name={Name}", userGuid.Value, body?.Name);
-            return Results.Json(new { ok = false, error = "请求处理失败" }, statusCode: 500);
+            return Results.Json(ApiResponseResult.Failure("请求处理失败", 500), statusCode: 500);
         }
     }
 
@@ -72,7 +73,7 @@ public static class FileTagApi
     {
         var userGuid = FileApiHelpers.GetUserId(httpContext);
         if (userGuid == null)
-            return Results.Json(new { ok = false, error = "未认证" }, statusCode: 401);
+            return Results.Json(ApiResponseResult.Failure("未认证", 401), statusCode: 401);
 
         var tags = await servicesDi.NotFileTagRepository.GetNotFileTagsByUserIdAsync(userGuid.Value);
         var dtos = tags.Select(t => new TagResponse(
@@ -92,12 +93,12 @@ public static class FileTagApi
         var logger = loggerFactory.CreateLogger("FileTagApi");
         var userGuid = FileApiHelpers.GetUserId(httpContext);
         if (userGuid == null)
-            return Results.Json(new { ok = false, error = "未认证" }, statusCode: 401);
+            return Results.Json(ApiResponseResult.Failure("未认证", 401), statusCode: 401);
 
         try
         {
             if (body == null || string.IsNullOrWhiteSpace(body.NewName))
-                return Results.Json(new { ok = false, error = "标签名称不能为空" }, statusCode: 400);
+                return Results.Json(ApiResponseResult.Failure("标签名称不能为空", 400), statusCode: 400);
 
             var command = new RenameTagCommand(userGuid.Value, tagId, body.NewName.Trim());
             await servicesDi.NotMediator.SendAsync(command, cancellationToken);
@@ -106,7 +107,7 @@ public static class FileTagApi
         catch (Exception ex)
         {
             logger.LogError(ex, "重命名标签失败: UserId={UserId}, TagId={TagId}", userGuid.Value, tagId);
-            return Results.Json(new { ok = false, error = "请求处理失败" }, statusCode: 500);
+            return Results.Json(ApiResponseResult.Failure("请求处理失败", 500), statusCode: 500);
         }
     }
 
@@ -120,7 +121,7 @@ public static class FileTagApi
         var logger = loggerFactory.CreateLogger("FileTagApi");
         var userGuid = FileApiHelpers.GetUserId(httpContext);
         if (userGuid == null)
-            return Results.Json(new { ok = false, error = "未认证" }, statusCode: 401);
+            return Results.Json(ApiResponseResult.Failure("未认证", 401), statusCode: 401);
 
         try
         {
@@ -131,7 +132,7 @@ public static class FileTagApi
         catch (Exception ex)
         {
             logger.LogError(ex, "删除标签失败: UserId={UserId}, TagId={TagId}", userGuid.Value, tagId);
-            return Results.Json(new { ok = false, error = "请求处理失败" }, statusCode: 500);
+            return Results.Json(ApiResponseResult.Failure("请求处理失败", 500), statusCode: 500);
         }
     }
 
@@ -146,7 +147,7 @@ public static class FileTagApi
         var logger = loggerFactory.CreateLogger("FileTagApi");
         var userGuid = FileApiHelpers.GetUserId(httpContext);
         if (userGuid == null)
-            return Results.Json(new { ok = false, error = "未认证" }, statusCode: 401);
+            return Results.Json(ApiResponseResult.Failure("未认证", 401), statusCode: 401);
 
         try
         {
@@ -154,12 +155,12 @@ public static class FileTagApi
             var ok = await servicesDi.NotMediator.SendAsync(command, cancellationToken);
             return ok
                 ? Results.Json(new { ok = true })
-                : Results.Json(new { ok = false, error = "文件不存在或已删除" }, statusCode: 404);
+                : Results.Json(ApiResponseResult.Failure("文件不存在或已删除", 404), statusCode: 404);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "文件加入标签失败: UserId={UserId}, TagId={TagId}, FileId={FileId}", userGuid.Value, tagId, fileId);
-            return Results.Json(new { ok = false, error = "请求处理失败" }, statusCode: 500);
+            return Results.Json(ApiResponseResult.Failure("请求处理失败", 500), statusCode: 500);
         }
     }
 
@@ -174,7 +175,7 @@ public static class FileTagApi
         var logger = loggerFactory.CreateLogger("FileTagApi");
         var userGuid = FileApiHelpers.GetUserId(httpContext);
         if (userGuid == null)
-            return Results.Json(new { ok = false, error = "未认证" }, statusCode: 401);
+            return Results.Json(ApiResponseResult.Failure("未认证", 401), statusCode: 401);
 
         try
         {
@@ -185,7 +186,7 @@ public static class FileTagApi
         catch (Exception ex)
         {
             logger.LogError(ex, "从标签移除文件失败: UserId={UserId}, TagId={TagId}, FileId={FileId}", userGuid.Value, tagId, fileId);
-            return Results.Json(new { ok = false, error = "请求处理失败" }, statusCode: 500);
+            return Results.Json(ApiResponseResult.Failure("请求处理失败", 500), statusCode: 500);
         }
     }
 
@@ -197,12 +198,12 @@ public static class FileTagApi
     {
         var userGuid = FileApiHelpers.GetUserId(httpContext);
         if (userGuid == null)
-            return Results.Json(new { ok = false, error = "未认证" }, statusCode: 401);
+            return Results.Json(ApiResponseResult.Failure("未认证", 401), statusCode: 401);
 
         // 读取标签（校验归属），按 FileIds 批量查询文件
         var tag = await servicesDi.NotFileTagRepository.GetNotFileTagByIdAsync(tagId);
         if (tag.UserId != userGuid.Value)
-            return Results.Json(new { ok = false, error = "无权访问他人标签" }, statusCode: 403);
+            return Results.Json(ApiResponseResult.Failure("无权访问他人标签", 403), statusCode: 403);
 
         var files = await servicesDi.NotFileRepository.GetFilesByIdsAsync(tag.FileIds);
         var dtos = files.Select(f => new TagFileResponse(

@@ -1,4 +1,4 @@
-
+﻿
 namespace Message.Web.API.APIs;
 
 /// <summary>
@@ -29,25 +29,25 @@ public static class CommentsApi
             .WithSummary("发布评论")
             .WithDescription("对推文发布评论或回复")
             .Accepts<CreateCommentRequest>("application/json")
-            .Produces<ApiResponse>();
+            .Produces<ApiResponseResult>();
 
        
         group.MapGet("/tweet/{tweetGuid}", GetTweetCommentsAsync)
             .WithSummary("获取推文评论")
             .WithDescription("获取指定推文的评论列表，支持分页")
-            .Produces<ApiResponse<PagedResult<CommentDto>>>();
+            .Produces<ApiResponseResult<PagedResult<CommentDto>>>();
 
       
         group.MapGet("/{commentGuid}/replies", GetCommentRepliesAsync)
             .WithSummary("获取评论回复")
             .WithDescription("获取指定评论的回复列表，支持分页")
-            .Produces<ApiResponse<PagedResult<CommentDto>>>();
+            .Produces<ApiResponseResult<PagedResult<CommentDto>>>();
 
         
         group.MapDelete("/{commentGuid}", DeleteCommentAsync)
             .WithSummary("删除评论")
             .WithDescription("删除指定评论")
-            .Produces<ApiResponse>();
+            .Produces<ApiResponseResult>();
 
         return group;
     }
@@ -72,19 +72,19 @@ public static class CommentsApi
             await mediator.SendAsync(new AddCommentCommand(
                 request.TweetGuid, userId, request.Content, request.ParentGuid, request.ReplyToGuid), ct);
 
-            return Results.Ok(ApiResponse.Ok("评论发布成功"));
+            return Results.Ok(ApiResponseResult.Ok("评论发布成功"));
         }
         catch (ArgumentException ex)
         {
-            return Results.BadRequest(ApiResponse.Error(ex.Message));
+            return Results.Json(ApiResponseResult.Failure(ex.Message, 400), statusCode: 400);
         }
         catch (InvalidOperationException ex)
         {
-            return Results.BadRequest(ApiResponse.Error(ex.Message));
+            return Results.Json(ApiResponseResult.Failure(ex.Message, 400), statusCode: 400);
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse.Error($"发布评论失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult.Error($"发布评论失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -118,11 +118,11 @@ public static class CommentsApi
                 PageSize = pageSize
             };
 
-            return Results.Ok(ApiResponse<PagedResult<CommentDto>>.Ok(result));
+            return Results.Ok(ApiResponseResult<PagedResult<CommentDto>>.Ok(result));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<PagedResult<CommentDto>>.Error($"获取推文评论失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<PagedResult<CommentDto>>.Error($"获取推文评论失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -156,11 +156,11 @@ public static class CommentsApi
                 PageSize = pageSize
             };
 
-            return Results.Ok(ApiResponse<PagedResult<CommentDto>>.Ok(result));
+            return Results.Ok(ApiResponseResult<PagedResult<CommentDto>>.Ok(result));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<PagedResult<CommentDto>>.Error($"获取评论回复失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<PagedResult<CommentDto>>.Error($"获取评论回复失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -183,11 +183,11 @@ public static class CommentsApi
             var userId = currentUser.GetUserId();
             await mediator.SendAsync(new DeleteCommentCommand(commentGuid, userId), ct);
 
-            return Results.Ok(ApiResponse.Ok("评论已删除"));
+            return Results.Ok(ApiResponseResult.Ok("评论已删除"));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse.Error($"删除评论失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult.Error($"删除评论失败: {ex.Message}"), statusCode: 500);
         }
     }
 

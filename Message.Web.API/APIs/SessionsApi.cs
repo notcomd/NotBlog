@@ -1,4 +1,4 @@
-using Message.Infrastructure.Services;
+﻿using Message.Infrastructure.Services;
 
 namespace Message.Web.API.APIs;
 
@@ -29,68 +29,68 @@ public static class SessionsApi
             .WithSummary("创建会话")
             .WithDescription("创建私聊或群聊会话")
             .Accepts<CreateSessionRequest>("application/json")
-            .Produces<ApiResponse<Guid>>();
+            .Produces<ApiResponseResult<Guid>>();
 
         // GET / — 获取会话列表
         group.MapGet("/", GetUserSessionsAsync)
             .WithSummary("获取会话列表")
             .WithDescription("获取当前用户的所有会话")
-            .Produces<ApiResponse<IEnumerable<SessionDto>>>();
+            .Produces<ApiResponseResult<IEnumerable<SessionDto>>>();
 
         // GET /{id} — 获取会话详情
         group.MapGet("/{id}", GetSessionAsync)
             .WithSummary("获取会话详情")
             .WithDescription("根据会话ID获取会话详情")
-            .Produces<ApiResponse<SessionDto>>();
+            .Produces<ApiResponseResult<SessionDto>>();
 
         // PUT /{id}/pin — 置顶/取消置顶会话
         group.MapPut("/{id}/pin", SetPinStatusAsync)
             .WithSummary("置顶/取消置顶会话")
             .WithDescription("设置会话的置顶状态，pin=true置顶，pin=false取消置顶")
-            .Produces<ApiResponse>();
+            .Produces<ApiResponseResult>();
 
         // PUT /{id}/mute — 静音/取消静音会话
         group.MapPut("/{id}/mute", SetMuteStatusAsync)
             .WithSummary("静音/取消静音会话")
             .WithDescription("设置会话的静音状态，mute=true静音，mute=false取消静音")
-            .Produces<ApiResponse>();
+            .Produces<ApiResponseResult>();
 
         // DELETE /{id} — 解散会话
         group.MapDelete("/{id}", DismissSessionAsync)
             .WithSummary("解散会话")
             .WithDescription("解散指定会话")
-            .Produces<ApiResponse>();
+            .Produces<ApiResponseResult>();
 
         // GET /{id}/participants — 获取会话参与者
         group.MapGet("/{id}/participants", GetSessionParticipantsAsync)
             .WithSummary("获取会话参与者")
             .WithDescription("获取指定会话的所有参与者")
-            .Produces<ApiResponse<IEnumerable<Guid>>>();
+            .Produces<ApiResponseResult<IEnumerable<Guid>>>();
 
         // POST /{id}/participants — 添加会话参与者
         group.MapPost("/{id}/participants", AddParticipantAsync)
             .WithSummary("添加会话参与者")
             .WithDescription("向指定会话添加参与者")
             .Accepts<AddParticipantRequest>("application/json")
-            .Produces<ApiResponse>();
+            .Produces<ApiResponseResult>();
 
         // DELETE /{id}/participants/{userId} — 移除会话参与者
         group.MapDelete("/{id}/participants/{userId}", RemoveParticipantAsync)
             .WithSummary("移除会话参与者")
             .WithDescription("从指定会话移除参与者")
-            .Produces<ApiResponse>();
+            .Produces<ApiResponseResult>();
 
         // GET /pinned — 获取置顶会话列表
         group.MapGet("/pinned", GetPinnedSessionsAsync)
             .WithSummary("获取置顶会话列表")
             .WithDescription("获取当前用户的置顶会话列表")
-            .Produces<ApiResponse<IEnumerable<SessionDto>>>();
+            .Produces<ApiResponseResult<IEnumerable<SessionDto>>>();
 
         // GET /unread-count — 获取未读消息数
         group.MapGet("/unread-count", GetTotalUnreadCountAsync)
             .WithSummary("获取未读消息数")
             .WithDescription("获取当前用户所有会话的未读消息总数")
-            .Produces<ApiResponse<int>>();
+            .Produces<ApiResponseResult<int>>();
 
         return group;
     }
@@ -122,11 +122,11 @@ public static class SessionsApi
                     request.InitialMembers),
                 ct);
 
-            return Results.Ok(ApiResponse<Guid>.Created(sessionId, "会话创建成功"));
+            return Results.Ok(ApiResponseResult<Guid>.Created(sessionId, "会话创建成功"));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<Guid>.Error($"创建会话失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<Guid>.Error($"创建会话失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -148,11 +148,11 @@ public static class SessionsApi
         {
             var userId = currentUser.GetUserId();
             var sessions = await mediator.SendAsync(new GetUserSessionsQuery(userId), ct);
-            return Results.Ok(ApiResponse<IEnumerable<SessionDto>>.Ok(await MapToDtosAsync(sessions, userId, groupRepository, circleRepository)));
+            return Results.Ok(ApiResponseResult<IEnumerable<SessionDto>>.Ok(await MapToDtosAsync(sessions, userId, groupRepository, circleRepository)));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<IEnumerable<SessionDto>>.Error($"获取会话列表失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<IEnumerable<SessionDto>>.Error($"获取会话列表失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -183,22 +183,22 @@ public static class SessionsApi
             if (cached != null)
             {
                 if (!cached.Participants.Contains(callerId))
-                    return Results.Ok(ApiResponse<SessionDto>.NotFound("会话不存在"));
+                    return Results.Json(ApiResponseResult<SessionDto>.NotFound("会话不存在"), statusCode: 404);
 
-                return Results.Ok(ApiResponse<SessionDto>.Ok(cached));
+                return Results.Ok(ApiResponseResult<SessionDto>.Ok(cached));
             }
 
             var session = await mediator.SendAsync(new GetSessionQuery(id), ct);
             if (session == null)
-                return Results.Ok(ApiResponse<SessionDto>.NotFound("会话不存在"));
+                return Results.Json(ApiResponseResult<SessionDto>.NotFound("会话不存在"), statusCode: 404);
 
             var dto = await MapToDtoAsync(session, callerId, groupRepository, circleRepository);
             await sessionCache.CacheSessionAsync(id, dto, ct);
-            return Results.Ok(ApiResponse<SessionDto>.Ok(dto));
+            return Results.Ok(ApiResponseResult<SessionDto>.Ok(dto));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<SessionDto>.Error($"获取会话详情失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<SessionDto>.Error($"获取会话详情失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -219,11 +219,11 @@ public static class SessionsApi
         try
         {
             await mediator.SendAsync(new SetSessionPinCommand(id, pin), ct);
-            return Results.Ok(ApiResponse.Ok(pin ? "会话已置顶" : "会话已取消置顶"));
+            return Results.Ok(ApiResponseResult.Ok(pin ? "会话已置顶" : "会话已取消置顶"));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse.Error($"置顶操作失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult.Error($"置顶操作失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -244,11 +244,11 @@ public static class SessionsApi
         try
         {
             await mediator.SendAsync(new SetSessionMuteCommand(id, mute), ct);
-            return Results.Ok(ApiResponse.Ok(mute ? "会话已静音" : "会话已取消静音"));
+            return Results.Ok(ApiResponseResult.Ok(mute ? "会话已静音" : "会话已取消静音"));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse.Error($"静音操作失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult.Error($"静音操作失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -267,11 +267,11 @@ public static class SessionsApi
         try
         {
             await mediator.SendAsync(new DismissSessionCommand(id), ct);
-            return Results.Ok(ApiResponse.Ok("会话已解散"));
+            return Results.Ok(ApiResponseResult.Ok("会话已解散"));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse.Error($"解散会话失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult.Error($"解散会话失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -291,13 +291,13 @@ public static class SessionsApi
         {
             var session = await mediator.SendAsync(new GetSessionParticipantsQuery(id), ct);
             if (session == null)
-                return Results.Ok(ApiResponse<IEnumerable<Guid>>.NotFound("会话不存在"));
+                return Results.Json(ApiResponseResult<IEnumerable<Guid>>.NotFound("会话不存在"), statusCode: 404);
 
-            return Results.Ok(ApiResponse<IEnumerable<Guid>>.Ok(session.Participants));
+            return Results.Ok(ApiResponseResult<IEnumerable<Guid>>.Ok(session.Participants));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<IEnumerable<Guid>>.Error($"获取会话参与者失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<IEnumerable<Guid>>.Error($"获取会话参与者失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -318,11 +318,11 @@ public static class SessionsApi
         try
         {
             await mediator.SendAsync(new AddSessionParticipantCommand(id, request.UserId), ct);
-            return Results.Ok(ApiResponse.Ok("成员已添加"));
+            return Results.Ok(ApiResponseResult.Ok("成员已添加"));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse.Error($"添加参与者失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult.Error($"添加参与者失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -343,11 +343,11 @@ public static class SessionsApi
         try
         {
             await mediator.SendAsync(new RemoveSessionParticipantCommand(id, userId), ct);
-            return Results.Ok(ApiResponse.Ok("成员已移除"));
+            return Results.Ok(ApiResponseResult.Ok("成员已移除"));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse.Error($"移除参与者失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult.Error($"移除参与者失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -369,11 +369,11 @@ public static class SessionsApi
         {
             var userId = currentUser.GetUserId();
             var sessions = await mediator.SendAsync(new GetPinnedSessionsQuery(userId), ct);
-            return Results.Ok(ApiResponse<IEnumerable<SessionDto>>.Ok(await MapToDtosAsync(sessions, userId, groupRepository, circleRepository)));
+            return Results.Ok(ApiResponseResult<IEnumerable<SessionDto>>.Ok(await MapToDtosAsync(sessions, userId, groupRepository, circleRepository)));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<IEnumerable<SessionDto>>.Error($"获取置顶会话列表失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<IEnumerable<SessionDto>>.Error($"获取置顶会话列表失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -393,11 +393,11 @@ public static class SessionsApi
         {
             var userId = currentUser.GetUserId();
             var count = await mediator.SendAsync(new GetTotalUnreadCountQuery(userId), ct);
-            return Results.Ok(ApiResponse<int>.Ok(count));
+            return Results.Ok(ApiResponseResult<int>.Ok(count));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<int>.Error($"获取未读消息数失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<int>.Error($"获取未读消息数失败: {ex.Message}"), statusCode: 500);
         }
     }
 

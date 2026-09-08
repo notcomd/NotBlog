@@ -1,4 +1,6 @@
 
+using Commons.Result;
+
 namespace Video.Web.API.Apis;
 
 /// <summary>
@@ -50,8 +52,7 @@ public static class VideoBarrageEndpoints
             var callerGuid = currentUser.GetUserId();
             if (callerGuid == Guid.Empty)
                 return Results.Json(
-                    new VideoResult<string>(VideoResultType.VideoResultUnauthorized, 401,
-                        "Unauthorized. Please login first.", null),
+                    ApiResponseResult<string>.Failure("Unauthorized. Please login first.", 401),
                     statusCode: 401);
 
             var hasText = !string.IsNullOrWhiteSpace(request.VideoBarrageBody);
@@ -59,21 +60,19 @@ public static class VideoBarrageEndpoints
 
             if (!hasText && !hasImages)
                 return Results.Json(
-                    new VideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
-                        "弹幕必须包含文本或图片内容", null),
+                    ApiResponseResult<string>.Failure("弹幕必须包含文本或图片内容", 400),
                     statusCode: 400);
 
             // S-17：弹幕文本长度上限（100 字符），防止超大弹幕拖垮渲染
             if (hasText && request.VideoBarrageBody!.Length > 100)
                 return Results.Json(
-                    new VideoResult<string>(VideoResultType.VideoResultBadRequest, 400,
-                        "弹幕文本长度不能超过 100 个字符", null),
+                    ApiResponseResult<string>.Failure("弹幕文本长度不能超过 100 个字符", 400),
                     statusCode: 400);
 
             var video = await videoServiceDI.VideoService.GetByVideoAsync(request.VideoGuid);
             if (video is null)
                 return Results.Json(
-                    new VideoResult<string>(VideoResultType.VideoResultNotFound, 404, "Video not found.", null),
+                    ApiResponseResult<string>.Failure("Video not found.", 404),
                     statusCode: 404);
 
             var domainImages = request.VideoImages?
@@ -97,20 +96,19 @@ public static class VideoBarrageEndpoints
             logger.LogInformation("Barrage added to video {VideoGuid} by user {UserGuid}",
                 request.VideoGuid, callerGuid);
 
-            return Results.Ok(new VideoResult<string>(VideoResultType.VideoResultOk, 200,
-                "Barrage published successfully.", barrageGuid.ToString()));
+            return Results.Ok(barrageGuid.ToString());
         }
         catch (ArgumentException ex)
         {
             return Results.Json(
-                new VideoResult<string>(VideoResultType.VideoResultBadRequest, 400, ex.Message, null),
+                ApiResponseResult<string>.Failure(ex.Message, 400),
                 statusCode: 400);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to add barrage to video {VideoGuid}", request.VideoGuid);
             return Results.Json(
-                new VideoResult<string>(VideoResultType.VideoResultInternalServerError, 500, ex.Message, null),
+                ApiResponseResult<string>.Failure(ex.Message, 500),
                 statusCode: 500);
         }
     }
@@ -132,8 +130,7 @@ public static class VideoBarrageEndpoints
             var video = await videoServiceDI.VideoService.GetByVideoAsync(videoGuid);
             if (video is null)
                 return Results.Json(
-                    new VideoResult<List<BarrageResponse>>(VideoResultType.VideoResultNotFound, 404,
-                        "Video not found.", null),
+                    ApiResponseResult<string>.Failure("Video not found.", 404),
                     statusCode: 404);
 
             var barrages = video.VideoBarrageList?
@@ -151,15 +148,13 @@ public static class VideoBarrageEndpoints
                 })
                 .ToList() ?? [];
 
-            return Results.Ok(new VideoResult<List<BarrageResponse>>(VideoResultType.VideoResultOk, 200,
-                "Success.", barrages));
+            return Results.Ok(barrages);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to get barrages for video {VideoGuid}", videoGuid);
             return Results.Json(
-                new VideoResult<List<BarrageResponse>>(VideoResultType.VideoResultInternalServerError, 500,
-                    ex.Message, null),
+                ApiResponseResult<string>.Failure(ex.Message, 500),
                 statusCode: 500);
         }
     }
@@ -185,8 +180,7 @@ public static class VideoBarrageEndpoints
             var callerGuid = currentUser.GetUserId();
             if (callerGuid == Guid.Empty)
                 return Results.Json(
-                    new VideoResult<string>(VideoResultType.VideoResultUnauthorized, 401,
-                        "Unauthorized. Please login first.", null),
+                    ApiResponseResult<string>.Failure("Unauthorized. Please login first.", 401),
                     statusCode: 401);
 
             var command = new DeleteVideoBarrageCommand(
@@ -198,21 +192,19 @@ public static class VideoBarrageEndpoints
 
             if (result)
                 return Results.Json(
-                    new VideoResult<string>(VideoResultType.VideoResultInternalServerError, 500,
-                        "Delete failed.", null),
+                    ApiResponseResult<string>.Failure("Delete failed.", 500),
                     statusCode: 500);
 
             logger.LogInformation("Barrage {BarrageGuid} deleted from video {VideoGuid} by user {UserGuid}",
                 barrageGuid, videoGuid, callerGuid);
 
-            return Results.Ok(new VideoResult<string>(VideoResultType.VideoResultOk, 200,
-                "Barrage deleted successfully.", barrageGuid.ToString()));
+            return Results.Ok(barrageGuid.ToString());
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to delete barrage {BarrageGuid} from video {VideoGuid}", barrageGuid, videoGuid);
             return Results.Json(
-                new VideoResult<string>(VideoResultType.VideoResultInternalServerError, 500, ex.Message, null),
+                ApiResponseResult<string>.Failure(ex.Message, 500),
                 statusCode: 500);
         }
     }

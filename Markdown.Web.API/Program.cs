@@ -134,11 +134,15 @@ ResourcesBanner.PrintStartupBanner();
 
 app.MapDefaultEndpoints();
 
-// 业务异常统一映射（必须位于脱敏中间件之前：先识别业务异常，未识别的交给下方脱敏兜底）
-app.UseExceptionHandler();
-
 // S-16：全局异常脱敏（无内部路径/堆栈泄漏），必须位于管道最前
 app.UseNotBlogExceptionHandler();
+
+// 统一响应包装（ApiResponseResult 信封）：位于脱敏之后、认证之前，
+// 包装所有 /api JSON 端点响应；未处理异常已由脱敏中间件直接输出统一信封
+app.UseApiResponseWrapping();
+
+// 业务异常统一映射：注册在包装中间件内层，其写出的统一信封由上方包装中间件透传，未识别的异常继续上抛脱敏兜底
+app.UseExceptionHandler();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

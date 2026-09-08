@@ -1,3 +1,4 @@
+using Commons.Result;
 using FileDev.Domain.Options;
 using Microsoft.AspNetCore.Http.Features;
 
@@ -43,11 +44,7 @@ public class FileCheckTypeMiddleware : IMiddleware
             _logger.LogWarning("[FileCheck] 拒绝 — 表单解析失败或无 Endpoint: {Method} {Path}",
                 context.Request.Method, context.Request.Path);
             context.Response.StatusCode = 400;
-            await context.Response.WriteAsJsonAsync(new
-            {
-                ok = false,
-                error = "上传表单解析失败"
-            });
+            await context.Response.WriteAsJsonAsync(ApiResponseResult.Failure("上传表单解析失败", 400));
             return;
         }
 
@@ -68,11 +65,7 @@ public class FileCheckTypeMiddleware : IMiddleware
                 _logger.LogWarning("[FileCheck] 拒绝 — 无扩展名: FileName={FileName}, Size={Size}",
                     file.FileName, file.Length);
                 context.Response.StatusCode = 400;
-                await context.Response.WriteAsJsonAsync(new
-                {
-                    ok = false,
-                    error = $"无法识别文件类型: {file.FileName}"
-                });
+                await context.Response.WriteAsJsonAsync(ApiResponseResult.Failure($"无法识别文件类型: {file.FileName}", 400));
                 return;
             }
 
@@ -84,12 +77,8 @@ public class FileCheckTypeMiddleware : IMiddleware
                 _logger.LogWarning("[FileCheck] 拒绝 — 扩展名不在白名单: Ext={Ext}, FileName={FileName}, Size={Size}",
                     ext, file.FileName, file.Length);
                 context.Response.StatusCode = 400;
-                // Major：不向客户端暴露白名单内容（安全加固）；统一响应 { ok, error }
-                await context.Response.WriteAsJsonAsync(new
-                {
-                    ok = false,
-                    error = $"不支持的文件类型: {ext}"
-                });
+                // Major：不向客户端暴露白名单内容（安全加固）；统一响应 ApiResponseResult 信封
+                await context.Response.WriteAsJsonAsync(ApiResponseResult.Failure($"不支持的文件类型: {ext}", 400));
                 return;
             }
 

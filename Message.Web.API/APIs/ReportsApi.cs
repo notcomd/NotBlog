@@ -30,13 +30,13 @@ public static class ReportsApi
             .WithSummary("提交举报")
             .WithDescription("用户对推文或评论提交举报")
             .Accepts<SubmitReportRequest>("application/json")
-            .Produces<ApiResponse>();
+            .Produces<ApiResponseResult>();
 
         // GET /my — 获取我的举报列表
         group.MapGet("/my", GetMyReportsAsync)
             .WithSummary("获取我的举报列表")
             .WithDescription("获取当前用户提交的举报列表，支持分页")
-            .Produces<ApiResponse<PagedResult<object>>>();
+            .Produces<ApiResponseResult<PagedResult<object>>>();
 
         return group;
     }
@@ -62,11 +62,11 @@ public static class ReportsApi
                 userId, request.TargetType, request.TargetGuid,
                 request.Reason, request.Category, request.EvidenceUrls), ct);
 
-            return Results.Ok(ApiResponse.Ok("举报提交成功"));
+            return Results.Ok(ApiResponseResult.Ok("举报提交成功"));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse.Error($"提交举报失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult.Error($"提交举报失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -113,11 +113,11 @@ public static class ReportsApi
                 PageSize = pageSize
             };
 
-            return Results.Ok(ApiResponse<PagedResult<object>>.Ok(result));
+            return Results.Ok(ApiResponseResult<PagedResult<object>>.Ok(result));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<PagedResult<object>>.Error($"获取我的举报列表失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<PagedResult<object>>.Error($"获取我的举报列表失败: {ex.Message}"), statusCode: 500);
         }
     }
 }

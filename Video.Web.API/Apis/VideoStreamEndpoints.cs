@@ -1,4 +1,6 @@
 
+using Commons.Result;
+
 namespace Video.Web.API.Apis;
 
 /// <summary>
@@ -34,17 +36,23 @@ public static class VideoStreamEndpoints
 
         var video = await videoService.GetByVideoAsync(videoGuid);
         if (video is null)
-            return Results.NotFound(new { error = "Video not found" });
+            return Results.Json(
+                ApiResponseResult<string>.Failure("Video not found", 404),
+                statusCode: 404);
 
         if (!video.VideoControl.VideoDisplay || video.VideoControl.VideoDelete)
-            return Results.Json(new { error = "Video is not available" }, statusCode: 403);
+            return Results.Json(
+                ApiResponseResult<string>.Failure("Video is not available", 403),
+                statusCode: 403);
 
         // 访问控制（S-07）：私有/定时视频仅作者或被授权者可访问
         if (video.VideoControl.AuthorVideo != AuthorVideo.VideoPublic)
         {
             var callerGuid = currentUser.GetUserId();
             if (callerGuid == Guid.Empty || video.Affiliated is null || !video.Affiliated.Contains(callerGuid))
-                return Results.Json(new { error = "Video is private or protected" }, statusCode: 403);
+                return Results.Json(
+                    ApiResponseResult<string>.Failure("Video is private or protected", 403),
+                    statusCode: 403);
         }
 
         var fileUri = video.VideoFileUri.ToString();
@@ -59,7 +67,8 @@ public static class VideoStreamEndpoints
         var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
 
         if (!response.IsSuccessStatusCode)
-            return Results.Json(new { error = "Failed to stream video" },
+            return Results.Json(
+                ApiResponseResult<string>.Failure("Failed to stream video", (int)response.StatusCode),
                 statusCode: (int)response.StatusCode);
 
         var contentType = response.Content.Headers.ContentType?.ToString() ?? "video/mp4";

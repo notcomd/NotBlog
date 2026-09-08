@@ -1,4 +1,4 @@
-
+﻿
 namespace Message.Web.API.APIs;
 
 /// <summary>
@@ -18,28 +18,28 @@ public static class TopicsApi
         group.MapPost("/", CreateTopicAsync)
             .WithSummary("创建话题")
             .Accepts<CreateTopicRequest>("application/json")
-            .Produces<ApiResponse<Guid>>();
+            .Produces<ApiResponseResult<Guid>>();
 
         group.MapGet("/", GetTopicsAsync)
             .WithSummary("话题列表（按帖子数降序）")
-            .Produces<ApiResponse<PagedResult<TopicDto>>>();
+            .Produces<ApiResponseResult<PagedResult<TopicDto>>>();
 
         group.MapGet("/{topicGuid}/posts", GetTopicPostsAsync)
             .WithSummary("话题帖子流")
-            .Produces<ApiResponse<PagedResult<CommunityPostDto>>>();
+            .Produces<ApiResponseResult<PagedResult<CommunityPostDto>>>();
 
         // PUT /{topicGuid} — 更新话题（创建者/管理员；R-12）
         group.MapPut("/{topicGuid}", UpdateTopicAsync)
             .WithSummary("更新话题")
             .WithDescription("更新话题名称与简介，仅创建者本人或管理员可操作")
             .Accepts<UpdateTopicRequest>("application/json")
-            .Produces<ApiResponse>();
+            .Produces<ApiResponseResult>();
 
         // DELETE /{topicGuid} — 停用话题（创建者/管理员；R-12）
         group.MapDelete("/{topicGuid}", DeactivateTopicAsync)
             .WithSummary("停用话题")
             .WithDescription("停用后话题不再出现在列表与帖子流中，仅创建者本人或管理员可操作")
-            .Produces<ApiResponse>();
+            .Produces<ApiResponseResult>();
 
         return group;
     }
@@ -54,15 +54,15 @@ public static class TopicsApi
         {
             var topicId = await mediator.SendAsync(new CreateTopicCommand(
                 currentUser.GetUserId(), request.Name, request.Description), ct);
-            return Results.Ok(ApiResponse<Guid>.Created(topicId, "话题创建成功"));
+            return Results.Ok(ApiResponseResult<Guid>.Created(topicId, "话题创建成功"));
         }
         catch (InvalidOperationException ex)
         {
-            return Results.Ok(ApiResponse<Guid>.BadRequest(ex.Message));
+            return Results.Json(ApiResponseResult<Guid>.BadRequest(ex.Message), statusCode: 400);
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<Guid>.Error($"创建话题失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<Guid>.Error($"创建话题失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -82,11 +82,11 @@ public static class TopicsApi
                 Page = paged.Page,
                 PageSize = paged.PageSize
             };
-            return Results.Ok(ApiResponse<PagedResult<TopicDto>>.Ok(dto));
+            return Results.Ok(ApiResponseResult<PagedResult<TopicDto>>.Ok(dto));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<PagedResult<TopicDto>>.Error($"获取话题列表失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<PagedResult<TopicDto>>.Error($"获取话题列表失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -108,11 +108,11 @@ public static class TopicsApi
                 Page = paged.Page,
                 PageSize = paged.PageSize
             };
-            return Results.Ok(ApiResponse<PagedResult<CommunityPostDto>>.Ok(dto));
+            return Results.Ok(ApiResponseResult<PagedResult<CommunityPostDto>>.Ok(dto));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<PagedResult<CommunityPostDto>>.Error($"获取话题帖子失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<PagedResult<CommunityPostDto>>.Error($"获取话题帖子失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -125,23 +125,23 @@ public static class TopicsApi
         try
         {
             await mediator.SendAsync(new UpdateTopicCommand(topicGuid, request.Name, request.Description), ct);
-            return Results.Ok(ApiResponse.Ok("话题更新成功"));
+            return Results.Ok(ApiResponseResult.Ok("话题更新成功"));
         }
         catch (KeyNotFoundException ex)
         {
-            return Results.NotFound(ApiResponse.NotFound(ex.Message));
+            return Results.NotFound(ApiResponseResult.NotFound(ex.Message));
         }
         catch (UnauthorizedAccessException ex)
         {
-            return Results.Json(ApiResponse.Forbidden(ex.Message), statusCode: 403);
+            return Results.Json(ApiResponseResult.Forbidden(ex.Message), statusCode: 403);
         }
         catch (InvalidOperationException ex)
         {
-            return Results.Ok(ApiResponse.BadRequest(ex.Message));
+            return Results.Json(ApiResponseResult.BadRequest(ex.Message), statusCode: 400);
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse.Error($"更新话题失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult.Error($"更新话题失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -153,19 +153,19 @@ public static class TopicsApi
         try
         {
             await mediator.SendAsync(new DeactivateTopicCommand(topicGuid), ct);
-            return Results.Ok(ApiResponse.Ok("话题已停用"));
+            return Results.Ok(ApiResponseResult.Ok("话题已停用"));
         }
         catch (KeyNotFoundException ex)
         {
-            return Results.NotFound(ApiResponse.NotFound(ex.Message));
+            return Results.NotFound(ApiResponseResult.NotFound(ex.Message));
         }
         catch (UnauthorizedAccessException ex)
         {
-            return Results.Json(ApiResponse.Forbidden(ex.Message), statusCode: 403);
+            return Results.Json(ApiResponseResult.Forbidden(ex.Message), statusCode: 403);
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse.Error($"停用话题失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult.Error($"停用话题失败: {ex.Message}"), statusCode: 500);
         }
     }
 }

@@ -1,4 +1,4 @@
-namespace Markdown.Web.API.Apis;
+﻿namespace Markdown.Web.API.Apis;
 
 /// <summary>
 ///     Markdown 文章审核 API（提交审核 / 通过 / 驳回）
@@ -13,28 +13,28 @@ public static class MarkdownAuditApi
         // POST: 提交审核（仅作者，草稿/驳回 -> 待审核）
         markdownGroup.MapPost("/{markDownGuid:guid}/submit", SubmitAsync)
             .RequireAuthorization()
-            .Produces<ApiResponse>(StatusCodes.Status200OK)
-            .Produces<ApiResponse>(StatusCodes.Status400BadRequest)
-            .Produces<ApiResponse>(StatusCodes.Status403Forbidden)
-            .Produces<ApiResponse>(StatusCodes.Status404NotFound)
+            .Produces<ApiResponseResult>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult>(StatusCodes.Status400BadRequest)
+            .Produces<ApiResponseResult>(StatusCodes.Status403Forbidden)
+            .Produces<ApiResponseResult>(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized);
 
         // POST: 审核通过（仅作者/管理员）
         markdownGroup.MapPost("/{markDownGuid:guid}/approve", ApproveAsync)
             .RequireAuthorization()
-            .Produces<ApiResponse>(StatusCodes.Status200OK)
-            .Produces<ApiResponse>(StatusCodes.Status400BadRequest)
-            .Produces<ApiResponse>(StatusCodes.Status403Forbidden)
-            .Produces<ApiResponse>(StatusCodes.Status404NotFound)
+            .Produces<ApiResponseResult>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult>(StatusCodes.Status400BadRequest)
+            .Produces<ApiResponseResult>(StatusCodes.Status403Forbidden)
+            .Produces<ApiResponseResult>(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized);
 
         // POST: 审核驳回（仅作者/管理员）
         markdownGroup.MapPost("/{markDownGuid:guid}/reject", RejectAsync)
             .RequireAuthorization()
-            .Produces<ApiResponse>(StatusCodes.Status200OK)
-            .Produces<ApiResponse>(StatusCodes.Status400BadRequest)
-            .Produces<ApiResponse>(StatusCodes.Status403Forbidden)
-            .Produces<ApiResponse>(StatusCodes.Status404NotFound)
+            .Produces<ApiResponseResult>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult>(StatusCodes.Status400BadRequest)
+            .Produces<ApiResponseResult>(StatusCodes.Status403Forbidden)
+            .Produces<ApiResponseResult>(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized);
     }
 
@@ -50,7 +50,7 @@ public static class MarkdownAuditApi
         var result = await  notMediator.SendAsync(new SubmitMarkdownCommand(markDownGuid, userId));
 
         return result
-            ? Results.Ok(ApiResponse.Ok("文章已提交审核"))
+            ? Results.Ok(ApiResponseResult.Ok("文章已提交审核"))
             : Results.StatusCode(500);
     }
 
@@ -67,7 +67,7 @@ public static class MarkdownAuditApi
             new ApproveMarkdownCommand(markDownGuid, userId, MarkdownApiHelpers.IsAdmin(currentUserService)));
 
         return result
-            ? Results.Ok(ApiResponse.Ok("文章审核通过"))
+            ? Results.Ok(ApiResponseResult.Ok("文章审核通过"))
             : Results.StatusCode(500);
     }
 
@@ -84,7 +84,7 @@ public static class MarkdownAuditApi
             new RejectMarkdownCommand(markDownGuid, userId, MarkdownApiHelpers.IsAdmin(currentUserService)));
 
         return result
-            ? Results.Ok(ApiResponse.Ok("文章审核驳回"))
+            ? Results.Ok(ApiResponseResult.Ok("文章审核驳回"))
             : Results.StatusCode(500);
     }
 }

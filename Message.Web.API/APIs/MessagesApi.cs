@@ -1,4 +1,4 @@
-using MessageEntity = Message.Domain.Entities.Chat.Message;
+﻿using MessageEntity = Message.Domain.Entities.Chat.Message;
 
 
 namespace Message.Web.API.APIs;
@@ -27,31 +27,31 @@ public static class MessagesApi
 
         // 1. POST / — 发送消息
         group.MapPost("/", SendMessageAsync)
-            .Produces<ApiResponse<Guid>>(StatusCodes.Status200OK)
-            .Produces<ApiResponse<Guid>>(StatusCodes.Status400BadRequest)
+            .Produces<ApiResponseResult<Guid>>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult<Guid>>(StatusCodes.Status400BadRequest)
             .WithTags("Messages");
 
         // 2. GET /{messageId}/attachments — 消息附件列表
         group.MapGet("/{messageId}/attachments", GetMessageAttachmentsAsync)
-            .Produces<ApiResponse<IEnumerable<FileAttachmentDto>>>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult<IEnumerable<FileAttachmentDto>>>(StatusCodes.Status200OK)
             .WithTags("Messages");
 
         // 3. GET /attachments/{attachmentId} — 附件详情（含大小/类型/下载次数/MIME）
         group.MapGet("/attachments/{attachmentId}", GetAttachmentAsync)
-            .Produces<ApiResponse<FileAttachmentDto>>(StatusCodes.Status200OK)
-            .Produces<ApiResponse<FileAttachmentDto>>(StatusCodes.Status404NotFound)
+            .Produces<ApiResponseResult<FileAttachmentDto>>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult<FileAttachmentDto>>(StatusCodes.Status404NotFound)
             .WithTags("Messages");
 
         // 4. POST /{messageId}/attachments — 给已发送消息补附件
         group.MapPost("/{messageId}/attachments", AddAttachmentAsync)
-            .Produces<ApiResponse<Guid>>(StatusCodes.Status200OK)
-            .Produces<ApiResponse<Guid>>(StatusCodes.Status400BadRequest)
+            .Produces<ApiResponseResult<Guid>>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult<Guid>>(StatusCodes.Status400BadRequest)
             .WithTags("Messages");
 
         // 5. DELETE /attachments/{attachmentId} — 删除附件（软删 + 级联 FileDev 物理删除）
         group.MapDelete("/attachments/{attachmentId}", DeleteAttachmentAsync)
-            .Produces<ApiResponse>(StatusCodes.Status200OK)
-            .Produces<ApiResponse>(StatusCodes.Status400BadRequest)
+            .Produces<ApiResponseResult>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult>(StatusCodes.Status400BadRequest)
             .WithTags("Messages");
 
         // 6. GET /attachments/{attachmentId}/download — 流式下载（gRPC 代理，替代 302 跳转）
@@ -68,45 +68,45 @@ public static class MessagesApi
 
         // 8. GET /{id} — 获取消息详情
         group.MapGet("/{id}", GetMessageAsync)
-            .Produces<ApiResponse<MessageDto>>(StatusCodes.Status200OK)
-            .Produces<ApiResponse<MessageDto>>(StatusCodes.Status404NotFound)
-            .Produces<ApiResponse<MessageDto>>(StatusCodes.Status400BadRequest)
+            .Produces<ApiResponseResult<MessageDto>>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult<MessageDto>>(StatusCodes.Status404NotFound)
+            .Produces<ApiResponseResult<MessageDto>>(StatusCodes.Status400BadRequest)
             .WithTags("Messages");
 
         // 3. GET /sessions/{sessionId}/messages — 获取会话消息列表
         group.MapGet("/sessions/{sessionId}/messages", GetSessionMessagesAsync)
-            .Produces<ApiResponse<PagedResult<MessageDto>>>(StatusCodes.Status200OK)
-            .Produces<ApiResponse<PagedResult<MessageDto>>>(StatusCodes.Status400BadRequest)
+            .Produces<ApiResponseResult<PagedResult<MessageDto>>>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult<PagedResult<MessageDto>>>(StatusCodes.Status400BadRequest)
             .WithTags("Messages");
 
         // 4. DELETE /{id} — 撤回消息
         group.MapDelete("/{id}", RecallMessageAsync)
-            .Produces<ApiResponse>(StatusCodes.Status200OK)
-            .Produces<ApiResponse>(StatusCodes.Status400BadRequest)
+            .Produces<ApiResponseResult>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult>(StatusCodes.Status400BadRequest)
             .WithTags("Messages");
 
         // 5. POST /{id}/forward — 转发消息
         group.MapPost("/{id}/forward", ForwardMessageAsync)
-            .Produces<ApiResponse<Guid>>(StatusCodes.Status200OK)
-            .Produces<ApiResponse<Guid>>(StatusCodes.Status400BadRequest)
+            .Produces<ApiResponseResult<Guid>>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult<Guid>>(StatusCodes.Status400BadRequest)
             .WithTags("Messages");
 
         // 6. PUT /{id}/read — 标记已读
         group.MapPut("/{id}/read", MarkAsReadAsync)
-            .Produces<ApiResponse>(StatusCodes.Status200OK)
-            .Produces<ApiResponse>(StatusCodes.Status400BadRequest)
+            .Produces<ApiResponseResult>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult>(StatusCodes.Status400BadRequest)
             .WithTags("Messages");
 
         // 7. GET /search — 搜索消息
         group.MapGet("/search", SearchMessagesAsync)
-            .Produces<ApiResponse<PagedResult<MessageDto>>>(StatusCodes.Status200OK)
-            .Produces<ApiResponse<PagedResult<MessageDto>>>(StatusCodes.Status400BadRequest)
+            .Produces<ApiResponseResult<PagedResult<MessageDto>>>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult<PagedResult<MessageDto>>>(StatusCodes.Status400BadRequest)
             .WithTags("Messages");
 
         // 8. GET /unread — 获取未读消息
         group.MapGet("/unread", GetUnreadMessagesAsync)
-            .Produces<ApiResponse<IEnumerable<MessageDto>>>(StatusCodes.Status200OK)
-            .Produces<ApiResponse<IEnumerable<MessageDto>>>(StatusCodes.Status400BadRequest)
+            .Produces<ApiResponseResult<IEnumerable<MessageDto>>>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult<IEnumerable<MessageDto>>>(StatusCodes.Status400BadRequest)
             .WithTags("Messages");
 
         return group;
@@ -136,11 +136,11 @@ public static class MessagesApi
         try
         {
             var files = await mediator.SendAsync(new GetMessageFilesQuery(messageId), ct);
-            return Results.Ok(ApiResponse<IEnumerable<FileAttachmentDto>>.Ok(files.Select(MapAttachmentToDto)));
+            return Results.Ok(ApiResponseResult<IEnumerable<FileAttachmentDto>>.Ok(files.Select(MapAttachmentToDto)));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<IEnumerable<FileAttachmentDto>>.Error($"获取消息附件失败: {ex.Message}"),
+            return Results.Json(ApiResponseResult<IEnumerable<FileAttachmentDto>>.Error($"获取消息附件失败: {ex.Message}"),
                 statusCode: 500);
         }
     }
@@ -161,13 +161,13 @@ public static class MessagesApi
         {
             var file = await mediator.SendAsync(new GetFileQuery(attachmentId), ct);
             if (file == null)
-                return Results.Json(ApiResponse<FileAttachmentDto>.NotFound("附件不存在"), statusCode: 404);
+                return Results.Json(ApiResponseResult<FileAttachmentDto>.NotFound("附件不存在"), statusCode: 404);
 
-            return Results.Ok(ApiResponse<FileAttachmentDto>.Ok(MapAttachmentToDto(file)));
+            return Results.Ok(ApiResponseResult<FileAttachmentDto>.Ok(MapAttachmentToDto(file)));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<FileAttachmentDto>.Error($"获取附件失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<FileAttachmentDto>.Error($"获取附件失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -191,15 +191,15 @@ public static class MessagesApi
         {
             var attachmentId = await mediator.SendAsync(
                 new AddAttachmentCommand(messageId, request.FileId, currentUser.GetUserId()), ct);
-            return Results.Ok(ApiResponse<Guid>.Created(attachmentId, "附件添加成功"));
+            return Results.Ok(ApiResponseResult<Guid>.Created(attachmentId, "附件添加成功"));
         }
         catch (KeyNotFoundException ex)
         {
-            return Results.Json(ApiResponse<Guid>.NotFound(ex.Message), statusCode: 404);
+            return Results.Json(ApiResponseResult<Guid>.NotFound(ex.Message), statusCode: 404);
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse<Guid>.Error($"添加附件失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<Guid>.Error($"添加附件失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -218,15 +218,15 @@ public static class MessagesApi
         try
         {
             await mediator.SendAsync(new DeleteFileCommand(attachmentId), ct);
-            return Results.Ok(ApiResponse.Ok("附件已删除"));
+            return Results.Ok(ApiResponseResult.Ok("附件已删除"));
         }
         catch (KeyNotFoundException ex)
         {
-            return Results.Json(ApiResponse.NotFound(ex.Message), statusCode: 404);
+            return Results.Json(ApiResponseResult.NotFound(ex.Message), statusCode: 404);
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse.Error($"删除附件失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult.Error($"删除附件失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -254,14 +254,14 @@ public static class MessagesApi
         {
             var file = await mediator.SendAsync(new GetFileQuery(attachmentId), ct);
             if (file == null)
-                return Results.Json(ApiResponse.NotFound("附件不存在"), statusCode: 404);
+                return Results.Json(ApiResponseResult.NotFound("附件不存在"), statusCode: 404);
 
             // 记录下载次数（GetFileQuery 已做 FileAccessGuard 权限校验）
             await mediator.SendAsync(new RecordDownloadCommand(attachmentId), ct);
 
             var result = await fileStorage.DownloadFileAsync(file.FileId, currentUser.GetUserId(), ct);
             if (!result.Success)
-                return Results.Json(ApiResponse.Error(result.ErrorMessage ?? "下载失败"),
+                return Results.Json(ApiResponseResult.Error(result.ErrorMessage ?? "下载失败"),
                     statusCode: StatusCodes.Status502BadGateway);
 
             var contentType = file.MimeType ?? MimeTypeMap.FromFileName(file.FileName);
@@ -269,7 +269,7 @@ public static class MessagesApi
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse.Error($"下载附件失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult.Error($"下载附件失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -298,15 +298,15 @@ public static class MessagesApi
         {
             var file = await mediator.SendAsync(new GetFileQuery(attachmentId), ct);
             if (file == null)
-                return Results.Json(ApiResponse.NotFound("附件不存在"), statusCode: 404);
+                return Results.Json(ApiResponseResult.NotFound("附件不存在"), statusCode: 404);
 
             if (!file.IsImage())
-                return Results.Json(ApiResponse.Error("该文件不支持预览"),
+                return Results.Json(ApiResponseResult.Error("该文件不支持预览"),
                     statusCode: StatusCodes.Status415UnsupportedMediaType);
 
             var result = await fileStorage.DownloadImageAsync(file.FileId, currentUser.GetUserId(), w, h, ct);
             if (!result.Success)
-                return Results.Json(ApiResponse.Error(result.ErrorMessage ?? "预览失败"),
+                return Results.Json(ApiResponseResult.Error(result.ErrorMessage ?? "预览失败"),
                     statusCode: StatusCodes.Status502BadGateway);
 
             var contentType = file.MimeType ?? MimeTypeMap.FromFileName(file.FileName);
@@ -314,7 +314,7 @@ public static class MessagesApi
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponse.Error($"预览附件失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult.Error($"预览附件失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -360,11 +360,11 @@ public static class MessagesApi
                 request.LinkDescription,
                 request.ExpressionCode), ct);
 
-            return Results.Ok(ApiResponse<Guid>.Created(messageId, "消息发送成功"));
+            return Results.Ok(ApiResponseResult<Guid>.Created(messageId, "消息发送成功"));
         }
         catch (Exception ex)
         {
-            return Results.BadRequest(ApiResponse<Guid>.Error(ex.Message));
+            return Results.Json(ApiResponseResult<Guid>.Failure(ex.Message, 400), statusCode: 400);
         }
     }
 
@@ -392,19 +392,19 @@ public static class MessagesApi
 
             var cached = await redisCache.GetAsync<MessageDto>(cacheKey, ct);
             if (cached != null)
-                return Results.Ok(ApiResponse<MessageDto>.Ok(cached));
+                return Results.Ok(ApiResponseResult<MessageDto>.Ok(cached));
 
             var message = await mediator.SendAsync(new GetMessageQuery(id), ct);
             if (message == null)
-                return Results.NotFound(ApiResponse<MessageDto>.NotFound("消息不存在"));
+                return Results.NotFound(ApiResponseResult<MessageDto>.NotFound("消息不存在"));
 
             var dto = MapToDto(message);
             await redisCache.SetAsync(cacheKey, dto, TimeSpan.FromMinutes(30), ct);
-            return Results.Ok(ApiResponse<MessageDto>.Ok(dto));
+            return Results.Ok(ApiResponseResult<MessageDto>.Ok(dto));
         }
         catch (Exception ex)
         {
-            return Results.BadRequest(ApiResponse<MessageDto>.Error(ex.Message));
+            return Results.Json(ApiResponseResult<MessageDto>.Failure(ex.Message, 400), statusCode: 400);
         }
     }
 
@@ -436,11 +436,11 @@ public static class MessagesApi
                 PageSize = paged.PageSize
             };
 
-            return Results.Ok(ApiResponse<PagedResult<MessageDto>>.Ok(result));
+            return Results.Ok(ApiResponseResult<PagedResult<MessageDto>>.Ok(result));
         }
         catch (Exception ex)
         {
-            return Results.BadRequest(ApiResponse<PagedResult<MessageDto>>.Error(ex.Message));
+            return Results.Json(ApiResponseResult<PagedResult<MessageDto>>.Failure(ex.Message, 400), statusCode: 400);
         }
     }
 
@@ -464,11 +464,11 @@ public static class MessagesApi
         {
             var userId = currentUser.GetUserId();
             await mediator.SendAsync(new RecallMessageCommand(id, userId, reason), ct);
-            return Results.Ok(ApiResponse.Ok("消息已撤回"));
+            return Results.Ok(ApiResponseResult.Ok("消息已撤回"));
         }
         catch (Exception ex)
         {
-            return Results.BadRequest(ApiResponse.Error(ex.Message));
+            return Results.Json(ApiResponseResult.Failure(ex.Message, 400), statusCode: 400);
         }
     }
 
@@ -494,11 +494,11 @@ public static class MessagesApi
             var newMessageId = await mediator.SendAsync(new ForwardMessageCommand(
                 id, request.TargetSessionId, userId, request.ForwardType, request.Comment), ct);
 
-            return Results.Ok(ApiResponse<Guid>.Created(newMessageId, "消息转发成功"));
+            return Results.Ok(ApiResponseResult<Guid>.Created(newMessageId, "消息转发成功"));
         }
         catch (Exception ex)
         {
-            return Results.BadRequest(ApiResponse<Guid>.Error(ex.Message));
+            return Results.Json(ApiResponseResult<Guid>.Failure(ex.Message, 400), statusCode: 400);
         }
     }
 
@@ -520,11 +520,11 @@ public static class MessagesApi
         {
             var userId = currentUser.GetUserId();
             await mediator.SendAsync(new MarkMessageAsReadCommand(id, userId), ct);
-            return Results.Ok(ApiResponse.Ok("已标记为已读"));
+            return Results.Ok(ApiResponseResult.Ok("已标记为已读"));
         }
         catch (Exception ex)
         {
-            return Results.BadRequest(ApiResponse.Error(ex.Message));
+            return Results.Json(ApiResponseResult.Failure(ex.Message, 400), statusCode: 400);
         }
     }
 
@@ -558,11 +558,11 @@ public static class MessagesApi
                 PageSize = paged.PageSize
             };
 
-            return Results.Ok(ApiResponse<PagedResult<MessageDto>>.Ok(result));
+            return Results.Ok(ApiResponseResult<PagedResult<MessageDto>>.Ok(result));
         }
         catch (Exception ex)
         {
-            return Results.BadRequest(ApiResponse<PagedResult<MessageDto>>.Error(ex.Message));
+            return Results.Json(ApiResponseResult<PagedResult<MessageDto>>.Failure(ex.Message, 400), statusCode: 400);
         }
     }
 
@@ -582,11 +582,11 @@ public static class MessagesApi
         {
             var userId = currentUser.GetUserId();
             var messages = await mediator.SendAsync(new GetUnreadMessagesQuery(userId), ct);
-            return Results.Ok(ApiResponse<IEnumerable<MessageDto>>.Ok(messages.Select(MapToDto)));
+            return Results.Ok(ApiResponseResult<IEnumerable<MessageDto>>.Ok(messages.Select(MapToDto)));
         }
         catch (Exception ex)
         {
-            return Results.BadRequest(ApiResponse<IEnumerable<MessageDto>>.Error(ex.Message));
+            return Results.Json(ApiResponseResult<IEnumerable<MessageDto>>.Failure(ex.Message, 400), statusCode: 400);
         }
     }
 
