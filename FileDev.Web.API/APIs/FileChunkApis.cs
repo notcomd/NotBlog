@@ -1,4 +1,4 @@
-using Commons.Result;
+﻿using Commons.Result;
 using Microsoft.AspNetCore.Mvc;
 
 
@@ -32,7 +32,7 @@ public static class FileChunkApis
     private static IResult InternalError() => Results.Json(ApiResponseResult.Failure("请求处理失败", 500), statusCode: 500);
 
     private static async Task<IResult> InitChunkUploadAsync(
-        [FromServices] HttpContext context,
+        HttpContext context,
         [FromServices] INotMediator mediator,
         [FromServices] IOptionsSnapshot<NotFileStorageOptions> storageOptions,
         [FromServices] ILoggerFactory loggerFactory,

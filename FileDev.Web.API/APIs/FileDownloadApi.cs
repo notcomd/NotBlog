@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 
@@ -26,7 +26,7 @@ public static class FileDownloadApi
     private static async Task<IResult> DownloadFileAsync(
         string path,
         [FromServices] INotFileStorageService storage,
-        [FromServices] HttpContext context)
+        HttpContext context)
     {
         if (string.IsNullOrWhiteSpace(path))
             return Results.NotFound();

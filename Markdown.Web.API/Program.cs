@@ -151,7 +151,8 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 
-app.UseHttpsRedirection();
+// HTTPS 由网关/边缘终止，服务内不重定向：否则内部 http 请求会被 307 到服务 HTTPS 端口，导致请求绕过网关直连
+// app.UseHttpsRedirection();
 
 app.UseAuthentication();
 

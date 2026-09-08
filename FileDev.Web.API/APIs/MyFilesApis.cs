@@ -1,4 +1,4 @@
-using Commons.Result;
+﻿using Commons.Result;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 
@@ -26,7 +26,7 @@ public static class MyFilesApis
     }
 
     private static async Task<IResult> GetMyFilesAsync(
-        [FromServices] HttpContext context,
+        HttpContext context,
         [FromServices] FileServicesDi fileServicesDi,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,

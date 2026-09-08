@@ -1,4 +1,4 @@
-using Commons.Result;
+﻿using Commons.Result;
 using FileDev.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 using NotMediator;
@@ -43,7 +43,7 @@ public static class StreamUploadApis
     /// <param name="ct"></param>
     /// <returns></returns>
     private static async Task<IResult> StreamUploadAsync(
-        [FromServices] HttpContext context,
+        HttpContext context,
         [FromServices] INotMediator mediator,
         [FromServices] IOptionsSnapshot<NotFileStorageOptions> storageOptions,
         [FromServices] ILoggerFactory loggerFactory,

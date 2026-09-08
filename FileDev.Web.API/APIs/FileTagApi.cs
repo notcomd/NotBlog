@@ -1,4 +1,4 @@
-using Commons.Result;
+﻿using Commons.Result;
 using FileDev.Web.API.Dto;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Mvc;
@@ -191,7 +191,7 @@ public static class FileTagApi
     }
 
     private static async Task<IResult> ListTagFilesAsync(
-        [FromServices] HttpContext httpContext,
+        HttpContext httpContext,
         [FromServices] FileServicesDi servicesDi,
         Guid tagId,
         CancellationToken cancellationToken)
