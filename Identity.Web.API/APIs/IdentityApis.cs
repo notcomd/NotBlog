@@ -14,7 +14,7 @@ namespace Identity.Web.API.APIs;
 
 public static class IdentityApis
 {
-    
+
     private const int LoginRateLimitPerMinute = 10;
     private const string LoginRateLimitKeyPrefix = "login:rate:";
 
@@ -106,6 +106,7 @@ public static class IdentityApis
                     data.UserName, data.AvatarUrl)), default);
         }
 
+        
         return Results.Ok(new
         {
             data.Token!.AccessToken,
@@ -115,6 +116,8 @@ public static class IdentityApis
             data.IsNewUser
         });
     }
+
+    public sealed record IdentityResponse(string AccessToken, string RefreshToken, string TokenType, DateTime ExpiresAt, bool IsNewUser);
 
     /// <summary>
     /// S-12 刷新 Token：校验 RefreshToken（格式/签名/过期/黑名单）后返回新的 AccessToken/RefreshToken 对。

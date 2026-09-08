@@ -1,5 +1,3 @@
-using System.Text.Json;
-using System.Xml.Serialization;
 using Identity.Domain.Result;
 
 namespace Identity.Web.API.Extensions;
@@ -33,14 +31,6 @@ public static class IdentityResultExtensions
             status = result.StatusCode.ToString(),
             data = result.ResultData
         };
-
-        if (result.ResultType == ResultType.ApplicationXml)
-        {
-            var xmlSerializer = new XmlSerializer(response.GetType());
-            using var stringWriter = new StringWriter();
-            xmlSerializer.Serialize(stringWriter, response);
-            return Results.Text(stringWriter.ToString(), "application/xml", statusCode: statusCode);
-        }
 
         return Results.Json(response, statusCode: statusCode);
     }
