@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Notcomd.Token.JWT.Core;
 
@@ -132,16 +133,43 @@ public static class AuthenticationExtensions
         if (tokenService is null)
             return Task.CompletedTask;
 
-        var rawToken = context.SecurityToken is JwtSecurityToken jwt
-            ? jwt.RawData
-            : context.Request.Headers.Authorization.ToString()
-                .Replace("Bearer ", string.Empty, StringComparison.OrdinalIgnoreCase)
-                .Trim();
-
+        var rawToken = ResolveRawToken(context);
         if (tokenService.IsRevoked(rawToken))
             context.Fail("Token 已吊销，请重新登录");
 
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// 提取本次已通过签名校验的原始 token 字符串（供黑名单比对）。
+    /// <para>
+    /// ⚠️ 历史缺陷：原实现仅识别 <see cref="JwtSecurityToken"/>，而 .NET 8+ 的 JwtBearer
+    /// 默认改用 JsonWebTokenHandler，<see cref="TokenValidatedContext.SecurityToken"/> 实际为
+    /// <see cref="JsonWebToken"/>，于是只能回退读取 Authorization 头——SignalR 的
+    /// WebSocket/ServerSentEvents 传输（浏览器无法设置请求头，token 仅在 query access_token 中）
+    /// 会因此拿到空串，被 <c>IsRevoked("")</c> 判为「已吊销」而误拒（Hub 连接 401 invalid_token）。
+    /// </para>
+    /// 提取顺序：SecurityToken（兼容两种 token 类型）→ query access_token → Authorization 头。
+    /// </summary>
+    private static string ResolveRawToken(TokenValidatedContext context)
+    {
+        switch (context.SecurityToken)
+        {
+            case JwtSecurityToken jwtSecurityToken:
+                return jwtSecurityToken.RawData;
+            case JsonWebToken jsonWebToken:
+                return jsonWebToken.EncodedToken;
+        }
+
+        // Hub 传输（WebSocket/ServerSentEvents）无法携带请求头，token 位于 query（见 Message 的 Hub access_token 配置）
+        var queryToken = context.HttpContext.Request.Query["access_token"].FirstOrDefault();
+        if (!string.IsNullOrWhiteSpace(queryToken))
+            return queryToken;
+
+        var authorization = context.Request.Headers.Authorization.ToString();
+        return authorization.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
+            ? authorization["Bearer ".Length..].Trim()
+            : string.Empty;
     }
 
     private static TokenValidationParameters BuildValidationParameters(JwtOptions options)
