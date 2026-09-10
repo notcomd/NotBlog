@@ -12,6 +12,8 @@ builder.Services.AddReverseProxy()
 
 var app = builder.Build();
 
+app.UseWebSockets();
+
 app.MapReverseProxy();
 
 app.Run();

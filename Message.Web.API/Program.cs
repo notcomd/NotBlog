@@ -124,6 +124,7 @@ app.UseApiResponseWrapping();
 app.UseAuthentication();
 app.UseUserContext();
 app.UseAuthorization();
+app.UseWebSockets();
 app.UsePermissionEnforcement();
 
 app.MapAuditApi();
