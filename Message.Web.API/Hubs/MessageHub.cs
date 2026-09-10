@@ -184,8 +184,8 @@ public class MessageHub : Hub<IMessageClient>
     /// <summary>
     /// 发送消息到指定会话（私聊或群聊）。
     /// <para>
-    /// 流程：按消息类型调用领域服务创建消息 → 并行推送给会话全部参与者连接 →
-    /// 通过群组（session:{id}）广播，保证会话与群组通道均能正确收到消息。
+    /// 流程：经命令链路创建消息（持久化并置「已发送」）→ 命令链路向会话参与者连接并行推送
+    /// （排除发起调用的本连接，防回显重复）→ 已订阅会话群组时广播（同样排除本连接）。
     /// </para>
     /// </summary>
     /// <param name="sessionId">会话ID</param>
@@ -209,15 +209,13 @@ public class MessageHub : Hub<IMessageClient>
             var message = await CreateMessageAsync(sessionId, userId, request);
             var dto = message.MapToDto();
 
-            // 1) 按连接并行推送（Redis 连接管理器为权威来源，跨实例无重复）
-            await _deliveryService.DeliverMessageAsync(
-                sessionId, dto, session.Participants, ct: Context.ConnectionAborted);
-
-            // 2) 通过会话群组广播（支持按 session:{id} 订阅的客户端）
+            // 1) 按连接的实时推送已由命令链路统一完成（SendMessageCommandHandler.PushDeliverAsync，
+            //    经 ExcludeConnectionId 排除本连接——发送方 UI 以本地乐观消息 + invoke 回执闭环）
+            // 2) 会话群组广播：仅本连接已订阅时触发，同样排除本连接防回显
             if (Context.Items.TryGetValue(GroupKey(sessionId), out var joined) && joined is true)
-                await Clients.Group(SessionGroupName(sessionId)).ReceiveMessage(dto);
+                await Clients.GroupExcept(SessionGroupName(sessionId), [Context.ConnectionId]).ReceiveMessage(dto);
 
-            _logger.LogDebug("会话 {SessionId} 消息 {MessageId} 已推送，类型 {MessageType}",
+            _logger.LogDebug("会话 {SessionId} 消息 {MessageId} 已推送（连接推送经命令链路），类型 {MessageType}",
                 sessionId, message.MessageId, message.MessageType);
         }
         catch (HubException)
@@ -267,15 +265,12 @@ public class MessageHub : Hub<IMessageClient>
             var message = await CreateMessageAsync(sessionId, userId, request);
             var dto = message.MapToDto();
 
-            // 1) 按连接并行推送（Redis 连接管理器为权威来源，跨实例无重复）
-            await _deliveryService.DeliverMessageAsync(
-                sessionId, dto, session.Participants, ct: Context.ConnectionAborted);
-
-            // 2) 通过会话群组广播（支持按 session:{id} 订阅的客户端）
+            // 1) 按连接的实时推送已由命令链路统一完成（见 SendMessage）
+            // 2) 会话群组广播：仅本连接已订阅时触发，同样排除本连接防回显
             if (Context.Items.TryGetValue(GroupKey(sessionId), out var joined) && joined is true)
-                await Clients.Group(SessionGroupName(sessionId)).ReceiveMessage(dto);
+                await Clients.GroupExcept(SessionGroupName(sessionId), [Context.ConnectionId]).ReceiveMessage(dto);
 
-            _logger.LogDebug("会话 {SessionId} 文件消息 {MessageId} 已推送，FileId={FileId}",
+            _logger.LogDebug("会话 {SessionId} 文件消息 {MessageId} 已推送（连接推送经命令链路），FileId={FileId}",
                 sessionId, message.MessageId, fileId);
         }
         catch (HubException)
@@ -620,7 +615,8 @@ public class MessageHub : Hub<IMessageClient>
             request.LinkUrl,
             request.LinkTitle,
             request.LinkDescription,
-            request.ExpressionCode),
+            request.ExpressionCode,
+            Context.ConnectionId),   // ExcludeConnectionId：排除本连接，防推送回显重复
             Context.ConnectionAborted);
 
         return await _messageRepository.GetByIdAsync(messageId)

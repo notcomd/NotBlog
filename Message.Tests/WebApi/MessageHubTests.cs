@@ -125,7 +125,7 @@ public class MessageHubTests
     }
 
     [Test]
-    public async Task SendMessage_成功应并行推送到参与者并广播到会话群组()
+    public async Task SendMessage_成功应经命令链路创建并广播到会话群组()
     {
         var session = ChatSession.CreatePrivateSession(UserId, OtherUserId);
         _harness.SessionRepository.Setup(m => m.GetByIdAsync(SessionId)).ReturnsAsync(session);
@@ -148,14 +148,14 @@ public class MessageHubTests
             Content = "你好"
         });
 
-        // 命令链路被调用（消息经 SendMessageCommand 创建，Hub 不再自行实现）
+        // 命令链路被调用（消息经 SendMessageCommand 创建；经 ExcludeConnectionId 排除本连接防回显）
         _harness.Mediator.Verify(m => m.SendAsync(
-            It.Is<SendMessageCommand>(c => c.MessageType == MessageType.MessageText),
+            It.Is<SendMessageCommand>(c => c.MessageType == MessageType.MessageText
+                                           && c.ExcludeConnectionId == HubHarness.ConnectionId),
             It.IsAny<CancellationToken>()), Times.Once);
-        // 1) 按连接并行推送（两个参与者各自 1 个连接）
-        _harness.DeliveryProxy.Verify(c => c.ReceiveMessage(
-            It.Is<MessageDto>(m => m.MessageId == message.MessageId)), Times.Exactly(2));
-        // 2) 会话群组广播
+        // 按连接的实时推送已移交命令链路（此处 mediator 被 mock 不执行）——Hub 不得再自行推送
+        _harness.DeliveryProxy.Verify(c => c.ReceiveMessage(It.IsAny<MessageDto>()), Times.Never);
+        // 会话群组广播仍由 Hub 触发
         _harness.GroupProxy.Verify(c => c.ReceiveMessage(
             It.Is<MessageDto>(m => m.MessageId == message.MessageId)), Times.Once);
     }
@@ -397,6 +397,9 @@ public class MessageHubTests
             var clients = new Mock<IHubCallerClients<IMessageClient>>();
             clients.Setup(c => c.Client(It.IsAny<string>())).Returns(DeliveryProxy.Object);
             clients.Setup(c => c.Group(It.IsAny<string>())).Returns(GroupProxy.Object);
+            // Hub 发送/文件消息的群组广播已改为 GroupExcept（排除调用连接防回显）
+            clients.Setup(c => c.GroupExcept(It.IsAny<string>(), It.IsAny<IReadOnlyList<string>>()))
+                .Returns(GroupProxy.Object);
             clients.SetupGet(c => c.Caller).Returns(CallerProxy.Object);
 
             var hubContext = new Mock<IHubContext<MessageHub, IMessageClient>>();

@@ -114,8 +114,10 @@ public class SendMessageCommandHandlerTests
         Assert.Multiple(() =>
         {
             Assert.That(result, Is.Not.EqualTo(Guid.Empty));
+            // Moq 谓词在 Verify 时对同一对象引用求值：此时已由 MarkAsSent 置为「已发送」
             _messageRepository.Verify(r => r.AddAsync(
-                It.Is<MessageEntity>(m => m.MessageType == MessageType.MessageText)), Times.Once);
+                It.Is<MessageEntity>(m => m.MessageType == MessageType.MessageText
+                                          && m.Status == MessageStatus.Sent)), Times.Once);
             _unitOfWork.Verify(u => u.SaveEntitiesAsync(It.IsAny<CancellationToken>()), Times.Once);
         });
     }

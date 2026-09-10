@@ -25,6 +25,10 @@ namespace Message.Web.API.Application.Commands.Messages;
 /// <param name="LinkTitle">链接标题（链接消息可选）</param>
 /// <param name="LinkDescription">链接描述（链接消息可选）</param>
 /// <param name="ExpressionCode">表情代码（表情消息必填）</param>
+/// <param name="ExcludeConnectionId">
+/// 实时推送时要排除的 SignalR 连接 ID（Hub 通道传入当前调用连接，REST 通道为 null）。
+/// 发送方 UI 以「本地乐观消息 + invoke 回执」闭环，推送回显给调用连接会造成「重复两条」。
+/// </param>
 public record SendMessageCommand(
     Guid SessionId,
     Guid SenderId,
@@ -40,5 +44,6 @@ public record SendMessageCommand(
     string? LinkUrl,
     string? LinkTitle,
     string? LinkDescription,
-    string? ExpressionCode) : IRequest<Guid>;
+    string? ExpressionCode,
+    string? ExcludeConnectionId = null) : IRequest<Guid>;
 

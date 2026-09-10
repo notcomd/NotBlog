@@ -27,6 +27,9 @@ public class ForwardMessageCommandHandler(
         forwardedMessage.MarkAsForwarded(command.MessageId);
         ApplyPrivateReceiver(forwardedMessage, targetSession, command.ForwardedBy);
 
+        // 发送链路完成即置「已发送」——Mongo 仓库 AddAsync 即时落库，必须先于插入执行；
+        // 前端以 0=发送中/1=已发送 渲染自己消息的发送状态
+        forwardedMessage.MarkAsSent();
         await messageRepository.AddAsync(forwardedMessage);
         await messageRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
 

@@ -40,8 +40,9 @@ public class SendMessageCommandHandler(
         // Q-05：会话最后消息已变化，失效会话详情缓存
         await sessionCache.InvalidateSessionAsync(command.SessionId, cancellationToken);
 
-        // R-01：REST 发送路径补齐实时推送（与 MessageHub.SendMessage 行为一致；推送失败不阻断命令）
-        await PushDeliverAsync(message, cancellationToken);
+        // R-01：实时推送由命令链路统一完成（REST/Hub 共同入口；推送失败不阻断命令）。
+        // Hub 通道经 ExcludeConnectionId 排除发起调用的连接（其 UI 以乐观消息闭环，避免回显重复）。
+        await PushDeliverAsync(message, command.ExcludeConnectionId, cancellationToken);
 
         logger.LogInformation("发送消息成功：{MessageId}，类型={MessageType}，会话={SessionId}",
             message.MessageId, message.MessageType, message.SessionId);
@@ -104,6 +105,9 @@ public class SendMessageCommandHandler(
         message.AddAttachment(attachment);
         await fileRepository.AddAsync(attachment);
 
+        // 发送链路完成即置「已发送」——Mongo 仓库 AddAsync 即时落库，必须先于插入执行；
+        // 前端以 0=发送中/1=已发送 渲染自己消息的发送状态
+        message.MarkAsSent();
         await messageRepository.AddAsync(message);
         await UpdateSessionLastMessageAsync(command.SessionId, message.MessageId,
             MediaMessageSummary(command.MessageType, info.FileName));
@@ -137,6 +141,9 @@ public class SendMessageCommandHandler(
         var message = MessageEntity.CreateTextMessage(sessionId, senderId, content);
         ApplyPrivateReceiver(message, session, senderId);
 
+        // 发送链路完成即置「已发送」——Mongo 仓库 AddAsync 即时落库，必须先于插入执行；
+        // 前端以 0=发送中/1=已发送 渲染自己消息的发送状态
+        message.MarkAsSent();
         await messageRepository.AddAsync(message);
 
         await UpdateSessionLastMessageAsync(sessionId, message.MessageId, content);
@@ -153,6 +160,9 @@ public class SendMessageCommandHandler(
         var message = MessageEntity.CreateLocationMessage(sessionId, senderId, latitude, longitude, locationName);
         ApplyPrivateReceiver(message, session, senderId);
 
+        // 发送链路完成即置「已发送」——Mongo 仓库 AddAsync 即时落库，必须先于插入执行；
+        // 前端以 0=发送中/1=已发送 渲染自己消息的发送状态
+        message.MarkAsSent();
         await messageRepository.AddAsync(message);
 
         await UpdateSessionLastMessageAsync(sessionId, message.MessageId, $"[位置] {locationName}");
@@ -171,6 +181,9 @@ public class SendMessageCommandHandler(
         var message = MessageEntity.CreateLinkMessage(sessionId, senderId, linkUrl, title, description);
         ApplyPrivateReceiver(message, session, senderId);
 
+        // 发送链路完成即置「已发送」——Mongo 仓库 AddAsync 即时落库，必须先于插入执行；
+        // 前端以 0=发送中/1=已发送 渲染自己消息的发送状态
+        message.MarkAsSent();
         await messageRepository.AddAsync(message);
 
         await UpdateSessionLastMessageAsync(sessionId, message.MessageId, title ?? linkUrl);
@@ -187,6 +200,9 @@ public class SendMessageCommandHandler(
         var message = MessageEntity.CreateExpressionMessage(sessionId, senderId, expressionCode);
         ApplyPrivateReceiver(message, session, senderId);
 
+        // 发送链路完成即置「已发送」——Mongo 仓库 AddAsync 即时落库，必须先于插入执行；
+        // 前端以 0=发送中/1=已发送 渲染自己消息的发送状态
+        message.MarkAsSent();
         await messageRepository.AddAsync(message);
 
         await UpdateSessionLastMessageAsync(sessionId, message.MessageId, "[表情]");
@@ -245,17 +261,18 @@ public class SendMessageCommandHandler(
     }
 
     /// <summary>
-    /// R-01：REST 发送后向会话参与者实时推送新消息。
-    /// <para>与 MessageHub.SendMessage 的 DeliverMessageAsync 链路一致；推送异常仅记日志，不阻断命令结果。</para>
+    /// R-01：发送成功后向会话参与者实时推送新消息（命令链路是唯一推送方，Hub 不再重复推送）。
+    /// <para>excludeConnectionId 用于排除 Hub 发起调用的连接（防回显重复）；推送异常仅记日志，不阻断命令结果。</para>
     /// </summary>
-    private async Task PushDeliverAsync(MessageEntity message, CancellationToken cancellationToken)
+    private async Task PushDeliverAsync(MessageEntity message, string? excludeConnectionId, CancellationToken cancellationToken)
     {
         try
         {
             var session = await sessionRepository.GetByIdAsync(message.SessionId);
             if (session is not null)
                 await delivery.DeliverMessageAsync(
-                    message.SessionId, message.MapToDto(), session.Participants, ct: cancellationToken);
+                    message.SessionId, message.MapToDto(), session.Participants,
+                    excludeConnectionId: excludeConnectionId, ct: cancellationToken);
         }
         catch (Exception ex)
         {
