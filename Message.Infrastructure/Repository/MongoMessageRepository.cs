@@ -35,8 +35,12 @@ public class MongoMessageRepository(IMongoDatabase database, MessageDbContext co
         if (pageSize < 1) pageSize = 10;
         if (pageSize > 100) pageSize = 100;
 
+        // ⚠️ 分页稳定性：SentTime 为毫秒精度，同一毫秒的多条消息若无第二排序键，
+        // MongoDB 返回次序不稳定 → Skip/Limit 在「同时间戳组」内漂移 → 跨页重复/遗漏。
+        // MessageId 作为 tie-breaker 保证全序确定（与 SentTime 同向 desc）。
         var docs = await _messages.Find(d => d.SessionId == sessionId && !d.IsRecalled)
             .SortByDescending(d => d.SentTime)
+            .ThenByDescending(d => d.MessageId)
             .Skip((page - 1) * pageSize)
             .Limit(pageSize)
             .ToListAsync();
@@ -50,6 +54,7 @@ public class MongoMessageRepository(IMongoDatabase database, MessageDbContext co
 
         var docs = await _messages.Find(d => d.SenderId == senderId)
             .SortByDescending(d => d.SentTime)
+            .ThenByDescending(d => d.MessageId)
             .Skip((page - 1) * pageSize)
             .Limit(pageSize)
             .ToListAsync();
@@ -64,6 +69,7 @@ public class MongoMessageRepository(IMongoDatabase database, MessageDbContext co
 
         var docs = await _messages.Find(d => d.ReceiverId == receiverId)
             .SortByDescending(d => d.SentTime)
+            .ThenByDescending(d => d.MessageId)
             .Skip((page - 1) * pageSize)
             .Limit(pageSize)
             .ToListAsync();
@@ -74,6 +80,7 @@ public class MongoMessageRepository(IMongoDatabase database, MessageDbContext co
     {
         var docs = await _messages.Find(d => d.ReceiverId == userId && d.Status == MessageStatus.Sent)
             .SortBy(d => d.SentTime)
+            .ThenBy(d => d.MessageId)
             .ToListAsync();
         return docs.Select(ChatMessageMapper.ToEntity);
     }
@@ -82,6 +89,7 @@ public class MongoMessageRepository(IMongoDatabase database, MessageDbContext co
     {
         var docs = await _messages.Find(d => d.SessionId == sessionId && d.MessageType == messageType)
             .SortByDescending(d => d.SentTime)
+            .ThenByDescending(d => d.MessageId)
             .ToListAsync();
         return docs.Select(ChatMessageMapper.ToEntity);
     }
@@ -92,6 +100,7 @@ public class MongoMessageRepository(IMongoDatabase database, MessageDbContext co
         var docs = await _messages.Find(d => d.SessionId == sessionId
                                              && d.SentTime >= startDate && d.SentTime <= endDate)
             .SortBy(d => d.SentTime)
+            .ThenBy(d => d.MessageId)
             .ToListAsync();
         return docs.Select(ChatMessageMapper.ToEntity);
     }
@@ -100,6 +109,7 @@ public class MongoMessageRepository(IMongoDatabase database, MessageDbContext co
     {
         var doc = await _messages.Find(d => d.SessionId == sessionId && !d.IsRecalled)
             .SortByDescending(d => d.SentTime)
+            .ThenByDescending(d => d.MessageId)
             .FirstOrDefaultAsync();
         return doc is null ? null : ChatMessageMapper.ToEntity(doc);
     }
@@ -188,6 +198,7 @@ public class MongoMessageRepository(IMongoDatabase database, MessageDbContext co
 
         var docs = await _messages.Find(filter)
             .SortByDescending(d => d.SentTime)
+            .ThenByDescending(d => d.MessageId)
             .Skip((page - 1) * pageSize)
             .Limit(pageSize)
             .ToListAsync();
@@ -208,6 +219,7 @@ public class MongoMessageRepository(IMongoDatabase database, MessageDbContext co
     {
         var docs = await _messages.Find(d => d.OriginalMessageId == originalMessageId)
             .SortByDescending(d => d.SentTime)
+            .ThenByDescending(d => d.MessageId)
             .ToListAsync();
         return docs.Select(ChatMessageMapper.ToEntity);
     }
