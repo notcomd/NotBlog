@@ -1,4 +1,4 @@
-﻿using Message.Web.API.Application.Commands.Friends;
+using Message.Web.API.Application.Commands.Friends;
 
 namespace Message.Web.API.APIs;
 
@@ -29,6 +29,7 @@ public static class FriendsApi
             .WithSummary("发送好友请求")
             .WithDescription("向指定用户发送好友请求")
             .Produces<ApiResponseResult<Guid>>()
+            .Produces<ApiResponseResult<Guid>>(StatusCodes.Status400BadRequest)
             .Accepts<SendFriendRequestRequest>("application/json");
 
         // 2. PUT /request/{friendId} — 处理好友请求
@@ -136,6 +137,15 @@ public static class FriendsApi
                 new SendFriendRequestCommand(userId, request.FriendId), ct);
 
             return Results.Ok(ApiResponseResult<Guid>.Created(friendshipId, "好友请求已发送"));
+        }
+        catch (InvalidOperationException ex)
+        {
+            // 发送前校验失败（已是好友/重复请求/对方已发起/已屏蔽/加自己）→ 业务冲突而非服务端错误
+            return Results.Json(ApiResponseResult<Guid>.Failure(ex.Message, 400), statusCode: 400);
+        }
+        catch (ArgumentException ex)
+        {
+            return Results.Json(ApiResponseResult<Guid>.Failure(ex.Message, 400), statusCode: 400);
         }
         catch (Exception ex)
         {

@@ -3,12 +3,17 @@ using Identity.Web.API.Grpc;
 
 namespace Identity.Web.API.Application.Commands;
 
-public class UploadAvatarCommandHandler
-    : IRequestHandler<UploadAvatarCommand, UploadAvatarResult>
+public class UploadAvatarCommandHandler(
+    FileStorage.FileStorageClient grpcClient,
+    ILogger<UploadAvatarCommandHandler> logger,
+    IUserRepository userRepository,
+    IOutboxStore outboxStore)
+        : IRequestHandler<UploadAvatarCommand, UploadAvatarResult>
 {
-    private readonly FileStorage.FileStorageClient _grpcClient;
-    private readonly ILogger<UploadAvatarCommandHandler> _logger;
-
+    private readonly FileStorage.FileStorageClient _grpcClient = grpcClient ?? throw new ArgumentNullException(nameof(grpcClient));
+    private readonly ILogger<UploadAvatarCommandHandler> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly IUserRepository _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+    private readonly IOutboxStore _outboxStore = outboxStore ?? throw new ArgumentNullException(nameof(outboxStore));
     private const long MaxFileSize = 5 * 1024 * 1024; // 5MB
     private const int MaxWidth = 2000;
     private const int MaxHeight = 2000;
@@ -22,21 +27,6 @@ public class UploadAvatarCommandHandler
     {
         "image/jpeg", "image/png", "image/webp"
     };
-
-    public UploadAvatarCommandHandler(
-        FileStorage.FileStorageClient grpcClient,
-        ILogger<UploadAvatarCommandHandler> logger,
-        IUserRepository userRepository,
-        IOutboxStore outboxStore)
-    {
-        _grpcClient = grpcClient ?? throw new ArgumentNullException(nameof(grpcClient));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-        _outboxStore = outboxStore ?? throw new ArgumentNullException(nameof(outboxStore));
-    }
-
-    private readonly IUserRepository _userRepository;
-    private readonly IOutboxStore _outboxStore;
 
     public async Task<UploadAvatarResult> Handler(
         UploadAvatarCommand command, CancellationToken cancellationToken)
@@ -126,21 +116,30 @@ public class UploadAvatarCommandHandler
             try
             {
                 var user = await _userRepository.FindOneByUserAsync(command.UserId);
+                // 事件携带邮箱/昵称：下游（Message）UserInfo 投影缺失时可据此补建资料
+                string? userEmail = null;
+                string? userName = null;
                 if (user is not null)
                 {
+                    userEmail = user.UserEmail;
+                    userName = user.UserName;
                     user.ChangeByAvatar(avatarUri);
                     await _userRepository.UpdateByUserAsync(user);
-                    await _userRepository.UnitOfWork.SaveChangesAsync(cancellationToken);
                 }
                 else
                 {
                     _logger.LogWarning("[UploadAvatar] 未找到用户 {UserId}，头像未持久化至用户记录", command.UserId);
                 }
 
+                // StoreAsync 仅登记 Outbox 消息（AddAsync，不提交），
+                // 必须与头像变更共用一次 SaveChangesAsync 提交，否则消息行不会落库、事件永不投递。
                 await _outboxStore.StoreAsync(
                     new OutboxMessage(nameof(UploadByUserAvatarIntegrationEvent),
-                        new UploadByUserAvatarIntegrationEvent(command.UserId, avatarUri)),
+                        new UploadByUserAvatarIntegrationEvent(command.UserId, avatarUri, userEmail, userName)),
                     cancellationToken);
+
+                await _userRepository.UnitOfWork.SaveChangesAsync(cancellationToken);
+
             }
             catch (Exception ex)
             {

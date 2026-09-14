@@ -210,7 +210,7 @@ sequenceDiagram
 
 > 媒体消息（图片/视频/音频/文件）先经 `/api/files/*` 或 Hub 分片通道上传获得 FileId，再以 `SendMessageRequest.FileId` 引用；`SendMessageCommand` 内完成 FileDev 归属校验与附件创建。
 
-### 3.2 社区创建 → Channel 会话自动同步
+### 3.2 社区创建 → 社区群组与群组会话自动同步
 
 ```mermaid
 sequenceDiagram
@@ -218,27 +218,27 @@ sequenceDiagram
     participant C as 客户端
     participant API as CirclesApi
     participant M as NotMediator
-    participant D as Circle 聚合
-    participant EH as DomainEventHandlers
+    participant CH as CreateCircleCommandHandler
+    participant G as Group 聚合
     participant S as ChatSession 聚合
 
     C->>API: POST /api/circles
     API->>M: CreateCircleCommand
-    M->>D: circle 创建（挂 CircleCreatedEvent）
-    M-->>API: circleId
+    M->>CH: 建 Circle（挂 CircleCreatedEvent）
+    CH->>G: Group.CreateForCircle(circleId, 圈主, 社区名, 成员上限)
+    CH->>S: CreateCommunityGroupSession(groupId, circleId, 圈主)
+    CH->>CH: SaveEntitiesAsync（Circle + Group 同事务；会话落 Mongo）
+    CH-->>API: circleId
     API-->>C: circleId
-    M->>EH: CircleCreatedEvent 处理
-    EH->>S: CreateChannelSession(circleId, creatorId, members)
-    EH->>S: SessionCreatedEvent
-    EH-->>API: 会话初始化完成
 ```
 
-- 成员加入/离开圈子经 `CircleMemberJoinedEvent` / `CircleMemberLeftEvent` / `CircleMemberRemovedEvent` 驱动会话参与者同步。
-- **Circle 是社区名/解散状态单一真相源**，ChatSession 经 `CircleId` 只读投影，不镜像冗余（`Group` 同理经 `GroupId` 投影）。
+- 社区聊天以**真群组**承载：创建社区即创建 `Group`（`Group.CircleId` 关联社区、圈主即群主）与 `SessionType=Group` 的会话。
+- 成员加入/退出/被移出圈子经 `CircleMemberJoinedEvent` / `CircleMemberLeftEvent` / `CircleMemberRemovedEvent` 驱动**社区群组成员**与**会话参与者**同步。
+- **Circle 是社区名/解散状态单一真相源**；群名与群成员事实归 `Group`（`ChatSession` 经 `GroupId` 只读投影），会话另存 `CircleId` 仅供社区聊天入口（`GET /api/circles/{id}/session`）按社区定位。
 
 ### 3.3 群组/社区解散 → 会话解散
 
-`GroupDissolvedEvent` / `CircleDissolvedEvent` → 对应处理器将关联 `ChatSession` 置为 `IsDismissed`，确保数据一致性（`SessionType=Group` 经 `GroupId` 关联、`SessionType=Channel` 经 `CircleId` 关联）。
+解散社区时命令层同步执行 `Group.Dismiss()`：`GroupDissolvedEvent` 通知群成员并解散群聊会话，`CircleDissolvedEvent` 同步解散社区聊天会话，两者在同一次 `SaveEntitiesAsync` 内派发，保证「社区解散 ⇔ 群组解散 ⇔ 会话解散」一致（`SessionType=Group` 经 `GroupId` 关联；历史 `SessionType=Channel` 会话仍按 `CircleId` 兼容解析）。
 
 ### 3.4 语音/视频通话建立（WebRTC over SignalR）
 

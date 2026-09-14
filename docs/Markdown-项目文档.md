@@ -9,7 +9,7 @@
 **Markdown 博客服务** 是 NotBlog 平台的博客内容服务，提供 Markdown 博客文章的完整生命周期管理：
 
 - **文章管理**：创建 / 更新 / 软删除 / 历史版本快照与还原，审核状态机（草稿 → 待审核 → 通过 / 驳回）。
-- **文件化正文存储**：DB 只存文件元数据与 SHA-256 哈希，正文经 `IMarkdownContentStore` 读写（生产 = FileDev gRPC 文件服务；开发 = 本地磁盘）。
+- **文件化正文存储**：DB 只存文件元数据与 SHA-256 哈希，正文经 `IMarkdownContentStore` 读写，**默认走 FileDev gRPC 文件服务**（开发与生产一致，2026-09-13 起开发环境亦默认 FileDev）；仅显式配置 `MarkdownContent:Provider=Local` 时回退本地磁盘。
 - **交互体系**：浏览 / 点赞 / 收藏 / 分享 / 投币（硬币），文档级与评论级交互计数 + 唯一约束幂等。
 - **评论体系**：顶级评论 / 回复（子评论）/ 评论点赞与踩 / 评论配图。
 - **热点榜**：互动 50% + 浏览 30% + 时间衰减 20% 热度算法；Redis ZSet 直读 + 定时重建 + DB 降级。
@@ -17,7 +17,7 @@
 - **跨服务通知**：通过 RabbitMQ 集成事件（文章发布 / 点赞 / 投币 / 评论发布 / 评论点赞 / 评论踩）通知 Message 服务站内推送。
 
 - **对外接口**：HTTP REST（`/api/markdown/*` + `/api/favorites/*`，共 40 个端点）。
-- **运行模式**：单机独立运行（依赖本地 PostgreSQL / Redis / RabbitMQ / 可选 FileDev），或在 Aspire AppHost 编排下作为微服务运行。
+- **运行模式**：单机独立运行（依赖本地 PostgreSQL / Redis / RabbitMQ，正文存储缺省经 FileDev gRPC；无 FileDev 时可设 `MarkdownContent:Provider=Local` 回退本地磁盘），或在 Aspire AppHost 编排下作为微服务运行。
 
 ---
 
@@ -181,7 +181,7 @@ Dockerfile                   # 容器化
 
 1. 启动依赖：PostgreSQL（库 `markdownpostgres`）、Redis、RabbitMQ。
 2. 配置 `appsettings.json`（默认即可）：`DbContextOption.DbContextConnection`（本地连接串）、`EventBus`（RabbitMQ 连接）、`JwtOptions`。
-3. `appsettings.Development.json` 默认 `MarkdownContent:Provider=Local`（正文落本地磁盘，无需 FileDev）。
+3. 正文存储默认走 FileDev gRPC（`FileStorageGrpc:Address` 为脱离 AppHost 时的兜底地址）；无 FileDev 可用时，设 `MarkdownContent:Provider=Local` 回退本地磁盘 `markdown-files/`。
 4. 运行：`dotnet run --project Markdown.Web.API`。
 5. 启动时自动执行 EF 迁移（`AddMigration<MarkDownDbContext>`）。
 
@@ -204,8 +204,8 @@ Dockerfile                   # 容器化
 | `ConnectionStrings` | `MarkDownPostgres` | PostgreSQL 连接串（Aspire 注入；单机分支回退 `DbContextOption`） |
 | `DbContextOption` | `DbContextConnection` | 单机模式数据库连接串 |
 | `JwtOptions` | Issuer / Audiences / PrivateKey(外部) / 校验项 | JWT 认证（Identity 签发对齐，HS384） |
-| `EventBus` | SubscriptionClientName / HostName / ExchangeName / ExchangeType / UserName / Password | RabbitMQ 事件总线（`markdown_queue` / `markdown_events`） |
-| `MarkdownContent` | `Provider`（`Local` 或默认 FileDev） | 正文存储实现切换 |
+| `EventBus` | SubscriptionClientName / HostName / ExchangeName / ExchangeType / UserName / Password | RabbitMQ 事件总线（`markdown_queue` / `notcomd_event_bus`） |
+| `MarkdownContent` | `Provider`（缺省 = FileDev；`Local` = 本地磁盘回退） | 正文存储实现切换；默认 FileDev，本地磁盘仅作无 FileDev 时的回退 |
 | `FileStorageGrpc` | `Address` | FileDev gRPC 地址（脱离 AppHost 时兜底） |
 | `MongoDb` | 无（非本服务使用） | — |
 
@@ -218,7 +218,7 @@ Dockerfile                   # 容器化
 | PostgreSQL | 主数据存储（EF Core） | 服务不可用 |
 | RabbitMQ | 集成事件总线（通知 Message 服务） | 业务可继续落库，事件丢失仅记日志（尽力而为） |
 | Redis | 热点榜 ZSet + 浏览防刷 + 重建互斥锁 | 热点榜降级 DB 实时计算；浏览防刷跳过 |
-| FileDev（gRPC） | 正文文件存储（生产） | 正文读写失败；`MarkdownContent:Provider=Local` 可本地回退 |
+| FileDev（gRPC） | 正文文件存储（默认，含开发环境） | 正文读写失败；`MarkdownContent:Provider=Local` 可回退本地磁盘 |
 | Message 服务（消费端） | 站内通知推送 | 通知不达，文章/交互功能本身不受影响 |
 
 ---

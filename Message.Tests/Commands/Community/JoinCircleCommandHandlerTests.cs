@@ -10,7 +10,7 @@ namespace Message.Tests.Commands.Community;
 
 /// <summary>
 /// 凭邀请加入圈子命令处理程序单元测试（邀请机制完善）：
-/// 覆盖：邀请一次性使用（原子占用失败即失效）、邀请不存在、token 路径、码优先。
+/// 覆盖：邀请一次性使用（原子占用失败即失效）、邀请不存在、token 路径、码优先、用后物理删除。
 /// </summary>
 [TestFixture]
 public class JoinCircleCommandHandlerTests
@@ -116,5 +116,46 @@ public class JoinCircleCommandHandlerTests
 
         Assert.That(result, Is.EqualTo(_circle.CircleGuid));
         _invitationRepository.Verify(r => r.GetByCodeAsync("ABC123"), Times.Once);
+    }
+
+    // ---------- 用后物理删除（已用邀请不残留） ----------
+
+    [Test]
+    public async Task Join_邀请码使用后_立即物理删除()
+    {
+        _invitationRepository.Setup(r => r.GetByCodeAsync("ABC123")).ReturnsAsync(_codeInvitation);
+        _invitationRepository.Setup(r => r.TryAcceptAtomicallyAsync(_codeInvitation.InviteGuid)).ReturnsAsync(true);
+
+        await CreateHandler().Handler(new JoinCircleCommand(JoinerId, "ABC123", null), CancellationToken.None);
+
+        _invitationRepository.Verify(r => r.DeleteAsync(_codeInvitation.InviteGuid), Times.Once,
+            "邀请码使用后必须物理删除，避免已用邀请残留在邀请列表");
+        _invitationRepository.Verify(r => r.UpdateAsync(It.IsAny<CircleInvitation>()), Times.Never,
+            "不应再以状态置位方式保留已用邀请");
+    }
+
+    [Test]
+    public async Task Join_链接使用后_立即物理删除()
+    {
+        var link = CircleInvitation.CreateLink(_circle.CircleGuid, OwnerId);
+        _invitationRepository.Setup(r => r.GetByTokenAsync(link.Token!.Value)).ReturnsAsync(link);
+        _invitationRepository.Setup(r => r.TryAcceptAtomicallyAsync(link.InviteGuid)).ReturnsAsync(true);
+
+        await CreateHandler().Handler(new JoinCircleCommand(JoinerId, null, link.Token), CancellationToken.None);
+
+        _invitationRepository.Verify(r => r.DeleteAsync(link.InviteGuid), Times.Once);
+    }
+
+    [Test]
+    public async Task Join_原子占用失败_不删除邀请也不入圈()
+    {
+        _invitationRepository.Setup(r => r.GetByCodeAsync("ABC123")).ReturnsAsync(_codeInvitation);
+        _invitationRepository.Setup(r => r.TryAcceptAtomicallyAsync(_codeInvitation.InviteGuid)).ReturnsAsync(false);
+
+        Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await CreateHandler().Handler(new JoinCircleCommand(JoinerId, "ABC123", null), CancellationToken.None));
+
+        _invitationRepository.Verify(r => r.DeleteAsync(It.IsAny<Guid>()), Times.Never);
+        Assert.That(_circle.IsMember(JoinerId), Is.False);
     }
 }

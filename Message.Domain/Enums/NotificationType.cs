@@ -10,6 +10,8 @@ public enum NotificationType
     TweetFavorited,
     TweetCoined,
     TweetShared,
+
+    //==== 以下为社区 Circle 服务通知
     CircleInvited,
     CircleJoined,
     CirclePostPublished,
@@ -29,5 +31,7 @@ public enum NotificationType
     VideoLiked,
     VideoCoined,
     VideoCommentAdded,
-    VideoCommentReplied
+    VideoCommentReplied,
+    // ===== 好友关系通知（追加在末尾，避免已有枚举值位移） =====
+    FriendRequestReceived
 }

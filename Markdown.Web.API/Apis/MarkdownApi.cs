@@ -1,4 +1,4 @@
-﻿namespace Markdown.Web.API.Apis;
+namespace Markdown.Web.API.Apis;
 
 /// <summary>
 ///     Markdown 博客文章 API（文章主资源：CRUD + 列表 + 搜索）
@@ -233,15 +233,12 @@ public static class MarkdownApi
                 }
                 else
                 {
-                    // 重复浏览：返回当前计数，不递增
                     return Results.Ok(ApiResponseResult<long>.Ok(markdown.MarkQuote.ViewSome));
                 }
             }
         }
 
         var count = await markdownRepository.IncreaseDocumentViewAsync(markDownGuid);
-
-        // 热度分实时刷新（失败不影响浏览计数，定时重建兜底）
         await hotBoardService.UpdateScoreAsync(markDownGuid);
         return Results.Ok(ApiResponseResult<long>.Ok(count));
     }
@@ -404,7 +401,7 @@ public static class MarkdownApi
     }
 
     /// <summary>
-    ///     获取 Markdown 博客文章详情
+    ///获取 Markdown 博客文章详情
     /// </summary>
     private static async Task<IResult> GetAsync(
         Guid markDownGuid,
@@ -416,9 +413,6 @@ public static class MarkdownApi
         if (markdown is null || markdown.IsDelete)
             return Results.NotFound(ApiResponseResult<MarkdownResponse>.NotFound("文章不存在"));
 
-        // 越权防护（S-10）：权限校验 + 审核门控（F-10.2）双重要求。
-        // 私有/受保护文档非所有者一律 404（含已审核通过的私有文档）；
-        // 未通过审核的文章仅作者可见，其余一律 404。
         var viewerGuid = MarkdownApiHelpers.TryGetCurrentUserId(currentUserService) ?? Guid.Empty;
         if (!markdown.HasPermission(viewerGuid) ||
             (!markdown.IsApproved && markdown.MarkUserGuid != viewerGuid))
@@ -429,7 +423,7 @@ public static class MarkdownApi
     }
 
     /// <summary>
-    ///     更新 Markdown 博客文章
+    /// 更新 Markdown 博客文章
     /// </summary>
     private static async Task<IResult> UpdateAsync(
         Guid markDownGuid,
@@ -476,7 +470,7 @@ public static class MarkdownApi
         Guid markDownGuid,
        [FromServices] INotMediator notMediator,
        [FromServices] ICurrentUserService currentUserService,
-       [FromServices] HttpContext httpContext)
+       HttpContext httpContext)
     {
         var userId = currentUserService.GetUserId();
         var command = new DeleteMarkdownCommand(markDownGuid, userId, MarkdownApiHelpers.GetIdempotencyKey(httpContext));

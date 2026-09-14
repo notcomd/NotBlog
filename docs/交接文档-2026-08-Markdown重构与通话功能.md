@@ -62,8 +62,8 @@ bfa201f feat(markdown): Markdown 详情页（/markdown/:guid）
 - **`MarkDownTagboard`：`HashSet<string>` → `List<string>`**（用户进行中改动，
   Builder 与 EntityConfig JSON 转换器已同步）
 - **正文存储抽象**：`IMarkdownContentStore`（Domain 接口）：
-  - `LocalMarkdownContentStore`（本地磁盘 `markdown-files/`，开发/单机）
-  - `FileDevMarkdownContentStore`（gRPC，生产，默认）
+  - `LocalMarkdownContentStore`（本地磁盘 `markdown-files/`，仅单机无 FileDev 时的回退）
+  - `FileDevMarkdownContentStore`（gRPC，默认，含开发环境）
   - 切换开关：`appsettings` → `MarkdownContent:Provider`（`Local` / 缺省=FileDev）
 
 ### 测试

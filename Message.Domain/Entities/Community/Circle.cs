@@ -94,18 +94,20 @@ public class Circle : Entity<Guid>, IAggregateRoot
         EnsureActive();
         if (userGuid == Guid.Empty)
             throw new ArgumentException("用户ID不能为空", nameof(userGuid));
-        if (_members.Count >= MaxMembers)
+        // 上限按「有效成员」计算：已退出/被移出的历史成员不占用名额
+        if (_members.Count(m => m.Status == CircleMemberStatus.Active) >= MaxMembers)
             throw new InvalidOperationException("圈子成员已达上限");
         if (_members.Any(m => m.UserGuid == userGuid && m.Status == CircleMemberStatus.Active))
             throw new InvalidOperationException("用户已在圈子中");
 
-        // 重新加入：恢复被移出/退出的成员为 Active，不再重复入账
+        // 重新加入：恢复被移出/退出的成员为 Active，复用同一成员行
         var existing = _members.FirstOrDefault(m => m.UserGuid == userGuid);
         if (existing is not null)
         {
             existing.Reactivate();
             existing.SetRole(role);
             existing.SetNickname(nickname);
+            MemberCount++;  // 退出/被移出时已减 1，重新加入恢复计数
             AddDomainEvent(new CircleMemberJoinedEvent(CircleGuid, userGuid, role, inviterGuid));
             return;
         }

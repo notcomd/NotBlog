@@ -42,9 +42,33 @@ public class Group : Entity<Guid>, IAggregateRoot
     }
 
     /// <summary>
+    ///   创建社区群组（社区聊天以真群组承载）。
+    /// <para>圈主即群主（基类构造已写入 GroupMember）；成员随社区成员同步增减；
+    /// CircleId 关联所属社区，供社区入口按社区反查群组与会话。</para>
+    /// </summary>
+    /// <param name="circleId">所属社区ID</param>
+    /// <param name="ownerId">圈主（同时成为群主）</param>
+    /// <param name="groupName">群名称（取社区名称）</param>
+    /// <param name="maxMembers">群成员上限（取社区成员上限）</param>
+    public static Group CreateForCircle(Guid circleId, Guid ownerId, string groupName, int maxMembers)
+    {
+        if (circleId == Guid.Empty)
+            throw new ArgumentException("社区ID不能为空", nameof(circleId));
+
+        var group = new Group(ownerId, groupName, maxMembers);
+        group.CircleId = circleId;
+        return group;
+    }
+
+    /// <summary>
     ///   群ID
     /// </summary>
     public Guid GroupId { get; init; }
+
+    /// <summary>
+    ///   所属社区ID（社区群组有值；普通群聊为 null）
+    /// </summary>
+    public Guid? CircleId { get; private set; }
 
     /// <summary>
     ///   群名称

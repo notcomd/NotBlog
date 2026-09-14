@@ -14,9 +14,9 @@ builder.AddServiceDefaults();
 builder.AddCacheMemory("Redis");
 
 builder.AddRabbitMQClient("EventBus");
-builder.Services.AddEventBus(builder.Configuration.GetConnectionString("EventBus")??
-    throw new ArgumentNullException("The Message for RabbitMQ connectionString is null!"),
-    Assembly.GetExecutingAssembly());
+// 注意：EventBus 消费者注册统一在下方 68 行（section 重载）完成。
+// 此前这里还按「连接串当队列名」调用了一次 AddEventBus(string,...)，既让队列名变成 AMQP 连接串，
+// 又重复注册了非 Try 的 RabbitMqEventBus（IHostedService 被启动两次），已移除（2026-09-12）。
 
 
 if (builder.Configuration.GetConnectionString("MessagePostgres") is null)

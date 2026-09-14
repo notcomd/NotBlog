@@ -131,20 +131,22 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
     }
 
     /// <summary>
-    /// 创建社区频道会话（Channel）。
+    /// 创建社区群组会话（SessionType.Group 承载社区聊天）。
     /// </summary>
+    /// <param name="groupId">社区群组ID</param>
     /// <param name="circleId">社区ID</param>
-    /// <param name="creatorId">创建者ID（圈主）</param>
+    /// <param name="creatorId">创建者ID（圈主，同时是群主）</param>
     /// <param name="initialMembers">初始成员ID列表（创建时仅圈主，成员加入经事件同步）</param>
-    /// <returns>社区频道会话</returns>
-    public static ChatSession CreateChannelSession(Guid circleId, Guid creatorId, HashSet<Guid> initialMembers)
+    /// <returns>社区群组会话</returns>
+    public static ChatSession CreateCommunityGroupSession(Guid groupId, Guid circleId, Guid creatorId, HashSet<Guid> initialMembers)
     {
         var participants = new HashSet<Guid>(initialMembers) { creatorId };
-        var session = new ChatSession(SessionType.Channel, creatorId, participants)
+        var session = new ChatSession(SessionType.Group, creatorId, participants)
         {
+            GroupId = groupId,
             CircleId = circleId
         };
-        session.AddDomainEvent(new SessionCreatedEvent(session.SessionId, participants, SessionType.Channel));
+        session.AddDomainEvent(new SessionCreatedEvent(session.SessionId, participants, SessionType.Group));
         return session;
     }
 

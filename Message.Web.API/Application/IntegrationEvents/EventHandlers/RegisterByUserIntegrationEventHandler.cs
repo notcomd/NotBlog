@@ -29,7 +29,10 @@ public class RegisterByUserIntegrationEventHandler(
         }
         catch (Exception ex)
         {
+            // P1-B：记录日志后继续抛出，交由事件总线 nack(requeue:false) 投递死信队列；
+            // 消息重放时上方"已存在则跳过"保证幂等。
             logger.LogError(ex, "消费注册事件创建用户资料失败：UserId={UserId}", @event.UserId);
+            throw;
         }
     }
 }

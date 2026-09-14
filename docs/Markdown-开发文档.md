@@ -9,7 +9,7 @@
 **Markdown 博客服务** 是 NotBlog 平台的博客内容服务，负责 Markdown 博客文章的完整生命周期：
 
 - **文章管理**：创建 / 更新 / 软删除 / 历史版本快照与还原 / 审核状态机（草稿 → 待审核 → 通过 / 驳回）。
-- **文件化正文存储**：数据库仅存文件元数据（FileId / FileUri / FileSize / FileExt / SHA-256），正文通过 `IMarkdownContentStore` 读写（生产 FileDev gRPC / 开发本地磁盘）。
+- **文件化正文存储**：数据库仅存文件元数据（FileId / FileUri / FileSize / FileExt / SHA-256），正文通过 `IMarkdownContentStore` 读写，**默认 FileDev gRPC**（开发与生产一致，2026-09-13 起开发环境亦默认 FileDev）；仅显式配置 `MarkdownContent:Provider=Local` 时回退本地磁盘。
 - **交互体系**：浏览 / 点赞 / 取消点赞 / 收藏 / 分享 / 投币（硬币），文档级与评论级交互计数，均带唯一约束防重复（幂等）。
 - **评论体系**：顶级评论 / 子评论（回复）/ 评论点赞 / 评论踩 / 评论配图（JSONB）。
 - **热点榜**：互动 50% + 浏览 30% + 时间衰减 20% 的热度公式，Redis ZSet 直读 + 定时全量重建 + DB 降级。
@@ -183,12 +183,14 @@ MarkFavorite (聚合根)
 
 ## 8. 文件存储抽象
 
-`IMarkdownContentStore`（接口：`SaveAsync / ReadAsync / DeleteAsync`）有两种实现，按配置 `MarkdownContent:Provider` 切换 DI 注册：
+`IMarkdownContentStore`（接口：`SaveAsync / ReadAsync / DeleteAsync`）有两种实现，按配置 `MarkdownContent:Provider` 切换 DI 注册。**默认（缺省）即 FileDev**，开发环境同样如此（2026-09-13 起 `appsettings.Development.json` 不再设置该开关）；`Local` 仅作为无 FileDev 时的回退。
 
-| 实现 | 配置 | 说明 |
-| --- | --- | --- |
-| `FileDevMarkdownContentStore` | 默认（未配置 Local） | gRPC 调用 FileDev 服务；`FILE_PUBLIC` 上传；携带**服务级 JWT**（固定服务账号 `11111111-...`，共享 `JWT_PRIVATE_KEY` 签发），不依赖用户 token；token 缓存至过期前 1 分钟，信号量串行刷新；gRPC 瞬时故障指数退避重试（3 次）；`NotFound` 视为确定性失败不重试 |
-| `LocalMarkdownContentStore` | `MarkdownContent:Provider=Local` | 开发/单机：文件存 `ContentRoot/markdown-files/{guid:N}.md`；读路径仅取文件名防目录穿越 |
+| 实现 | 配置 | 生存期 | 说明 |
+| --- | --- | --- | --- |
+| `FileDevMarkdownContentStore` | 默认（缺省，含开发环境） | **Scoped** | gRPC 调用 FileDev 服务；`FILE_PUBLIC` 上传；携带**服务级 JWT**（固定服务账号 `11111111-...`，共享 `JWT_PRIVATE_KEY` 签发），不依赖用户 token；gRPC 瞬时故障指数退避重试（3 次）；`NotFound` 视为确定性失败不重试 |
+| `LocalMarkdownContentStore` | `MarkdownContent:Provider=Local` | Singleton | 无 FileDev 时的回退：文件存 `ContentRoot/markdown-files/{guid:N}.md`；读路径仅取文件名防目录穿越 |
+
+> **生存期约束（2026-09-13 修复）**：`FileDevMarkdownContentStore` 依赖 Scoped 的 `IJwtTokenService` 与 `IOptionsSnapshot<JwtOptions>`，必须注册为 `AddScoped`。若注册为 `AddSingleton`，容器校验阶段会抛 `Cannot consume scoped service 'IJwtTokenService' from singleton 'IMarkdownContentStore'`，导致**服务启动即退出**（该缺陷此前被 `Provider=Local` 掩盖，切到 FileDev 才暴露）。
 
 > 正文权限：文件以 `FILE_PUBLIC` 上传（FileDev 非私有可下载），内容权限由 **Markdown 服务层**把关（`HasPermission` + 审核门控）。
 
@@ -228,7 +230,7 @@ builder.AddServiceDefaults()
 → AddOpenApi / AddScalarApiReference          # API 文档 UI
 → AddExceptionHandler<MarkdownApiExceptionHandler>()
 → AddScoped<ICurrentUserService, CurrentUserService>()
-→ IMarkdownContentStore 注册（Provider=Local → Local；否则 FileDev gRPC + Redis 热点缓存）
+→ IMarkdownContentStore 注册（缺省/非 Local → FileDev gRPC，AddScoped；Provider=Local → Local，AddSingleton）+ AddCacheMemory("Redis")
 → AddMarkdownHotBoardService + MarkdownHeatRebuildBackgroundService
 → AddHostedService<ClientRequestCleanupService>()
 → MapMarkdownApis() / MapMarkFavoriteApi()
@@ -252,7 +254,10 @@ builder.AddServiceDefaults()
 
 ### 12.3 切换正文存储后端
 
-保持 `IMarkdownContentStore` 接口不变，新增实现类并在 `Program.cs` 按配置条件注册即可，领域层与 API 层无需改动。
+保持 `IMarkdownContentStore` 接口不变，新增实现类并在 `Program.cs` 按配置条件注册即可，领域层与 API 层无需改动。两点注意：
+
+- **生存期**：若新实现依赖任何 Scoped 服务（如 `IJwtTokenService`、`IOptionsSnapshot<T>`），必须注册为 `AddScoped`/`AddTransient`；注册为 `AddSingleton` 会在容器校验阶段报 `Cannot consume scoped service ... from singleton`，服务启动即退出。
+- **存量正文不通用**：`FileId` 是各后端的标识（FileDev = 文件 GUID；本地磁盘 = `{guid:N}.md` 文件名），切换后端**不会迁移存量正文**，需先迁移文件并同步 `FileId`，否则旧文档读不出正文。
 
 ### 12.4 审核流程调整
 

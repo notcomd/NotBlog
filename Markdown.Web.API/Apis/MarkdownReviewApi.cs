@@ -1,4 +1,4 @@
-﻿namespace Markdown.Web.API.Apis;
+namespace Markdown.Web.API.Apis;
 
 /// <summary>
 ///     Markdown 评论 API（顶级评论 / 子评论 / 点赞，挂文章组下）
@@ -95,7 +95,7 @@ public static class MarkdownReviewApi
        [FromServices] INotMediator notMediator,
         [FromServices]ICurrentUserService currentUserService,
         [FromServices]IMarkdownRepository markdownRepository,
-        [FromServices]HttpContext httpContext)
+        HttpContext httpContext)
     {
         if (string.IsNullOrWhiteSpace(request.Content))
             return Results.BadRequest(ApiResponseResult.Error("评论内容不能为空"));
@@ -227,7 +227,7 @@ public static class MarkdownReviewApi
         [FromBody] UpdateMarkReviewRequest request,
        [FromServices] INotMediator notMediator,
        [FromServices] ICurrentUserService currentUserService,
-       [FromServices] HttpContext httpContext)
+       HttpContext httpContext)
     {
         if (string.IsNullOrWhiteSpace(request.Content))
             return Results.BadRequest(ApiResponseResult.Error("评论内容不能为空"));
@@ -250,7 +250,7 @@ public static class MarkdownReviewApi
         Guid reviewGuid,
        [FromServices] INotMediator notMediator,
        [FromServices] ICurrentUserService currentUserService,
-       [FromServices] HttpContext httpContext)
+       HttpContext httpContext)
     {
         var userId = currentUserService.GetUserId();
         var command = new DeleteMarkReviewCommand(reviewGuid, userId, MarkdownApiHelpers.GetIdempotencyKey(httpContext));
@@ -272,7 +272,7 @@ public static class MarkdownReviewApi
        [FromServices] INotMediator notMediator,
        [FromServices] ICurrentUserService currentUserService,
        [FromServices] IMarkdownRepository markdownRepository,
-       [FromServices] HttpContext httpContext)
+       HttpContext httpContext)
     {
         if (string.IsNullOrWhiteSpace(request.Content))
             return Results.BadRequest(ApiResponseResult.Error("评论内容不能为空"));

@@ -26,8 +26,12 @@ public class CircleInvitationRepository(MessageDbContext context) : ICircleInvit
     {
         if (pageSize < 1) pageSize = 10;
         if (pageSize > 100) pageSize = 100;
+        var now = DateTimeOffset.UtcNow;
         return await DbSet
-            .Where(i => i.CircleGuid == circleGuid)
+            .Where(i => i.CircleGuid == circleGuid
+                        && i.Type == CircleInvitationType.Code
+                        && i.Status == CircleInvitationStatus.Pending
+                        && i.ExpireTime > now)
             .OrderByDescending(i => i.CreateTime)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
@@ -36,7 +40,11 @@ public class CircleInvitationRepository(MessageDbContext context) : ICircleInvit
 
     public async Task<int> GetCountByCircleAsync(Guid circleGuid)
     {
-        return await DbSet.CountAsync(i => i.CircleGuid == circleGuid);
+        var now = DateTimeOffset.UtcNow;
+        return await DbSet.CountAsync(i => i.CircleGuid == circleGuid
+                                           && i.Type == CircleInvitationType.Code
+                                           && i.Status == CircleInvitationStatus.Pending
+                                           && i.ExpireTime > now);
     }
 
     public async Task<IEnumerable<CircleInvitation>> GetByInviteeAsync(Guid inviteeGuid, bool pendingOnly = true, int page = 1, int pageSize = 20)

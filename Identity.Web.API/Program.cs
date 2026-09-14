@@ -1,5 +1,4 @@
 
-using Identity.Infrastructure.Migrations;
 using Identity.Web.API.Resources;
 
 
@@ -108,6 +107,7 @@ builder.Services.AddProblemDetails();
 builder.Services.Configure<EventBusSubscriptionInfo>(o =>
 {
     o.EventTypes[nameof(RegisterByUserIntegrationEvent)] = typeof(RegisterByUserIntegrationEvent);
+    o.EventTypes[nameof(UploadByUserAvatarIntegrationEvent)] = typeof(UploadByUserAvatarIntegrationEvent);
 });
 
 // ═══ Outbox（S-19）：Identity 作为首个启用 Outbox 落表并投递的事件源服务 ═══

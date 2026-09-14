@@ -11,10 +11,10 @@ public interface ICircleInvitationRepository : IRepository<CircleInvitation, IUn
     /// <summary>按链接 token 查询</summary>
     Task<CircleInvitation?> GetByTokenAsync(Guid token);
 
-    /// <summary>圈子的邀请列表（圈主/管理员视角，分页）</summary>
+    /// <summary>圈子的可用邀请码（圈主/管理员视角，分页）：仅 Type=Code 且 Pending 且未过期，已用/已撤销/已过期不返回</summary>
     Task<IEnumerable<CircleInvitation>> GetByCircleAsync(Guid circleGuid, int page = 1, int pageSize = 20);
 
-    /// <summary>圈子邀请总数</summary>
+    /// <summary>圈子可用邀请码总数（与 GetByCircleAsync 同条件）</summary>
     Task<int> GetCountByCircleAsync(Guid circleGuid);
 
     /// <summary>用户收到的直邀列表（分页）</summary>

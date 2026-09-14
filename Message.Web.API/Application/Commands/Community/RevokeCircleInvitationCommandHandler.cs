@@ -14,9 +14,10 @@ public class RevokeCircleInvitationCommandHandler(
                 ?? throw new KeyNotFoundException("邀请不存在");
 
             // 权限：圈主/管理员可撤销；直邀的被邀请人可拒绝（复用撤销）
+            // 仅「有效成员」才算管理者：已退出/被移出的历史成员不享有撤销权
             var isManager = false;
             var member = await circleRepository.GetMemberAsync(invitation.CircleGuid, command.OperatorGuid);
-            if (member is not null && member.Role != CircleMemberRole.Member)
+            if (member is not null && member.Status == CircleMemberStatus.Active && member.Role != CircleMemberRole.Member)
                 isManager = true;
             var isInvitee = invitation.InviteeGuid == command.OperatorGuid;
 

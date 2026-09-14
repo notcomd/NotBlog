@@ -29,7 +29,8 @@ public class JoinCircleCommandHandler(
             invitation.Accept();
 
             await circleRepository.UpdateAsync(circle);
-            await invitationRepository.UpdateAsync(invitation);
+            // 邀请（码/链接）一次性使用：用后物理删除，避免已用邀请残留在邀请列表中
+            await invitationRepository.DeleteAsync(invitation.InviteGuid);
             await circleRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
 
             logger.LogInformation("用户加入圈子: User={UserGuid}, Circle={CircleGuid}, Invite={InviteGuid}",

@@ -48,7 +48,14 @@ public class GroupConfiguration : IEntityTypeConfiguration<Group>
             .SetPropertyAccessMode(PropertyAccessMode.Field);
         builder.Ignore(g => g.MemberCount);
 
+        builder.Property(g => g.CircleId);
+
         builder.HasIndex(g => g.OwnerId);
         builder.HasIndex(g => g.IsPublic);
+
+        // 一个社区至多一个群组；普通群聊 CircleId 为 null，不参与唯一约束
+        builder.HasIndex(g => g.CircleId)
+            .IsUnique()
+            .HasFilter("\"CircleId\" IS NOT NULL");
     }
 }

@@ -365,7 +365,7 @@
 
 ## 9. 跨服务事件（供消费端参考）
 
-| 事件（RabbitMQ Exchange: `markdown_events` / Queue: `markdown_queue`） | 触发 | 载荷要点 |
+| 事件（RabbitMQ Exchange: `notcomd_event_bus` / Queue: `markdown_queue`） | 触发 | 载荷要点 |
 | --- | --- | --- |
 | `MarkdownCreated` | 创建文章 | MarkDownGuid / MarkUserGuid / FileName / CreatedAt |
 | `MarkdownInteraction`（DocumentLiked / DocumentCoined / ReviewLiked / ReviewDisliked） | 首次交互 | InteractionType / MarkDownGuid / MarkDownName / ReviewGuid? / ActorUserId / TargetUserId / Amount / OccurredAt |

@@ -11,12 +11,16 @@ namespace Identity.Web.API.Extensions;
 /// ① 权限映射初始数据：appsettings PermissionMappings → Permissions 表（按 Code 去重补齐，
 ///    并按 code 段前缀自动构建权限树：目录节点 PermissionType=Menu，叶子 PermissionType=Api）；
 /// ② 系统默认角色（已有角色则跳过）；
-/// ③ 默认角色-权限分配：ROOT/ADMIN 全量、USER 排除审计与身份管理、GUEST/UNKNOWN 不分配（已有分配则跳过）。
+/// ③ 系统默认角色组：admin_group / user_group / guest_group（已有则跳过）；
+/// ④ 默认角色-权限分配：ROOT/ADMIN 全量、USER 排除审计与身份管理、GUEST/UNKNOWN 不分配（已有分配则跳过）；
+/// ⑤ 系统管理账号：root（ROOT）+ admin（ADMIN），密码由 CSPRNG 随机生成并经邮件后台队列下发
+///    （邮箱已存在则跳过、不重置密码）。
 /// </summary>
 public class IdentityDbSeeder : IDbSeeder<IdentityDbContext>
 {
     private readonly ILogger<IdentityDbSeeder> _logger;
     private readonly IConfiguration _configuration;
+    private readonly IMailQueue _mailQueue;
 
     /// <summary>本次 SeedPermissionsAsync 新增的叶子码（存量库增量补授权用）</summary>
     private readonly List<string> _newlyAddedLeafCodes = new();
@@ -41,10 +45,11 @@ public class IdentityDbSeeder : IDbSeeder<IdentityDbContext>
             ["read"] = "读取", ["create"] = "创建", ["update"] = "更新", ["delete"] = "删除", ["manage"] = "管理"
         };
 
-    public IdentityDbSeeder(ILogger<IdentityDbSeeder> logger, IConfiguration configuration)
+    public IdentityDbSeeder(ILogger<IdentityDbSeeder> logger, IConfiguration configuration, IMailQueue mailQueue)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        _mailQueue = mailQueue ?? throw new ArgumentNullException(nameof(mailQueue));
     }
 
     public async Task SeedAsync(IdentityDbContext context)
@@ -53,7 +58,7 @@ public class IdentityDbSeeder : IDbSeeder<IdentityDbContext>
         await SeedRolesAsync(context);
         await SeedDefaultRoleGroupsAsync(context);
         await SeedRolePermissionsAsync(context);
-        await SeedInitialAdminAsync(context);
+        await SeedManagementAccountsAsync(context);
     }
 
     /// <summary>
@@ -351,56 +356,70 @@ public class IdentityDbSeeder : IDbSeeder<IdentityDbContext>
     }
 
     /// <summary>
-    /// 初始化管理用户：配置 InitialAdmin:Email + 密码（InitialAdmin:Password 或环境变量
-    /// INITIAL_ADMIN_PASSWORD，S-01 凭据外置）；邮箱已存在则跳过（幂等）。
+    /// 初始化系统管理账号（幂等：邮箱已存在则跳过，不重置已有账号密码）：
+    ///   root  → ROOT（系统根角色，全量权限）
+    ///   admin → ADMIN（管理员角色）
+    /// 邮箱可由 InitialAdmin:RootEmail / InitialAdmin:AdminEmail 覆盖（未配置时用上述默认值）；
+    /// 开通通知的投递地址由 InitialAdmin:NotifyEmail 指定（未配置时发到账号邮箱本身），
+    /// 便于账号使用系统自有地址（普通用户注册不到）而通知投递到真实收件箱。
+    /// 密码由 CSPRNG 随机生成，仅在真正新建账号时经邮件后台队列明文下发
+    /// （P6：不在数据库事务内做 SMTP 外部 IO），不写入日志；首次登录后请立即修改密码。
     /// </summary>
-    private async Task SeedInitialAdminAsync(IdentityDbContext context)
+    private async Task SeedManagementAccountsAsync(IdentityDbContext context)
     {
-        var email = _configuration["InitialAdmin:Email"];
-        if (string.IsNullOrWhiteSpace(email))
+        var seeds = new (string ConfigKey, string DefaultEmail, string RoleCode)[]
         {
-            _logger.LogInformation("未配置 InitialAdmin:Email，跳过初始化管理用户");
-            return;
-        }
+            ("RootEmail", "root@notblog.com", "ROOT"),
+            ("AdminEmail", "admin@notblog.com", "ADMIN")
+        };
 
-        var password = _configuration["InitialAdmin:Password"]
-                       ?? Environment.GetEnvironmentVariable("INITIAL_ADMIN_PASSWORD");
-        if (string.IsNullOrWhiteSpace(password))
-        {
-            _logger.LogWarning(
-                "未配置初始化管理员密码（InitialAdmin:Password 或环境变量 INITIAL_ADMIN_PASSWORD），跳过管理用户初始化: {Email}",
-                email);
-            return;
-        }
+        // 通知投递地址：账号邮箱为系统自有地址（可能收不到信），故支持单独指定收件箱
+        var notifyEmail = _configuration["InitialAdmin:NotifyEmail"];
 
-        var exists = await context.Users.AnyAsync(u => u.UserEmail == email);
-        if (exists)
+        foreach (var (configKey, defaultEmail, roleCode) in seeds)
         {
-            _logger.LogInformation("初始化管理用户已存在，跳过: {Email}", email);
-            return;
-        }
+            var email = _configuration[$"InitialAdmin:{configKey}"];
+            if (string.IsNullOrWhiteSpace(email))
+                email = defaultEmail;
 
-        var rootRole = await context.Roles.FirstOrDefaultAsync(r => r.RoleCode == "ROOT" );
-        if (rootRole is null)
-        {
-            _logger.LogWarning("未找到ROOT 角色，跳过初始化管理用户: {Email}", email);
-            return;
-        }
+            if (await context.Users.AnyAsync(u => u.UserEmail == email))
+            {
+                _logger.LogInformation("系统管理账号已存在，跳过: {Email}", email);
+                continue;
+            }
 
-        var user = await User.CreateByEmailUser(rootRole.RoleGuid, email, password, null, null);
-        await context.Users.AddAsync(user);
-        try
-        {
-            await context.SaveChangesAsync();
-        }
-        catch (DbUpdateException)
-        {
-            // 并发初始化同邮箱：UserEmail 唯一索引兜底
-            _logger.LogWarning("初始化管理用户并发冲突（邮箱已存在），跳过: {Email}", email);
-            return;
-        }
+            var role = await context.Roles.FirstOrDefaultAsync(r => r.RoleCode == roleCode);
+            if (role is null)
+            {
+                _logger.LogWarning("未找到 {RoleCode} 角色，跳过系统管理账号初始化: {Email}", roleCode, email);
+                continue;
+            }
 
-        _logger.LogInformation("已创建初始化管理用户: {Email}（角色 Root）", email);
+            var password = JwtRandom.GenerateComplexPassword();
+            var user = await User.CreateByEmailUser(role.RoleGuid, email, password, null, null);
+            await context.Users.AddAsync(user);
+            // 与邮箱注册流程一致：角色侧登记该用户，保证角色↔用户双向可查
+            role.AddUserGuid(user.UserGuid);
+
+            try
+            {
+                await context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                // 并发初始化同邮箱：UserEmail 唯一索引兜底
+                _logger.LogWarning("系统管理账号初始化并发冲突（邮箱已存在），跳过: {Email}", email);
+                context.ChangeTracker.Clear();
+                continue;
+            }
+
+            // P6：初始密码经邮件后台队列明文下发，不落日志；主题带角色便于同收件箱区分
+            var target = string.IsNullOrWhiteSpace(notifyEmail) ? email : notifyEmail;
+            _mailQueue.Enqueue(target, $"[NotBlog] 系统管理账号开通通知（{role.RoleName}）",
+                $"您的系统管理账号已创建：{email}（角色 {role.RoleName}）。初始密码：{password}，请登录后立即修改密码。");
+            _logger.LogInformation("已创建系统管理账号: {Email}（角色 {RoleCode}），初始密码已入队邮件下发至 {Notify}",
+                email, roleCode, target);
+        }
     }
 
     /// <summary>

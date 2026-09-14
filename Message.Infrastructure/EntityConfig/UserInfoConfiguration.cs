@@ -30,5 +30,8 @@ public class UserInfoConfiguration : IEntityTypeConfiguration<UserInfo>
 
         builder.Property(u => u.UpdateTime)
             .IsRequired();
+
+        // 邮箱查找索引（GET /api/users/lookup 按邮箱精确匹配；非唯一——Identity 才是邮箱唯一性真相源）
+        builder.HasIndex(u => u.Email);
     }
 }

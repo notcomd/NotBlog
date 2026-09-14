@@ -1,4 +1,4 @@
-﻿namespace Markdown.Web.API.Apis;
+namespace Markdown.Web.API.Apis;
 
 /// <summary>
 ///     Markdown 文章收藏 API（用户维度资源：/api/favorites，全部需认证）
@@ -52,7 +52,7 @@ public static class MarkFavoriteApi
         [FromServices]INotMediator notMediator,
        [FromServices] ICurrentUserService currentUserService,
       [FromServices]  IMarkdownRepository markdownRepository,
-      [FromServices]  HttpContext httpContext)
+      HttpContext httpContext)
     {
         if (request.MarkDownGuid == Guid.Empty)
             return Results.BadRequest(ApiResponseResult.Error("文章标识不能为空"));
@@ -85,7 +85,7 @@ public static class MarkFavoriteApi
         Guid markDownGuid,
        [FromServices] INotMediator notMediator,
       [FromServices]  ICurrentUserService currentUserService,
-      [FromServices]  HttpContext httpContext)
+      HttpContext httpContext)
     {
         var userId = currentUserService.GetUserId();
         var result = await  notMediator.SendAsync(new RemoveFavoriteCommand(
@@ -106,7 +106,7 @@ public static class MarkFavoriteApi
         [FromBody] UpdateFavoriteTagsRequest request,
        [FromServices] INotMediator notMediator,
        [FromServices] ICurrentUserService currentUserService,
-       [FromServices] HttpContext httpContext)
+       HttpContext httpContext)
     {
         if (!MarkdownApiHelpers.TryValidateTags(request.Tags, out var tagError))
             return Results.BadRequest(ApiResponseResult.Error(tagError ?? "标签校验失败"));

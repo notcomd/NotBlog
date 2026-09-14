@@ -47,11 +47,10 @@ public static class ServicesCollectionExtensions
         // 同步 IntegrationEventRabbitMqOptions（向后兼容）
         services.Configure<IntegrationEventRabbitMqOptions>(configuration);
 
-        // var queueName=configuration.GetSection("").Get<EventBusOptions>();
-
-        // 获取选项值用于注册
-        var options = configuration.GetSection("EventBus").Get<EventBusOptions>() ??
-            new EventBusOptions { SubscriptionClientName = "defult" };
+        // 调用方传入的已经是 EventBus 配置节，直接绑定取值。
+        // 此前在此再嵌套一次 GetSection("EventBus")，取到的是空节点，队列名会回落到兜底值，
+        // 导致所有服务共用同一队列、跨服务竞争消费，事件被无对应 Handler 的服务抢走后丢弃（2026-09-12 修复）。
+        var options = configuration.Get<EventBusOptions>() ?? new EventBusOptions();
         var queueName = options.SubscriptionClientName;
 
         return services.AddEventBusInternal(queueName, ScanHandlers(assemblies));

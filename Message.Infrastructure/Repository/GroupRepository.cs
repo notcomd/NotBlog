@@ -26,6 +26,19 @@ public class GroupRepository(MessageDbContext context) : IGroupRepository
             .FirstOrDefaultAsync(g => g.OwnerId == ownerId && !g.IsDismissed);
     }
 
+    public async Task<Group?> GetByCircleIdAsync(Guid circleId)
+    {
+        return await DbSet
+            .FirstOrDefaultAsync(g => g.CircleId == circleId && !g.IsDismissed);
+    }
+
+    public async Task<Group?> GetByCircleIdWithMembersAsync(Guid circleId)
+    {
+        return await DbSet
+            .Include(g => g.Members)
+            .FirstOrDefaultAsync(g => g.CircleId == circleId && !g.IsDismissed);
+    }
+
     public async Task<IEnumerable<Group>> GetByMemberIdAsync(Guid memberId)
     {
         return await Context.GroupMembers

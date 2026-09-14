@@ -232,7 +232,7 @@ docker run -p 8084:8084 notblog/message-web-api
 | `chat_message` | `(SenderId, SentTime desc)` | 已发消息查询 |
 | `chat_session` | `Participants`（多键） | 会话列表 / 未读总览 |
 | `chat_session` | `SessionType` | 按类型查询 |
-| `chat_session` | `CircleId` | 社区频道会话定位 |
+| `chat_session` | `CircleId` | 社区聊天会话定位（社区入口反查；群组归属经 `GroupId`） |
 
 > 索引创建为幂等操作（重名忽略），多实例启动不冲突。
 
@@ -241,8 +241,8 @@ docker run -p 8084:8084 notblog/message-web-api
 | 聚合根 | 关键字段 / 行为 | 说明 |
 | --- | --- | --- |
 | `Message` | `Content`（多态 `MessageContent`）、`Status`、`SentTime`、`IsRecalled` | 8 种工厂方法（文本/图片/视频/音频/文件/位置/链接/表情）；`Recall()` 受 `IMessageRecallPolicy` 约束 |
-| `ChatSession` | `SessionType`、`GroupId`、`CircleId`、`Participants`、`MemberStates` | 私聊/群聊/社区频道三种工厂；成员维度置顶/免打扰/未读；`Rebuild()` 从 Mongo 重建 |
-| `Group` | `GroupName`、`OwnerId`、`MaxMembers`、`IsDismissed` | 群组事实单一真相源，ChatSession 经 GroupId 只读投影 |
+| `ChatSession` | `SessionType`、`GroupId`、`CircleId`、`Participants`、`MemberStates` | 私聊/群聊/社区群组三种工厂（社区聊天由 `CreateCommunityGroupSession` 建为 `Group` 类型）；成员维度置顶/免打扰/未读；`Rebuild()` 从 Mongo 重建 |
+| `Group` | `GroupName`、`OwnerId`、`MaxMembers`、`CircleId`、`IsDismissed` | 群组事实单一真相源，ChatSession 经 GroupId 只读投影；`CircleId` 非空表示社区群组（`CreateForCircle` 创建，成员随社区成员同步） |
 | `Circle` | `OwnerGuid`、`Name`、`Status`、`MaxMembers` | 邀请制社区，社区名/解散状态为单一真相源 |
 | `Tweet` | `Content`、`Visibility`、`TweetStatus`、互动计数、`HotScore` | 审核流（Pending→Approved/Rejected）、圈子帖免审核 |
 | `MessageFriends` | `FriendId`、`Status`、`IsBlocked`、`IsStarred` | 好友关系与请求处理 |
@@ -253,9 +253,9 @@ docker run -p 8084:8084 notblog/message-web-api
 | --- | --- | --- |
 | `MessageSentEvent` | `Message` | 推送/通知 |
 | `SessionCreatedEvent` | `ChatSession` | 会话初始化 |
-| `GroupCreatedEvent` / `GroupDissolvedEvent` | `Group` | 会话同步创建/解散 |
-| `CircleCreatedEvent` / `CircleDissolvedEvent` | `Circle` | 社区频道会话同步 |
-| `CircleMemberJoinedEvent` / `CircleMemberLeftEvent` | `CircleMember` | 会话参与者同步、频道推送 |
+| `GroupCreatedEvent` / `GroupDissolvedEvent` | `Group` | 会话同步创建/解散、群成员通知 |
+| `CircleCreatedEvent` / `CircleDissolvedEvent` | `Circle` | 社区群组与聊天会话同步 |
+| `CircleMemberJoinedEvent` / `CircleMemberLeftEvent` | `CircleMember` | 社区群组成员与会话参与者同步、频道推送 |
 | `TweetCreatedEvent` / `TweetApprovedEvent` | `Tweet` | 通知/审核日志 |
 | `CommentAddedEvent` / `TweetInteractionEvent` | 评论/互动 | 通知、圈子实时推送 |
 

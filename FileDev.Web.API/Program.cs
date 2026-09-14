@@ -27,14 +27,12 @@ if(builder.Configuration.GetConnectionString("EventBus") is null)
         Password = password,
         Port = port
     });
-    builder.Services.AddEventBus(eventBusSection);
+    // EventBus 注册统一在下方 112 行（section 重载）完成：此处只构建单机 IConnectionFactory。
+    // 此前这里额外注册了一次 AddEventBus(section)，会重复注册非 Try 的 RabbitMqEventBus（2026-09-12 移除）。
 }
 else
 {
     builder.AddRabbitMQClient("EventBus");
-    builder.Services.AddEventBus(
-        builder.Configuration.GetConnectionString("EventBus")!,
-        Assembly.GetEntryAssembly() ?? throw new AppDomainUnloadedException("load assembly error"));
 }
 
 

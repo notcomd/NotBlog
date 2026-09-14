@@ -2,11 +2,13 @@
 namespace Message.Web.API.Application.Commands.Community;
 /// <summary>
 /// 创建圈子命令处理程序。
-/// <para>联动：创建圈子成功后自动创建社区聊天会话（ChatSession, Channel 类型），
-/// 与圈子在同一 DbContext 事务内提交，客户端无需再单独调用创建会话接口。</para>
+/// <para>联动：创建圈子成功后自动创建社区群组（Group，CircleId 关联社区、圈主即群主）
+/// 与群组会话（ChatSession，SessionType.Group），与圈子在同一 DbContext 事务内提交，
+/// 客户端无需再单独调用创建群组/会话接口。</para>
 /// </summary>
 public class CreateCircleCommandHandler(
     ICircleRepository circleRepository,
+    IGroupRepository groupRepository,
     IChatSessionRepository sessionRepository,
     IUserInfoRepository userInfoRepository,
     ILogger<CreateCircleCommandHandler> logger) : IRequestHandler<CreateCircleCommand, Guid>
@@ -34,13 +36,19 @@ public class CreateCircleCommandHandler(
 
             await circleRepository.AddAsync(circle);
 
-            // 联动：自动创建社区聊天会话（Channel，初始参与者 = 圈主；成员加入经事件同步）
-            var session = ChatSession.CreateChannelSession(circle.CircleGuid, command.UserId, new HashSet<Guid>());
+            // 联动：社区聊天以真群组承载（圈主随 Group 构造写入 GroupMember；成员加入/退出经领域事件同步）
+            var group = Group.CreateForCircle(circle.CircleGuid, circle.OwnerGuid, circle.Name, circle.MaxMembers);
+            await groupRepository.AddAsync(group);
+
+            // 联动：群组会话（SessionType.Group），初始参与者 = 圈主；CircleId 供社区聊天入口按社区解析会话
+            var session = ChatSession.CreateCommunityGroupSession(
+                group.GroupId, circle.CircleGuid, command.UserId, new HashSet<Guid>());
             await sessionRepository.AddAsync(session);
 
             await circleRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
 
-            logger.LogInformation("圈子创建成功，ID: {CircleGuid}，社区聊天会话: {SessionId}", circle.CircleGuid, session.SessionId);
+            logger.LogInformation("圈子创建成功，ID: {CircleGuid}，社区群组: {GroupId}，社区聊天会话: {SessionId}",
+                circle.CircleGuid, group.GroupId, session.SessionId);
             return circle.CircleGuid;
         }
         catch (Exception ex)

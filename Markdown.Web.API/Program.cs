@@ -109,11 +109,14 @@ builder.Services.AddGrpcClient<FileStorage.FileStorageClient>(
 
 if (builder.Configuration["MarkdownContent:Provider"] == "Local")
 {
+    // 本地磁盘实现只依赖单例服务（IWebHostEnvironment/ILogger），保持单例
     builder.Services.AddSingleton<IMarkdownContentStore, LocalMarkdownContentStore>();
 }
 else
 {
-    builder.Services.AddSingleton<IMarkdownContentStore, FileDevMarkdownContentStore>();
+    // 必须 Scoped：FileDev 实现依赖 Scoped 的 IJwtTokenService 与 IOptionsSnapshot<JwtOptions>，
+    // 注册为 Singleton 会在容器校验阶段抛 "Cannot consume scoped service ... from singleton" 导致启动失败。
+    builder.Services.AddScoped<IMarkdownContentStore, FileDevMarkdownContentStore>();
 
     // 热点榜 Redis 缓存（Aspire 环境注入 ConnectionStrings:Redis；Local 模式不注册，热点服务自动降级 DB）
     builder.AddCacheMemory("Redis");

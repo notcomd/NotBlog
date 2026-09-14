@@ -25,7 +25,7 @@ public static class IdentityApis
         // 统一登录/注册：邮箱 + 验证码（未注册邮箱自动注册并下发初始密码）
         route.MapPost("/Login", Login).WithHttpLogging(HttpLoggingFields.All);
 
-        route.MapPost("/GenerateCode", GenerateCode).WithHttpLogging(HttpLoggingFields.All);
+        // 发码统一由 /email-verifications 提供（同一 GenerateCodeCommand），此前的 /GenerateCode 已移除
 
         // S-20：改密端点要求已认证；未认证请求由认证中间件返回 401
         route.MapPost("/ChangeByPassword", ChangeByPassword)
@@ -72,8 +72,10 @@ public static class IdentityApis
     private static async Task<IResult> Login([FromServices] IdentityService identityService,
         [FromServices] IRedisCacheService redisCacheService,
         [FromServices] IOutboxStore outboxStore,
+        [FromServices] IdentityDbContext dbContext,
         [FromBody] LoginRequest loginRequest,
-        HttpContext httpContext)
+        HttpContext httpContext,
+        CancellationToken ct)
     {
         var ip = httpContext.GetClientIp();
         var window = DateTimeOffset.UtcNow.ToString("yyyyMMddHHmm");
@@ -103,7 +105,8 @@ public static class IdentityApis
             await outboxStore.StoreAsync(new OutboxMessage(
                 nameof(RegisterByUserIntegrationEvent),
                 new RegisterByUserIntegrationEvent(data.UserId, data.UserEmail ?? string.Empty,
-                    data.UserName, data.AvatarUrl)), default);
+                    data.UserName, data.AvatarUrl)), ct);
+            await dbContext.SaveChangesAsync(ct);
         }
 
         
@@ -199,21 +202,6 @@ public static class IdentityApis
         await jwtTokenService.RevokeTokenAsync(bearerToken);
         await tokenSessionService.RevokeSessionAsync(bearerToken);
         return Results.Ok(new { message = "已登出" });
-    }
-
-
-    private static async Task<IResult> GenerateCode([FromServices] IdentityService identityService,
-        [FromBody] GenerateCodeRequest generateCodeRequest,
-        HttpContext httpContext)
-    {
-        var commandGenerateCode = new GenerateCodeCommand(generateCodeRequest.Email);
-
-        var identityCommand =
-            new IdentifiedCommand<GenerateCodeCommand, string>(GetIdempotencyKey(httpContext), commandGenerateCode);
-
-        await identityService.NotMediator.SendAsync(identityCommand);
-
-        return Results.Ok("");
     }
 
 

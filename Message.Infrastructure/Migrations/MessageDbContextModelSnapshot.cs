@@ -535,6 +535,9 @@ namespace Message.Infrastructure.Migrations
                     b.Property<string>("Avatar")
                         .HasColumnType("text");
 
+                    b.Property<Guid?>("CircleId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("CreatedTime")
                         .HasColumnType("timestamp with time zone");
 
@@ -566,6 +569,10 @@ namespace Message.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("GroupId");
+
+                    b.HasIndex("CircleId")
+                        .IsUnique()
+                        .HasFilter("\"CircleId\" IS NOT NULL");
 
                     b.HasIndex("IsPublic");
 
@@ -994,6 +1001,8 @@ namespace Message.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("UserId");
+
+                    b.HasIndex("Email");
 
                     b.ToTable("UserInfos", (string)null);
                 });

@@ -22,6 +22,9 @@ public class MessageFriends : Entity<Guid>, IAggregateRoot
 
         UserId = userId;
         FriendId = friendId;
+
+        // 请求发起即发布领域事件：接收者侧生成「好友请求」站内通知（FriendshipCreatedEventHandler）
+        AddDomainEvent(new FriendshipCreatedEvent(userId, friendId));
     }
 
     private MessageFriends()

@@ -1,4 +1,4 @@
-﻿
+
 namespace Message.Web.API.APIs;
 
 /// <summary>
@@ -336,15 +336,18 @@ public static class CirclesApi
     private static async Task<IResult> JoinCircleAsync(
         [FromBody] JoinCircleRequest request,
         [FromServices] ICurrentUserService currentUser,
-        [FromServices] ICircleInvitationRepository circleInvitation,
         [FromServices] INotMediator mediator,
         CancellationToken ct)
     {
         try
         {
-            var circleId =  await mediator.SendAsync(new JoinCircleCommand(currentUser.GetUserId(), request.Code, request.Token), ct);
-            var data=await circleInvitation.GetByCodeAsync(request.Code?? throw new ArgumentNullException("null"));
-            await mediator.SendAsync(new RemoveCircleMemberCommand(data!.InviteGuid,currentUser.GetUserId(),circleId),ct);
+            // 邀请码 / 邀请链接二选一：由 JoinCircleCommandHandler 按 code 或 token 解析邀请并原子占用（一次性使用）。
+            // 修复（2026-09-12）：原先此处追加了一次 RemoveCircleMemberCommand(InviteGuid, UserId, circleId) 调用，
+            // 参数顺序与命令定义 (OperatorGuid, CircleGuid, UserGuid) 不符（把用户ID当圈子ID），
+            // 导致成员已落库但接口固定抛 KeyNotFoundException 返回 404；走邀请链接时更因 request.Code 为 null 直接 500。
+            // 命令内已通过 Accept() + TryAcceptAtomicallyAsync 保证邀请一次性使用，此处无需二次处理。
+            var circleId = await mediator.SendAsync(
+                new JoinCircleCommand(currentUser.GetUserId(), request.Code, request.Token), ct);
             return Results.Ok(ApiResponseResult<Guid>.Ok(circleId, "加入圈子成功"));
         }
         catch (UnauthorizedAccessException ex)

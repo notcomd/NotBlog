@@ -12,6 +12,22 @@ public class UserInfoRepository(MessageDbContext context) : IUserInfoRepository
         return await DbSet.FirstOrDefaultAsync(u => u.UserId == userId);
     }
 
+    public async Task<UserInfo?> GetByEmailAsync(string email)
+    {
+        var normalized = email.Trim().ToLower();
+        return await DbSet.FirstOrDefaultAsync(u => u.Email.ToLower() == normalized);
+    }
+
+    public async Task<IEnumerable<UserInfo>> GetByNickNameAsync(string nickName, int limit)
+    {
+        var normalized = nickName.Trim().ToLower();
+        return await DbSet
+            .Where(u => u.NickName != null && u.NickName.ToLower() == normalized)
+            .OrderBy(u => u.UserId)
+            .Take(limit)
+            .ToListAsync();
+    }
+
     public async Task<UserInfo> AddAsync(UserInfo userInfo)
     {
         var entry = await DbSet.AddAsync(userInfo);

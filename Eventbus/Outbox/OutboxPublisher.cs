@@ -44,7 +44,6 @@ public class OutboxPublisher<TDbContext> : BackgroundService where TDbContext : 
                 var eventBus = scope.ServiceProvider.GetService<IEventBus>();
                 var subscriptionInfo = scope.ServiceProvider.GetService<EventBusSubscriptionInfo>();
 
-                // 1. 获取待发批次
                 var batch = await outboxStore.GetPendingBatchAsync(
                     _options.CurrentValue.BatchSize, stoppingToken).ConfigureAwait(false);
 
@@ -54,7 +53,6 @@ public class OutboxPublisher<TDbContext> : BackgroundService where TDbContext : 
                     {
                         try
                         {
-                            // 2. 从 EventBusSubscriptionInfo 查找事件类型
                             if (!subscriptionInfo.EventTypes.TryGetValue(message.EventType, out var eventType))
                             {
                                 _logger.LogWarning("[Evenbus-Outbox] 未找到事件类型: {EventType}", message.EventType);
@@ -89,7 +87,6 @@ public class OutboxPublisher<TDbContext> : BackgroundService where TDbContext : 
                     }
                 }
 
-                // 4. 清理过期消息
                 try
                 {
                     await outboxStore.CleanupExpiredAsync(

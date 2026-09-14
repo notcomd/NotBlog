@@ -9,6 +9,10 @@ public interface IGroupRepository : IRepository<Group, IUnitOfWork>
     /// </summary>
     Task<Group?> GetByIdWithMembersAsync(Guid groupId);
     Task<Group?> GetByOwnerIdAsync(Guid ownerId);
+    /// <summary>按所属社区查询群组（社区群组反查；普通群聊无此关联，返回 null）</summary>
+    Task<Group?> GetByCircleIdAsync(Guid circleId);
+    /// <summary>按所属社区加载群组及其成员集合（用于随社区成员同步增减）</summary>
+    Task<Group?> GetByCircleIdWithMembersAsync(Guid circleId);
     Task<IEnumerable<Group>> GetByMemberIdAsync(Guid memberId);
     Task<IEnumerable<Group>> GetPublicGroupsAsync();
     Task<IEnumerable<Group>> GetByMemberIdAndRoleAsync(Guid memberId, GroupMemberRole role);
