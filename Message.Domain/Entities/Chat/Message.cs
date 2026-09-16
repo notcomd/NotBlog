@@ -95,6 +95,7 @@ public class Message : Entity<Guid>, IAggregateRoot
         return message;
     }
 
+
     public static Message CreateLocationMessage(Guid sessionId, Guid senderId, double latitude, double longitude,
         string locationName)
     {
@@ -221,18 +222,18 @@ public class Message : Entity<Guid>, IAggregateRoot
             MessageId = messageId,
             SessionId = sessionId,
             SenderId = senderId,
-            SentTime = sentTime
+            SentTime = sentTime,
+            ReceiverId = receiverId,
+            Content = content,
+            Status = status,
+            DeliveredTime = deliveredTime,
+            ReadTime = readTime,
+            IsRecalled = isRecalled,
+            IsEncrypted = isEncrypted,
+            IsForwarded = isForwarded,
+            OriginalMessageId = originalMessageId,
+            ReplyToMessageId = replyToMessageId
         };
-        message.ReceiverId = receiverId;
-        message.Content = content;
-        message.Status = status;
-        message.DeliveredTime = deliveredTime;
-        message.ReadTime = readTime;
-        message.IsRecalled = isRecalled;
-        message.IsEncrypted = isEncrypted;
-        message.IsForwarded = isForwarded;
-        message.OriginalMessageId = originalMessageId;
-        message.ReplyToMessageId = replyToMessageId;
         foreach (var attachment in attachments)
             message._attachments.Add(attachment);
         return message;

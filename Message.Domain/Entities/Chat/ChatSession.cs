@@ -75,9 +75,14 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
     /// </summary>
     public IReadOnlyDictionary<Guid, ChatSessionMemberState> MemberStates => _memberStates;
 
-    /// <summary>
 
-        public ChatSession(SessionType sessionType, Guid creatorId, IEnumerable<Guid>? participants = null)
+    /// <summary>
+    ///  
+    /// </summary>
+    /// <param name="sessionType"></param>
+    /// <param name="creatorId"></param>
+    /// <param name="participants"></param>
+    public ChatSession(SessionType sessionType, Guid creatorId, IEnumerable<Guid>? participants = null)
     {
         SessionId = Guid.NewGuid();
         SessionType = sessionType;
