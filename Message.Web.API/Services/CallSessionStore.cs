@@ -1,21 +1,28 @@
 namespace Message.Web.API.Services;
 
+using System.Security.Cryptography;
+using System.Text;
+
 /// <summary>
 /// 通话会话存储与状态机（Singleton，跨实例安全）。
 /// <para>
 /// 存储：通话状态（<see cref="CallSession"/>）序列化后存 Redis（TTL 6 小时兜底），
-/// 用户 → 当前通话的映射存 <c>message:call:user:{userId}</c>，用于忙线判定与断线清理。
+/// 用户 → 当前通话的映射存 <c>message:call:user:{userId}</c>，用于忙线判定与断线清理；
+/// 会话 → 活跃房间集合存 <c>message:call:session:{sessionId}</c>（常驻房间索引，供成员自由加入）。
 /// </para>
 /// <para>
 /// 状态流转：
 /// <list type="bullet">
-/// <item><b>Ringing</b>：呼叫方 <see cref="CreateCallAsync"/> 创建，向在线被叫推送 IncomingCall；
+/// <item><b>Ringing</b>（即时呼叫）：呼叫方 <see cref="CreateCallAsync"/> 创建，向在线被叫推送 IncomingCall；
 /// 30 秒无人应答由 <see cref="EnsureNotTimedOutAsync"/> 惰性终结（Timeout），客户端也可主动取消；</item>
-/// <item><b>Active</b>：首名被叫接通（<see cref="AcceptCallAsync"/>），呼叫方与其同时进入通话，
-/// 广播 CallStarted；后续成员可 <see cref="JoinCallAsync"/> 加入（群组 Mesh 拓扑）；</item>
-/// <item><b>Ended</b>：取消 / 拒绝 / 超时 / 全员离开 / 1 对 1 对方挂断，广播 CallEnded 后清理。</item>
+/// <item><b>Active</b>（即时呼叫）：首名被叫接通（<see cref="AcceptCallAsync"/>），呼叫方与其同时进入通话，
+/// 广播 CallStarted；后续成员可 <see cref="AcceptCallAsync"/> 加入（群组 Mesh 拓扑）；</item>
+/// <item><b>Active（常驻房间）</b>：房间创建即 Active，创建者立即入会，被选成员收到 IncomingCall，
+/// 未选成员可经 <see cref="GetSessionRoomsAsync"/> 自由加入；房间持续存在，直到创建者
+/// <see cref="CloseRoomAsync"/> 关闭（reason = RoomClosed）；</item>
+/// <item><b>Ended</b>：取消 / 拒绝 / 超时 / 1 对 1 对方挂断 / 房间关闭，广播 CallEnded 后清理。</item>
 /// </list>
-/// 1 对 1 判定：会话参与者恰为 2 人（<see cref="ChatSession"/> 的私聊会话）。
+/// 1 对 1 判定：即时呼叫（非房间）且会话参与者恰为 2 人（<see cref="ChatSession"/> 的私聊会话）。
 /// </para>
 /// <para>
 /// 推送：经 <see cref="IHubContext{CallHub, ICallClient}"/> 按 Redis 连接管理器的在线连接推送
@@ -27,6 +34,7 @@ public sealed class CallSessionStore
 {
     private const string CallKeyPrefix = "message:call:";
     private const string UserCallKeyPrefix = "message:call:user:";
+    private const string SessionRoomsKeyPrefix = "message:call:session:";
 
     /// <summary>通话状态兜底 TTL（防止 Redis 残留泄漏；正常结束会主动清理）</summary>
     private static readonly TimeSpan CallTtl = TimeSpan.FromHours(6);
@@ -56,13 +64,23 @@ public sealed class CallSessionStore
     // ═══════════════════════════════════════════════════════
 
     /// <summary>
-    /// 发起呼叫：创建 Ringing 通话，向在线且不忙的被叫推送 <see cref="ICallClient.IncomingCall"/>。
-    /// 呼叫方立即标记为"通话中"（忙线）。
+    /// 发起呼叫 / 创建房间。
+    /// <para>
+    /// 即时呼叫（isRoom=false，1:1）：创建 Ringing 通话，向在线且不忙的被叫推送
+    /// <see cref="ICallClient.IncomingCall"/>；呼叫方立即标记为"通话中"（忙线）。
+    /// </para>
+    /// <para>
+    /// 常驻房间（isRoom=true，群组/频道）：创建即 Active，创建者立即入会，仅向
+    /// <paramref name="targetMemberIds"/>（被选成员，空 = 全部）中的在线且不忙者推送来电；
+    /// 未选成员仍属合法成员，可经 <see cref="GetSessionRoomsAsync"/> 自由加入。可设置入会密码。
+    /// </para>
     /// </summary>
     /// <exception cref="InvalidOperationException">呼叫方已在通话中</exception>
     public async Task<CallStartResult> CreateCallAsync(
         Guid sessionId, Guid callerId, CallType type,
-        IReadOnlyCollection<Guid> participants, CancellationToken ct)
+        IReadOnlyCollection<Guid> participants,
+        IReadOnlyCollection<Guid>? targetMemberIds,
+        string? password, bool isRoom, CancellationToken ct)
     {
         var callerCallId = await GetUserCallIdAsync(callerId, ct);
         if (callerCallId is not null)
@@ -71,9 +89,14 @@ public sealed class CallSessionStore
         var callId = Guid.NewGuid();
         var now = DateTimeOffset.UtcNow;
 
+        // 被邀请成员：显式圈选子集（排除呼叫方）；为空 = 全部参与者（兼容旧调用）
+        var invited = targetMemberIds is { Count: > 0 }
+            ? targetMemberIds.Where(p => p != callerId).Distinct().ToList()
+            : participants.Where(p => p != callerId).ToList();
+
         var busyUsers = new List<Guid>();
         var callable = new List<Guid>();
-        foreach (var userId in participants.Where(p => p != callerId))
+        foreach (var userId in invited)
         {
             var busyWith = await GetUserCallIdAsync(userId, ct);
             if (busyWith is not null)
@@ -82,22 +105,40 @@ public sealed class CallSessionStore
                 callable.Add(userId);
         }
 
+        // 密码：仅房间模式允许；存 SHA256 哈希，不存明文
+        var passwordHash = isRoom && !string.IsNullOrWhiteSpace(password)
+            ? HashPassword(password)
+            : null;
+
         var session = new CallSession
         {
             CallId = callId,
             SessionId = sessionId,
             Type = type,
-            Status = CallStatus.Ringing,
+            RoomKind = isRoom ? CallRoomKind.Room : CallRoomKind.Instant,
+            Status = isRoom ? CallStatus.Active : CallStatus.Ringing,
             CallerId = callerId,
             CreatedAt = now,
-            Members = participants.ToDictionary(p => p, _ => CallMemberState.Pending)
+            ConnectedAt = isRoom ? now : null,
+            Members = participants.ToDictionary(p => p, _ => CallMemberState.Pending),
+            InvitedMembers = invited,
+            RequiresPassword = passwordHash is not null,
+            PasswordHash = passwordHash
         };
         session.BusyUsers.AddRange(busyUsers);
 
+        if (isRoom)
+        {
+            // 房间模式：创建者立即进入通话
+            session.Members[callerId] = CallMemberState.Joined;
+        }
+
         await SaveAsync(session, ct);
         await SetUserCallAsync(callerId, callId, ct);
+        if (isRoom)
+            await AddSessionRoomIndexAsync(session, ct);
 
-        // 向在线且不忙的被叫推送来电（离线成员记录在结果中由 UI 提示；
+        // 向在线且不忙的被邀请成员推送来电（离线成员记录在结果中由 UI 提示；
         // 连接查询/推送失败按离线处理并记日志，不影响呼叫创建）
         var offlineUsers = new List<Guid>();
         foreach (var userId in callable)
@@ -132,18 +173,30 @@ public sealed class CallSessionStore
             }
         }
 
+        // 房间模式：向创建者全部连接广播 CallStarted（多端同步）
+        if (isRoom)
+        {
+            await PushToUserAsync(callerId, c => c.CallStarted(session.ToDto()), ct);
+        }
+
         _logger.LogInformation(
-            "[Call] 发起呼叫 CallId={CallId}, SessionId={SessionId}, Type={Type}, Caller={Caller}, " +
-            "Busy={BusyCount}, Offline={OfflineCount}",
-            callId, sessionId, type, callerId, busyUsers.Count, offlineUsers.Count);
+            "[Call] 发起呼叫/创建房间 CallId={CallId}, SessionId={SessionId}, Type={Type}, " +
+            "Room={IsRoom}, Caller={Caller}, Busy={BusyCount}, Offline={OfflineCount}",
+            callId, sessionId, type, isRoom, callerId, busyUsers.Count, offlineUsers.Count);
 
         return new CallStartResult
         {
             CallId = callId,
             SessionId = sessionId,
             Type = type,
+            RoomKind = session.RoomKind,
+            Status = session.Status,
             CallerId = callerId,
             Participants = participants.ToList(),
+            InvitedMembers = invited,
+            JoinedMembers = session.Members
+                .Where(kv => kv.Value == CallMemberState.Joined).Select(kv => kv.Key).ToList(),
+            RequiresPassword = session.RequiresPassword,
             BusyUsers = busyUsers,
             OfflineUsers = offlineUsers,
             CreatedAt = now
@@ -173,14 +226,23 @@ public sealed class CallSessionStore
     /// 接听 / 加入通话。响铃阶段首次接听将通话置为 Active 并广播
     /// <see cref="ICallClient.CallStarted"/>（呼叫方与接通成员互见快照）；
     /// 通话中阶段（群组/重连）加入广播 <see cref="ICallClient.MemberJoined"/>。
+    /// <para>房间模式：若房间设置了入会密码，非创建者须提供正确密码（<paramref name="password"/>）。</para>
     /// </summary>
-    public async Task<CallInfoDto?> AcceptCallAsync(Guid callId, Guid userId, CancellationToken ct)
+    public async Task<CallInfoDto?> AcceptCallAsync(Guid callId, Guid userId, string? password, CancellationToken ct)
     {
         var session = await LoadAsync(callId, ct);
         if (session is null)
             return null;
         if (!session.Members.ContainsKey(userId))
             throw new InvalidOperationException("您不是该通话的成员");
+
+        // 房间密码校验（创建者免密；仅常驻房间）
+        if (session.RoomKind == CallRoomKind.Room && session.RequiresPassword
+            && userId != session.CallerId
+            && (string.IsNullOrWhiteSpace(password) || !VerifyPassword(password, session.PasswordHash)))
+        {
+            throw new InvalidOperationException("房间密码错误");
+        }
 
         // 响铃超时兜底：超时后不接受（客户端应收到 Timeout 结束事件）
         if (!await EnsureNotTimedOutAsync(session, ct))
@@ -283,11 +345,11 @@ public sealed class CallSessionStore
             return session.ToDto();
         }
 
-        // 群组：成员离开
+        // 群组：成员离开。常驻房间不因全员离开而结束（创建者关闭才销毁）
         session.Members[userId] = CallMemberState.Left;
         var remainingJoined = session.Members.Count(kv => kv.Value == CallMemberState.Joined);
 
-        if (remainingJoined == 0)
+        if (remainingJoined == 0 && session.RoomKind != CallRoomKind.Room)
         {
             await EndCallAsync(session, CallEndReason.AllLeft, ct);
         }
@@ -302,6 +364,48 @@ public sealed class CallSessionStore
         }
 
         return session.ToDto();
+    }
+
+    /// <summary>
+    /// 关闭常驻房间（仅创建者）。广播 <see cref="ICallClient.CallEnded"/>（reason = RoomClosed）后清理。
+    /// </summary>
+    /// <exception cref="InvalidOperationException">非房间通话 / 非创建者</exception>
+    public async Task<CallInfoDto?> CloseRoomAsync(Guid callId, Guid userId, CancellationToken ct)
+    {
+        var session = await LoadAsync(callId, ct);
+        if (session is null)
+            return null;
+        if (session.RoomKind != CallRoomKind.Room)
+            throw new InvalidOperationException("该通话不是常驻房间，无法关闭");
+        if (session.CallerId != userId)
+            throw new InvalidOperationException("只有创建者可以关闭房间");
+
+        await EndCallAsync(session, CallEndReason.RoomClosed, ct);
+        return session.ToDto();
+    }
+
+    /// <summary>
+    /// 查询会话下的全部活跃房间（供成员自由加入）。
+    /// 经会话 → 房间索引（Redis Set）读取，逐个加载并跳过已结束/已清理的条目。
+    /// </summary>
+    public async Task<List<CallInfoDto>> GetSessionRoomsAsync(Guid sessionId, CancellationToken ct)
+    {
+        var callIds = await _cache.SetMembersAsync(SessionRoomsKey(sessionId), ct);
+        var rooms = new List<CallInfoDto>();
+        foreach (var callId in callIds)
+        {
+            if (!Guid.TryParse(callId, out var guid))
+                continue;
+
+            var session = await LoadAsync(guid, ct);
+            if (session is null || session.Status == CallStatus.Ended)
+                continue;
+
+            rooms.Add(session.ToDto());
+        }
+
+        _logger.LogDebug("[Call] 查询会话活跃房间 SessionId={SessionId}, Count={Count}", sessionId, rooms.Count);
+        return rooms;
     }
 
     /// <summary>
@@ -380,7 +484,8 @@ public sealed class CallSessionStore
     // 私有辅助
     // ═══════════════════════════════════════════════════════
 
-    private bool IsOneToOne(CallSession session) => session.Members.Count == 2;
+    private bool IsOneToOne(CallSession session)
+        => session.RoomKind == CallRoomKind.Instant && session.Members.Count == 2;
 
     private async Task<CallSession?> LoadAsync(Guid callId, CancellationToken ct)
     {
@@ -411,12 +516,13 @@ public sealed class CallSessionStore
         => _cache.RemoveAsync(UserCallKey(userId), ct);
 
     /// <summary>
-    /// 终结通话：状态置 Ended → 清理用户映射 → 广播 CallEnded → 删除会话。
+    /// 终结通话：状态置 Ended → 清理用户映射 → 移除会话房间索引 → 广播 CallEnded → 删除会话。
     /// </summary>
     private async Task EndCallAsync(CallSession session, CallEndReason reason, CancellationToken ct)
     {
         session.Status = CallStatus.Ended;
         await RemoveCallKeysAsync(session, ct);
+        await RemoveSessionRoomIndexAsync(session, ct);
 
         var callInfo = session.ToDto();
         var members = session.Members.Keys.ToArray();
@@ -509,6 +615,24 @@ public sealed class CallSessionStore
 
     private static string CallKey(Guid callId) => $"{CallKeyPrefix}{callId}";
     private static string UserCallKey(Guid userId) => $"{UserCallKeyPrefix}{userId}";
+    private static string SessionRoomsKey(Guid sessionId) => $"{SessionRoomsKeyPrefix}{sessionId}";
+
+    /// <summary>将 callId 加入会话活跃房间索引（Set 带 6h TTL 兜底，防创建者长期不关导致泄漏）</summary>
+    private Task AddSessionRoomIndexAsync(CallSession session, CancellationToken ct)
+        => _cache.SetAddAsync(SessionRoomsKey(session.SessionId), session.CallId.ToString(), CallTtl, ct);
+
+    /// <summary>从会话活跃房间索引移除 callId</summary>
+    private Task RemoveSessionRoomIndexAsync(CallSession session, CancellationToken ct)
+        => _cache.SetRemoveAsync(SessionRoomsKey(session.SessionId), session.CallId.ToString(), ct);
+
+    /// <summary>房间密码 → SHA256 十六进制哈希（不存明文）</summary>
+    private static string HashPassword(string password)
+        => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(password)));
+
+    /// <summary>校验明文密码与存储哈希是否一致</summary>
+    private static bool VerifyPassword(string password, string? hash)
+        => hash is not null
+           && string.Equals(HashPassword(password), hash, StringComparison.OrdinalIgnoreCase);
 }
 
 /// <summary>
@@ -522,6 +646,9 @@ public sealed class CallSession
 
     public CallType Type { get; init; }
 
+    /// <summary>通话形态（即时呼叫 / 常驻房间）</summary>
+    public CallRoomKind RoomKind { get; init; }
+
     public CallStatus Status { get; set; }
 
     public Guid CallerId { get; init; }
@@ -533,6 +660,15 @@ public sealed class CallSession
     /// <summary>会话参与者 → 成员状态（含呼叫方）</summary>
     public Dictionary<Guid, CallMemberState> Members { get; init; } = [];
 
+    /// <summary>发起时被邀请（收到来电）的成员子集；空表示未邀请任何人</summary>
+    public List<Guid> InvitedMembers { get; init; } = [];
+
+    /// <summary>房间是否设置了入会密码</summary>
+    public bool RequiresPassword { get; init; }
+
+    /// <summary>房间密码哈希（SHA256 十六进制，不存明文）</summary>
+    public string? PasswordHash { get; init; }
+
     /// <summary>发起呼叫时检测到的忙线成员</summary>
     public List<Guid> BusyUsers { get; init; } = [];
 
@@ -542,11 +678,14 @@ public sealed class CallSession
         CallId = CallId,
         SessionId = SessionId,
         Type = Type,
+        RoomKind = RoomKind,
         Status = Status,
         CallerId = CallerId,
         CreatedAt = CreatedAt,
         ConnectedAt = ConnectedAt,
         Participants = Members.Keys.ToList(),
+        InvitedMembers = InvitedMembers.ToList(),
+        RequiresPassword = RequiresPassword,
         JoinedMembers = Members.Where(kv => kv.Value == CallMemberState.Joined).Select(kv => kv.Key).ToList(),
         BusyUsers = BusyUsers.ToList()
     };

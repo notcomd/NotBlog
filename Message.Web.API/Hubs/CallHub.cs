@@ -47,12 +47,22 @@ public class CallHub : Hub<ICallClient>
 
     /// <summary>
     /// 基于会话发起语音 / 视频呼叫（1 对 1 与群组会话均支持，通话成员 = 会话参与者）。
+    /// <para>
+    /// 群组/频道会话为<b>常驻房间</b>：创建即开启，创建者立即入会；<paramref name="targetMemberIds"/>
+    /// 圈选被邀请成员（收到来电），为空 = 邀请全部；未选成员仍可经 <see cref="GetSessionRooms"/> 自由加入。
+    /// 可设置 <paramref name="password"/> 作为入会密码（仅群组房间允许）。
+    /// </para>
     /// </summary>
     /// <param name="sessionId">会话 ID（ChatSession）</param>
     /// <param name="type">通话类型（语音 / 视频）</param>
+    /// <param name="targetMemberIds">被邀请成员（可空；仅群组房间生效）</param>
+    /// <param name="password">入会密码（可选，仅群组房间允许）</param>
     /// <returns>通话信息（含忙线/离线成员，供 UI 提示）</returns>
     [HubMethodName("StartCall")]
-    public async Task<CallStartResult> StartCall(Guid sessionId, CallType type)
+    public async Task<CallStartResult> StartCall(
+        Guid sessionId, CallType type,
+        IReadOnlyCollection<Guid>? targetMemberIds = null,
+        string? password = null)
     {
         var userId = GetUserId();
 
@@ -68,8 +78,20 @@ public class CallHub : Hub<ICallClient>
             if (!IsCallableSession(session.SessionType))
                 throw new HubException("该类型会话不支持通话");
 
+            var isRoom = session.SessionType is SessionType.Group or SessionType.Channel;
+
+            // 成员圈选必须属于会话参与者（防越权邀请）
+            if (targetMemberIds is { Count: > 0 }
+                && targetMemberIds.Any(id => !session.Participants.Contains(id)))
+                throw new HubException("被邀请成员不在会话中");
+
+            // 密码仅群组/频道房间允许（私聊为即时呼叫）
+            if (!string.IsNullOrWhiteSpace(password) && !isRoom)
+                throw new HubException("仅群组房间可设置入会密码");
+
             return await _callStore.CreateCallAsync(
-                sessionId, userId, type, session.Participants, Context.ConnectionAborted);
+                sessionId, userId, type, session.Participants,
+                targetMemberIds, password, isRoom, Context.ConnectionAborted);
         }
         catch (HubException)
         {
@@ -102,17 +124,19 @@ public class CallHub : Hub<ICallClient>
 
     /// <summary>
     /// 接听来电（1 对 1 或群组首名接通者：通话建立）。
+    /// 房间模式：若设置了入会密码，须提供正确 <paramref name="password"/>。
     /// </summary>
     /// <param name="callId">通话 ID</param>
+    /// <param name="password">入会密码（可选；仅常驻房间需要）</param>
     /// <returns>通话信息（含 JoinedMembers 快照，客户端据此向各成员发送 offer）</returns>
     [HubMethodName("AcceptCall")]
-    public async Task<CallInfoDto?> AcceptCall(Guid callId)
+    public async Task<CallInfoDto?> AcceptCall(Guid callId, string? password = null)
     {
         var userId = GetUserId();
 
         try
         {
-            return await _callStore.AcceptCallAsync(callId, userId, Context.ConnectionAborted);
+            return await _callStore.AcceptCallAsync(callId, userId, password, Context.ConnectionAborted);
         }
         catch (Exception ex)
         {
@@ -140,22 +164,74 @@ public class CallHub : Hub<ICallClient>
     }
 
     /// <summary>
-    /// 加入通话（群组通话中后续成员 / 断线重连恢复）。
+    /// 加入通话（群组通话中后续成员 / 断线重连恢复 / 常驻房间自由加入）。
+    /// 房间模式：若设置了入会密码，须提供正确 <paramref name="password"/>。
     /// </summary>
     /// <param name="callId">通话 ID</param>
+    /// <param name="password">入会密码（可选；仅常驻房间需要）</param>
     /// <returns>通话信息（含 JoinedMembers 快照）</returns>
     [HubMethodName("JoinCall")]
-    public async Task<CallInfoDto?> JoinCall(Guid callId)
+    public async Task<CallInfoDto?> JoinCall(Guid callId, string? password = null)
     {
         var userId = GetUserId();
 
         try
         {
-            return await _callStore.AcceptCallAsync(callId, userId, Context.ConnectionAborted);
+            return await _callStore.AcceptCallAsync(callId, userId, password, Context.ConnectionAborted);
         }
         catch (Exception ex)
         {
             throw WrapError("加入通话", ex);
+        }
+    }
+
+    /// <summary>
+    /// 关闭常驻房间（仅创建者）。房间内全部成员收到 CallEnded（reason = RoomClosed）。
+    /// </summary>
+    /// <param name="callId">房间通话 ID</param>
+    /// <returns>通话信息（终态）</returns>
+    [HubMethodName("CloseRoom")]
+    public async Task<CallInfoDto?> CloseRoom(Guid callId)
+    {
+        var userId = GetUserId();
+
+        try
+        {
+            return await _callStore.CloseRoomAsync(callId, userId, Context.ConnectionAborted);
+        }
+        catch (Exception ex)
+        {
+            throw WrapError("关闭房间", ex);
+        }
+    }
+
+    /// <summary>
+    /// 查询会话下的全部活跃房间（供群组成员自由加入；需为会话参与者）。
+    /// </summary>
+    /// <param name="sessionId">会话 ID</param>
+    /// <returns>活跃房间列表（空 = 无进行中的房间）</returns>
+    [HubMethodName("GetSessionRooms")]
+    public async Task<List<CallInfoDto>> GetSessionRooms(Guid sessionId)
+    {
+        var userId = GetUserId();
+
+        try
+        {
+            var session = await _sessionRepository.GetByIdAsync(sessionId);
+            if (session is null)
+                throw new HubException("会话不存在");
+            if (!session.IsParticipant(userId))
+                throw new HubException("您不是该会话的参与者");
+
+            return await _callStore.GetSessionRoomsAsync(sessionId, Context.ConnectionAborted);
+        }
+        catch (HubException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw WrapError("查询会话房间", ex);
         }
     }
 

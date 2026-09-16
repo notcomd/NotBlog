@@ -33,5 +33,10 @@ public enum CallEndReason
     /// <summary>
     /// 服务端错误
     /// </summary>
-    Error = 5
+    Error = 5,
+
+    /// <summary>
+    /// 房间被创建者关闭（常驻房间）
+    /// </summary>
+    RoomClosed = 6
 }
