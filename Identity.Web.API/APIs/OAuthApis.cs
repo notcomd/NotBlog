@@ -147,7 +147,6 @@ public static class OAuthApis
 
         try
         {
-            // F-07：真实绑定链路——用授权码换取外部用户信息并写入 UserExternalLogin 绑定记录
             await oauthService.LinkExternalLoginByCodeAsync(
                 userId.Value, request.Provider, request.Code, request.RedirectUri);
 

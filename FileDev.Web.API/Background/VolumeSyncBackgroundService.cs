@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace FileDev.Web.API.Background;
 
 /// <summary>
-/// 启动时卷注册表同步：应用启动与迁移完成后，把 Lite 对象存储运行时的卷/目录统计
+/// 启动时卷注册表同步：应用启动与迁移完成后，把 FileBox 存储的卷/目录统计
 /// 全量回填到 DB 卷表（NotFileVolume），供卷管理 API 与租户卷查询使用。
 /// 仅执行一次即结束；失败仅记录日志，不影响应用启动。
 /// </summary>

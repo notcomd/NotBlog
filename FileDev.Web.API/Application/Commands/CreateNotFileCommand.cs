@@ -31,7 +31,7 @@ public class CreateNotFileCommand(Guid userGuid,
 
     public long FileSize { get; set; } = fileSize;
 
-    /// <summary>存储层元数据（内容哈希 / 存储层 / 卷 / 分片数等），与 Lite 元数据对齐。</summary>
+    /// <summary>存储层元数据（内容哈希 / 存储层 / 卷 / 分片数等），与 FileBox 元数据对齐。</summary>
     public NotFileStorageResponse? StorageMeta { get; set; }
 
     // Major：删除原 Equals/GetHashCode/ToString 仅调用 base 的无意义重写

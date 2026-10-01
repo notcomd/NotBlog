@@ -127,7 +127,7 @@ public class NotFileService(
             .WithSource(source)
             .WithUserId(userId);
 
-        // 对齐 Lite 存储元数据：由存储写回（内容哈希 / 存储层 / 卷 / 分片数 / 过期时间）
+        // 对齐 FileBox 存储元数据：由存储写回（内容哈希 / 存储层 / 卷 / 分片数 / 过期时间）
         if (storageMeta is { Success: true })
         {
             builder.WithStorageMeta(

@@ -1,13 +1,15 @@
+using FileDev.Domain.Dto.Response;
 using Microsoft.Extensions.Logging;
-using MohuTianchi.Lite;
+using Mono.FileBox.Lite.Abstractions.Index;
+using Mono.FileBox.Lite.Abstractions.UseCases;
 using Notcomd.Token.JWT.Core;
 using Notcomd.Token.JWT.Security;
 
 namespace FileDev.Infrastructure.Service;
 
 // 分片上传逻辑：分片临时对象的 key 规范、分片上传/合并/清理与总分片数计算。
-// 合并时把分片按序读回拼为整对象写入 Lite（内核再次分片 + 块级去重），随后清理临时分片。
-public sealed partial class MohuObjectStorageService
+// 合并时把分片按序读回拼为整对象写入 FileBox（内容寻址，重复块自动去重），随后清理临时分片。
+public sealed partial class FileBoxObjectStorageService
 {
     /// <summary>分片临时对象的 key 前缀，避免与最终对象（{userId}/{guid}{ext}）冲突。</summary>
     private const string ChunkPrefix = "__chunk__/";
@@ -22,17 +24,45 @@ public sealed partial class MohuObjectStorageService
         if (string.IsNullOrWhiteSpace(fileKey))
             return;
 
-        var keys = await _storage.ListAsync($"{ChunkPrefix}{fileKey}", ct: CancellationToken.None).ConfigureAwait(false);
+        var keys = await ListChunkKeysAsync(fileKey).ConfigureAwait(false);
         foreach (var key in keys)
         {
             try
             {
-                await _storage.DeleteAsync(key, ct: CancellationToken.None).ConfigureAwait(false);
+                var hash = await ResolveHashAsync(key).ConfigureAwait(false);
+                if (string.IsNullOrEmpty(hash))
+                    continue;
+                await _delete.ExecuteAsync(new DeleteObjectCommand
+                {
+                    ContentHash = hash,
+                    NamespaceId = NamespaceId
+                }, CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "清理分片临时对象失败 Key={Key}", key);
             }
+        }
+    }
+
+    /// <summary>按 key 前缀列出分片临时对象 key（经索引反查，不做物理遍历）。</summary>
+    private async Task<IReadOnlyList<string>> ListChunkKeysAsync(string fileKey)
+    {
+        try
+        {
+            var prefix = $"{ChunkPrefix}{fileKey}";
+            var page = await _index.QueryAsync(new IndexQuery
+            {
+                NamespaceId = NamespaceId,
+                KeyPrefix = prefix
+            }, CancellationToken.None).ConfigureAwait(false);
+            return page.Items.Where(e => e.ObjectKey is not null && e.ObjectKey.StartsWith(prefix, StringComparison.Ordinal))
+                .Select(e => e.ObjectKey!).ToList();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "列出分片临时对象失败 FileKey={FileKey}", fileKey);
+            return [];
         }
     }
 
@@ -74,14 +104,36 @@ public sealed partial class MohuObjectStorageService
             }
 
             var key = ChunkKey(fileKey, chunkIndex);
-            await _storage.WriteAsync(key, chunkContent, new WriteOptions { Overwrite = true }).ConfigureAwait(false);
+            var putResult = await _put.ExecuteAsync(new PutObjectCommand
+            {
+                NamespaceId = NamespaceId,
+                ObjectKey = key,
+                Content = new MemoryStream(chunkContent, writable: false)
+            }, CancellationToken.None).ConfigureAwait(false);
+
+            if (!putResult.Succeeded)
+            {
+                _logger.LogError("上传分片失败 FileKey={FileKey} ChunkIndex={ChunkIndex} Error={Error}",
+                    fileKey, chunkIndex, putResult.Error);
+                return Failure($"上传分片{chunkIndex}失败");
+            }
+
+            var actualHash = putResult.ContentHash;
+            if (!string.IsNullOrWhiteSpace(chunkHash) && !string.Equals(actualHash, chunkHash, StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogWarning("分片存储哈希与期望不一致 FileKey={FileKey} ChunkIndex={ChunkIndex}", fileKey, chunkIndex);
+                return Failure($"分片{chunkIndex}哈希校验失败");
+            }
 
             return new NotFileStorageResponse
             {
                 Success = true,
                 FullPath = key,
                 FileSize = chunkContent.Length,
-                ActualHash = HashHelper.ComputeHash(chunkContent, AlgorithmType.SHA256)
+                ActualHash = actualHash,
+                ContentHash = actualHash,
+                VolumeId = "default",
+                ShardCount = 1
             };
         }
         catch (Exception ex)
@@ -91,7 +143,7 @@ public sealed partial class MohuObjectStorageService
         }
     }
 
-    /// <summary>合并分片为完整文件：按序读回拼接、可选整文件哈希校验、写整对象、清理临时分片并回填清单元数据。</summary>
+    /// <summary>合并分片为完整文件：按序读回拼接、可选整文件哈希校验、写整对象、清理临时分片。</summary>
     /// <param name="fileKey">分片上传任务标识（亦为最终对象 key）。</param>
     /// <param name="totalChunks">分片总数。</param>
     /// <param name="expectedFileHash">期望整文件 SHA-256，非空时合并后校验。</param>
@@ -105,10 +157,20 @@ public sealed partial class MohuObjectStorageService
             for (var i = 0; i < totalChunks; i++)
             {
                 var chunkKey = ChunkKey(fileKey, i);
-                var chunkContent = await _storage.ReadAsync(chunkKey).ConfigureAwait(false);
-                if (chunkContent is null)
+                var chunkHash = await ResolveHashAsync(chunkKey).ConfigureAwait(false);
+                if (string.IsNullOrEmpty(chunkHash))
                     return Failure($"分片{i}缺失");
-                await buffer.WriteAsync(chunkContent).ConfigureAwait(false);
+                var chunkResult = await _get.ExecuteAsync(new GetObjectCommand
+                {
+                    ContentHash = chunkHash!,
+                    NamespaceId = NamespaceId,
+                    Offset = 0,
+                    Length = null
+                }, CancellationToken.None).ConfigureAwait(false);
+                using var chunkStream = chunkResult.Content;
+                if (chunkStream is null)
+                    return Failure($"分片{i}缺失");
+                chunkStream.CopyTo(buffer);
             }
 
             var merged = buffer.ToArray();
@@ -123,23 +185,23 @@ public sealed partial class MohuObjectStorageService
                 }
             }
 
-            await _storage.WriteAsync(fileKey, merged, new WriteOptions { Overwrite = overwrite }).ConfigureAwait(false);
+            var putResult = await _put.ExecuteAsync(new PutObjectCommand
+            {
+                NamespaceId = NamespaceId,
+                ObjectKey = fileKey,
+                Content = new MemoryStream(merged, writable: false)
+            }, CancellationToken.None).ConfigureAwait(false);
+
+            if (!putResult.Succeeded)
+            {
+                _logger.LogError("合并分片失败 FileKey={FileKey} Error={Error}", fileKey, putResult.Error);
+                return Failure(putResult.Error ?? "合并分片失败");
+            }
 
             await CleanupChunkObjectsAsync(fileKey).ConfigureAwait(false);
-
             await InvalidateCacheAsync(fileKey).ConfigureAwait(false);
 
-            var response = new NotFileStorageResponse
-            {
-                Success = true,
-                FullPath = fileKey,
-                FileSize = merged.Length,
-                ActualHash = HashHelper.ComputeHash(merged, AlgorithmType.SHA256)
-            };
-            // 对齐 Lite 清单元数据（卷 ID / 分片数 / 更新时间）
-            response.ContentHash = response.ActualHash;
-            await ApplyManifestMetaAsync(response, fileKey).ConfigureAwait(false);
-            return response;
+            return Success(fileKey, merged, putResult.ContentHash);
         }
         catch (Exception ex)
         {

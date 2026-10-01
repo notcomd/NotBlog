@@ -1,8 +1,8 @@
 namespace FileDev.Domain.Entities;
 
 /// <summary>
-/// 数据卷聚合，持久化镜像 MohuTianchi.Lite.VolumeRecord（VolumeManager/StorageVolumePool 的卷注册表）。
-/// 在应用启动或运行时由卷服务从 Lite 注册表同步，对外提供卷清单、占用统计与租户专属卷管理。
+/// 数据卷聚合，持久化 Mono.FileBox.Lite 存储的卷映射记录。
+/// 在应用启动或运行时由卷服务从存储统计同步，对外提供卷清单、占用统计与租户专属卷管理。
 /// 卷 ID（VolumeId："v{n}" 或空串表示默认卷）是业务主键，物理路径/依赖均由 Key 唯一标识。
 /// </summary>
 public class NotFileVolume : Entity<Guid>, IAggregateRoot
@@ -50,7 +50,7 @@ public class NotFileVolume : Entity<Guid>, IAggregateRoot
     /// <summary>最近一次同步刷新时间。</summary>
     public DateTimeOffset UpdatedAt { get; private set; }
 
-    /// <summary>静态工厂：从 Lite 卷记录构造领域实体。</summary>
+    /// <summary>静态工厂：从存储卷记录构造领域实体。</summary>
     /// <param name="volumeId">卷 ID（"v{n}" 或空串）。</param>
     /// <param name="tenantId">所属租户 ID（可为空）。</param>
     /// <param name="rootPath">卷根目录。</param>
@@ -78,7 +78,7 @@ public class NotFileVolume : Entity<Guid>, IAggregateRoot
         return entity;
     }
 
-    /// <summary>用 Lite 卷占用统计刷新领域实体（占用总在增长，直接覆盖即可）。</summary>
+    /// <summary>用卷占用统计刷新领域实体（占用总在增长，直接覆盖即可）。</summary>
     public void SyncUsage(long totalBytes, long partCount, long objectCount)
     {
         TotalBytes = totalBytes;

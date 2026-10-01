@@ -30,24 +30,24 @@ public class NotFile : Entity<Guid>, IAggregateRoot
 
     public DateTimeOffset UpdateTime { get; private set; }
 
-    // ---- 与 MohuTianchi.Lite 对齐的存储元数据 ----
+    // ---- 与 Mono.FileBox.Lite 对齐的存储元数据 ----
 
-    /// <summary>内容 SHA-256 摘要（= Lite ObjectIndexEntry.ContentHash），用于去重比对与存储校验。</summary>
+    /// <summary>内容 SHA-256 摘要（= FileBox IndexEntry.ContentHash），用于去重比对与存储校验。</summary>
     public string ContentHash { get; private set; } = string.Empty;
 
-    /// <summary>存储层（Hot/Cold），与 Lite StorageTier 对齐。</summary>
+    /// <summary>存储层（Hot/Cold），与 FileBox StorageTier 对齐。</summary>
     public StorageTier Tier { get; private set; } = StorageTier.Hot;
 
-    /// <summary>物理分片所在数据卷 ID（"v{n}" 或空串表示默认卷，与 Lite ObjectManifest.VolumeId 对齐）。</summary>
+    /// <summary>物理分片所在数据卷 ID（默认卷 "default"，与 FileBox 磁盘池对齐）。</summary>
     public string VolumeId { get; private set; } = string.Empty;
 
-    /// <summary>物理分片总数（Lite 内容寻址二次切片后的分片数，与 ObjectManifest.Shards 数量对齐）。</summary>
+    /// <summary>物理分片总数（FileBox 内容寻址分块后的分片数，默认单块为 1）。</summary>
     public int ShardCount { get; private set; }
 
-    /// <summary>TTL 过期时间（Lite ObjectManifest.ExpiresAt；为空表示永不过期）。</summary>
+    /// <summary>TTL 过期时间（为空表示永不过期）。</summary>
     public DateTimeOffset? StorageExpiresAt { get; private set; }
 
-    /// <summary>Lite 清单最近更新 UTC 时间（ObjectManifest.UpdatedUtc）。</summary>
+    /// <summary>FileBox 清单最近更新 UTC 时间（IndexEntry.ModifiedAt）。</summary>
     public DateTimeOffset StorageUpdatedUtc { get; private set; }
 
     public bool IsDeleted { get; private set; }
@@ -133,7 +133,7 @@ public class NotFile : Entity<Guid>, IAggregateRoot
     /// <param name="volumeId">物理分片所在数据卷 ID。</param>
     /// <param name="shardCount">物理分片总数。</param>
     /// <param name="expiresAt">TTL 过期时间（可为空）。</param>
-    /// <param name="updatedUtc">Lite 清单更新时间。</param>
+    /// <param name="updatedUtc">FileBox 索引条目更新时间。</param>
     public void ApplyStorageMeta(
         string contentHash, StorageTier tier, string volumeId, int shardCount,
         DateTimeOffset? expiresAt, DateTimeOffset updatedUtc)

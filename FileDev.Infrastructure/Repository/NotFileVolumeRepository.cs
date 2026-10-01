@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FileDev.Infrastructure.Repository;
 
-/// <summary>数据卷仓储：持久化 Lite 卷注册表的镜像（NotFileVolume 表）。</summary>
+/// <summary>数据卷仓储：持久化存储卷统计（NotFileVolume 表）。</summary>
 public class NotFileVolumeRepository(NotFileDbContext notFileDbContext) : INotFileVolumeRepository
 {
     private readonly NotFileDbContext _db = notFileDbContext ?? throw new ArgumentNullException(nameof(notFileDbContext));
@@ -31,7 +31,7 @@ public class NotFileVolumeRepository(NotFileDbContext notFileDbContext) : INotFi
             .ToListAsync(ct).ConfigureAwait(false);
     }
 
-    /// <summary>全景刷新：删除现有卷记录后整体重插，保证与 Lite 注册表一致。</summary>
+    /// <summary>全景刷新：删除现有卷记录后整体重插，保证与存储统计一致。</summary>
     public async Task ReplaceAllAsync(IEnumerable<NotFileVolume> volumes, CancellationToken ct = default)
     {
         _db.NotFileVolumes.RemoveRange(await _db.NotFileVolumes.ToListAsync(ct).ConfigureAwait(false));

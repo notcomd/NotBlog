@@ -41,7 +41,7 @@ public class NotFileEntityConfiguration: IEntityTypeConfiguration<NotFile>
         builder.Property(x => x.FileMd5).HasMaxLength(128);
         builder.Property(x => x.FileUri).HasMaxLength(1024);
 
-        // ---- 与 Lite 对齐的存储元数据 ----
+        // ---- 与 Mono.FileBox.Lite 对齐的存储元数据 ----
         // ContentHash 用于去重比对与存储校验，固定 64 位十六进制（SHA-256）
         builder.Property(x => x.ContentHash).HasMaxLength(64);
         // 存储层（Hot/Cold）按整型存储，避免字符串低效比对

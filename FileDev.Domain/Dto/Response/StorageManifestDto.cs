@@ -1,6 +1,6 @@
 namespace FileDev.Domain.Dto.Response;
 
-/// <summary>对象清单对外信息，镜像 Lite ObjectManifest + ObjectIndexEntry 关键字段。</summary>
+/// <summary>对象清单对外信息，由 FileBox 索引条目映射的关键字段。</summary>
 public record StorageManifestDto
 {
     /// <summary>物理分片所在卷 ID。</summary>

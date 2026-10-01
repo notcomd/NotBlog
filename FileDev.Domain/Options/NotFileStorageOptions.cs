@@ -43,7 +43,7 @@ public class NotFileStorageOptions
     /// <summary>用户最大存储配额（字节，默认50GB）</summary>
     public long UserStorageQuota { get; set; } = 50L * 1024 * 1024 * 1024;
 
-    /// <summary>下载内容缓存大小阈值（字节）。超过该上限的大文件不进入 Redis 缓存，直接回源 Lite。默认5MB。</summary>
+    /// <summary>下载内容缓存大小阈值（字节）。超过该上限的大文件不进入 Redis 缓存，直接回源 FileBox。默认5MB。</summary>
     public long DownloadCacheMaxBytes { get; set; } = 5 * 1024 * 1024;
 
     /// <summary>下载内容缓存有效期（秒）。读时惰性回填，到期自动失效。默认10分钟。</summary>

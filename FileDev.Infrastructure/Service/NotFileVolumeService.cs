@@ -6,8 +6,8 @@ using FileDev.Domain.IServices;
 namespace FileDev.Infrastructure.Service;
 
 /// <summary>
-/// 数据卷管理服务：桥接 MohuTianchi.Lite 卷注册表与 DB 卷表。
-/// 启动/手动全量同步把 Lite 运行时卷与目录统计落到 NotFileVolume 表，供查询与租户卷管理。
+/// 数据卷管理服务：桥接 Mono.FileBox.Lite 存储与 DB 卷表。
+/// 启动/手动全量同步把 FileBox 存储的卷与目录统计落到 NotFileVolume 表，供查询与租户卷管理。
 /// </summary>
 public class NotFileVolumeService(
     INotFileStorageService storageService,
@@ -18,7 +18,7 @@ public class NotFileVolumeService(
     private readonly INotFileVolumeRepository _volumeRepository = volumeRepository
         ?? throw new ArgumentNullException(nameof(volumeRepository));
 
-    /// <summary>从 Lite 卷统计转换为领域实体（保留占用统计）。</summary>
+    /// <summary>从存储卷统计转换为领域实体（保留占用统计）。</summary>
     private static NotFileVolume ToVolume(NotFileVolumeInfoDto dto)
     {
         var volume = NotFileVolume.FromRegistration(dto.VolumeId, dto.TenantId, dto.RootPath, dto.Kind);

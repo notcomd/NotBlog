@@ -1,6 +1,6 @@
 namespace FileDev.Domain.Dto.Response;
 
-/// <summary>数据卷对外信息，镜像 Lite VolumeRecord，供管理 API 返回。</summary>
+/// <summary>数据卷对外信息，供管理 API 返回（FileBox 磁盘池映射为卷记录）。</summary>
 public record NotFileVolumeInfoDto
 {
     /// <summary>卷 ID（"v{n}" 或空串表示默认卷）。</summary>

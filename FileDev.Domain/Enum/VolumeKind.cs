@@ -1,7 +1,7 @@
 namespace FileDev.Domain.Enum;
 
 /// <summary>
-/// 数据卷类型，与 MohuTianchi.Lite.VolumeRecord 的卷归属对齐：
+/// 数据卷类型：与 Mono.FileBox.Lite 存储的卷归属语义对齐（默认/共享/租户专属）。
 /// 卷 ID 为空串表示默认卷；卷归属租户为空且非默认卷表示共享卷池卷；否则为某租户的专属卷。
 /// </summary>
 public enum VolumeKind

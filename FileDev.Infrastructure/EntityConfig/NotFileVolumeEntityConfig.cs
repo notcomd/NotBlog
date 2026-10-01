@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace FileDev.Infrastructure.EntityConfig;
 
-/// <summary>数据卷实体映射：镜像 Lite 卷注册表（VolumeRecord）。</summary>
+/// <summary>数据卷实体映射：存储的卷统计记录。</summary>
 public class NotFileVolumeEntityConfig : IEntityTypeConfiguration<NotFileVolume>
 {
     public void Configure(EntityTypeBuilder<NotFileVolume> builder)

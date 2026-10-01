@@ -3,12 +3,12 @@ using FileDev.Domain.Dto.Response;
 namespace FileDev.Domain.IServices;
 
 /// <summary>
-/// 数据卷管理服务：桥接 MohuTianchi.Lite 卷注册表与 DB 卷表。
-/// 负责把 Lite 运行时的卷/目录统计同步落库，并提供共享/租户专属卷的新增与查询能力。
+/// 数据卷管理服务：桥接 Mono.FileBox.Lite 存储与 DB 卷表。
+/// 负责把 FileBox 存储的卷/目录统计同步落库，并提供共享/租户专属卷的新增与查询能力。
 /// </summary>
 public interface INotFileVolumeService
 {
-    /// <summary>从 Lite 卷注册表全量同步到 DB（返回同步后的卷数）。</summary>
+    /// <summary>从存储卷统计全量同步到 DB（返回同步后的卷数）。</summary>
     Task<int> SyncVolumesAsync(CancellationToken ct = default);
 
     /// <summary>查询全部卷（DB 侧，通常已同步）。</summary>

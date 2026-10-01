@@ -6,7 +6,7 @@ namespace FileDev.Web.API.APIs;
 
 /// <summary>
 /// 数据卷管理 API（仅管理员/系统调用，挂载在 <c>/api/filestorage</c> 需 JWT 认证的分组下）。
-/// 提供卷清单查询、Lite 注册表全量同步、共享/租户专属卷新增、目录统计与存储层调整。
+/// 提供卷清单查询、存储卷统计同步、共享/租户专属卷新增、目录统计与存储层调整。
 /// </summary>
 public static class FileVolumeApis
 {

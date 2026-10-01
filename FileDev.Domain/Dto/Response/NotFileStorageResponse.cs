@@ -27,23 +27,23 @@ public record NotFileStorageResponse
     /// </summary>
     public string ActualHash { get; set; } = string.Empty;
 
-    // ---- 与 MohuTianchi.Lite 对齐的存储元数据 ----
+    // ---- 与 Mono.FileBox.Lite 对齐的存储元数据 ----
 
-    /// <summary>内容 SHA-256 摘要（= Lite ObjectIndexEntry.ContentHash）。</summary>
+    /// <summary>内容 SHA-256 摘要（= FileBox IndexEntry.ContentHash）。</summary>
     public string ContentHash { get; set; } = string.Empty;
 
     /// <summary>存储层（Hot/Cold）。</summary>
     public StorageTier Tier { get; set; } = StorageTier.Hot;
 
-    /// <summary>物理分片所在数据卷 ID（Lite ObjectManifest.VolumeId）。</summary>
+    /// <summary>物理分片所在数据卷 ID（默认卷 "default"，与 FileBox 磁盘池对齐）。</summary>
     public string VolumeId { get; set; } = string.Empty;
 
-    /// <summary>物理分片总数（Lite ObjectManifest.Shards 数量）。</summary>
+    /// <summary>物理分片总数（FileBox 内容寻址分块后的分片数。默认单块为 1）。</summary>
     public int ShardCount { get; set; }
 
-    /// <summary>TTL 过期时间（Lite ObjectManifest.ExpiresAt；为空表示永不过期）。</summary>
+    /// <summary>TTL 过期时间（为空表示永不过期）。</summary>
     public DateTimeOffset? ExpiresAt { get; set; }
 
-    /// <summary>Lite 清单最近更新 UTC 时间（ObjectManifest.UpdatedUtc）。</summary>
+    /// <summary>FileBox 清单最近更新 UTC 时间（IndexEntry.ModifiedAt）。</summary>
     public DateTimeOffset? UpdatedUtc { get; set; }
 }

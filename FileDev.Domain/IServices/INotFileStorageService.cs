@@ -53,7 +53,7 @@ public interface INotFileStorageService
     Task<int> GetTotalChunkCountAsync(long fileSize);
 
     /// <summary>
-    /// 读取对象清单（镜像 Lite ObjectManifest + ContentHash），用于对齐文件存储元数据；对象不存在返回 null。
+    /// 读取对象清单（由 FileBox 索引条目映射 + ContentHash），用于对齐文件存储元数据；对象不存在返回 null。
     /// </summary>
     Task<StorageManifestDto?> GetManifestAsync(string fileRelativePath, CancellationToken ct = default);
 
@@ -70,9 +70,9 @@ public interface INotFileStorageService
     Task<NotFileVolumeInfoDto> AddTenantVolumeAsync(string tenantId, string rootPath,
         CancellationToken ct = default);
 
-    /// <summary>列出全部数据卷统计（镜像 Lite VolumeRecord）。</summary>
+    /// <summary>列出全部数据卷统计（FileBox 磁盘池映射的卷记录）。</summary>
     Task<IEnumerable<NotFileVolumeInfoDto>> GetVolumeStatsAsync(CancellationToken ct = default);
 
-    /// <summary>列出虚拟目录统计（镜像 Lite DirectoryInfo，按 Key 首段聚合的物理占用视图）。</summary>
+    /// <summary>列出虚拟目录统计（按 Key 首段聚合的物理占用视图）。</summary>
     Task<IEnumerable<NotFileDirectoryInfoDto>> GetDirectoryStatsAsync(CancellationToken ct = default);
 }

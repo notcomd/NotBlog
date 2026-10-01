@@ -17,7 +17,7 @@ public static class EmailVerificationApi
     private const string CodeRateLimitKeyPrefix = "code:rate:";
 
     /// <summary>确认端点 IP 级限流阈值（10 次/分钟，防止暴力破解验证码）</summary>
-    private const int ConfirmRateLimitPerMinute = 10;
+    private const int ConfirmRateLimitPerMinute = 5;
     private const string ConfirmRateLimitKeyPrefix = "code:confirm:rate:";
 
     /// <summary>验证码最大错误尝试次数（超过即失效，防止暴力穷举）</summary>
@@ -51,14 +51,17 @@ public static class EmailVerificationApi
             return Results.BadRequest(new { error = "邮箱格式不正确" });
 
         var ip = httpContext.GetClientIp();
-        var window = DateTimeOffset.UtcNow.ToString("yyyyMMddHHmm");
+        var window = DateTimeOffset.UtcNow.ToString("yyyy-MM-dd-HH:mm");
         var rateKey = $"{CodeRateLimitKeyPrefix}{ip}:{window}";
         var count = await redisCacheService.StringIncrementAsync(rateKey);
         if (count == 1)
             await redisCacheService.KeyExpireAsync(rateKey, TimeSpan.FromMinutes(1));
         if (count > CodeRateLimitPerMinute)
-            return Results.Json(new { error = "发送过于频繁，请稍后再试" },
-                statusCode: StatusCodes.Status429TooManyRequests);
+        {
+           return Results.Json(new { error = "发送过于频繁，请稍后再试" },
+                statusCode: StatusCodes.Status429TooManyRequests); 
+        }
+            
 
         var command = new GenerateCodeCommand(request.Email);
         var identifiedCommand = new IdentifiedCommand<GenerateCodeCommand, string>(
@@ -97,7 +100,7 @@ public static class EmailVerificationApi
             return Results.BadRequest(new { error = "邮箱和验证码不能为空" });
         
         var ip = httpContext.GetClientIp();
-        var window = DateTimeOffset.UtcNow.ToString("yyyyMMddHHmm");
+        var window = DateTimeOffset.UtcNow.ToString("yyyy-MM-dd-HH:mm");
         var rateKey = $"{ConfirmRateLimitKeyPrefix}{ip}:{window}";
         var count = await redisCacheService.StringIncrementAsync(rateKey, ct: cancellationToken);
         if (count == 1)
