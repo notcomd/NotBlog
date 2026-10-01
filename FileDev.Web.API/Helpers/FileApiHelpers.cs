@@ -1,11 +1,10 @@
-
-namespace FileDev.Web.API.APIs;
+namespace FileDev.Web.API.Helpers;
 
 /// <summary>
 /// 文件存储 HTTP API 的共享静态辅助方法
-/// （GetUserId/ResolveFileType/BuildFileKey/FileUriToRelativePath 原散落在 FileChunkApis、FileStrongApi、
-/// FileStorageServiceGRPC、StreamUploadCommandHandler、MergeChunksCommandHandler、FileDeletedEventHandler 等多处，
-/// 统一收敛至此，见审查 #20）
+/// （GetUserId/ResolveFileType/BuildFileKey/FileUriToRelativePath/ResolveTenantFromFileKey 原散落在
+/// FileChunkApis、FileStorageServiceGRPC、StreamUploadCommandHandler、MergeChunksCommandHandler、
+/// FileDeletedEventHandler 等多处，统一收敛至此，见审查 #20）
 /// </summary>
 internal static class FileApiHelpers
 {
@@ -83,5 +82,24 @@ internal static class FileApiHelpers
             return s[FileUriPrefix.Length..];
         return s.TrimStart('/').Replace("files/", string.Empty, StringComparison.Ordinal);
     }
-    
+
+    /// <summary>
+    /// 从存储相对路径（形如 <c>{userId:N}/{guid:N}{ext}</c>）解析属主用户 ID。
+    /// <para>
+    /// 用户级文件存储下命名空间 = 文件属主（<c>tenant:{userId}</c>），因此读/删等操作必须以属主定位命名空间，
+    /// 而不能依赖当前请求用户。无有效首段时返回 null（交由存储层回退默认租户）。
+    /// </para>
+    /// 注意：仅适用于最终文件 key（<c>/files/{userId}/...</c>）；分片临时 key（<c>__chunk__/...</c>）不适用。
+    /// </summary>
+    /// <param name="fileKey">存储相对路径/fileKey。</param>
+    /// <returns>属主用户 ID 字符串（"N" 格式）；无法解析时为 null。</returns>
+    internal static string? ResolveTenantFromFileKey(string fileKey)
+    {
+        if (string.IsNullOrWhiteSpace(fileKey))
+            return null;
+        var slash = fileKey.IndexOf('/');
+        var first = slash < 0 ? fileKey : fileKey[..slash];
+        return string.IsNullOrWhiteSpace(first) ? null : first;
+    }
+
 }

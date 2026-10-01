@@ -1,5 +1,6 @@
 using FileDev.Domain.Dto.Response;
 using FileDev.Domain.Enum;
+using FileDev.Domain.IServices;
 using Microsoft.Extensions.Logging;
 using Mono.FileBox.Lite.Abstractions.Index;
 using Notcomd.Token.JWT.Core;
@@ -42,11 +43,13 @@ public sealed partial class FileBoxObjectStorageService
     /// <summary>读取对象清单；对象不存在或读取异常时返回 null。</summary>
     /// <param name="fileRelativePath">对象 key。</param>
     /// <param name="ct">取消令牌。</param>
-    public async Task<StorageManifestDto?> GetManifestAsync(string fileRelativePath, CancellationToken ct = default)
+    /// <param name="ctx">存储上下文（租户决定命名空间）。</param>
+    public async Task<StorageManifestDto?> GetManifestAsync(string fileRelativePath, CancellationToken ct = default,
+        StoreContext? ctx = null)
     {
         try
         {
-            var entry = await ResolveEntryAsync(fileRelativePath, ct).ConfigureAwait(false);
+            var entry = await ResolveEntryAsync(fileRelativePath, NsOf(EffectiveTenant(ctx)), ct).ConfigureAwait(false);
             if (entry is null)
                 return null;
             return new StorageManifestDto
@@ -67,11 +70,12 @@ public sealed partial class FileBoxObjectStorageService
     }
 
     /// <summary>按 ObjectKey 精确反查索引条目；对象不存在返回 null。</summary>
-    private async Task<IndexEntry?> ResolveEntryAsync(string fileRelativePath, CancellationToken ct = default)
+    private async Task<IndexEntry?> ResolveEntryAsync(string fileRelativePath, string namespaceId,
+        CancellationToken ct = default)
     {
         var page = await _index.QueryAsync(new IndexQuery
         {
-            NamespaceId = NamespaceId,
+            NamespaceId = namespaceId,
             KeyPrefix = fileRelativePath
         }, ct).ConfigureAwait(false);
         return page.Items.FirstOrDefault(e => e.ObjectKey == fileRelativePath);
@@ -81,12 +85,13 @@ public sealed partial class FileBoxObjectStorageService
     /// <param name="fileRelativePath">对象 key。</param>
     /// <param name="tier">目标存储层（领域 Hot/Cold）。</param>
     /// <param name="ct">取消令牌。</param>
+    /// <param name="ctx">存储上下文（租户决定命名空间）。</param>
     public async Task<StorageManifestDto?> ChangeStorageTierAsync(string fileRelativePath, DomainStorageTier tier,
-        CancellationToken ct = default)
+        CancellationToken ct = default, StoreContext? ctx = null)
     {
         try
         {
-            var entry = await ResolveEntryAsync(fileRelativePath, ct).ConfigureAwait(false);
+            var entry = await ResolveEntryAsync(fileRelativePath, NsOf(EffectiveTenant(ctx)), ct).ConfigureAwait(false);
             if (entry is null)
             {
                 _logger.LogWarning("调整存储层失败（对象不存在） Path={Path}", fileRelativePath);

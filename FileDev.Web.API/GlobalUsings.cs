@@ -16,6 +16,8 @@ global using FileDev.Infrastructure.Service;
 global using FileDev.Web.API.APIs;
 global using FileDev.Web.API.Application.Commands;
 global using FileDev.Web.API.Application.Queries;
+global using FileDev.Web.API.DependencyInjection;
+global using FileDev.Web.API.Helpers;
 global using FileDev.Web.API.Middleware;
 
 global using Microsoft.AspNetCore.Http.Features;

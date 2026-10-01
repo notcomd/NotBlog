@@ -1,4 +1,5 @@
 
+using FileDev.Domain.Enum;
 using Notcomd.Token.JWT.Security;
 using Notcomd.Token.JWT.Core;
 namespace FileDev.Infrastructure.Service;
@@ -16,7 +17,7 @@ public class FileStorageService(
     /// </summary>
     public async Task<NotFileStorageResponse> SaveTextFileAsync(string fileRelativePath, string content,
         string? expectedHash = null,
-        string? encoding = null, bool overwrite = true)
+        string? encoding = null, bool overwrite = true, string? tenantId = null)
     {
         var encode = encoding ?? _config.DefaultEncoding;
         var bytes = Encoding.GetEncoding(encode).GetBytes(content);
@@ -26,7 +27,8 @@ public class FileStorageService(
             FileContent = bytes,
             Overwrite = overwrite,
             Encoding = encode,
-            ExpectedHash = expectedHash
+            ExpectedHash = expectedHash,
+            TenantId = tenantId
         };
         return await storageProvider.SaveAsync(request);
     }
@@ -36,14 +38,16 @@ public class FileStorageService(
     /// </summary>
     public async Task<NotFileStorageResponse> SaveBinaryFileAsync(string fileRelativePath, byte[] content,
         string? expectedHash = null,
-        bool overwrite = true)
+        bool overwrite = true, FileSource? source = null, string? tenantId = null)
     {
         var request = new NotFileStorageRequest
         {
             FileRelativePath = fileRelativePath,
             FileContent = content,
             Overwrite = overwrite,
-            ExpectedHash = expectedHash
+            ExpectedHash = expectedHash,
+            Source = source,
+            TenantId = tenantId
         };
         return await storageProvider.SaveAsync(request);
     }

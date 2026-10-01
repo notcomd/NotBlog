@@ -483,7 +483,9 @@ public class FileStorageServiceGRPC(
         foreach (var fileUri in toDelete)
         {
             var relativePath = FileApiHelpers.FileUriToRelativePath(fileUri);
-            var result = await _storageService.DeleteAsync(relativePath);
+            // 附件属主可能不同于调用方（Message/Markdown/Video 服务调用），命名空间以附件属主（路径首段）为准
+            var tenantId = FileApiHelpers.ResolveTenantFromFileKey(relativePath);
+            var result = await _storageService.DeleteAsync(relativePath, new StoreContext(null, tenantId));
             if (result.Success)
                 unregistered++;
         }

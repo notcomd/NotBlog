@@ -1,4 +1,5 @@
 using FileDev.Domain.Entities;
+using FileDev.Domain.Enum;
 using FileDev.Web.API.APIs;
 
 namespace FileDev.Web.API.Application.Commands;
@@ -38,12 +39,13 @@ public class StreamUploadCommandHandler(
         // Major：统一路径拼接（原散落在 Handler 内的字符串插值）
         var relativePath = FileApiHelpers.BuildFileKey(request.UserId, ext);
 
-        // 保存到文件系统
+        // 保存到文件系统（流式上传为用户个人文件，写 user-repo 池）
         var storageResult = await storageService.SaveAsync(new NotFileStorageRequest
         {
             FileRelativePath = relativePath,
             FileContent = content,
-            Overwrite = false
+            Overwrite = false,
+            Source = FileSource.UserRepository
         }) ?? throw new InvalidOperationException("文件存储返回 null");
 
         if (!storageResult.Success)

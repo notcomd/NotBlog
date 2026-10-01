@@ -1,8 +1,10 @@
 using Commons.Core;
 using FileDev.Domain.IRepository;
+using FileDev.Domain.IServices;
 using FileDev.Domain.Options;
 using FileDev.Infrastructure.Repository;
 using FileDev.Infrastructure.Service;
+using FileDev.Infrastructure.Service.FileBox;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -45,6 +47,21 @@ public class ModuleInitializer : IModuleInitializer
             };
             options.Storage.Pools.Add(new PoolOptions
             {
+                PoolId = "user-repo",
+                RootPath = Path.Combine(root, "user-repo"),
+                Tier = Mono.FileBox.Lite.Abstractions.Index.StorageTier.Hot,
+                Enabled = true
+            });
+            options.Storage.Pools.Add(new PoolOptions
+            {
+                PoolId = "content-attachment",
+                RootPath = Path.Combine(root, "content-attachment"),
+                Tier = Mono.FileBox.Lite.Abstractions.Index.StorageTier.Hot,
+                Enabled = true
+            });
+            // default 池：分片暂存与未指定类别对象的回退落盘池
+            options.Storage.Pools.Add(new PoolOptions
+            {
                 PoolId = "default",
                 RootPath = root,
                 Tier = Mono.FileBox.Lite.Abstractions.Index.StorageTier.Hot,
@@ -63,7 +80,7 @@ public class ModuleInitializer : IModuleInitializer
         service.AddMonoFileBoxLiteIndex(b =>
             b.UseJsonFileEntryStore(Path.Combine(AppContext.BaseDirectory,
                 Path.Combine("FileStorage", "filebox", "index", "entries.json"))));
-        service.AddMonoFileBoxLiteStorage();
+        service.AddMonoFileBoxLiteStorage(b => b.UseDiskSelector<CategoryPoolSelector>());
         service.AddMonoFileBoxLiteUseCases();
 
         service.AddScoped<INotFileTagRepository, NotFileTagRepository>();
@@ -72,6 +89,7 @@ public class ModuleInitializer : IModuleInitializer
         service.AddScoped<IContentAttachmentRefRepository, ContentAttachmentRefRepository>();
         service.AddScoped<IUserFileInfoRepository, UserFileInfoRepository>();
         service.AddScoped<INotFileStorageService, FileBoxObjectStorageService>();
+        service.AddScoped<ITenantContext, AsyncLocalTenantContext>();
         service.AddScoped<INotFileService, NotFileService>();
         service.AddScoped<INotFileVolumeService, NotFileVolumeService>();
         service.AddScoped<IContentAttachmentService, ContentAttachmentService>();

@@ -8,9 +8,9 @@ namespace FileDev.Web.API.APIs;
 /// 数据卷管理 API（仅管理员/系统调用，挂载在 <c>/api/filestorage</c> 需 JWT 认证的分组下）。
 /// 提供卷清单查询、存储卷统计同步、共享/租户专属卷新增、目录统计与存储层调整。
 /// </summary>
-public static class FileVolumeApis
+public static class FileVolumeApi
 {
-    public static RouteGroupBuilder MapFileVolumeApis(this RouteGroupBuilder routeGroupBuilder)
+    public static RouteGroupBuilder MapFileVolumeApi(this RouteGroupBuilder routeGroupBuilder)
     {
         var router = routeGroupBuilder.MapGroup("/volume");
         router.MapGet("/", ListVolumesAsync);
@@ -91,7 +91,10 @@ public static class FileVolumeApis
             {
                 if (string.IsNullOrWhiteSpace(path))
                     throw new ArgumentException("path 不能为空");
-                return storageService.ChangeStorageTierAsync(path, request?.Tier ?? Domain.Enum.StorageTier.Hot, ct);
+                // 命名空间以对象属主（路径首段）为准，而非管理端调用者
+                var tenantId = FileApiHelpers.ResolveTenantFromFileKey(path);
+                return storageService.ChangeStorageTierAsync(path, request?.Tier ?? Domain.Enum.StorageTier.Hot, ct,
+                    new StoreContext(null, tenantId));
             },
             m => m is null ? BadRequest($"对象不存在或调整失败：{path}") : Results.Json(new { ok = true, manifest = m }));
 
@@ -111,8 +114,6 @@ public static class FileVolumeApis
             return Results.Json(ApiResponseResult.Failure("请求处理失败", 500), statusCode: 500);
         }
     }
-
-
 
     public record AddSharedVolumeRequest(string RootPath);
 

@@ -38,9 +38,13 @@ public class MergeChunksCommandHandler(
             request.UserId, request.FileName ?? record.FileName, record.TotalSize,
             configOptions.Value, cancellationToken);
 
-        // 合并分片
+        // 合并分片（产物按归属类别路由到对应物理池）
+        var mergeSource = string.IsNullOrWhiteSpace(request.ContentId)
+            ? FileSource.UserRepository
+            : FileSource.ContentAttachment;
         var mergeResult = await storageService.MergeChunksAsync(
-            request.FileKey, record.TotalChunks, null, true);
+            request.FileKey, record.TotalChunks, null, true,
+            new StoreContext(mergeSource, record.UserId.ToString("N")));
 
         if (!mergeResult.Success)
             throw new InvalidOperationException($"分片合并失败: {mergeResult.ErrorMessage}");

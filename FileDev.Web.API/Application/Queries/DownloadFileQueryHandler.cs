@@ -25,7 +25,9 @@ public class DownloadFileQueryHandler(
             throw new FilePermissionDeniedException("无权访问此文件");
 
         var relativePath = FileApiHelpers.FileUriToRelativePath(file.FileUri);
-        var (stream, storageResponse) = await storageService.GetContentStreamAsync(relativePath);
+        // 命名空间以文件属主为准（公开文件可被非属主下载，不能用调用者命名空间）
+        var (stream, storageResponse) = await storageService.GetContentStreamAsync(
+            relativePath, new StoreContext(file.Source, file.UserId.ToString("N")));
         if (!storageResponse.Success || stream is null)
             throw new InvalidOperationException($"存储读取错误: {storageResponse.ErrorMessage}");
 

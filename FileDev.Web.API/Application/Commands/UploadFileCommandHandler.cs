@@ -1,3 +1,4 @@
+using FileDev.Domain.Enum;
 using Notcomd.Token.JWT.Security;
 
 namespace FileDev.Web.API.Application.Commands;
@@ -42,12 +43,14 @@ public class UploadFileCommandHandler(
 
         // 物理存储写入
         var relativePath = FileApiHelpers.BuildFileKey(request.UserId, ext);
+        var isAttachment = !string.IsNullOrWhiteSpace(request.ContentId);
         var storageResult = await storageService.SaveAsync(new NotFileStorageRequest
         {
             FileRelativePath = relativePath,
             FileContent = request.FileContent,
             Overwrite = false,
-            ExpectedHash = request.ExpectedMd5
+            ExpectedHash = request.ExpectedMd5,
+            Source = isAttachment ? FileSource.ContentAttachment : FileSource.UserRepository
         }) ?? throw new InvalidOperationException("文件存储返回 null");
 
         if (!storageResult.Success)
@@ -55,7 +58,6 @@ public class UploadFileCommandHandler(
 
         var fileUri = FileApiHelpers.BuildFileUri(relativePath);
         var fileType = FileApiHelpers.ResolveFileType(ext);
-        var isAttachment = !string.IsNullOrWhiteSpace(request.ContentId);
 
         try
         {

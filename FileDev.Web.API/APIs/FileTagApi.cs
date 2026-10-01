@@ -1,4 +1,4 @@
-﻿using Commons.Result;
+using Commons.Result;
 using FileDev.Web.API.Dto;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Mvc;
@@ -12,7 +12,7 @@ public static class FileTagApi
 {
 
 
-    public static RouteGroupBuilder FileTagApis(this RouteGroupBuilder routeGroupBuilder)
+    public static RouteGroupBuilder MapFileTagApi(this RouteGroupBuilder routeGroupBuilder)
     {
         var route = routeGroupBuilder.MapGroup("/filestorage/tags")
             .RequireAuthorization()

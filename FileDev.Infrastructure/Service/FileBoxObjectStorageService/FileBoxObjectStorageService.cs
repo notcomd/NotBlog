@@ -1,5 +1,6 @@
 using FileDev.Domain.Dto.Request;
 using FileDev.Domain.Dto.Response;
+using FileDev.Domain.Enum;
 using FileDev.Domain.IServices;
 using FileDev.Domain.Options;
 using Microsoft.Extensions.Logging;
@@ -29,18 +30,29 @@ namespace FileDev.Infrastructure.Service;
 /// </summary>
 public sealed partial class FileBoxObjectStorageService : INotFileStorageService
 {
-    /// <summary>统一命名空间前缀，FileBox 对象全部写入该命名空间。</summary>
-    private const string NamespaceId = "notblog";
+    /// <summary>默认命名空间（未指定租户时的回退命名空间）。</summary>
+    private const string FallbackNamespace = "notblog";
 
     /// <summary>文件内容缓存在 Redis 的 key 前缀（Base64 存储，见 <see cref="IRedisCacheService"/>）。</summary>
     private const string ContentCachePrefix = "file:content:";
+
+    /// <summary>个人文件池。</summary>
+    private const string UserRepoPoolId = "user-repo";
+
+    /// <summary>内容附件池。</summary>
+    private const string ContentAttachmentPoolId = "content-attachment";
+
+    /// <summary>未指定类别时的回退池（同时作分片暂存池）。</summary>
+    private const string DefaultPoolId = "default";
 
     private readonly IPutObjectUseCase _put;
     private readonly IGetObjectUseCase _get;
     private readonly IDeleteObjectUseCase _delete;
     private readonly IIndexReader _index;
+    private readonly IEntryStore _entries;
     private readonly IRedisCacheService _redis;
     private readonly NotFileStorageOptions _config;
+    private readonly ITenantContext _tenant;
     private readonly ILogger<FileBoxObjectStorageService> _logger;
 
     /// <summary>构造适配器。</summary>
@@ -49,18 +61,39 @@ public sealed partial class FileBoxObjectStorageService : INotFileStorageService
         IGetObjectUseCase get,
         IDeleteObjectUseCase delete,
         IIndexReader index,
+        IEntryStore entries,
         IRedisCacheService redis,
         IOptionsSnapshot<NotFileStorageOptions> configOptions,
+        ITenantContext tenant,
         ILogger<FileBoxObjectStorageService> logger)
     {
         _put = put ?? throw new ArgumentNullException(nameof(put));
         _get = get ?? throw new ArgumentNullException(nameof(get));
         _delete = delete ?? throw new ArgumentNullException(nameof(delete));
         _index = index ?? throw new ArgumentNullException(nameof(index));
+        _entries = entries ?? throw new ArgumentNullException(nameof(entries));
         _redis = redis ?? throw new ArgumentNullException(nameof(redis));
         _config = configOptions?.Value ?? throw new ArgumentNullException(nameof(configOptions));
+        _tenant = tenant ?? throw new ArgumentNullException(nameof(tenant));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
+
+    /// <summary>取当前生效租户 ID：优先显式上下文，否则用作用域注入的租户上下文（回退默认）。</summary>
+    private string EffectiveTenant(StoreContext? ctx)
+        => string.IsNullOrWhiteSpace(ctx?.TenantId) ? _tenant.TenantId : ctx.TenantId;
+
+    /// <summary>按租户派生 FileBox 命名空间；租户为空时回退默认命名空间。</summary>
+    private static string NsOf(string? tenantId)
+        => string.IsNullOrWhiteSpace(tenantId) ? FallbackNamespace : $"tenant:{tenantId}";
+
+    /// <summary>按文件类别映射目标物理池；类别为空时回退默认池。</summary>
+    private static string PoolIdOf(FileSource? source)
+        => source switch
+        {
+            FileSource.ContentAttachment => ContentAttachmentPoolId,
+            FileSource.UserRepository => UserRepoPoolId,
+            _ => DefaultPoolId
+        };
 
     /// <summary>构造失败响应。</summary>
     private static NotFileStorageResponse Failure(string message) => new() { Success = false, ErrorMessage = message };
@@ -115,13 +148,13 @@ public sealed partial class FileBoxObjectStorageService : INotFileStorageService
     }
 
     /// <summary>按 ObjectKey 精确反查 ContentHash（索引条目）。对象不存在返回 null。</summary>
-    private async Task<string?> ResolveHashAsync(string relativePath, CancellationToken ct = default)
+    private async Task<string?> ResolveHashAsync(string relativePath, string namespaceId, CancellationToken ct = default)
     {
         try
         {
             var page = await _index.QueryAsync(new IndexQuery
             {
-                NamespaceId = NamespaceId,
+                NamespaceId = namespaceId,
                 KeyPrefix = relativePath
             }, ct).ConfigureAwait(false);
             return page.Items.FirstOrDefault(e => e.ObjectKey == relativePath)?.ContentHash;
@@ -136,7 +169,8 @@ public sealed partial class FileBoxObjectStorageService : INotFileStorageService
     /// <summary>
     /// 统一读取入口（带 Redis 缓存）：先查缓存（Base64），未命中再从 FileBox 按 ContentHash 读整对象并惰性回填。
     /// </summary>
-    private async Task<(byte[]? Content, NotFileStorageResponse Response)> ReadContentCachedAsync(string relativePath)
+    private async Task<(byte[]? Content, NotFileStorageResponse Response)> ReadContentCachedAsync(string relativePath,
+        string namespaceId)
     {
         var cacheKey = CacheKey(relativePath);
         try
@@ -155,7 +189,7 @@ public sealed partial class FileBoxObjectStorageService : INotFileStorageService
 
         try
         {
-            var hash = await ResolveHashAsync(relativePath).ConfigureAwait(false);
+            var hash = await ResolveHashAsync(relativePath, namespaceId).ConfigureAwait(false);
             if (string.IsNullOrEmpty(hash))
             {
                 _logger.LogWarning("读取文件失败（对象不存在） Path={Path}", relativePath);
@@ -165,7 +199,7 @@ public sealed partial class FileBoxObjectStorageService : INotFileStorageService
             var getResult = await _get.ExecuteAsync(new GetObjectCommand
             {
                 ContentHash = hash,
-                NamespaceId = NamespaceId,
+                NamespaceId = namespaceId,
                 Offset = 0,
                 Length = null
             }, CancellationToken.None).ConfigureAwait(false);
@@ -203,9 +237,11 @@ public sealed partial class FileBoxObjectStorageService : INotFileStorageService
         => HashHelper.ComputeHash(bytes, AlgorithmType.SHA256);
 
     /// <summary>读取文件内容（字节）。</summary>
-    public async Task<(byte[] Content, NotFileStorageResponse Response)> GetContentAsync(string fileRelativePath)
+    public async Task<(byte[] Content, NotFileStorageResponse Response)> GetContentAsync(string fileRelativePath,
+        StoreContext? ctx = null)
     {
-        var (content, response) = await ReadContentCachedAsync(fileRelativePath).ConfigureAwait(false);
+        var ns = NsOf(EffectiveTenant(ctx));
+        var (content, response) = await ReadContentCachedAsync(fileRelativePath, ns).ConfigureAwait(false);
         return (content!, response);
     }
 
@@ -213,24 +249,29 @@ public sealed partial class FileBoxObjectStorageService : INotFileStorageService
     /// 流式获取文件内容：命中 Redis 缓存时直取字节；未命中则从 FileBox 读整对象后回填。
     /// 内存流承接以维持上层流式下载契约（<c>/files</c> 的浏览器 Range 语义仍可用，但基于内存）。
     /// </summary>
-    public async Task<(Stream? Content, NotFileStorageResponse Response)> GetContentStreamAsync(string fileRelativePath)
+    public async Task<(Stream? Content, NotFileStorageResponse Response)> GetContentStreamAsync(string fileRelativePath,
+        StoreContext? ctx = null)
     {
-        var (content, response) = await ReadContentCachedAsync(fileRelativePath).ConfigureAwait(false);
+        var ns = NsOf(EffectiveTenant(ctx));
+        var (content, response) = await ReadContentCachedAsync(fileRelativePath, ns).ConfigureAwait(false);
         if (content is null)
             return (null, response);
         return (new MemoryStream(content, writable: false), response);
     }
 
-    /// <summary>保存文件（FileBox 覆盖写即重写索引条目，随后失效内容缓存）。</summary>
+    /// <summary>保存文件（按类别路由到物理池、按租户写入命名空间，随后失效内容缓存）。</summary>
     public async Task<NotFileStorageResponse> SaveAsync(NotFileStorageRequest request)
     {
         try
         {
+            var ns = NsOf(EffectiveTenant(new StoreContext(null, request.TenantId)));
+            var poolId = PoolIdOf(request.Source);
             var putResult = await _put.ExecuteAsync(new PutObjectCommand
             {
-                NamespaceId = NamespaceId,
+                NamespaceId = ns,
                 ObjectKey = request.FileRelativePath,
-                Content = new MemoryStream(request.FileContent, writable: false)
+                Content = new MemoryStream(request.FileContent, writable: false),
+                Write = new Mono.FileBox.Lite.Abstractions.Storage.WriteOptions { PoolId = poolId }
             }, CancellationToken.None).ConfigureAwait(false);
 
             if (!putResult.Succeeded)
@@ -253,11 +294,12 @@ public sealed partial class FileBoxObjectStorageService : INotFileStorageService
     }
 
     /// <summary>删除文件：反查哈希后走 FileBox 删除用例（逻辑删除），随后失效内容缓存。</summary>
-    public async Task<NotFileStorageResponse> DeleteAsync(string fileRelativePath)
+    public async Task<NotFileStorageResponse> DeleteAsync(string fileRelativePath, StoreContext? ctx = null)
     {
         try
         {
-            var hash = await ResolveHashAsync(fileRelativePath).ConfigureAwait(false);
+            var ns = NsOf(EffectiveTenant(ctx));
+            var hash = await ResolveHashAsync(fileRelativePath, ns).ConfigureAwait(false);
             if (string.IsNullOrEmpty(hash))
             {
                 _logger.LogWarning("删除文件失败（对象不存在） Path={Path}", fileRelativePath);
@@ -267,7 +309,7 @@ public sealed partial class FileBoxObjectStorageService : INotFileStorageService
             await _delete.ExecuteAsync(new DeleteObjectCommand
             {
                 ContentHash = hash,
-                NamespaceId = NamespaceId
+                NamespaceId = ns
             }, CancellationToken.None).ConfigureAwait(false);
 
             await InvalidateCacheAsync(fileRelativePath).ConfigureAwait(false);
@@ -281,9 +323,10 @@ public sealed partial class FileBoxObjectStorageService : INotFileStorageService
     }
 
     /// <summary>检查文件是否存在（底层异常一律视为不存在，避免上传流程被存储异常打断）。</summary>
-    public async Task<bool> ExistsAsync(string fileRelativePath)
+    public async Task<bool> ExistsAsync(string fileRelativePath, StoreContext? ctx = null)
     {
-        var hash = await ResolveHashAsync(fileRelativePath).ConfigureAwait(false);
+        var ns = NsOf(EffectiveTenant(ctx));
+        var hash = await ResolveHashAsync(fileRelativePath, ns).ConfigureAwait(false);
         return !string.IsNullOrEmpty(hash);
     }
 }

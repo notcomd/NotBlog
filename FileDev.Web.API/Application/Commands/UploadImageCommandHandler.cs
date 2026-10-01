@@ -1,3 +1,4 @@
+using FileDev.Domain.Enum;
 using ImageValidator = FileDev.Web.API.Grpc.ImageValidator;
 
 namespace FileDev.Web.API.Application.Commands;
@@ -52,19 +53,20 @@ public class UploadImageCommandHandler(
 
         var ext2 = Path.GetExtension(request.FileName).ToLowerInvariant();
         var relativePath = FileApiHelpers.BuildFileKey(request.UserId, ext2);
+        var isAttachment = !string.IsNullOrWhiteSpace(request.ContentId);
 
         var storageResult = await storageService.SaveAsync(new NotFileStorageRequest
         {
             FileRelativePath = relativePath,
             FileContent = request.ImageContent,
-            Overwrite = false
+            Overwrite = false,
+            Source = isAttachment ? FileSource.ContentAttachment : FileSource.UserRepository
         }) ?? throw new InvalidOperationException("文件存储返回 null");
 
         if (!storageResult.Success)
             throw new InvalidOperationException($"文件存储失败: {storageResult.ErrorMessage}");
 
         var fileUri = FileApiHelpers.BuildFileUri(relativePath);
-        var isAttachment = !string.IsNullOrWhiteSpace(request.ContentId);
 
         NotFile file;
         try

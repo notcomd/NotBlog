@@ -79,6 +79,8 @@ builder.Services.AddJwtAuthentication(builder.Configuration.GetSection("JwtOptio
 builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<INotFileService, NotFileService>();
+// 文件 API 端点的服务聚合（标签 API、我的文件等以 [FromServices] 注入）
+builder.Services.AddScoped<FileServicesDi>();
 builder.Services.AddScoped<FileStorageServiceGRPC>();
 builder.Services.AddScoped<GrpcJwtAuthInterceptor>();
 builder.Services.AddScoped<GrpcExceptionMapperInterceptor>();
@@ -139,6 +141,7 @@ using (var scope = app.Services.CreateScope())
 
 app.UseNotBlogPipeline();
 app.UseAuthentication();
+app.UseMiddleware<FileDev.Web.API.Middleware.TenantContextMiddleware>();
 app.UseAuthorization();
 app.UsePermissionEnforcement();
 app.UseMiddleware<FileCheckTypeMiddleware>();
@@ -154,17 +157,15 @@ if (app.Environment.IsDevelopment())
 var fileStorageGroup = app.MapGroup("/api/filestorage")
     .RequireAuthorization()
     .RequireResourcePermissions("api:file");
-fileStorageGroup.MapFileChunkApis();
-fileStorageGroup.MapStreamUploadApis();
-fileStorageGroup.MapDedupApis();
-fileStorageGroup.MapFileVolumeApis();
-fileStorageGroup.MapMyFilesApis();
+fileStorageGroup.MapFileUploadApi();
+fileStorageGroup.MapFileVolumeApi();
+fileStorageGroup.MapMyFilesApi();
 // 管理端文件端点（/api/filestorage/admin/*，内部校验管理员角色）
 fileStorageGroup.MapAdminFileApi();
 
 // F-09.2：注册标签 API（FileTagApi 内部自带 RequireAuthorization，
 // 端点：/api/filestorage/tags/...，即原文件组 API 的标签化替代）
-app.MapGroup("/api").FileTagApis();
+app.MapGroup("/api").MapFileTagApi();
 
 app.MapFileDownloadApi();
 app.MapGrpcService<FileStorageServiceGRPC>();

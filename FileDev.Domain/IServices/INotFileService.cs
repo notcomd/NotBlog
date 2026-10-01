@@ -1,6 +1,3 @@
-using FileDev.Domain.Entities;
-using FileDev.Domain.Options;
-
 namespace FileDev.Domain.IServices;
 
 public interface INotFileService

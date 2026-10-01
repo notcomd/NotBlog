@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using FileDev.Infrastructure.Service;
 using Grpc.Core;
 using Grpc.Core.Interceptors;
 using Microsoft.Extensions.Logging;
@@ -81,6 +82,8 @@ public class GrpcJwtAuthInterceptor : Interceptor
         }
 
         context.UserState[CallerUserIdStateKey] = callerId.Value;
+        // 租户 ID = 当前调用者用户 ID，随异步链传播供存储层命名空间路由
+        AsyncLocalTenantContext.SetTenantId(callerId.Value.ToString("N"));
     }
 
     /// <summary>
