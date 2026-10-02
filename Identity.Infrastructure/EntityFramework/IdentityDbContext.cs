@@ -28,6 +28,8 @@ public class IdentityDbContext : DbContext, IUnitOfWork
 
     public DbSet<Permission> Permissions { get; set; }
 
+    public DbSet<Menu> Menus { get; set; }
+
     public DbSet<ClientRequest> ClientRequests{get;set;}
 
     public DbSet<UserLoginHistory> UserLoginHistories { get; set; }
@@ -71,6 +73,7 @@ public class IdentityDbContext : DbContext, IUnitOfWork
         modelBuilder.ApplyConfiguration(new UserExternalLoginEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new ClientRequestTypeConfiguration());
         modelBuilder.ApplyConfiguration(new PermissionEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new MenuEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new UserLoginHistoryEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new OutboxMessageTypeConfiguration());
     }

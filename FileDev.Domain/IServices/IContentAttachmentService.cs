@@ -1,6 +1,3 @@
-using FileDev.Domain.Entities;
-using FileDev.Domain.Enum;
-
 namespace FileDev.Domain.IServices;
 
 /// <summary>

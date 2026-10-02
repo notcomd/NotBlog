@@ -1,5 +1,3 @@
-using FileDev.Domain.Dto.Response;
-
 namespace FileDev.Domain.IServices;
 
 /// <summary>

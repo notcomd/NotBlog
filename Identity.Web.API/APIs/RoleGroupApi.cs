@@ -44,7 +44,7 @@ public static class RoleGroupApi
         try
         {
             var identityCommand = new IdentifiedCommand<CreateRoleGroupCommand, CreateRoleGroupResult>(
-                IdentityApis.GetIdempotencyKey(httpContext), command);
+                IdentityApiHelpers.GetIdempotencyKey(httpContext), command);
             var result = await mediator.SendAsync(identityCommand);
 
             return string.IsNullOrEmpty(result.RoleGroupName)
@@ -67,7 +67,7 @@ public static class RoleGroupApi
         {
             var command = update with { RoleGroupGuid = groupId };
             var identityCommand = new IdentifiedCommand<UpdateRoleGroupCommand, bool>(
-                IdentityApis.GetIdempotencyKey(httpContext), command);
+                IdentityApiHelpers.GetIdempotencyKey(httpContext), command);
             var result = await mediator.SendAsync(identityCommand);
             return Results.Ok(new { success = result });
         }
@@ -86,7 +86,7 @@ public static class RoleGroupApi
         {
             var command = new DeleteRoleGroupCommand(groupId);
             var identityCommand = new IdentifiedCommand<DeleteRoleGroupCommand, bool>(
-                IdentityApis.GetIdempotencyKey(httpContext), command);
+                IdentityApiHelpers.GetIdempotencyKey(httpContext), command);
             var result = await mediator.SendAsync(identityCommand);
             return Results.Ok(new { success = result });
         }

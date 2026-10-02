@@ -37,7 +37,7 @@ public class UploadChunkCommandHandler(
 
         var result = await storageService.UploadChunkAsync(
             request.FileKey, request.ChunkIndex, request.ChunkContent,
-            request.ChunkHash);
+            request.ChunkHash, cancellationToken);
 
         if (!result.Success)
             throw new InvalidOperationException($"分片{request.ChunkIndex}上传失败: {result.ErrorMessage}");

@@ -1,3 +1,4 @@
+using Identity.Domain.Entities.MenuAggregate;
 using Identity.Domain.Entities.RoleAggregate;
 using Identity.Infrastructure.EntityFramework;
 using Microsoft.EntityFrameworkCore;
@@ -55,6 +56,7 @@ public class IdentityDbSeeder : IDbSeeder<IdentityDbContext>
     public async Task SeedAsync(IdentityDbContext context)
     {
         await SeedPermissionsAsync(context);
+        await SeedMenusAsync(context);
         await SeedRolesAsync(context);
         await SeedDefaultRoleGroupsAsync(context);
         await SeedRolePermissionsAsync(context);
@@ -159,6 +161,48 @@ public class IdentityDbSeeder : IDbSeeder<IdentityDbContext>
         _logger.LogInformation(
             "权限初始数据就绪：共 {Total} 个权限码，本次新增 {Added} 个节点，补挂父节点 {Linked} 个",
             codes.Count, addedCount, linkedCount);
+    }
+
+    /// <summary>
+    /// 管理端默认菜单（幂等：以 Url 为键，已存在则跳过，不覆盖管理端改动）。
+    /// 与前端管理端现有页面一一对应，作为菜单管理功能的初始数据。
+    /// </summary>
+    private async Task SeedMenusAsync(IdentityDbContext context)
+    {
+        var defaults = new (string Url, string Name, string Icon, int Sort)[]
+        {
+            ("/admin", "工作台", "dashboard", 10),
+            ("/admin/users", "用户管理", "users", 20),
+            ("/admin/content", "内容管理", "content", 30),
+            ("/admin/reports", "举报管理", "reports", 40),
+            ("/admin/circles", "社区管理", "circles", 50),
+            ("/admin/files", "文件管理", "files", 60),
+            ("/admin/announcements", "公报", "announcements", 70),
+            ("/admin/menus", "菜单管理", "menus", 80)
+        };
+
+        var urls = defaults.Select(d => d.Url).ToList();
+        var existing = await context.Menus
+            .Where(m => urls.Contains(m.Url!))
+            .Select(m => m.Url!)
+            .ToListAsync();
+        var existingSet = new HashSet<string>(existing, StringComparer.OrdinalIgnoreCase);
+
+        var created = 0;
+        foreach (var (url, name, icon, sort) in defaults)
+        {
+            if (existingSet.Contains(url))
+                continue;
+
+            context.Menus.Add(new Menu(name, MenuType.Item, null, url, icon, sort));
+            created++;
+        }
+
+        if (created > 0)
+        {
+            await context.SaveChangesAsync();
+            _logger.LogInformation("已创建 {Count} 个管理端默认菜单", created);
+        }
     }
 
     /// <summary>取 code 的父目录 code（去掉末段；无父返回 null）</summary>

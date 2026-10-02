@@ -1,5 +1,3 @@
-using FileDev.Domain.Dto.Response;
-using FileDev.Domain.IServices;
 using Microsoft.Extensions.Logging;
 using Mono.FileBox.Lite.Abstractions.Index;
 using Mono.FileBox.Lite.Abstractions.UseCases;
@@ -21,24 +19,25 @@ public sealed partial class FileBoxObjectStorageService
     /// <summary>列出并删除某 fileKey 的全部分片临时对象（幂等，缺失即忽略）。</summary>
     /// <param name="fileKey">分片上传任务标识（最终对象 key）。</param>
     /// <param name="namespaceId">分片所属命名空间（按租户派生）。</param>
-    private async Task CleanupChunkObjectsAsync(string fileKey, string namespaceId)
+    /// <param name="ct">取消令牌。</param>
+    private async Task CleanupChunkObjectsAsync(string fileKey, string namespaceId, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(fileKey))
             return;
 
-        var keys = await ListChunkKeysAsync(fileKey, namespaceId).ConfigureAwait(false);
+        var keys = await ListChunkKeysAsync(fileKey, namespaceId, ct).ConfigureAwait(false);
         foreach (var key in keys)
         {
             try
             {
-                var hash = await ResolveHashAsync(key, namespaceId).ConfigureAwait(false);
+                var hash = await ResolveHashAsync(key, namespaceId, ct).ConfigureAwait(false);
                 if (string.IsNullOrEmpty(hash))
                     continue;
                 await _delete.ExecuteAsync(new DeleteObjectCommand
                 {
                     ContentHash = hash,
                     NamespaceId = namespaceId
-                }, CancellationToken.None).ConfigureAwait(false);
+                }, ct).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -47,24 +46,55 @@ public sealed partial class FileBoxObjectStorageService
         }
     }
 
-    /// <summary>按 key 前缀列出分片临时对象 key（经索引反查，不做物理遍历）。</summary>
-    private async Task<IReadOnlyList<string>> ListChunkKeysAsync(string fileKey, string namespaceId)
+    /// <summary>
+    /// 按 key 前缀列出分片临时对象 key（经索引反查，不做物理遍历）。
+    /// <para>
+    /// 分片 key 形如 <c>__chunk__/{fileKey}#{index}</c>；索引查询为<b>游标分页</b>（默认每页 100 条），
+    /// 因此必须循环取尽，否则超出一页的分片不会被列出、也就不会被清理（残留泄漏）。
+    /// </para>
+    /// </summary>
+    /// <param name="fileKey">分片上传任务标识。</param>
+    /// <param name="namespaceId">分片所属命名空间。</param>
+    /// <param name="ct">取消令牌。</param>
+    private async Task<IReadOnlyList<string>> ListChunkKeysAsync(string fileKey, string namespaceId,
+        CancellationToken ct = default)
     {
+        // 以 "#" 收尾精确匹配本任务的 key，避免误纳同前缀的其它 fileKey（如 u/abc 与 u/abcd）
+        var prefix = $"{ChunkPrefix}{fileKey}#";
+        var keys = new List<string>();
+        string? cursor = null;
+
         try
         {
-            var prefix = $"{ChunkPrefix}{fileKey}";
-            var page = await _index.QueryAsync(new IndexQuery
+            bool hasMore;
+            do
             {
-                NamespaceId = namespaceId,
-                KeyPrefix = prefix
-            }, CancellationToken.None).ConfigureAwait(false);
-            return page.Items.Where(e => e.ObjectKey is not null && e.ObjectKey.StartsWith(prefix, StringComparison.Ordinal))
-                .Select(e => e.ObjectKey!).ToList();
+                var page = await _index.QueryAsync(new IndexQuery
+                {
+                    NamespaceId = namespaceId,
+                    KeyPrefix = prefix,
+                    Page = new PageRequest { Cursor = cursor }
+                }, ct).ConfigureAwait(false);
+
+                foreach (var entry in page.Items)
+                {
+                    if (entry.ObjectKey is not null && entry.ObjectKey.StartsWith(prefix, StringComparison.Ordinal))
+                        keys.Add(entry.ObjectKey);
+                }
+
+                cursor = page.NextCursor;
+                // NextCursor 为空即终止，防止异常实现造成死循环
+                hasMore = page.HasMore && !string.IsNullOrEmpty(cursor);
+            }
+            while (hasMore);
+
+            return keys;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "列出分片临时对象失败 FileKey={FileKey}", fileKey);
-            return [];
+            // 清理为尽力而为：返回已收集到的 key，避免因中途异常整批放弃
+            return keys;
         }
     }
 
@@ -73,12 +103,13 @@ public sealed partial class FileBoxObjectStorageService
     /// 异常不向外抛出，仅记录日志，避免清理环节污染主流程。
     /// </summary>
     /// <param name="fileKey">分片上传任务标识。</param>
+    /// <param name="ct">取消令牌。</param>
     /// <param name="tenantId">租户 ID（决定分片所在命名空间）。</param>
-    public async Task CleanupChunksAsync(string fileKey, string? tenantId = null)
+    public async Task CleanupChunksAsync(string fileKey, CancellationToken ct = default, string? tenantId = null)
     {
         try
         {
-            await CleanupChunkObjectsAsync(fileKey, NsOf(EffectiveTenant(new StoreContext(null, tenantId)))).ConfigureAwait(false);
+            await CleanupChunkObjectsAsync(fileKey, NsOf(EffectiveTenant(new StoreContext(null, tenantId))), ct).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -91,9 +122,10 @@ public sealed partial class FileBoxObjectStorageService
     /// <param name="chunkIndex">分片序号（从 0 开始）。</param>
     /// <param name="chunkContent">分片内容。</param>
     /// <param name="chunkHash">期望 SHA-256，非空时前置校验。</param>
+    /// <param name="ct">取消令牌。</param>
     /// <param name="tenantId">租户 ID（决定分片命名空间）。</param>
     public async Task<NotFileStorageResponse> UploadChunkAsync(string fileKey, int chunkIndex, byte[] chunkContent,
-        string? chunkHash = null, string? tenantId = null)
+        string? chunkHash = null, CancellationToken ct = default, string? tenantId = null)
     {
         try
         {
@@ -116,7 +148,7 @@ public sealed partial class FileBoxObjectStorageService
                 Content = new MemoryStream(chunkContent, writable: false),
                 // 分片作为暂存对象统一落默认池，合并产物才按类别落对应物理池
                 Write = new Mono.FileBox.Lite.Abstractions.Storage.WriteOptions { PoolId = DefaultPoolId }
-            }, CancellationToken.None).ConfigureAwait(false);
+            }, ct).ConfigureAwait(false);
 
             if (!putResult.Succeeded)
             {
@@ -155,9 +187,10 @@ public sealed partial class FileBoxObjectStorageService
     /// <param name="totalChunks">分片总数。</param>
     /// <param name="expectedFileHash">期望整文件 SHA-256，非空时合并后校验。</param>
     /// <param name="overwrite">是否允许覆盖已存在的最终对象。</param>
+    /// <param name="ct">取消令牌。</param>
     /// <param name="ctx">存储上下文（类别决定产物落池，租户决定命名空间）。</param>
     public async Task<NotFileStorageResponse> MergeChunksAsync(string fileKey, int totalChunks,
-        string? expectedFileHash = null, bool overwrite = true, StoreContext? ctx = null)
+        string? expectedFileHash = null, bool overwrite = true, CancellationToken ct = default, StoreContext? ctx = null)
     {
         try
         {
@@ -166,7 +199,7 @@ public sealed partial class FileBoxObjectStorageService
             for (var i = 0; i < totalChunks; i++)
             {
                 var chunkKey = ChunkKey(fileKey, i);
-                var chunkHash = await ResolveHashAsync(chunkKey, ns).ConfigureAwait(false);
+                var chunkHash = await ResolveHashAsync(chunkKey, ns, ct).ConfigureAwait(false);
                 if (string.IsNullOrEmpty(chunkHash))
                     return Failure($"分片{i}缺失");
                 var chunkResult = await _get.ExecuteAsync(new GetObjectCommand
@@ -175,7 +208,7 @@ public sealed partial class FileBoxObjectStorageService
                     NamespaceId = ns,
                     Offset = 0,
                     Length = null
-                }, CancellationToken.None).ConfigureAwait(false);
+                }, ct).ConfigureAwait(false);
                 using var chunkStream = chunkResult.Content;
                 if (chunkStream is null)
                     return Failure($"分片{i}缺失");
@@ -201,7 +234,7 @@ public sealed partial class FileBoxObjectStorageService
                 ObjectKey = fileKey,
                 Content = new MemoryStream(merged, writable: false),
                 Write = new Mono.FileBox.Lite.Abstractions.Storage.WriteOptions { PoolId = PoolIdOf(ctx?.Source) }
-            }, CancellationToken.None).ConfigureAwait(false);
+            }, ct).ConfigureAwait(false);
 
             if (!putResult.Succeeded)
             {
@@ -209,7 +242,7 @@ public sealed partial class FileBoxObjectStorageService
                 return Failure(putResult.Error ?? "合并分片失败");
             }
 
-            await CleanupChunkObjectsAsync(fileKey, ns).ConfigureAwait(false);
+            await CleanupChunkObjectsAsync(fileKey, ns, ct).ConfigureAwait(false);
             await InvalidateCacheAsync(fileKey).ConfigureAwait(false);
 
             return Success(fileKey, merged, putResult.ContentHash);

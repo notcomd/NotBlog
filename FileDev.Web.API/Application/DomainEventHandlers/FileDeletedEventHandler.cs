@@ -47,7 +47,7 @@ public class FileDeleteEventHandler(
 
         // 命名空间以文件属主为准；领域事件可能脱离请求上下文，不能依赖当前用户的环境租户
         var result = await storageService.DeleteAsync(relativePath,
-            new StoreContext(file.Source, file.UserId.ToString("N")));
+            cancellationToken, new StoreContext(file.Source, file.UserId.ToString("N")));
         if (result.Success)
         {
             logger.LogInformation("[FileDelete] 物理文件已删除: FileId={FileId}, Path={Path}",

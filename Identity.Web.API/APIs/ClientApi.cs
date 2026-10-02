@@ -67,7 +67,7 @@ public static class ClientApi
         try
         {
             var identifiedCommand = new IdentifiedCommand<CreateNotClientCommand, CreateNotClientResult>(
-                IdentityApis.GetIdempotencyKey(httpContext), command);
+                IdentityApiHelpers.GetIdempotencyKey(httpContext), command);
             var result = await mediator.SendAsync(identifiedCommand);
 
             return result.NotClientId == Guid.Empty
@@ -109,7 +109,7 @@ public static class ClientApi
         {
             var command = update with { NotClientId = clientId };
             var identifiedCommand = new IdentifiedCommand<UpdateNotClientCommand, bool>(
-                IdentityApis.GetIdempotencyKey(httpContext), command);
+                IdentityApiHelpers.GetIdempotencyKey(httpContext), command);
             var result = await mediator.SendAsync(identifiedCommand);
             return Results.Ok(new { success = result });
         }
@@ -128,7 +128,7 @@ public static class ClientApi
         {
             var command = new RevokeNotClientCommand(clientId);
             var identifiedCommand = new IdentifiedCommand<RevokeNotClientCommand, bool>(
-                IdentityApis.GetIdempotencyKey(httpContext), command);
+                IdentityApiHelpers.GetIdempotencyKey(httpContext), command);
             var result = await mediator.SendAsync(identifiedCommand);
             return Results.Ok(new { success = result });
         }

@@ -62,7 +62,7 @@ return route;
         try
         {
             var identityCommand = new IdentifiedCommand<CreatePermissionCommand, CreatePermissionResult>(
-                IdentityApis.GetIdempotencyKey(httpContext), command);
+                IdentityApiHelpers.GetIdempotencyKey(httpContext), command);
             var result = await mediator.SendAsync(identityCommand);
 
             return string.IsNullOrEmpty(result.PermissionCode)
@@ -88,7 +88,7 @@ return route;
         {
             var command = update with { PermissionId = permissionId };
             var identityCommand = new IdentifiedCommand<UpdatePermissionCommand, bool>(
-                IdentityApis.GetIdempotencyKey(httpContext), command);
+                IdentityApiHelpers.GetIdempotencyKey(httpContext), command);
             var result = await mediator.SendAsync(identityCommand);
             return Results.Ok(new { success = result });
         }
@@ -110,7 +110,7 @@ return route;
         {
             var command = new DeletePermissionCommand(permissionId);
             var identityCommand = new IdentifiedCommand<DeletePermissionCommand, bool>(
-                IdentityApis.GetIdempotencyKey(httpContext), command);
+                IdentityApiHelpers.GetIdempotencyKey(httpContext), command);
             var result = await mediator.SendAsync(identityCommand);
             return Results.Ok(new { success = result });
         }
@@ -158,34 +158,6 @@ return route;
 
         return Results.Ok(roots);
     }
-
-    // ──────────── 网关映射查询（已有）────────────
-
-
-    // ──────────── 网关权限检查端点实现 ────────────
-
-
-
-}
-
-/// <summary>
-/// 权限路由映射 DTO — 与 NotBlog_Yarp 侧的 RouteMapping 结构一致
-/// </summary>
-public sealed record PermissionMappingDto
-{
-    public string Method { get; init; } = string.Empty;
-    public string Path { get; init; } = string.Empty;
-    public string Code { get; init; } = string.Empty;
-}
-
-/// <summary>
-/// 网关权限检查请求 DTO — 与 NotBlog_Yarp 侧 HttpPermissionServiceClient 的请求体一致
-/// </summary>
-public sealed record PermissionCheckRequest
-{
-    public Guid UserId { get; init; }
-
-    public string PermissionCode { get; init; } = string.Empty;
 }
 
 /// <summary>

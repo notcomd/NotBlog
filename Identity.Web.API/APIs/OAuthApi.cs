@@ -4,9 +4,9 @@ using Microsoft.Extensions.Options;
 
 namespace Identity.Web.API.APIs;
 
-public static class OAuthApis
+public static class OAuthApi
 {
-    public static RouteGroupBuilder MapOAuthEndpoints(this RouteGroupBuilder routeBuilder)
+    public static RouteGroupBuilder MapOAuthApi(this RouteGroupBuilder routeBuilder)
     {
         var oauth = routeBuilder.MapGroup("/oauth").WithTags("OAuth Authentication");
 
@@ -33,15 +33,6 @@ public static class OAuthApis
             .WithName("UnlinkExternalLogin");
 
         return routeBuilder;
-    }
-
-    /// <summary>
-    /// S-13：统一 userId Claim 为 NameIdentifier（不再信任 user_id / user_guid 残留 Claim）
-    /// </summary>
-    private static Guid? TryGetAuthenticatedUserId(HttpContext httpContext)
-    {
-        var claim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier);
-        return claim is not null && Guid.TryParse(claim.Value, out var userId) ? userId : null;
     }
 
     private static IResult GetAvailableProviders([FromServices] IOptions<OAuthOptions> oauthOptions)
@@ -141,7 +132,7 @@ public static class OAuthApis
         IOAuthService oauthService,
         HttpContext httpContext)
     {
-        var userId = TryGetAuthenticatedUserId(httpContext);
+        var userId = IdentityApiHelpers.TryGetAuthenticatedUserId(httpContext);
         if (userId is null)
             return Results.Unauthorized();
 
@@ -166,7 +157,7 @@ public static class OAuthApis
         IOAuthService oauthService,
         HttpContext httpContext)
     {
-        var userId = TryGetAuthenticatedUserId(httpContext);
+        var userId = IdentityApiHelpers.TryGetAuthenticatedUserId(httpContext);
         if (userId is null)
             return Results.Unauthorized();
 
@@ -189,7 +180,7 @@ public static class OAuthApis
         IOAuthService oauthService,
         HttpContext httpContext)
     {
-        var userId = TryGetAuthenticatedUserId(httpContext);
+        var userId = IdentityApiHelpers.TryGetAuthenticatedUserId(httpContext);
         if (userId is null)
             return Results.Unauthorized();
 

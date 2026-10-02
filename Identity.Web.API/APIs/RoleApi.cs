@@ -58,7 +58,7 @@ public static class RoleApi
         try
         {
             var identityCommand = new IdentifiedCommand<CreateRoleCommand, CreateRoleResult>(
-                IdentityApis.GetIdempotencyKey(httpContext), command);
+                IdentityApiHelpers.GetIdempotencyKey(httpContext), command);
             var result = await mediator.SendAsync(identityCommand);
 
             return string.IsNullOrEmpty(result.RoleName)
@@ -81,7 +81,7 @@ public static class RoleApi
         {
             var command = update with { RoleGuid = roleId };
             var identityCommand = new IdentifiedCommand<UpdateRoleCommand, bool>(
-                IdentityApis.GetIdempotencyKey(httpContext), command);
+                IdentityApiHelpers.GetIdempotencyKey(httpContext), command);
             var result = await mediator.SendAsync(identityCommand);
             return Results.Ok(new { success = result });
         }
@@ -100,7 +100,7 @@ public static class RoleApi
         {
             var command = new DeleteRoleCommand(roleId);
             var identityCommand = new IdentifiedCommand<DeleteRoleCommand, bool>(
-                IdentityApis.GetIdempotencyKey(httpContext), command);
+                IdentityApiHelpers.GetIdempotencyKey(httpContext), command);
             var result = await mediator.SendAsync(identityCommand);
             return Results.Ok(new { success = result });
         }
@@ -147,7 +147,7 @@ public static class RoleApi
         {
             var command = new SetRolePermissionsCommand(roleId, request.PermissionIds ?? []);
             var identityCommand = new IdentifiedCommand<SetRolePermissionsCommand, bool>(
-                IdentityApis.GetIdempotencyKey(httpContext), command);
+                IdentityApiHelpers.GetIdempotencyKey(httpContext), command);
             var result = await mediator.SendAsync(identityCommand);
             return Results.Ok(new { success = result });
         }

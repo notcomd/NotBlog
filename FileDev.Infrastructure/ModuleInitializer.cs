@@ -1,15 +1,11 @@
 using Commons.Core;
 using FileDev.Domain.IRepository;
-using FileDev.Domain.IServices;
-using FileDev.Domain.Options;
 using FileDev.Infrastructure.Repository;
 using FileDev.Infrastructure.Service;
 using FileDev.Infrastructure.Service.FileBox;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Mono.FileBox.Lite.Abstractions.Configuration;
-using Mono.FileBox.Lite.Abstractions.Index;
 using Mono.FileBox.Lite.Abstractions.Storage;
 using Mono.FileBox.Lite.DependencyInjection;
 
@@ -26,7 +22,7 @@ public class ModuleInitializer : IModuleInitializer
         service.AddMonoFileBoxLite();
 
         // 覆盖 FileBoxOptions：从 NotFileStorage 配置推导磁盘池与分块；可再被 "FileBox" 配置节覆盖。
-        service.AddSingleton<FileBoxOptions>(sp =>
+        service.AddSingleton(sp =>
         {
             var cfg = sp.GetRequiredService<IOptions<NotFileStorageOptions>>().Value;
             var root = Path.Combine(AppContext.BaseDirectory, cfg.StoragePath, "filebox");

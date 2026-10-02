@@ -56,7 +56,7 @@ public class ChunkCleanupBackgroundService(
         {
             // 后台任务无 HTTP 请求上下文，无法从 ITenantContext 推导命名空间；
             // 显式以记录归属用户（租户≡用户）定位分片所在的 tenant:{userId} 命名空间，避免误清默认命名空间。
-            await storageService.CleanupChunksAsync(record.FileKey, record.UserId.ToString("N"));
+            await storageService.CleanupChunksAsync(record.FileKey, ct, record.UserId.ToString("N"));
             await repository.DeleteAsync(record.FileKey, ct);
             logger.LogInformation("[ChunkCleanup] 清理过期分片: FileKey={FileKey}, UserId={UserId}, CreatedAt={CreatedAt}",
                 record.FileKey, record.UserId, record.CreatedAt);

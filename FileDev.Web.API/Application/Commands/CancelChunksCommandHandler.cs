@@ -22,7 +22,7 @@ public class CancelChunksCommandHandler(
 
         await chunkManager.CancelUploadAsync(request.FileKey, cancellationToken);
         // S-09：取消时清理临时分片文件
-        await storageService.CleanupChunksAsync(request.FileKey);
+        await storageService.CleanupChunksAsync(request.FileKey, cancellationToken);
         logger.LogInformation("[ChunkUploadCancel] 上传已取消: FileKey={FileKey}", request.FileKey);
         return true;
     }

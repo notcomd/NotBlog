@@ -69,7 +69,7 @@ builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
 
 builder.Services.RemoveAbstractHandlerRegistrations(); // 移除抽象泛型基类 handler（NotMediator 自动注册未过滤抽象类，2026-08-17）
 
-builder.Services.AddScoped<IdentityService>();
+builder.Services.AddScoped<IdentityServicesDi>();
 
 // ═══ gRPC 客户端注册（调用 FileDev 文件服务） ═══
 // 优先经 Aspire 服务发现解析服务名（filedev-web-api，与 AppHost 注册名一致）；
@@ -238,9 +238,11 @@ if (app.Environment.IsDevelopment())
 }
 
 //登入注册端点
-app.MapGroup("api/identity/ready").NotMapIdentityApi();
+app.MapGroup("api/identity/ready").MapIdentityAuthApi();
 // 权限映射端点（供网关启动时拉取）+ 权限 CRUD
 app.MapGroup("api/identity/permission").MapPermissionApi();
+// 菜单管理端点（管理端侧栏菜单 CRUD + 可见菜单树）
+app.MapGroup("api/identity/menu").MapMenuApi();
 // 角色组管理端点
 app.MapGroup("api/identity/rolegroup").MapRoleGroupApi();
 // 角色管理端点
@@ -248,13 +250,11 @@ app.MapGroup("api/identity/role").MapRoleApi();
 // OAuth 客户端（NotClient）管理端点（AdminOnly）
 app.MapGroup("api/identity/client").MapClientApi();
 // 注册 OAuth 端点（统一支持 google / github / microsoft / wechat / qq 登录与回调）
-app.MapGroup("api/identity/auth").MapOAuthEndpoints();
+app.MapGroup("api/identity/auth").MapOAuthApi();
 // 注册 OAuth 2.0 授权服务器端点（RFC 6749：NotClient 客户端注册体系）
 app.MapGroup("api/identity/oauth").MapOAuthServerApi();
 // 邮件验证码 RESTful 端点（公共访问：发送验证码 + 确认验证结果）
 app.MapGroup("api/identity/ready").MapEmailVerificationApi();
-//管理端点
-app.MapGroup("api/identity/manger").MapUserManagerApi();
 //管理端用户管理端点（AdminOnly）
 app.MapGroup("api/identity/manger").MapAdminUserApi();
 //头像上传端点

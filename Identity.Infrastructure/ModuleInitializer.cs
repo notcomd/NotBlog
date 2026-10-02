@@ -9,6 +9,7 @@ public class ModuleInitializer : IModuleInitializer
         service.AddScoped<IUserRoleRepository, UserRoleRepository>();
         service.AddScoped<IRoleGroupRepository, RoleGroupRepository>();
         service.AddScoped<IPermissionRepository, PermissionRepository>();
+        service.AddScoped<IMenuRepository, MenuRepository>();
         service.AddScoped<INotClientRepository, NotClientRepository>();
         service.AddScoped<ITokenEncryptionService, TokenEncryptionService>();
         service.AddScoped<ITokenSessionService, TokenSessionService>();

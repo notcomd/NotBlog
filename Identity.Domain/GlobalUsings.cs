@@ -6,6 +6,7 @@ global using System.Text;
 global using System.Threading.Tasks;
 
 global using Identity.Domain.Entities.RoleAggregate;
+global using Identity.Domain.Entities.MenuAggregate;
 
 global using Identity.Domain.Entities.UserAggregate;
 global using Commons.SeedWork;

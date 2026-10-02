@@ -51,7 +51,7 @@ public class UploadFileCommandHandler(
             Overwrite = false,
             ExpectedHash = request.ExpectedMd5,
             Source = isAttachment ? FileSource.ContentAttachment : FileSource.UserRepository
-        }) ?? throw new InvalidOperationException("文件存储返回 null");
+        }, cancellationToken) ?? throw new InvalidOperationException("文件存储返回 null");
 
         if (!storageResult.Success)
             throw new InvalidOperationException($"文件存储失败: {storageResult.ErrorMessage}");
@@ -88,7 +88,7 @@ public class UploadFileCommandHandler(
             logger.LogWarning(ex, "[UploadFile] 元数据保存失败，清理物理文件: Path={Path}", relativePath);
             try
             {
-                await storageService.DeleteAsync(relativePath);
+                await storageService.DeleteAsync(relativePath, cancellationToken);
             }
             catch (Exception cleanEx)
             {

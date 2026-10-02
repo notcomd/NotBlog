@@ -3,6 +3,7 @@ global using Identity.Domain.Entities.UserExternalLoginAggregate;
 global using Identity.Domain.Entities.ClientAggregate;
 
 global using Identity.Domain.Entities.RoleAggregate;
+global using Identity.Domain.Entities.MenuAggregate;
 global using Identity.Domain.Entities.UserAggregate;
 global using Identity.Domain.IRepository;
 global using Identity.Domain.ValueObjects;

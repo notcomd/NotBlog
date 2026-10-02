@@ -30,7 +30,7 @@ internal static class FileApiHelpers
     /// <summary>
     /// S-14：幂等键由客户端显式传入（请求头 X-Idempotency-Key）。
     /// 缺失或非合法 GUID 时回退为随机键（该请求无幂等保证，不影响其他请求）。
-    /// 与 Identity 模块 IdentityApis.GetIdempotencyKey 保持同语义。
+    /// 与 Identity 模块 IdentityApiHelpers.GetIdempotencyKey 保持同语义。
     /// </summary>
     /// <param name="context">HTTP上下文</param>
     /// <returns>客户端幂等键；未提供或非法时回退随机键</returns>

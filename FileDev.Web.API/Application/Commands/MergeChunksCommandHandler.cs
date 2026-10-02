@@ -43,7 +43,7 @@ public class MergeChunksCommandHandler(
             ? FileSource.UserRepository
             : FileSource.ContentAttachment;
         var mergeResult = await storageService.MergeChunksAsync(
-            request.FileKey, record.TotalChunks, null, true,
+            request.FileKey, record.TotalChunks, null, true, cancellationToken,
             new StoreContext(mergeSource, record.UserId.ToString("N")));
 
         if (!mergeResult.Success)

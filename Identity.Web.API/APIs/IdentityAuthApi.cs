@@ -12,13 +12,13 @@ using Notcomd.Token.JWT.Core;
 
 namespace Identity.Web.API.APIs;
 
-public static class IdentityApis
+public static class IdentityAuthApi
 {
 
     private const int LoginRateLimitPerMinute = 10;
     private const string LoginRateLimitKeyPrefix = "login:rate:";
 
-    public static RouteGroupBuilder NotMapIdentityApi(this RouteGroupBuilder routeBuilder)
+    public static RouteGroupBuilder MapIdentityAuthApi(this RouteGroupBuilder routeBuilder)
     {
         var route = routeBuilder.MapGroup("/identity").WithHttpLogging(HttpLoggingFields.All);
 
@@ -54,22 +54,12 @@ public static class IdentityApis
     }
 
     /// <summary>
-    /// S-14：幂等键由客户端显式传入（请求头 X-Idempotency-Key）。
-    /// 缺失或非合法 GUID 时回退为随机键（该请求无幂等保证，不影响其他请求）。
-    /// </summary>
-    internal static Guid GetIdempotencyKey(HttpContext context)
-    {
-        var header = context.Request.Headers["X-Idempotency-Key"].ToString();
-        return Guid.TryParse(header, out var key) ? key : Guid.CreateVersion7();
-    }
-
-    /// <summary>
     /// 统一登录/注册接口：POST /identity/Login { email, password?, code? }。
     /// 携带密码 → 密码登入（开启二次验证的用户需同时携带 code）；
     /// 仅携带验证码 → 验证码登入，未注册邮箱自动注册（CQRS：LogInCommand + RegisterByEmailCommand）。
     /// 新注册用户在签发 Token 后发布 RegisterByUserIntegrationEvent（Outbox），通知下游服务初始化关联数据。
     /// </summary>
-    private static async Task<IResult> Login([FromServices] IdentityService identityService,
+    private static async Task<IResult> Login([FromServices] IdentityServicesDi identityService,
         [FromServices] IRedisCacheService redisCacheService,
         [FromServices] IOutboxStore outboxStore,
         [FromServices] IdentityDbContext dbContext,
@@ -120,7 +110,7 @@ public static class IdentityApis
         });
     }
 
-    public sealed record IdentityResponse(string AccessToken, string RefreshToken, string TokenType, DateTime ExpiresAt, bool IsNewUser);
+    
 
     /// <summary>
     /// S-12 刷新 Token：校验 RefreshToken（格式/签名/过期/黑名单）后返回新的 AccessToken/RefreshToken 对。
@@ -140,7 +130,7 @@ public static class IdentityApis
         {
             var result = await jwtTokenService.RefreshTokenAsync(request.RefreshToken, jwtOptions.Value);
             await RegisterRefreshedSessionAsync(tokenSessionService, result, jwtOptions.Value,
-                loggerFactory.CreateLogger("IdentityApis.Refresh"));
+                loggerFactory.CreateLogger("IdentityAuthApi.Refresh"));
             return Results.Ok(result);
         }
         catch (SecurityTokenException ex)
@@ -192,10 +182,7 @@ public static class IdentityApis
         [FromServices] ITokenSessionService tokenSessionService,
         HttpContext httpContext)
     {
-        var authHeader = httpContext.Request.Headers.Authorization.ToString();
-        var bearerToken = authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
-            ? authHeader["Bearer ".Length..].Trim()
-            : null;
+        var bearerToken = IdentityApiHelpers.GetBearerToken(httpContext);
         if (string.IsNullOrWhiteSpace(bearerToken))
             return Results.BadRequest(new { error = "缺少 Bearer Token" });
 
@@ -209,7 +196,7 @@ public static class IdentityApis
     /// S-20 修改密码：要求已认证（RequireAuthorization，未认证返回 401）；
     /// 必须携带旧密码或邮箱验证码；旧密码错误拒绝；改密成功后吊销该用户现有 token 并清除 token 缓存。
     /// </summary>
-    private static async Task<IResult> ChangeByPassword([FromServices] IdentityService identityService,
+    private static async Task<IResult> ChangeByPassword([FromServices] IdentityServicesDi identityService,
         [FromServices] IJwtTokenService jwtTokenService,
         [FromServices] ITokenSessionService tokenSessionService,
         [FromBody] ChangeByPasswordRequest changeByPasswordRequestRequest,
@@ -246,17 +233,14 @@ public static class IdentityApis
             hasCode ? changeByPasswordRequestRequest.Code : null);
 
         var identityCommand =
-            new IdentifiedCommand<ChangeByPasswordCommand, bool>(GetIdempotencyKey(httpContext), command);
+            new IdentifiedCommand<ChangeByPasswordCommand, bool>(IdentityApiHelpers.GetIdempotencyKey(httpContext), command);
 
         var result = await identityService.NotMediator.SendAsync(identityCommand);
 
         if (result)
         {
             // S-20：改密成功后吊销该用户现有 token（当前请求的 bearer token 入黑名单）+ 清除 token 缓存
-            var authHeader = httpContext.Request.Headers.Authorization.ToString();
-            var bearerToken = authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
-                ? authHeader["Bearer ".Length..].Trim()
-                : null;
+            var bearerToken = IdentityApiHelpers.GetBearerToken(httpContext);
             if (!string.IsNullOrWhiteSpace(bearerToken))
                 await jwtTokenService.RevokeTokenAsync(bearerToken);
             // P3：吊销该用户全部已登记会话（多设备全端下线，替代此前仅清单槽缓存）
@@ -280,7 +264,7 @@ public static class IdentityApis
     /// 要求已认证（RequireAuthorization，未认证返回 401）；身份仅取自认证后的 NameIdentifier Claim。
     /// 关闭二次验证（置 false）为降级操作，必须携带密码或邮箱验证码二次确认。
     /// </summary>
-    private static async Task<IResult> UpdateUserSafety([FromServices] IdentityService identityService,
+    private static async Task<IResult> UpdateUserSafety([FromServices] IdentityServicesDi identityService,
         [FromBody] UpdateUserSafetyRequest request,
         HttpContext httpContext)
     {
@@ -313,7 +297,7 @@ public static class IdentityApis
     /// <summary>
     /// 读取当前登录用户的二次验证开关状态。要求已认证。
     /// </summary>
-    private static async Task<IResult> GetUserSafety([FromServices] IdentityService identityService,
+    private static async Task<IResult> GetUserSafety([FromServices] IdentityServicesDi identityService,
         HttpContext httpContext)
     {
         var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier);

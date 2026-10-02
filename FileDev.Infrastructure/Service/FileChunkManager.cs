@@ -1,6 +1,4 @@
-using FileDev.Domain.Entities;
 using FileDev.Domain.IRepository;
-using FileDev.Domain.IServices;
 using Microsoft.Extensions.Logging;
 
 namespace FileDev.Infrastructure.Service;
@@ -87,7 +85,7 @@ public class FileChunkManager : IFileChunkManager
         // 清理临时分片文件（合并完成后 MergeChunksAsync 已删除分片，此处为兜底）
         try
         {
-            await _storageService.CleanupChunksAsync(fileKey).ConfigureAwait(false);
+            await _storageService.CleanupChunksAsync(fileKey, ct).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -103,7 +101,7 @@ public class FileChunkManager : IFileChunkManager
 
         try
         {
-            await _storageService.CleanupChunksAsync(fileKey).ConfigureAwait(false);
+            await _storageService.CleanupChunksAsync(fileKey, ct).ConfigureAwait(false);
         }
         catch (Exception ex)
         {

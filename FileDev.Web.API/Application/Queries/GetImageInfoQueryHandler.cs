@@ -35,7 +35,7 @@ public class GetImageInfoQueryHandler(
             var relativePath = FileApiHelpers.FileUriToRelativePath(file.FileUri);
             // 命名空间以文件属主为准（与下载链路一致）
             var (content, storageResponse) = await storageService.GetContentAsync(
-                relativePath, new StoreContext(file.Source, file.UserId.ToString("N")));
+                relativePath, cancellationToken, new StoreContext(file.Source, file.UserId.ToString("N")));
             if (storageResponse.Success && content is not null)
             {
                 (width, height, _) = ImageValidator.GetDimensions(content);

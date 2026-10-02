@@ -33,17 +33,14 @@ public static class AvatarApi
     /// </summary>
     private static async Task<IResult> UploadAvatarAsync(
         HttpContext context,
-       [FromServices] IdentityService identityService,
+       [FromServices] IdentityServicesDi identityService,
         [FromForm] IFormFile file)
     {
         try
         {
-            // ── 认证校验 ──
-            var userIdClaim = context.User.FindFirst(c =>
-                c.Type == "user_id" ||
-                c.Type == System.Security.Claims.ClaimTypes.NameIdentifier);
-
-            if (userIdClaim is null || !Guid.TryParse(userIdClaim.Value, out var userId))
+            // ── 认证校验（S-13：统一 NameIdentifier Claim）──
+            var userId = IdentityApiHelpers.TryGetAuthenticatedUserId(context);
+            if (userId is null)
                 return Results.Json(new { error = "用户未认证" }, statusCode: StatusCodes.Status401Unauthorized);
 
             // ── 文件校验 ──
@@ -70,7 +67,7 @@ public static class AvatarApi
                 : null;
 
             var command = new UploadAvatarCommand(
-                userId,
+                userId.Value,
                 file.FileName,
                 imageContent,
                 file.ContentType,
@@ -78,7 +75,7 @@ public static class AvatarApi
 
             // S-14：幂等键由客户端显式传入（X-Idempotency-Key），缺失时回退随机键
             var identifiedCommand = new IdentifiedCommand<UploadAvatarCommand, UploadAvatarResult>(
-                IdentityApis.GetIdempotencyKey(context), command);
+                IdentityApiHelpers.GetIdempotencyKey(context), command);
 
             // ── 发送命令 ──
             var result = await identityService.NotMediator.SendAsync(identifiedCommand);
@@ -88,7 +85,7 @@ public static class AvatarApi
 
             identityService.Logger.LogInformation(
                 "[AvatarApi] 头像上传成功: UserId={UserId}, FileId={FileId}",
-                userId, result.FileId);
+                userId.Value, result.FileId);
 
             return Results.Ok(new
             {

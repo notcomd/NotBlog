@@ -14,7 +14,10 @@ namespace FileDev.Infrastructure.Service.FileBox;
 /// </summary>
 public sealed class CategoryPoolSelector : IDiskSelector
 {
+
     private readonly IReadOnlyList<PoolOptions> _pools;
+
+    
     private readonly IReadOnlyDictionary<string, PoolOptions> _byId;
 
     public CategoryPoolSelector(FileBoxOptions options)

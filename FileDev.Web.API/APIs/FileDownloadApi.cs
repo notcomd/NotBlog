@@ -63,7 +63,8 @@ public static class FileDownloadApi
         // 本端点匿名访问（img/video 直链），无登录上下文；命名空间以路径首段的属主用户为准，
         // 否则会落到默认命名空间导致非属主/匿名访问公开文件一律 404。
         var tenantId = FileApiHelpers.ResolveTenantFromFileKey(relativePath);
-        var (stream, response) = await storage.GetContentStreamAsync(relativePath, new StoreContext(null, tenantId));
+        var (stream, response) = await storage.GetContentStreamAsync(relativePath,
+            context.RequestAborted, new StoreContext(null, tenantId));
         if (stream is null || !response.Success)
             return Results.NotFound();
 

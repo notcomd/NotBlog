@@ -15,47 +15,48 @@ public interface INotFileStorageService
     /// <summary>
     /// 保存文件（类别/租户由 <see cref="NotFileStorageRequest.Source"/>/<see cref="NotFileStorageRequest.TenantId"/> 指定）
     /// </summary>
-    Task<NotFileStorageResponse> SaveAsync(NotFileStorageRequest request);
+    Task<NotFileStorageResponse> SaveAsync(NotFileStorageRequest request, CancellationToken ct = default);
 
     /// <summary>
     /// 删除文件
     /// </summary>
-    Task<NotFileStorageResponse> DeleteAsync(string fileRelativePath, StoreContext? ctx = null);
+    Task<NotFileStorageResponse> DeleteAsync(string fileRelativePath, CancellationToken ct = default,
+        StoreContext? ctx = null);
 
     /// <summary>
     /// 获取文件内容
     /// </summary>
     Task<(byte[] Content, NotFileStorageResponse Response)> GetContentAsync(string fileRelativePath,
-        StoreContext? ctx = null);
+        CancellationToken ct = default, StoreContext? ctx = null);
 
     /// <summary>
     /// 流式获取文件内容（避免大文件整读入内存，S-09）
     /// </summary>
     Task<(Stream? Content, NotFileStorageResponse Response)> GetContentStreamAsync(string fileRelativePath,
-        StoreContext? ctx = null);
+        CancellationToken ct = default, StoreContext? ctx = null);
 
     /// <summary>
     /// 清理某上传任务的临时分片文件（S-09）
     /// </summary>
-    Task CleanupChunksAsync(string fileKey, string? tenantId = null);
+    Task CleanupChunksAsync(string fileKey, CancellationToken ct = default, string? tenantId = null);
 
     /// <summary>
     /// 检查文件是否存在
     /// </summary>
-    Task<bool> ExistsAsync(string fileRelativePath, StoreContext? ctx = null);
+    Task<bool> ExistsAsync(string fileRelativePath, CancellationToken ct = default, StoreContext? ctx = null);
 
     /// <summary>
     /// 上传单个分片（分片作为暂存对象写入默认池，按租户命名空间隔离）
     /// </summary>
     Task<NotFileStorageResponse> UploadChunkAsync(string fileKey, int chunkIndex, byte[] chunkContent,
-        string? chunkHash = null, string? tenantId = null);
+        string? chunkHash = null, CancellationToken ct = default, string? tenantId = null);
 
 
     /// <summary>
     /// 合并分片为完整文件（产物按 <see cref="StoreContext.Source"/> 路由到对应类别池）
     /// </summary>
     Task<NotFileStorageResponse> MergeChunksAsync(string fileKey, int totalChunks, string? expectedFileHash = null,
-        bool overwrite = true, StoreContext? ctx = null);
+        bool overwrite = true, CancellationToken ct = default, StoreContext? ctx = null);
 
 
     /// <summary>
