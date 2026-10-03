@@ -1,4 +1,4 @@
-﻿using Message.Web.API.Application.Commands.Tweets;
+using Message.Web.API.Application.Commands.Tweets;
 
 namespace Message.Web.API.APIs;
 
@@ -58,7 +58,9 @@ public static class TweetsApi
             .Produces<ApiResponseResult<PagedResult<CommunityPostDto>>>();
 
         // GET /{tweetGuid} — 获取推文详情
+        // 匿名可读：访客可直接打开公开推文详情；Private/Followers/圈子帖仍由查询侧可见性策略拦截（对访客视为不存在）
         group.MapGet("/{tweetGuid}", GetTweetAsync)
+            .AllowAnonymous()
             .WithSummary("获取推文详情")
             .WithDescription("根据推文ID获取推文详情，包含当前用户的交互状态")
             .Produces<ApiResponseResult<TweetDto>>();
@@ -76,7 +78,9 @@ public static class TweetsApi
             .Produces<ApiResponseResult<PagedResult<TweetDto>>>();
 
         // GET /trending — 获取趋势推文
+        // 匿名可读：这是访客首页（广场-热门）的数据源；仓储层已限定 Approved + 非圈子 + Public，不泄漏私密内容
         group.MapGet("/trending", GetTrendingAsync)
+            .AllowAnonymous()
             .WithSummary("获取趋势推文")
             .WithDescription("获取热门趋势推文列表，支持分页")
             .Produces<ApiResponseResult<PagedResult<TweetDto>>>();
@@ -273,7 +277,10 @@ public static class TweetsApi
     {
         try
         {
-            var currentUserId = currentUser.GetUserId();
+            // 匿名可读（详见端点处的 AllowAnonymous）：未认证时按「无查看者」处理。
+            // 不能直接调 GetUserId()——它在无用户 claim 时会抛 UnauthorizedAccessException，
+            // 被下面的通用 catch 变成 500；传 Guid.Empty 则与查询侧的可见性策略契约一致。
+            var currentUserId = currentUser.IsAuthenticated ? currentUser.GetUserId() : Guid.Empty;
             var result = await mediator.SendAsync(new GetTweetDetailQuery(tweetGuid, currentUserId), ct);
             if (result.Tweet == null)
                 return Results.Json(ApiResponseResult<TweetDto>.NotFound("推文不存在"), statusCode: 404);

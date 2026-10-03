@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -104,6 +105,15 @@ public class PermissionEnforcementMiddleware(
     {
         var endpoint = context.GetEndpoint();
         if (endpoint is null)
+        {
+            await next(context);
+            return;
+        }
+
+        // 端点显式声明匿名访问（[AllowAnonymous] / .AllowAnonymous()）→ 放行。
+        // AllowAnonymous 的语义就是「跳过授权」，本中间件不应例外；否则「公开端点」
+        // 会被它当作未认证而 401（RequireAuthorization 已被 AllowAnonymous 抑制，这里也必须跟随）。
+        if (endpoint.Metadata.OfType<IAllowAnonymous>().Any())
         {
             await next(context);
             return;
