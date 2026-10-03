@@ -30,6 +30,7 @@ public class UserInfo : Entity<Guid>, IAggregateRoot
         };
     }
 
+    /// <summary>创建用户资料（含邮箱、昵称、头像；默认等级 1、硬币 0）</summary>
     public static UserInfo Create(Guid userId, string email, string? nickName = null, Uri? avatarUrl = null)
     {
         if (userId == Guid.Empty)
@@ -51,8 +52,10 @@ public class UserInfo : Entity<Guid>, IAggregateRoot
     /// <summary>对应用户 ID（Identity sub claim）</summary>
     public Guid UserId { get; init; }
 
+    /// <summary>用户邮箱</summary>
     public string Email { get; init;} = null!;
 
+    /// <summary>用户昵称</summary>
     public string? NickName { get; private set; }
 
     /// <summary>用户等级（默认 1，升级规则后续按活跃度/经验值接入）</summary>
@@ -67,13 +70,16 @@ public class UserInfo : Entity<Guid>, IAggregateRoot
     /// <summary>背景封面 URL（区别于头像；FileDev 上传后存 URI，可空）</summary>
     public Uri? BackgroundCoverUrl { get; private set; }
 
+    /// <summary>用户头像URL（可空）</summary>
     public Uri? AvatarUrl { get; private set; }
 
     /// <summary>个人签名（可空；空白视为未设置）</summary>
     public string? Bio { get; private set; }
 
+    /// <summary>创建时间</summary>
     public DateTimeOffset CreateTime { get; init; }
 
+    /// <summary>更新时间</summary>
     public DateTimeOffset UpdateTime { get; private set; }
 
     /// <summary>更新个人签名（空白清除；不得超过 200 字符）</summary>
@@ -97,6 +103,7 @@ public class UserInfo : Entity<Guid>, IAggregateRoot
     }
 
 
+    /// <summary>更新头像（空白视为清除）</summary>
     public void UpdateAvatar(Uri? url)
     {
         if (url != null && url.ToString().Length > 2048)

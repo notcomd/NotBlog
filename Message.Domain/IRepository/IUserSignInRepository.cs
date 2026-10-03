@@ -13,5 +13,6 @@ public interface IUserSignInRepository
     /// <summary>指定用户指定日期是否已签到</summary>
     Task<bool> IsSignedInAsync(Guid userId, DateOnly date);
 
+    /// <summary>新增签到记录</summary>
     Task<UserSignIn> AddAsync(UserSignIn signIn);
 }

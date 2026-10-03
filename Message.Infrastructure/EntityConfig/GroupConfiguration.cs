@@ -1,5 +1,6 @@
 namespace Message.Infrastructure.EntityConfig;
 
+/// <summary>配置群组实体 <c>Group</c> 到 Groups 表的映射。</summary>
 public class GroupConfiguration : IEntityTypeConfiguration<Group>
 {
     public void Configure(EntityTypeBuilder<Group> builder)

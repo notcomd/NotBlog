@@ -1,6 +1,7 @@
 
 namespace Message.Infrastructure.EntityConfig;
 
+/// <summary>配置圈子实体 <c>Circle</c> 到 Circles 表的映射。</summary>
 public class CircleConfiguration : IEntityTypeConfiguration<Circle>
 {
     public void Configure(EntityTypeBuilder<Circle> builder)

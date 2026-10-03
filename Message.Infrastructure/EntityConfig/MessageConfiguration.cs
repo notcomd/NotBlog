@@ -2,6 +2,7 @@ using MessageEntity = Message.Domain.Entities.Chat.Message;
 
 namespace Message.Infrastructure.EntityConfig;
 
+/// <summary>配置消息实体 <c>Message</c> 到 Messages 表的映射。</summary>
 public class MessageConfiguration : IEntityTypeConfiguration<MessageEntity>
 {
     public void Configure(EntityTypeBuilder<MessageEntity> builder)

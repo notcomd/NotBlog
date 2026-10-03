@@ -47,21 +47,33 @@ public class Circle : Entity<Guid>, IAggregateRoot
         return circle;
     }
 
+    /// <summary>圈子ID</summary>
     public Guid CircleGuid { get; init; }
+    /// <summary>圈主用户ID</summary>
     public Guid OwnerGuid { get; private set; }
+    /// <summary>圈子名称</summary>
     public string Name { get; private set; } = null!;
+    /// <summary>圈子简介</summary>
     public string? Description { get; private set; }
+    /// <summary>圈子头像URL</summary>
     public string? AvatarUrl { get; private set; }
+    /// <summary>圈子封面URL</summary>
     public string? CoverUrl { get; private set; }
+    /// <summary>成员上限</summary>
     public int MaxMembers { get; private set; }
     /// <summary>成员数（冗余计数，与 _members 同步维护）</summary>
     public int MemberCount { get; private set; }
+    /// <summary>圈子状态</summary>
     public CircleStatus Status { get; private set; }
+    /// <summary>创建时间</summary>
     public DateTimeOffset CreateTime { get; init; }
+    /// <summary>解散时间</summary>
     public DateTimeOffset? DissolvedTime { get; private set; }
 
+    /// <summary>圈子成员集合</summary>
     public IReadOnlyCollection<CircleMember> Members => _members.AsReadOnly();
 
+    /// <summary>是否已解散</summary>
     public bool IsDissolved => Status == CircleStatus.Dissolved;
 
     /// <summary>更新圈子信息（圈主/管理员）</summary>

@@ -124,7 +124,7 @@ public class MarkdownCreatedIntegrationEventHandler(
 }
 
 /// <summary>
-///     Markdown 文章发布集成事件数据副本（字段与 Markdown 服务发布侧 MarkdownCreatedEventData 一致；跨服务不共享程序集）。
+///     Markdown 文章发布集成事件数据副本（字段与 Markdown 服务发布侧 MarkdownCreatedIntegrationEvent 一致；跨服务不共享程序集）。
 ///     routing key = MarkdownCreated（与 Handler 类特性对齐）
 /// </summary>
 [EventBusName("MarkdownCreated")]

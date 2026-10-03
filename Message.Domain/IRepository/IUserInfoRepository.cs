@@ -21,7 +21,9 @@ public interface IUserInfoRepository : IRepository<UserInfo, IUnitOfWork>
     /// <summary>指定日期是否已签到（签到防重）</summary>
     Task<bool> IsSignedInAsync(Guid userId, DateOnly date);
 
+    /// <summary>新增用户资料</summary>
     Task<UserInfo> AddAsync(UserInfo userInfo);
 
+    /// <summary>更新用户资料</summary>
     Task<UserInfo> UpdateAsync(UserInfo userInfo);
 }

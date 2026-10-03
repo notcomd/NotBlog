@@ -11,6 +11,7 @@ namespace Message.Infrastructure.Services;
 public class DefaultCommunityEventPublisher(
     ILogger<DefaultCommunityEventPublisher> logger) : ICommunityEventPublisher
 {
+    /// <summary>发布社区事件；默认实现仅记录日志后丢弃，不产生外部副作用。</summary>
     public Task PublishAsync(CommunityEventEnvelope envelope, CancellationToken cancellationToken = default)
     {
         logger.LogInformation(

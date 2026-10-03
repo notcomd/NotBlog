@@ -2,8 +2,12 @@ using Commons.SeedWork;
 
 namespace Video.Infrastructure.Repository;
 
+/// <summary>
+/// 观看历史仓储实现 — 基于 VideoDbContext，提供分页查询、批量删除与观看统计分析。
+/// </summary>
 public class VideoHistoryRepository(VideoDbContext dbContext) : IVideoHistoryRepository
 {
+    /// <summary>工作单元（VideoDbContext）。</summary>
     public IUnitOfWork UnitOfWork => dbContext;
 
     public async Task<VideoHistory?> FindByIdAsync(Guid videoHistoryGuid)

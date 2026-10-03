@@ -9,6 +9,11 @@ namespace Message.Infrastructure.EntityFramework;
 /// </summary>
 public class MessageDbContextFactory : IDesignTimeDbContextFactory<MessageDbContext>
 {
+    /// <summary>
+    /// 使用占位连接串创建用于设计时的 <see cref="MessageDbContext"/> 实例。
+    /// </summary>
+    /// <param name="args">命令行参数（未使用）。</param>
+    /// <returns>配置好的数据库上下文实例。</returns>
     public MessageDbContext CreateDbContext(string[] args)
     {
         var optionsBuilder = new DbContextOptionsBuilder<MessageDbContext>();

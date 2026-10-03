@@ -12,6 +12,7 @@ public class UserSignIn : Entity<Guid>
         CreateTime = DateTimeOffset.UtcNow;
     }
 
+    /// <summary>创建签到记录</summary>
     public UserSignIn(Guid userId, DateOnly signInDate) : this()
     {
         if (userId == Guid.Empty)
@@ -21,10 +22,12 @@ public class UserSignIn : Entity<Guid>
         SignInDate = signInDate;
     }
 
+    /// <summary>用户ID</summary>
     public Guid UserId { get; init; }
 
     /// <summary>签到日期（UTC 自然日）</summary>
     public DateOnly SignInDate { get; init; }
 
+    /// <summary>创建时间</summary>
     public DateTimeOffset CreateTime { get; init; }
 }

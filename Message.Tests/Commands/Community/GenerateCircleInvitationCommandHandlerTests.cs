@@ -62,8 +62,8 @@ public class GenerateCircleInvitationCommandHandlerTests
 
     private GenerateCircleInvitationCommandHandler CreateHandler()
     {
-        var options = new Mock<IOptionsSnapshot<GenerateCirecleInvitationOption>>();
-        options.Setup(o => o.Value).Returns(new GenerateCirecleInvitationOption());
+        var options = new Mock<IOptionsSnapshot<GenerateCircleInvitationOption>>();
+        options.Setup(o => o.Value).Returns(new GenerateCircleInvitationOption());
 
         return new(_circleRepository.Object, _invitationRepository.Object,
             options.Object,

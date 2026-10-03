@@ -1,4 +1,5 @@
 using Identity.Web.API.Application.Commands;
+using Identity.Web.API.DependencyInjection;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Mvc;
 namespace Identity.Web.API.APIs;
@@ -33,7 +34,7 @@ public static class AvatarApi
     /// </summary>
     private static async Task<IResult> UploadAvatarAsync(
         HttpContext context,
-       [FromServices] IdentityServicesDi identityService,
+        [FromServices] IdentityServiceDi identityService,
         [FromForm] IFormFile file)
     {
         try

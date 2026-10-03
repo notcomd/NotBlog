@@ -21,25 +21,32 @@ public class  VideoProtectedTime
         EndTime = DateTimeOffset.MinValue;
     }
 
+    /// <summary>有效开始时间</summary>
     public DateTimeOffset StartTime { get; private set; }
+
+    /// <summary>有效结束时间</summary>
     public DateTimeOffset EndTime { get; private set; }
 
 
+    /// <summary>设置有效开始时间。</summary>
     public void SetStartTime(DateTimeOffset startTime)
     {
         StartTime = startTime;
     }
 
+    /// <summary>设置有效结束时间。</summary>
     public void SetEndTime(DateTimeOffset endTime)
     {
         EndTime = endTime;
     }
 
+    /// <summary>创建保护时间（结束早于开始时抛异常）。</summary>
     public static VideoProtectedTime Create(DateTimeOffset startTime, DateTimeOffset endTime)
     {
         return new VideoProtectedTime(startTime, endTime);
     }
 
+    /// <summary>创建保护时间；两个入参均为 null 时返回 null（视为未设置）。</summary>
     public static VideoProtectedTime? Create(DateTimeOffset? startTime, DateTimeOffset? endTime)
     {
         // null 入参视为未设置（MinValue），与 VideoControl 默认构造（null, null）兼容；

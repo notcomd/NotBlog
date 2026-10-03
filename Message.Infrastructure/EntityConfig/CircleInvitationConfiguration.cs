@@ -1,6 +1,7 @@
 
 namespace Message.Infrastructure.EntityConfig;
 
+/// <summary>配置圈子邀请实体 <c>CircleInvitation</c> 到 CircleInvitations 表的映射。</summary>
 public class CircleInvitationConfiguration : IEntityTypeConfiguration<CircleInvitation>
 {
     public void Configure(EntityTypeBuilder<CircleInvitation> builder)

@@ -1,6 +1,7 @@
 
 namespace Message.Infrastructure.EntityConfig;
 
+/// <summary>配置用户关注关系实体 <c>UserFollow</c> 到 UserFollows 表的映射。</summary>
 public class UserFollowConfiguration : IEntityTypeConfiguration<UserFollow>
 {
     public void Configure(EntityTypeBuilder<UserFollow> builder)

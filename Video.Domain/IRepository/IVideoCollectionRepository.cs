@@ -1,12 +1,16 @@
 
 namespace Video.Domain.IRepository;
 
+/// <summary>
+/// 视频收藏夹仓储接口 — 收藏夹聚合的读写入口（查询、分页、互动计数更新与软/硬删除）。
+/// </summary>
 public interface IVideoCollectionRepository : IRepository<VideoCollection, IUnitOfWork>
 {
     /// <summary>
+    /// 按 GUID 查询收藏夹
     /// </summary>
-    /// <param name="findVideoCollectionGuid"></param>
-    /// <returns></returns>
+    /// <param name="findVideoCollectionGuid">收藏夹 GUID</param>
+    /// <returns>收藏夹实体</returns>
     public Task<VideoCollection> FindByVideoCollectionAsync(Guid findVideoCollectionGuid);
 
     /// <summary>
@@ -38,17 +42,23 @@ public interface IVideoCollectionRepository : IRepository<VideoCollection, IUnit
     public Task<List<VideoCollection>> FindByVideoCollectionListAsync();
 
     /// <summary>
+    /// 新增收藏夹
     /// </summary>
-    /// <param name="addVideoCollection"></param>
+    /// <param name="addVideoCollection">待新增的收藏夹</param>
     /// <returns></returns>
     public Task AddByVideoCollectionAsync(VideoCollection addVideoCollection);
 
     /// <summary>
+    /// 更新收藏夹
     /// </summary>
-    /// <param name="updataVideoCollection"></param>
+    /// <param name="updateVideoCollection">待更新的收藏夹</param>
     /// <returns></returns>
     public Task UpdateByVideoCollectionAsync(VideoCollection updateVideoCollection);
 
+    /// <summary>
+    /// 批量更新收藏夹
+    /// </summary>
+    /// <param name="updateVideoCollections">待更新的收藏夹列表</param>
     public Task UpdateRangeByVideoCollectionAsync(List<VideoCollection> updateVideoCollections);
 
     /// <summary>

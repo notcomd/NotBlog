@@ -106,7 +106,7 @@ MarkFavorite (聚合根)
 
 | 命令 | Handler 要点 |
 | --- | --- |
-| `CreateMarkdownCommand` | 计算 SHA-256 → 保存正文到文件存储 → Builder 创建实体（仅元数据） → 仓储落库 → 发布 `MarkdownCreatedEventData` |
+| `CreateMarkdownCommand` | 计算 SHA-256 → 保存正文到文件存储 → Builder 创建实体（仅元数据） → 仓储落库 → 发布 `MarkdownCreatedIntegrationEvent` |
 | `UpdateMarkdownCommand` | 所有权校验 → 旧正文快照 → 保存新正文 → 更新元数据/标签/封面 → 清理旧文件（失败仅告警） |
 | `DeleteMarkdownCommand` | 幂等（IdempotencyKey）→ 所有权校验 → 软删除 |
 | `RestoreMarkdownCommand` | 作者校验 → 当前内容快照 → 历史内容重新保存为文件 → 更新元数据引用 |
@@ -172,7 +172,7 @@ MarkFavorite (聚合根)
 
 | 事件 | 触发点 | 消费端用途 |
 | --- | --- | --- |
-| `MarkdownCreatedEventData` | 创建文章成功 | Message 服务 → 好友/关注者聚合提醒 |
+| `MarkdownCreatedIntegrationEvent` | 创建文章成功 | Message 服务 → 好友/关注者聚合提醒 |
 | `MarkdownInteractionIntegrationEvent`（`DocumentLiked` / `DocumentCoined` / `ReviewLiked` / `ReviewDisliked`） | 首次点赞/投币/评论点赞/评论踩 | Message 服务 → 作者站内通知 |
 | `MarkdownCommentPublishedIntegrationEvent` | 发布评论（顶级→通知作者；子评论→通知父评论作者） | Message 服务 → 作者站内通知 |
 | `MarkReviewCreatedIntegrationEvent` / `MarkReviewDeletedIntegrationEvent` / `MarkReviewLikedIntegrationEvent` / `ChildReviewAddedIntegrationEvent` | 评论创建/删除/点赞/子评论 | 兼容保留（通知统一走 `MarkdownInteraction`） |

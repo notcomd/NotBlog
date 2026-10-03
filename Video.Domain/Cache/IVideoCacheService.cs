@@ -9,7 +9,7 @@ public interface IVideoCacheService
 {
     
 
-    ///用于获取视频元数据，返回null if cached.
+    /// <summary>获取缓存的视频元数据；未命中返回 null。</summary>
     Task<Videos?> GetVideoMetaAsync(Guid videoGuid, CancellationToken ct = default);
 
     /// <summary>Cache video metadata.</summary>

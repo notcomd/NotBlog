@@ -2,6 +2,7 @@ using CacheMemory.Core;
 
 namespace Message.Infrastructure.Services;
 
+/// <summary>用户在线状态缓存服务，基于 Redis 缓存用户在线状态与在线用户集合（TTL 5 分钟）。</summary>
 public class UserStatusCacheService
 {
     private const string UserStatusPrefix = "message:user:status:";
@@ -10,6 +11,9 @@ public class UserStatusCacheService
     private readonly IRedisCacheService _cache;
     private readonly ILogger<UserStatusCacheService> _logger;
 
+    /// <summary>初始化 <see cref="UserStatusCacheService"/> 实例。</summary>
+    /// <param name="cache">Redis 缓存服务。</param>
+    /// <param name="logger">日志记录器。</param>
     public UserStatusCacheService(
         IRedisCacheService cache,
         ILogger<UserStatusCacheService> logger)
@@ -18,6 +22,7 @@ public class UserStatusCacheService
         _logger = logger;
     }
 
+    /// <summary>将用户状态缓存为在线，并加入在线用户集合。</summary>
     public async Task SetUserOnlineAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         var key = $"{UserStatusPrefix}{userId}";
@@ -29,6 +34,7 @@ public class UserStatusCacheService
         _logger.LogDebug("用户 {UserId} 状态已缓存为在线", userId);
     }
 
+    /// <summary>将用户状态缓存为离线，并从在线用户集合移除。</summary>
     public async Task SetUserOfflineAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         var key = $"{UserStatusPrefix}{userId}";
@@ -40,11 +46,13 @@ public class UserStatusCacheService
         _logger.LogDebug("用户 {UserId} 状态已缓存为离线", userId);
     }
 
+    /// <summary>判断指定用户当前是否在线。</summary>
     public async Task<bool> IsUserOnlineAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         return await _cache.SetContainsAsync(OnlineUsersKey, userId.ToString(), cancellationToken);
     }
 
+    /// <summary>获取指定用户缓存中的最后在线时间，缺失时返回 null。</summary>
     public async Task<DateTime?> GetLastOnlineTimeAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         var key = $"{UserStatusPrefix}{userId}";
@@ -64,6 +72,7 @@ public class UserStatusCacheService
         }
     }
 
+    /// <summary>获取当前在线用户数量。</summary>
     public async Task<int> GetOnlineUserCountAsync(CancellationToken cancellationToken = default)
     {
         var count = await _cache.SetLengthAsync(OnlineUsersKey, cancellationToken);

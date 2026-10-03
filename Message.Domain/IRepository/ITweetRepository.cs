@@ -1,6 +1,9 @@
 
 namespace Message.Domain.IRepository;
 
+/// <summary>
+/// 推文仓储接口（Tweet 聚合根）。
+/// </summary>
 public interface ITweetRepository : IRepository<Tweet, IUnitOfWork>
 {
     /// <summary>

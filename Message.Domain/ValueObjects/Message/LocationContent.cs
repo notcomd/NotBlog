@@ -23,12 +23,17 @@ public class LocationContent : MessageContent
         LocationName = locationName;
     }
 
+    /// <summary>纬度（-90 到 90）</summary>
     public double Latitude { get; }
+    /// <summary>经度（-180 到 180）</summary>
     public double Longitude { get; }
+    /// <summary>位置名称（非空）</summary>
     public string LocationName { get; }
 
+    /// <summary>内容业务类型，恒为位置消息。</summary>
     public override MessageType MessageType => MessageType.MessageLocation;
 
+    /// <summary>创建位置内容值对象（校验经纬度范围与名称非空）。</summary>
     public static LocationContent Create(double latitude, double longitude, string locationName)
         => new(latitude, longitude, locationName);
 
@@ -39,5 +44,6 @@ public class LocationContent : MessageContent
         yield return LocationName;
     }
 
+    /// <summary>生成会话侧栏摘要，形如「[位置] 名称」。</summary>
     public override string ToSessionSummary() => $"[位置] {LocationName}";
 }

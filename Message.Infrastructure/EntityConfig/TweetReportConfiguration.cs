@@ -1,5 +1,6 @@
 namespace Message.Infrastructure.EntityConfig;
 
+/// <summary>配置动态举报实体 <c>TweetReport</c> 到 TweetReports 表的映射。</summary>
 public class TweetReportConfiguration : IEntityTypeConfiguration<TweetReport>
 {
     public void Configure(EntityTypeBuilder<TweetReport> builder)

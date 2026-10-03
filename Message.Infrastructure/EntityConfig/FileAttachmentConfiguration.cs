@@ -1,5 +1,6 @@
 namespace Message.Infrastructure.EntityConfig;
 
+/// <summary>配置文件附件实体 <c>FileAttachment</c> 到 FileAttachments 表的映射。</summary>
 public class FileAttachmentConfiguration : IEntityTypeConfiguration<FileAttachment>
 {
     public void Configure(EntityTypeBuilder<FileAttachment> builder)

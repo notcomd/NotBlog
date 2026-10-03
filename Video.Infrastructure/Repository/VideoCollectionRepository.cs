@@ -2,10 +2,14 @@ using Commons.SeedWork;
 
 namespace Video.Infrastructure.Repository;
 
+/// <summary>
+/// 收藏夹仓储实现 — 基于 VideoDbContext，提供收藏夹查询、分页、互动计数更新与软/硬删除。
+/// </summary>
 public class VideoCollectionRepository(VideoDbContext videoDbContext, ILogger<IVideoCollectionRepository> logger)
     : IVideoCollectionRepository
 {
     
+    /// <summary>工作单元（VideoDbContext）。</summary>
     public IUnitOfWork UnitOfWork => videoDbContext;
     
     

@@ -1,18 +1,23 @@
 
 namespace Message.Infrastructure.Repository;
 
+/// <summary>群组仓储实现，负责 Groups 与 GroupMembers 的查询与持久化。</summary>
 public class GroupRepository(MessageDbContext context) : IGroupRepository
 {
+    /// <summary>获取当前数据库上下文作为工作单元。</summary>
     public IUnitOfWork UnitOfWork => context;
+    /// <summary>获取当前数据库上下文。</summary>
     public MessageDbContext Context => context;
     private readonly DbSet<Group> DbSet = context.Groups;
 
+    /// <summary>按群组 ID 获取未解散的群组，不存在时返回 null。</summary>
     public async Task<Group?> GetByIdAsync(Guid groupId)
     {
         return await DbSet
             .FirstOrDefaultAsync(g => g.GroupId == groupId && !g.IsDismissed);
     }
 
+    /// <summary>按群组 ID 获取未解散的群组（含成员集合）。</summary>
     public async Task<Group?> GetByIdWithMembersAsync(Guid groupId)
     {
         return await DbSet
@@ -20,18 +25,21 @@ public class GroupRepository(MessageDbContext context) : IGroupRepository
             .FirstOrDefaultAsync(g => g.GroupId == groupId && !g.IsDismissed);
     }
 
+    /// <summary>按群主 ID 获取其未解散的群组。</summary>
     public async Task<Group?> GetByOwnerIdAsync(Guid ownerId)
     {
         return await DbSet
             .FirstOrDefaultAsync(g => g.OwnerId == ownerId && !g.IsDismissed);
     }
 
+    /// <summary>按圈子 ID 获取未解散的群组。</summary>
     public async Task<Group?> GetByCircleIdAsync(Guid circleId)
     {
         return await DbSet
             .FirstOrDefaultAsync(g => g.CircleId == circleId && !g.IsDismissed);
     }
 
+    /// <summary>按圈子 ID 获取未解散的群组（含成员集合）。</summary>
     public async Task<Group?> GetByCircleIdWithMembersAsync(Guid circleId)
     {
         return await DbSet
@@ -39,6 +47,7 @@ public class GroupRepository(MessageDbContext context) : IGroupRepository
             .FirstOrDefaultAsync(g => g.CircleId == circleId && !g.IsDismissed);
     }
 
+    /// <summary>获取指定成员已加入且未被封禁的所有未解散群组。</summary>
     public async Task<IEnumerable<Group>> GetByMemberIdAsync(Guid memberId)
     {
         return await Context.GroupMembers
@@ -51,6 +60,7 @@ public class GroupRepository(MessageDbContext context) : IGroupRepository
             .ToListAsync();
     }
 
+    /// <summary>获取所有公开且未解散的群组，按群名称排序。</summary>
     public async Task<IEnumerable<Group>> GetPublicGroupsAsync()
     {
         return await DbSet
@@ -59,6 +69,7 @@ public class GroupRepository(MessageDbContext context) : IGroupRepository
             .ToListAsync();
     }
 
+    /// <summary>获取指定成员在群内担任指定角色的所有未解散群组。</summary>
     public async Task<IEnumerable<Group>> GetByMemberIdAndRoleAsync(Guid memberId, GroupMemberRole role)
     {
         return await Context.GroupMembers
@@ -106,12 +117,14 @@ public class GroupRepository(MessageDbContext context) : IGroupRepository
     }
 
 
+    /// <summary>新增群组并返回已跟踪的实体。</summary>
     public async Task<Group> AddAsync(Group group)
     {
         var entry = await DbSet.AddAsync(group);
         return entry.Entity;
     }
 
+    /// <summary>更新群组；仅对未跟踪实体执行更新，避免聚合内新增成员被误标为修改。</summary>
     public Task<Group> UpdateAsync(Group group)
     {
         try
@@ -130,6 +143,7 @@ public class GroupRepository(MessageDbContext context) : IGroupRepository
         }
     }
 
+    /// <summary>解散（软删除）指定群组。</summary>
     public async Task DeleteAsync(Guid groupId)
     {
         var group = await GetByIdAsync(groupId);
@@ -140,23 +154,27 @@ public class GroupRepository(MessageDbContext context) : IGroupRepository
         }
     }
 
+    /// <summary>判断指定未解散群组是否存在。</summary>
     public async Task<bool> ExistsAsync(Guid groupId)
     {
         return await DbSet.AnyAsync(g => g.GroupId == groupId && !g.IsDismissed);
     }
 
+    /// <summary>判断指定用户是否为该群组未封禁的成员。</summary>
     public async Task<bool> IsMemberAsync(Guid groupId, Guid userId)
     {
         return await Context.GroupMembers
             .AnyAsync(gm => gm.GroupId == groupId && gm.UserId == userId && !gm.IsBanned);
     }
 
+    /// <summary>判断指定用户是否为该未解散群组的群主。</summary>
     public async Task<bool> IsOwnerAsync(Guid groupId, Guid userId)
     {
         return await DbSet
             .AnyAsync(g => g.GroupId == groupId && g.OwnerId == userId && !g.IsDismissed);
     }
 
+    /// <summary>判断指定用户是否为该群组的管理员或群主。</summary>
     public async Task<bool> IsAdminAsync(Guid groupId, Guid userId)
     {
         return await Context.GroupMembers
@@ -165,18 +183,21 @@ public class GroupRepository(MessageDbContext context) : IGroupRepository
                             (gm.Role == GroupMemberRole.Admin || gm.Role == GroupMemberRole.Owner));
     }
 
+    /// <summary>统计群组内未封禁的成员数量。</summary>
     public async Task<int> GetMemberCountAsync(Guid groupId)
     {
         return await Context.GroupMembers
             .CountAsync(gm => gm.GroupId == groupId && !gm.IsBanned);
     }
 
+    /// <summary>统计指定群主拥有的未解散群组数量。</summary>
     public async Task<int> GetGroupCountByOwnerAsync(Guid ownerId)
     {
         return await DbSet
             .CountAsync(g => g.OwnerId == ownerId && !g.IsDismissed);
     }
 
+    /// <summary>统计指定成员已加入且未被封禁的未解散群组数量。</summary>
     public async Task<int> GetGroupCountByMemberAsync(Guid memberId)
     {
         return await Context.GroupMembers
@@ -188,6 +209,7 @@ public class GroupRepository(MessageDbContext context) : IGroupRepository
             .CountAsync(g => !g.IsDismissed);
     }
 
+    /// <summary>将群组所有权转移给新的群主。</summary>
     public async Task TransferOwnershipAsync(Guid groupId, Guid newOwnerId)
     {
         var group = await GetByIdWithMembersAsync(groupId);
@@ -198,12 +220,14 @@ public class GroupRepository(MessageDbContext context) : IGroupRepository
         }
     }
 
+    /// <summary>获取指定用户在群组内的成员记录，不存在时返回 null。</summary>
     public async Task<GroupMember?> GetMemberAsync(Guid groupId, Guid userId)
     {
         return await Context.GroupMembers
             .FirstOrDefaultAsync(gm => gm.GroupId == groupId && gm.UserId == userId);
     }
 
+    /// <summary>获取群组内全部未封禁成员，按加入时间排序。</summary>
     public async Task<IEnumerable<GroupMember>> GetMembersAsync(Guid groupId)
     {
         return await Context.GroupMembers
@@ -212,6 +236,7 @@ public class GroupRepository(MessageDbContext context) : IGroupRepository
             .ToListAsync();
     }
 
+    /// <summary>获取群组内的管理员与群主成员。</summary>
     public async Task<IEnumerable<GroupMember>> GetAdminsAsync(Guid groupId)
     {
         return await Context.GroupMembers
@@ -220,6 +245,7 @@ public class GroupRepository(MessageDbContext context) : IGroupRepository
             .ToListAsync();
     }
 
+    /// <summary>获取指定用户有权发送消息（未被封禁且成员状态允许）的所有未解散群组。</summary>
     public async Task<IEnumerable<Group>> GetGroupsWhereUserCanSendMessageAsync(Guid userId)
     {
         var memberGroupIds = await Context.GroupMembers

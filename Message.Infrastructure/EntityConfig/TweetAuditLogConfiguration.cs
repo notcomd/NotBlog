@@ -1,5 +1,6 @@
 namespace Message.Infrastructure.EntityConfig;
 
+/// <summary>配置动态审核日志实体 <c>TweetAuditLog</c> 到 TweetAuditLogs 表的映射。</summary>
 public class TweetAuditLogConfiguration : IEntityTypeConfiguration<TweetAuditLog>
 {
     public void Configure(EntityTypeBuilder<TweetAuditLog> builder)

@@ -1,13 +1,19 @@
 namespace Message.Domain.IServices;
 
-
+/// <summary>
+/// 当前用户上下文服务接口（提供认证状态与用户标识，由网关中间件填充）。
+/// </summary>
 public interface ICurrentUserService
 {
+    /// <summary>当前请求是否已认证</summary>
     bool IsAuthenticated { get; }
 
 
+    /// <summary>获取当前用户 ID</summary>
     Guid GetUserId();
+    /// <summary>获取当前用户角色（不存在返回 null）</summary>
     string? GetUserRole();
+    /// <summary>按声明类型获取当前用户的声明值（不存在返回 null）</summary>
     string? GetClaim(string claimType);
 
     /// <summary>

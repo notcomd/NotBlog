@@ -46,11 +46,14 @@ public class ImageContent : MediaContent
     {
     }
 
+    /// <summary>内容业务类型，恒为图片消息。</summary>
     public override MessageType MessageType => MessageType.MessageImage;
 
+    /// <summary>创建图片内容值对象（无时长）。</summary>
     public static ImageContent Create(Uri mediaUri, string? thumbnailUri = null, string? caption = null)
         => new(mediaUri, thumbnailUri, caption);
 
+    /// <summary>生成会话侧栏摘要，固定返回「[图片]」。</summary>
     public override string ToSessionSummary() => "[图片]";
 }
 
@@ -64,11 +67,14 @@ public class VideoContent : MediaContent
     {
     }
 
+    /// <summary>内容业务类型，恒为视频消息。</summary>
     public override MessageType MessageType => MessageType.MessageVideo;
 
+    /// <summary>创建视频内容值对象（需指定时长，单位秒）。</summary>
     public static VideoContent Create(Uri mediaUri, double duration, string? thumbnailUri = null, string? caption = null)
         => new(mediaUri, duration, thumbnailUri, caption);
 
+    /// <summary>生成会话侧栏摘要，固定返回「[视频]」。</summary>
     public override string ToSessionSummary() => "[视频]";
 }
 
@@ -82,10 +88,13 @@ public class AudioContent : MediaContent
     {
     }
 
+    /// <summary>内容业务类型，恒为音频消息。</summary>
     public override MessageType MessageType => MessageType.MessageAudio;
 
+    /// <summary>创建音频内容值对象（需指定时长，单位秒）。</summary>
     public static AudioContent Create(Uri mediaUri, double duration, string? caption = null)
         => new(mediaUri, duration, caption);
 
+    /// <summary>生成会话侧栏摘要，固定返回「[音频]」。</summary>
     public override string ToSessionSummary() => "[音频]";
 }

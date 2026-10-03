@@ -7,7 +7,7 @@ namespace Message.Web.API.Application.Commands.Community;
 public class GenerateCircleInvitationCommandHandler(
     ICircleRepository circleRepository,
     ICircleInvitationRepository invitationRepository,
-    IOptionsSnapshot<GenerateCirecleInvitationOption> optionsSnapshot,
+    IOptionsSnapshot<GenerateCircleInvitationOption> optionsSnapshot,
     ILogger<GenerateCircleInvitationCommandHandler> logger) : IRequestHandler<GenerateCircleInvitationCommand, CircleInvitationResult>
 {
     // 邀请码字符集：去除易混淆字符 0/O/1/I

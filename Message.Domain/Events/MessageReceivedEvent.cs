@@ -1,6 +1,7 @@
 
 namespace Message.Domain.Events;
 
+/// <summary>消息送达事件。</summary>
 public record MessageReceivedEvent(
     Guid MessageId,
     Guid ReceiverId,

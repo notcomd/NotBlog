@@ -1,6 +1,7 @@
 
 namespace Message.Domain.Events;
 
+/// <summary>举报处理完成事件。</summary>
 public record ReportResolvedEvent(
     Guid ReportGuid,
     Guid ReviewerGuid,

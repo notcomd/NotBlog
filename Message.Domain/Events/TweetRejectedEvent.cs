@@ -1,6 +1,7 @@
 
 namespace Message.Domain.Events;
 
+/// <summary>推文审核驳回事件。</summary>
 public record TweetRejectedEvent(
     Guid TweetGuid,
     Guid AuthorGuid,

@@ -1,6 +1,9 @@
 
 namespace Message.Domain.IRepository;
 
+/// <summary>
+/// 圈子仓储接口（Circle 聚合根）。
+/// </summary>
 public interface ICircleRepository : IRepository<Circle, IUnitOfWork>
 {
     /// <summary>获取圈子（不含成员列表）</summary>
@@ -33,9 +36,13 @@ public interface ICircleRepository : IRepository<Circle, IUnitOfWork>
     /// <summary>成员总数</summary>
     Task<int> GetMemberCountAsync(Guid circleGuid);
 
+    /// <summary>新增圈子</summary>
     Task<Circle> AddAsync(Circle circle);
+    /// <summary>更新圈子</summary>
     Task<Circle> UpdateAsync(Circle circle);
+    /// <summary>删除圈子</summary>
     Task DeleteAsync(Guid circleGuid);
+    /// <summary>判断圈子是否存在</summary>
     Task<bool> ExistsAsync(Guid circleGuid);
 
     /// <summary>管理端全量圈子分页（含已解散，keyword 模糊匹配名称，按创建时间倒序）</summary>

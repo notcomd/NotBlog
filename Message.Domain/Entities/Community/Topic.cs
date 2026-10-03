@@ -34,15 +34,22 @@ public class Topic : Entity<Guid>, IAggregateRoot
         return topic;
     }
 
+    /// <summary>话题ID</summary>
     public Guid TopicGuid { get; init; }
+    /// <summary>话题名称</summary>
     public string Name { get; private set; } = null!;
+    /// <summary>话题简介</summary>
     public string? Description { get; private set; }
+    /// <summary>创建者用户ID</summary>
     public Guid CreatorGuid { get; private set; }
     /// <summary>帖子数（冗余计数）</summary>
     public int PostCount { get; private set; }
+    /// <summary>是否启用</summary>
     public bool IsActive { get; private set; }
+    /// <summary>创建时间</summary>
     public DateTimeOffset CreateTime { get; init; }
 
+    /// <summary>帖子数 +1</summary>
     public void IncrementPostCount()
     {
         PostCount++;
@@ -60,6 +67,7 @@ public class Topic : Entity<Guid>, IAggregateRoot
         Description = description;
     }
 
+    /// <summary>停用话题</summary>
     public void Deactivate()
     {
         IsActive = false;

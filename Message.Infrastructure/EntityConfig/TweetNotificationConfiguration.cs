@@ -1,5 +1,6 @@
 namespace Message.Infrastructure.EntityConfig;
 
+/// <summary>配置动态通知实体 <c>TweetNotification</c> 到 TweetNotifications 表的映射。</summary>
 public class TweetNotificationConfiguration : IEntityTypeConfiguration<TweetNotification>
 {
     public void Configure(EntityTypeBuilder<TweetNotification> builder)

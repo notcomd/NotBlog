@@ -4,8 +4,14 @@ using Message.Infrastructure.Services;
 
 namespace Message.Infrastructure;
 
+/// <summary>消息基础设施依赖注入扩展方法，负责注册仓储、领域服务与相关缓存/发布器等实现。</summary>
 public static class ServiceCollectionExtensions
 {
+    /// <summary>注册消息基础设施（仓储与服务）；数据库上下文由宿主统一注册，此处不再重复注册。</summary>
+    /// <param name="services">服务集合。</param>
+    /// <param name="configuration">应用配置。</param>
+    /// <param name="connectionStringName">连接字符串名称（默认 DefaultConnection）。</param>
+    /// <returns>服务集合。</returns>
     public static IServiceCollection AddMessageInfrastructure(
         this IServiceCollection services,
         IConfiguration configuration,
@@ -24,6 +30,10 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+    /// <summary>使用指定的数据库上下文配置选项注册消息基础设施（含 DbContext、仓储与服务）。</summary>
+    /// <param name="services">服务集合。</param>
+    /// <param name="optionsAction">数据库上下文配置委托。</param>
+    /// <returns>服务集合。</returns>
     public static IServiceCollection AddMessageInfrastructure(
         this IServiceCollection services,
         Action<DbContextOptionsBuilder> optionsAction)
@@ -36,6 +46,9 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+    /// <summary>注册使用内存数据库的消息基础设施（供测试等场景使用）。</summary>
+    /// <param name="services">服务集合。</param>
+    /// <returns>服务集合。</returns>
     public static IServiceCollection AddInMemoryMessageInfrastructure(
         this IServiceCollection services)
     {

@@ -1,6 +1,9 @@
 
 namespace Message.Domain.Entities.Tweet;
 
+/// <summary>
+/// 推文聚合根。
+/// </summary>
 public class Tweet : Entity<Guid>, IAggregateRoot
 {
     private readonly List<TweetMedia> _media = [];
@@ -14,11 +17,17 @@ public class Tweet : Entity<Guid>, IAggregateRoot
         UpdateTime = DateTimeOffset.UtcNow;
     }
 
+    /// <summary>推文ID</summary>
     public Guid TweetGuid { get; init; }
+    /// <summary>作者用户ID</summary>
     public Guid AuthorGuid { get; private set; }
+    /// <summary>推文内容</summary>
     public string Content { get; private set; } = string.Empty;
+    /// <summary>推文媒体列表</summary>
     public IReadOnlyList<TweetMedia> Media => _media.AsReadOnly();
+    /// <summary>链接元数据</summary>
     public LinkMetadata? LinkMetadata { get; private set; }
+    /// <summary>话题标签集合</summary>
     public IReadOnlySet<string> Hashtags => _hashtags;
     /// <summary>
     /// 所属圈子（圈子帖非空；仅圈子成员可见、可互动）
@@ -38,21 +47,36 @@ public class Tweet : Entity<Guid>, IAggregateRoot
                 .Select(s => Guid.TryParse(s, out var g) ? g : Guid.Empty)
                 .Where(g => g != Guid.Empty)
                 .ToList();
+    /// <summary>推文状态</summary>
     public TweetStatus TweetStatus { get; private set; }
+    /// <summary>可见性</summary>
     public Visibility Visibility { get; private set; }
+    /// <summary>是否置顶</summary>
     public bool IsPinned { get; private set; }
+    /// <summary>浏览数</summary>
     public long ViewCount { get; private set; }
+    /// <summary>点赞数</summary>
     public int LikeCount { get; private set; }
+    /// <summary>评论数</summary>
     public int CommentCount { get; private set; }
+    /// <summary>分享数</summary>
     public int ShareCount { get; private set; }
+    /// <summary>投币数</summary>
     public int CoinCount { get; private set; }
+    /// <summary>收藏数</summary>
     public int FavoriteCount { get; private set; }
+    /// <summary>热度分</summary>
     public long HotScore { get; private set; }
+    /// <summary>审核原因</summary>
     public string? AuditReason { get; private set; }
+    /// <summary>发布时间</summary>
     public DateTimeOffset? PublishTime { get; private set; }
+    /// <summary>创建时间</summary>
     public DateTimeOffset CreateTime { get; private set; }
+    /// <summary>更新时间</summary>
     public DateTimeOffset UpdateTime { get; private set; }
 
+    /// <summary>创建推文（草稿状态）</summary>
     public static Tweet Create(
         Guid authorGuid, string content,
         IEnumerable<TweetMedia>? media = null,
@@ -105,6 +129,7 @@ public class Tweet : Entity<Guid>, IAggregateRoot
         return tweet;
     }
 
+    /// <summary>发布推文（进入待审核状态）</summary>
     public void Publish()
     {
         if (TweetStatus != TweetStatus.Draft)
@@ -116,6 +141,7 @@ public class Tweet : Entity<Guid>, IAggregateRoot
         AddDomainEvent(new TweetPublishedEvent(TweetGuid, AuthorGuid));
     }
 
+    /// <summary>审核通过</summary>
     public void Approve(Guid auditorGuid)
     {
         if (auditorGuid == Guid.Empty)
@@ -129,6 +155,7 @@ public class Tweet : Entity<Guid>, IAggregateRoot
         AddDomainEvent(new TweetApprovedEvent(TweetGuid, AuthorGuid, auditorGuid));
     }
 
+    /// <summary>审核驳回（记录驳回原因）</summary>
     public void Reject(Guid auditorGuid, string reason)
     {
         if (auditorGuid == Guid.Empty)
@@ -146,6 +173,7 @@ public class Tweet : Entity<Guid>, IAggregateRoot
         AddDomainEvent(new TweetRejectedEvent(TweetGuid, AuthorGuid, auditorGuid, reason));
     }
 
+    /// <summary>更新推文内容（仅草稿状态）</summary>
     public void UpdateContent(string content)
     {
         if (TweetStatus != TweetStatus.Draft)
@@ -161,54 +189,64 @@ public class Tweet : Entity<Guid>, IAggregateRoot
         UpdateTime = DateTimeOffset.UtcNow;
     }
 
+    /// <summary>浏览数 +1</summary>
     public void IncrementViewCount()
     {
         ViewCount++;
     }
 
+    /// <summary>点赞数 +1</summary>
     public void AddLike()
     {
         LikeCount++;
     }
 
+    /// <summary>点赞数 -1</summary>
     public void RemoveLike()
     {
         if (LikeCount > 0)
             LikeCount--;
     }
 
+    /// <summary>收藏数 +1</summary>
     public void AddFavorite()
     {
         FavoriteCount++;
     }
 
+    /// <summary>收藏数 -1</summary>
     public void RemoveFavorite()
     {
         if (FavoriteCount > 0)
             FavoriteCount--;
     }
 
+    /// <summary>分享数 +1</summary>
     public void AddShare()
     {
         ShareCount++;
     }
 
+    /// <summary>投币数 +1</summary>
     public void AddCoin()
     {
         CoinCount++;
     }
 
+    /// <summary>评论数 +1</summary>
     public void AddComment()
     {
         CommentCount++;
     }
 
+    /// <summary>评论数 -1</summary>
     public void RemoveComment()
     {
         if (CommentCount > 0)
             CommentCount--;
     }
 
+    /// <summary>重新计算热度分</summary>
     public void RecalculateHotScore()
     {
         HotScore = (long)(LikeCount * 0.2
@@ -218,16 +256,19 @@ public class Tweet : Entity<Guid>, IAggregateRoot
                    + ViewCount * 0.2);
     }
 
+    /// <summary>置顶</summary>
     public void Pin()
     {
         IsPinned = true;
     }
 
+    /// <summary>取消置顶</summary>
     public void Unpin()
     {
         IsPinned = false;
     }
 
+    /// <summary>更新修改时间</summary>
     public void SetUpdateTime()
     {
         UpdateTime = DateTimeOffset.UtcNow;

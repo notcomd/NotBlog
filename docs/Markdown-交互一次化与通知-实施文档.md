@@ -275,7 +275,7 @@ await EventPublishing.PublishSafelyAsync(eventBus, new MarkdownCommentPublishedI
 
 #### 5.1.4 文章发布 → 好友/关注者聚合通知（复用已有事件）
 
-**Markdown 侧零改动**：`CreateMarkdownCommandHandler` 已发布 `MarkdownCreatedEventData`（`[EventBusName("MarkdownCreated")]`，含 `MarkDownGuid / MarkUserGuid(作者) / FileName / CreatedAt`）。通知好友与关注者、以及 10 分钟窗口聚合均在 Message 侧消费实现（§5.2.1）：
+**Markdown 侧零改动**：`CreateMarkdownCommandHandler` 已发布 `MarkdownCreatedIntegrationEvent`（`[EventBusName("MarkdownCreated")]`，含 `MarkDownGuid / MarkUserGuid(作者) / FileName / CreatedAt`）。通知好友与关注者、以及 10 分钟窗口聚合均在 Message 侧消费实现（§5.2.1）：
 
 ```csharp
 // 消费侧逻辑要点（Message.Web.API/MarkdownCreatedIntegrationEventHandler.cs）

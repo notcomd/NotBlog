@@ -6,6 +6,7 @@ namespace Message.Domain.Entities.Group;
 /// </summary>
 public class GroupMember : Entity<Guid>
 {
+    /// <summary>创建群成员</summary>
     public GroupMember(Guid groupId, Guid userId, GroupMemberRole role) : this()
     {
         GroupId = groupId;
@@ -25,27 +26,38 @@ public class GroupMember : Entity<Guid>
         JoinTime = DateTime.UtcNow;
     }
 
+    /// <summary>成员ID</summary>
     public Guid MemberId { get; init; }
 
+    /// <summary>所属群ID</summary>
     public Guid GroupId { get; init; }
 
+    /// <summary>用户ID</summary>
     public Guid UserId { get; init; }
 
+    /// <summary>成员角色</summary>
     public GroupMemberRole Role { get; private set; }
 
+    /// <summary>群昵称</summary>
     public string? Nickname { get; private set; }
 
+    /// <summary>加入时间</summary>
     public DateTime JoinTime { get; init; }
 
+    /// <summary>禁言结束时间（null 表示永久禁言或未禁言）</summary>
     public DateTime? MuteEndTime { get; private set; }
 
+    /// <summary>是否被禁言</summary>
     public bool IsMuted { get; private set; }
 
+    /// <summary>是否被封禁</summary>
     public bool IsBanned { get; private set; }
 
+    /// <summary>封禁时间</summary>
     public DateTime? BannedTime { get; private set; }
 
 
+    /// <summary>提升为管理员（群主不可变更）</summary>
     public void PromoteToAdmin()
     {
         if (Role == GroupMemberRole.Owner)
@@ -53,6 +65,7 @@ public class GroupMember : Entity<Guid>
         Role = GroupMemberRole.Admin;
     }
 
+    /// <summary>降级为普通成员</summary>
     public void DemoteToMember()
     {
         Role = GroupMemberRole.Member;
@@ -64,6 +77,7 @@ public class GroupMember : Entity<Guid>
         Role = GroupMemberRole.Owner;
     }
 
+    /// <summary>禁言指定时长</summary>
     public void Mute(TimeSpan duration)
     {
         IsMuted = true;
@@ -80,24 +94,28 @@ public class GroupMember : Entity<Guid>
         MuteEndTime = endTime;
     }
 
+    /// <summary>解除禁言</summary>
     public void Unmute()
     {
         IsMuted = false;
         MuteEndTime = null;
     }
 
+    /// <summary>封禁成员</summary>
     public void Ban()
     {
         IsBanned = true;
         BannedTime = DateTime.UtcNow;
     }
 
+    /// <summary>解封成员</summary>
     public void Unban()
     {
         IsBanned = false;
         BannedTime = null;
     }
 
+    /// <summary>判断成员当前是否可发送消息（未封禁且在禁言期外）</summary>
     public bool CanSendMessage()
     {
         if (IsBanned) return false;

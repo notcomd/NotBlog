@@ -1,6 +1,7 @@
 
 namespace Message.Infrastructure.EntityConfig;
 
+/// <summary>配置动态（推文）实体 <c>Tweet</c> 到 Tweets 表的映射。</summary>
 public class TweetConfiguration : IEntityTypeConfiguration<Tweet>
 {
     public void Configure(EntityTypeBuilder<Tweet> builder)

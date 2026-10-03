@@ -37,7 +37,7 @@ public static class EmailVerificationApi
     /// 返回 202 Accepted，且不回传验证码本身（S-16：验证码不得出现在响应与日志中）。
     /// </summary>
     private static async Task<IResult> SendCode(
-        [FromServices] IdentityServicesDi identityService,
+        [FromServices] IdentityServiceDi identityService,
         [FromServices] IRedisCacheService redisCacheService,
         [FromServices] ILoggerFactory loggerFactory,
         [FromBody] GenerateCodeRequest request,

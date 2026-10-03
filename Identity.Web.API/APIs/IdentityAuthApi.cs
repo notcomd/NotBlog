@@ -59,7 +59,7 @@ public static class IdentityAuthApi
     /// 仅携带验证码 → 验证码登入，未注册邮箱自动注册（CQRS：LogInCommand + RegisterByEmailCommand）。
     /// 新注册用户在签发 Token 后发布 RegisterByUserIntegrationEvent（Outbox），通知下游服务初始化关联数据。
     /// </summary>
-    private static async Task<IResult> Login([FromServices] IdentityServicesDi identityService,
+    private static async Task<IResult> Login([FromServices] IdentityServiceDi identityService,
         [FromServices] IRedisCacheService redisCacheService,
         [FromServices] IOutboxStore outboxStore,
         [FromServices] IdentityDbContext dbContext,
@@ -196,7 +196,7 @@ public static class IdentityAuthApi
     /// S-20 修改密码：要求已认证（RequireAuthorization，未认证返回 401）；
     /// 必须携带旧密码或邮箱验证码；旧密码错误拒绝；改密成功后吊销该用户现有 token 并清除 token 缓存。
     /// </summary>
-    private static async Task<IResult> ChangeByPassword([FromServices] IdentityServicesDi identityService,
+    private static async Task<IResult> ChangeByPassword([FromServices] IdentityServiceDi identityService,
         [FromServices] IJwtTokenService jwtTokenService,
         [FromServices] ITokenSessionService tokenSessionService,
         [FromBody] ChangeByPasswordRequest changeByPasswordRequestRequest,
@@ -264,7 +264,7 @@ public static class IdentityAuthApi
     /// 要求已认证（RequireAuthorization，未认证返回 401）；身份仅取自认证后的 NameIdentifier Claim。
     /// 关闭二次验证（置 false）为降级操作，必须携带密码或邮箱验证码二次确认。
     /// </summary>
-    private static async Task<IResult> UpdateUserSafety([FromServices] IdentityServicesDi identityService,
+    private static async Task<IResult> UpdateUserSafety([FromServices] IdentityServiceDi identityService,
         [FromBody] UpdateUserSafetyRequest request,
         HttpContext httpContext)
     {
@@ -297,7 +297,7 @@ public static class IdentityAuthApi
     /// <summary>
     /// 读取当前登录用户的二次验证开关状态。要求已认证。
     /// </summary>
-    private static async Task<IResult> GetUserSafety([FromServices] IdentityServicesDi identityService,
+    private static async Task<IResult> GetUserSafety([FromServices] IdentityServiceDi identityService,
         HttpContext httpContext)
     {
         var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier);

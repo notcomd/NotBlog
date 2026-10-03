@@ -1,18 +1,22 @@
 
 namespace Message.Infrastructure.Repository;
 
+/// <summary>圈子仓储实现，负责 Circles 与 CircleMembers 的查询与持久化。</summary>
 public class CircleRepository(MessageDbContext context) : ICircleRepository
 {
+    /// <summary>获取当前数据库上下文作为工作单元。</summary>
     public IUnitOfWork UnitOfWork => context;
 
     private readonly DbSet<Circle> DbSet = context.Circles;
 
+    /// <summary>按圈子标识获取有效（Active）的圈子，不存在时返回 null。</summary>
     public async Task<Circle?> GetByIdAsync(Guid circleGuid)
     {
         return await DbSet
             .FirstOrDefaultAsync(c => c.CircleGuid == circleGuid && c.Status == CircleStatus.Active);
     }
 
+    /// <summary>按圈子标识获取有效的圈子（含成员集合）。</summary>
     public async Task<Circle?> GetByIdWithMembersAsync(Guid circleGuid)
     {
         return await DbSet
@@ -20,6 +24,7 @@ public class CircleRepository(MessageDbContext context) : ICircleRepository
             .FirstOrDefaultAsync(c => c.CircleGuid == circleGuid && c.Status == CircleStatus.Active);
     }
 
+    /// <summary>获取指定用户已加入的所有有效圈子，按创建时间倒序。</summary>
     public async Task<IEnumerable<Circle>> GetByMemberAsync(Guid userId)
     {
         return await context.CircleMembers
@@ -33,6 +38,7 @@ public class CircleRepository(MessageDbContext context) : ICircleRepository
             .ToListAsync();
     }
 
+    /// <summary>获取指定圈主创建的所有有效圈子，按创建时间倒序。</summary>
     public async Task<IEnumerable<Circle>> GetByOwnerAsync(Guid ownerGuid)
     {
         return await DbSet
@@ -41,6 +47,7 @@ public class CircleRepository(MessageDbContext context) : ICircleRepository
             .ToListAsync();
     }
 
+    /// <summary>分页获取有效圈子，支持按名称模糊搜索，按创建时间倒序。</summary>
     public async Task<IEnumerable<Circle>> GetActiveAsync(string? keyword, int page = 1, int pageSize = 20)
     {
         if (pageSize < 1) pageSize = 10;
@@ -59,6 +66,7 @@ public class CircleRepository(MessageDbContext context) : ICircleRepository
             .ToListAsync();
     }
 
+    /// <summary>统计有效圈子数量，支持按名称模糊搜索。</summary>
     public async Task<int> GetActiveCountAsync(string? keyword)
     {
         var query = DbSet.Where(c => c.Status == CircleStatus.Active);
@@ -74,18 +82,21 @@ public class CircleRepository(MessageDbContext context) : ICircleRepository
     private static string EscapeLike(string input) =>
         input.Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_");
 
+    /// <summary>判断指定用户是否为该圈子的有效成员。</summary>
     public async Task<bool> IsMemberAsync(Guid circleGuid, Guid userId)
     {
         return await context.CircleMembers.AnyAsync(
             m => m.CircleGuid == circleGuid && m.UserGuid == userId && m.Status == CircleMemberStatus.Active);
     }
 
+    /// <summary>获取指定用户在圈子内的成员记录，不存在时返回 null。</summary>
     public async Task<CircleMember?> GetMemberAsync(Guid circleGuid, Guid userId)
     {
         return await context.CircleMembers
             .FirstOrDefaultAsync(m => m.CircleGuid == circleGuid && m.UserGuid == userId);
     }
 
+    /// <summary>分页获取圈子的有效成员，按加入时间排序。</summary>
     public async Task<IEnumerable<CircleMember>> GetMembersAsync(Guid circleGuid, int page = 1, int pageSize = 50)
     {
         if (pageSize < 1) pageSize = 10;
@@ -98,18 +109,21 @@ public class CircleRepository(MessageDbContext context) : ICircleRepository
             .ToListAsync();
     }
 
+    /// <summary>统计圈子的有效成员数量。</summary>
     public async Task<int> GetMemberCountAsync(Guid circleGuid)
     {
         return await context.CircleMembers.CountAsync(
             m => m.CircleGuid == circleGuid && m.Status == CircleMemberStatus.Active);
     }
 
+    /// <summary>新增圈子并返回已跟踪的实体。</summary>
     public async Task<Circle> AddAsync(Circle circle)
     {
         var entry = await DbSet.AddAsync(circle);
         return entry.Entity;
     }
 
+    /// <summary>更新圈子；仅对未跟踪实体执行更新，避免聚合内新增成员被误标为修改。</summary>
     public async Task<Circle> UpdateAsync(Circle circle)
     {
         // 仅对未跟踪实体执行 DbSet.Update；已跟踪实体交由 ChangeTracker 自动检测修改。
@@ -121,6 +135,7 @@ public class CircleRepository(MessageDbContext context) : ICircleRepository
         return circle;
     }
 
+    /// <summary>删除指定圈子。</summary>
     public async Task DeleteAsync(Guid circleGuid)
     {
         var circle = await GetByIdAsync(circleGuid);
@@ -128,6 +143,7 @@ public class CircleRepository(MessageDbContext context) : ICircleRepository
             DbSet.Remove(circle);
     }
 
+    /// <summary>判断指定有效圈子是否存在。</summary>
     public async Task<bool> ExistsAsync(Guid circleGuid)
     {
         return await DbSet.AnyAsync(c => c.CircleGuid == circleGuid && c.Status == CircleStatus.Active);

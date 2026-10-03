@@ -13,6 +13,7 @@ public class UserFollow : Entity<Guid>, IAggregateRoot
         CreateTime = DateTimeOffset.UtcNow;
     }
 
+    /// <summary>创建关注关系</summary>
     public static UserFollow Create(Guid followerGuid, Guid followeeGuid)
     {
         if (followerGuid == Guid.Empty)
@@ -29,7 +30,10 @@ public class UserFollow : Entity<Guid>, IAggregateRoot
         };
     }
 
+    /// <summary>关注者用户ID</summary>
     public Guid FollowerGuid { get; private set; }
+    /// <summary>被关注者用户ID</summary>
     public Guid FolloweeGuid { get; private set; }
+    /// <summary>创建时间</summary>
     public DateTimeOffset CreateTime { get; private set; }
 }

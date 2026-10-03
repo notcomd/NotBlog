@@ -1,5 +1,6 @@
 namespace Message.Infrastructure.EntityConfig;
 
+/// <summary>配置聊天会话实体 <c>ChatSession</c> 到 ChatSessions 表的映射。</summary>
 public class ChatSessionConfiguration : IEntityTypeConfiguration<ChatSession>
 {
     public void Configure(EntityTypeBuilder<ChatSession> builder)
@@ -33,7 +34,7 @@ public class ChatSessionConfiguration : IEntityTypeConfiguration<ChatSession>
         // GetPrivateSessionAsync），text 列无法翻译 HashSet.Contains → “could not be translated”。
         // Npgsql 对 HashSet<Guid> ↔ uuid[] 为原生映射，且能将 Contains 翻译为 @> 操作符、
         // Count 翻译为 cardinality()。
-        builder.Property(s => s.Participants)
+        builder.Property(s => s.ParticipantsInternal)
             .HasColumnName("Participants")
             .HasColumnType("uuid[]");
         builder.Ignore(s => s.MemberStates);

@@ -37,23 +37,6 @@ public class MarkReviewDeletedEventHandler(ILogger<MarkReviewDeletedEventHandler
 }
 
 /// <summary>
-///MarkReview 点赞集成事件处理器
-/// </summary>
-[EventBusName("MarkReviewLiked")]
-public class MarkReviewLikedEventHandler(ILogger<MarkReviewLikedEventHandler> logger)
-    : JsonIntegrationEventHandler<MarkReviewLikedIntegrationEvent>
-{
-    public override Task Handler(MarkReviewLikedIntegrationEvent eventData)
-    {
-        // 实时更新计数、推送通知等
-        logger.LogInformation("[集成事件] 收到点赞通知：评论={MarkReviewGuid}, 新计数={NewLoveCount}",
-            eventData.MarkReviewGuid, eventData.NewLoveCount);
-
-        return Task.CompletedTask;
-    }
-}
-
-/// <summary>
 ///MarkReview 添加子评论集成事件处理器
 /// </summary>
 [EventBusName("ChildReviewAdded")]

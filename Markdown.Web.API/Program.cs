@@ -3,7 +3,6 @@ using CacheMemory.Extensions;
 using Commons.Web;
 using FileDev.Web.API.Grpc;
 using Markdown.Infrastructure;
-using Markdown.Web.API.Apis;
 using Markdown.Web.API.Extensions;
 using Markdown.Web.API.Resources;
 using Markdown.Web.API.Services;
@@ -163,8 +162,10 @@ app.UseAuthorization();
 app.UsePermissionEnforcement();
 
 
-app.MapMarkdownApis();
+// Markdown 文章 API（文章 / 审核 / 评论 / 历史）
+app.MapGroup("/api/markdown").MapMarkdownApi();
 
-app.MapMarkFavoriteApi();
+// 收藏 API（用户维度资源，内部要求认证）
+app.MapGroup("/api/favorites").MapMarkFavoriteApi();
 
 app.Run();

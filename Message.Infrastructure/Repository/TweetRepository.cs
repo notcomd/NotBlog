@@ -1,8 +1,10 @@
 namespace Message.Infrastructure.Repository;
 
+/// <summary>动态（推文）仓储实现，负责 Tweets 表的查询与持久化，查询统一应用可见性过滤。</summary>
 public class TweetRepository(MessageDbContext context) : ITweetRepository
 
 {
+    /// <summary>获取当前数据库上下文作为工作单元。</summary>
     public IUnitOfWork UnitOfWork => context;
 
     private readonly DbSet<Tweet> DbSet = context.Tweets;
@@ -39,11 +41,13 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
         return query;
     }
 
+    /// <summary>按动态标识获取动态，不存在时返回 null。</summary>
     public async Task<Tweet?> GetByIdAsync(Guid tweetGuid)
     {
         return await DbSet.FirstOrDefaultAsync(t => t.TweetGuid == tweetGuid);
     }
 
+    /// <summary>分页获取指定作者的动态（经可见性过滤），按创建时间倒序。</summary>
     public async Task<IEnumerable<Tweet>> GetByAuthorAsync(Guid authorGuid, Guid viewerId, IEnumerable<Guid> followingIds, int page = 1, int pageSize = 20)
     {
         if (pageSize < 1) pageSize = 10;
@@ -54,6 +58,7 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
         return await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
     }
 
+    /// <summary>分页获取指定作者指定状态的动态，按更新时间倒序。</summary>
     public async Task<IEnumerable<Tweet>> GetByAuthorAndStatusAsync(Guid authorGuid, TweetStatus status, int page = 1, int pageSize = 20)
     {
         if (pageSize < 1) pageSize = 10;
@@ -66,11 +71,13 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
             .ToListAsync();
     }
 
+    /// <summary>统计指定作者指定状态的动态数量。</summary>
     public async Task<int> CountByAuthorAndStatusAsync(Guid authorGuid, TweetStatus status)
     {
         return await DbSet.CountAsync(t => t.AuthorGuid == authorGuid && t.TweetStatus == status);
     }
 
+    /// <summary>分页获取关注时间线（指定作者集合的非圈子动态，经可见性过滤），按创建时间倒序。</summary>
     public async Task<IEnumerable<Tweet>> GetTimelineAsync(IEnumerable<Guid> authorGuids, Guid viewerId, IEnumerable<Guid> followingIds, int page = 1, int pageSize = 20)
     {
         if (pageSize < 1) pageSize = 10;
@@ -86,6 +93,7 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
         return await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
     }
 
+    /// <summary>分页获取热门动态（已通过、非圈子、公开），按热度与创建时间倒序。</summary>
     public async Task<IEnumerable<Tweet>> GetTrendingAsync(int page = 1, int pageSize = 20)
     {
         if (pageSize < 1) pageSize = 10;
@@ -100,6 +108,7 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
         return await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
     }
 
+    /// <summary>分页获取待审核动态，按创建时间升序。</summary>
     public async Task<IEnumerable<Tweet>> GetPendingAuditAsync(int page = 1, int pageSize = 20)
     {
         if (pageSize < 1) pageSize = 10;
@@ -111,6 +120,7 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
         return await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
     }
 
+    /// <summary>分页获取指定状态的非圈子动态，按创建时间倒序。</summary>
     public async Task<IEnumerable<Tweet>> GetByStatusAsync(TweetStatus status, int page = 1, int pageSize = 20)
     {
         if (pageSize < 1) pageSize = 10;
@@ -122,6 +132,7 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
         return await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
     }
 
+    /// <summary>获取指定作者置顶的动态，按更新时间倒序。</summary>
     public async Task<IEnumerable<Tweet>> GetPinnedByAuthorAsync(Guid authorGuid)
     {
         return await DbSet
@@ -130,18 +141,21 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
             .ToListAsync();
     }
 
+    /// <summary>新增动态并返回已跟踪的实体。</summary>
     public async Task<Tweet> AddAsync(Tweet tweet)
     {
         var entry = await DbSet.AddAsync(tweet);
         return entry.Entity;
     }
 
+    /// <summary>更新动态并返回已跟踪的实体。</summary>
     public async Task<Tweet> UpdateAsync(Tweet tweet)
     {
         var entry = DbSet.Update(tweet);
         return entry.Entity;
     }
 
+    /// <summary>删除指定动态。</summary>
     public async Task DeleteAsync(Guid tweetGuid)
     {
         var tweet = await GetByIdAsync(tweetGuid);
@@ -151,17 +165,20 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
         }
     }
 
+    /// <summary>判断指定动态是否存在。</summary>
     public async Task<bool> ExistsAsync(Guid tweetGuid)
     {
         return await DbSet.AnyAsync(t => t.TweetGuid == tweetGuid);
     }
 
+    /// <summary>统计指定作者对查看者可见的动态数量。</summary>
     public async Task<int> GetCountByAuthorAsync(Guid authorGuid, Guid viewerId, IEnumerable<Guid> followingIds)
     {
         return await ApplyVisibleTo(DbSet.Where(t => t.AuthorGuid == authorGuid), viewerId, followingIds)
             .CountAsync();
     }
 
+    /// <summary>统计指定作者全部已通过动态的点赞总数。</summary>
     public async Task<long> GetLikeTotalByAuthorAsync(Guid authorGuid)
     {
         return await DbSet
@@ -169,6 +186,7 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
             .SumAsync(t => (long)t.LikeCount);
     }
 
+    /// <summary>按 ID 集合批量获取对查看者可见的动态，并还原传入顺序。</summary>
     public async Task<IEnumerable<Tweet>> GetVisibleByIdsAsync(IEnumerable<Guid> tweetGuids, Guid viewerId, IEnumerable<Guid> followingIds)
     {
         var ids = tweetGuids.Distinct().ToArray();
@@ -185,6 +203,7 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
         return ids.Select(id => byId.GetValueOrDefault(id)).Where(t => t is not null).Cast<Tweet>();
     }
 
+    /// <summary>统计待审核动态的数量。</summary>
     public async Task<int> GetPendingAuditCountAsync()
     {
         return await DbSet.CountAsync(t => t.TweetStatus == TweetStatus.Pending);
@@ -196,6 +215,7 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
         return await DbSet.CountAsync();
     }
 
+    /// <summary>统计关注时间线中对查看者可见的动态数量。</summary>
     public async Task<int> GetTimelineCountAsync(IEnumerable<Guid> authorGuids, Guid viewerId, IEnumerable<Guid> followingIds)
     {
         var ids = authorGuids.Distinct().ToArray();
@@ -207,6 +227,7 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
             .CountAsync();
     }
 
+    /// <summary>统计热门动态的数量。</summary>
     public async Task<int> GetTrendingCountAsync()
     {
         return await DbSet.CountAsync(t => t.TweetStatus == TweetStatus.Approved
@@ -214,6 +235,7 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
                                            && t.Visibility == Visibility.Public);
     }
 
+    /// <summary>分页获取指定圈子内已通过的动态，按创建时间倒序。</summary>
     public async Task<IEnumerable<Tweet>> GetByCircleAsync(Guid circleGuid, int page = 1, int pageSize = 20)
     {
         if (pageSize < 1) pageSize = 10;
@@ -226,11 +248,13 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
             .ToListAsync();
     }
 
+    /// <summary>统计指定圈子内已通过的动态数量。</summary>
     public async Task<int> GetCirclePostCountAsync(Guid circleGuid)
     {
         return await DbSet.CountAsync(t => t.CircleGuid == circleGuid && t.TweetStatus == TweetStatus.Approved);
     }
 
+    /// <summary>分页获取包含指定话题的已通过动态，按创建时间倒序。</summary>
     public async Task<IEnumerable<Tweet>> GetByTopicAsync(Guid topicGuid, int page = 1, int pageSize = 20)
     {
         if (pageSize < 1) pageSize = 10;
@@ -245,6 +269,7 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
             .ToListAsync();
     }
 
+    /// <summary>统计包含指定话题的已通过动态数量。</summary>
     public async Task<int> GetTopicPostCountAsync(Guid topicGuid)
     {
         var pattern = $"%{topicGuid:N}%";
@@ -252,6 +277,7 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
                                            && EF.Functions.Like(t.TopicGuidsJson, pattern));
     }
 
+    /// <summary>分页获取社区动态流（指定作者集合的非圈子动态，经可见性过滤），按创建时间倒序。</summary>
     public async Task<IEnumerable<Tweet>> GetCommunityFeedAsync(IEnumerable<Guid> authorGuids, Guid viewerId, IEnumerable<Guid> followingIds, int page = 1, int pageSize = 20)
     {
         if (pageSize < 1) pageSize = 10;
@@ -267,6 +293,7 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
         return await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
     }
 
+    /// <summary>统计社区动态流中可见的动态数量。</summary>
     public async Task<int> GetCommunityFeedCountAsync(IEnumerable<Guid> authorGuids, Guid viewerId, IEnumerable<Guid> followingIds)
     {
         var ids = authorGuids.Distinct().ToArray();

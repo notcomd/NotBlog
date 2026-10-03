@@ -36,18 +36,21 @@ public class VideoCollection : Entity<Guid>, IAggregateRoot
 
 
 
+    /// <summary>添加归属用户列表并刷新更新时间。</summary>
     public void AddByBelongs(List<Guid> videoBelongs)
     {
         AffiliatedUser.AddRange(videoBelongs);
         TimeSpace.ResetUpdateAt(DateTimeOffset.UtcNow);
     }
 
+    /// <summary>向收藏夹追加视频列表并刷新更新时间。</summary>
     public void AddByVideoCollection(List<Guid> videoCollection)
     {
         VideoGuid.AddRange(videoCollection);
         TimeSpace.ResetUpdateAt(DateTimeOffset.UtcNow);
     }
 
+    /// <summary>重命名收藏夹并刷新更新时间。</summary>
     public void ResetByVideoCollectionName(string CollectionName)
     {
         VideoCollectionName = CollectionName;

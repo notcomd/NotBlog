@@ -2,10 +2,14 @@ using Commons.SeedWork;
 
 namespace Video.Infrastructure.Repository;
 
+/// <summary>
+/// 视频仓储实现 — 基于 VideoDbContext，提供视频查询、分页、互动计数/控制更新与软/硬删除。
+/// </summary>
 public class VideoRepository(ILogger<IVideoRepository> videoLogger, VideoDbContext videoDbContext)
     : IVideoRepository
 {
     
+    /// <summary>工作单元（VideoDbContext）。</summary>
     public IUnitOfWork UnitOfWork=> videoDbContext;
     
     public async Task<List<Videos>> FindByVideoListAsync()

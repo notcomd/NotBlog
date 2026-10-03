@@ -1,8 +1,12 @@
 
 namespace Message.Domain.IRepository;
 
+/// <summary>
+/// 圈子邀请仓储接口（邀请码与直邀，CircleInvitation 聚合根）。
+/// </summary>
 public interface ICircleInvitationRepository : IRepository<CircleInvitation, IUnitOfWork>
 {
+    /// <summary>按邀请 ID 查询（不存在返回 null）</summary>
     Task<CircleInvitation?> GetByIdAsync(Guid inviteGuid);
 
     /// <summary>按邀请码查询（未失效校验由命令层完成）</summary>
@@ -35,7 +39,10 @@ public interface ICircleInvitationRepository : IRepository<CircleInvitation, IUn
     /// <summary>统计指定邀请人在时间窗口内创建的邀请码数量（周额度校验用，仅统计 Type=Code）</summary>
     Task<int> CountCodesCreatedSinceAsync(Guid inviterGuid, DateTimeOffset since);
 
+    /// <summary>新增邀请</summary>
     Task<CircleInvitation> AddAsync(CircleInvitation invitation);
+    /// <summary>更新邀请</summary>
     Task<CircleInvitation> UpdateAsync(CircleInvitation invitation);
+    /// <summary>删除邀请</summary>
     Task DeleteAsync(Guid inviteGuid);
 }

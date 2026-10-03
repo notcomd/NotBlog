@@ -1,6 +1,7 @@
 
 namespace Message.Domain.Events;
 
+/// <summary>内容被举报事件。</summary>
 public record TweetReportedEvent(
     Guid ReportGuid,
     Guid ReporterGuid,

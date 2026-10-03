@@ -1,6 +1,9 @@
 namespace Message.Domain.Options;
 
-public class GenerateCirecleInvitationOption
+/// <summary>
+/// 圈子邀请码生成配置项（字符集、长度、尝试次数与配额规则）。
+/// </summary>
+public class GenerateCircleInvitationOption
 {
     /// <summary>
     /// 邀请码字符集（不含易混淆字符：0、O、1、I、L）

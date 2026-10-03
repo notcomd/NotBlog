@@ -15,7 +15,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Dto\" />
+        <InternalsVisibleTo Include="Message.Infrastructure" />
+    </ItemGroup>
+
+    <ItemGroup>
         <Folder Include="Options\" />
     </ItemGroup>
 

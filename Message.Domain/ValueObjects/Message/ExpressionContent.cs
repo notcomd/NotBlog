@@ -16,10 +16,13 @@ public class ExpressionContent : MessageContent
         Value = value;
     }
 
+    /// <summary>表情代码（非空，长度不超过 100 字符）</summary>
     public string Value { get; }
 
+    /// <summary>内容业务类型，恒为表情消息。</summary>
     public override MessageType MessageType => MessageType.MessageExpression;
 
+    /// <summary>创建表情内容值对象（校验非空与长度上限）。</summary>
     public static ExpressionContent Create(string value) => new(value);
 
     protected override IEnumerable<object> GetAtomicValues()
@@ -27,5 +30,6 @@ public class ExpressionContent : MessageContent
         yield return Value;
     }
 
+    /// <summary>生成会话侧栏摘要，固定返回「[表情]」。</summary>
     public override string ToSessionSummary() => "[表情]";
 }

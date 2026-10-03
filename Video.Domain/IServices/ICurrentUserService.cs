@@ -7,14 +7,17 @@ namespace Video.Domain.IServices;
 /// </summary>
 public interface ICurrentUserService
 {
-    /// <summary>当前登录用户 Guid；未认证时为 Guid.Empty。</summary>
+    /// <summary>当前请求是否已认证（存在有效用户标识）。</summary>
     bool IsAuthenticated { get; }
 
 
+    /// <summary>获取当前登录用户 Guid；未认证时返回 Guid.Empty。</summary>
     Guid GetUserId();
 
+    /// <summary>获取当前用户的角色名（逗号分隔字符串）；未认证时返回 null。</summary>
     string? GetUserRole();
-    
+
+    /// <summary>读取当前用户指定 Claim 的值；不存在时返回 null。</summary>
     string? GetClaim(string claimType);
 
     /// <summary>

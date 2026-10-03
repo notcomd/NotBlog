@@ -12,6 +12,7 @@ public class TweetMedia : Entity<Guid>
         CreateTime = DateTimeOffset.UtcNow;
     }
 
+    /// <summary>创建推文媒体</summary>
     public TweetMedia(string mediaUrl, string mediaType, int sortOrder = 0) : this()
     {
         MediaUrl = mediaUrl ?? throw new ArgumentNullException(nameof(mediaUrl));

@@ -1,5 +1,8 @@
 namespace Video.Domain.IRepository;
 
+/// <summary>
+/// 视频仓储接口 — 视频聚合的读写入口（查询、分页、互动计数/控制更新、软删除与硬删除）。
+/// </summary>
 public interface IVideoRepository:IRepository<Videos, IUnitOfWork>
 {
     /// <summary>
@@ -91,6 +94,10 @@ public interface IVideoRepository:IRepository<Videos, IUnitOfWork>
     /// <param name="timeSpace">时间空间</param>
     public Task UpdateByTimeSpaceAsync(Guid videoGuid, TimeSpace timeSpace);
 
+    /// <summary>
+    /// 更新视频实体（按实体跟踪保存）
+    /// </summary>
+    /// <param name="videos">待更新的视频实体</param>
     public Task UpdateByVideoAsync(Videos videos);
 
     /// <summary>
@@ -103,8 +110,16 @@ public interface IVideoRepository:IRepository<Videos, IUnitOfWork>
     /// </summary>
     public Task DeleteByVideoControlRangeAsync(List<Videos> videosList);
 
+    /// <summary>
+    /// 硬删除单个视频（物理删除）
+    /// </summary>
+    /// <param name="videoControl">视频实体</param>
     public Task InDeleteByVideoAsync(Videos videoControl);
 
+    /// <summary>
+    /// 硬删除多个视频（物理删除）
+    /// </summary>
+    /// <param name="videosList">视频实体列表</param>
     public Task InDeleteByVideoRangeAsync(List<Videos> videosList);
 
     // ── Standard Delete Operations ──

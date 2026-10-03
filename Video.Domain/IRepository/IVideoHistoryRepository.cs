@@ -41,7 +41,10 @@ public interface IVideoHistoryRepository : IRepository<VideoHistory, IUnitOfWork
 
     // ── 写入操作 ──
 
+    /// <summary>新增观看历史记录。</summary>
     Task AddAsync(VideoHistory history);
+
+    /// <summary>更新观看历史记录。</summary>
     Task UpdateAsync(VideoHistory history);
 
     // ── 删除操作 ──

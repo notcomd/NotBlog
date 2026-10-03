@@ -15,6 +15,7 @@ public class RabbitMqCommunityEventPublisher(
     IEventBus eventBus,
     ILogger<RabbitMqCommunityEventPublisher> logger) : ICommunityEventPublisher
 {
+    /// <summary>将社区事件封装为集成事件后发布到 RabbitMQ 事件总线；发布失败仅记录日志，不影响业务主流程。</summary>
     public async Task PublishAsync(CommunityEventEnvelope envelope, CancellationToken cancellationToken = default)
     {
         try

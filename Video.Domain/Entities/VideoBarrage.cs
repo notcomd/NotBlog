@@ -14,10 +14,13 @@ namespace Video.Domain.Entities;
 public class VideoBarrage
 {
   
+    /// <summary>弹幕ID</summary>
     public Guid VideoBarrageGuid { get; init; }
 
+    /// <summary>所属视频ID</summary>
     public Guid VideoGuid { get; init; }
 
+    /// <summary>发布用户ID</summary>
     public Guid UserGuid { get; init; }
 
     /// <summary>弹幕内容类型</summary>
@@ -34,13 +37,16 @@ public class VideoBarrage
     /// </summary>
     public TimeSpace TimeSpace { get; private set; }
 
+    /// <summary>是否已删除</summary>
     public bool IsDelete { get; private set; }
 
     /// <summary>播放时间点（毫秒，自视频开头；播放器据此在对应进度显示弹幕，可空）</summary>
     public long? TimeAt { get; private set; }
 
+    /// <summary>弹幕控制值对象</summary>
     public VideoControl VideoControl { get; private set; }
 
+    /// <summary>弹幕互动计数</summary>
     public VideoQuote VideoQuote { get; private set; }
 
     // ── 便捷属性 ──
@@ -117,6 +123,7 @@ public class VideoBarrage
 
     // ── 行为方法 ──
 
+    /// <summary>按给定控制对象同步弹幕控制与删除标记。</summary>
     public void ChangeByVideoControl(VideoControl videoControl, bool isDelete)
     {
         VideoControl.ChangeByVideoController(videoControl);
@@ -144,6 +151,7 @@ public class VideoBarrage
     }
 
 
+    /// <summary>软删除弹幕。</summary>
     public void SoftDelete()=>this.IsDelete=true;
 
     /// <summary>设置播放时间点（毫秒；不传则播放器按接收顺序展示）</summary>

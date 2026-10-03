@@ -1,5 +1,6 @@
 namespace Message.Infrastructure.EntityConfig;
 
+/// <summary>配置动态互动实体 <c>TweetInteraction</c> 到 TweetInteractions 表的映射。</summary>
 public class TweetInteractionConfiguration : IEntityTypeConfiguration<TweetInteraction>
 {
     public void Configure(EntityTypeBuilder<TweetInteraction> builder)

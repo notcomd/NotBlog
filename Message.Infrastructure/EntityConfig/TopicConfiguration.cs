@@ -1,6 +1,7 @@
 
 namespace Message.Infrastructure.EntityConfig;
 
+/// <summary>配置话题实体 <c>Topic</c> 到 Topics 表的映射。</summary>
 public class TopicConfiguration : IEntityTypeConfiguration<Topic>
 {
     public void Configure(EntityTypeBuilder<Topic> builder)

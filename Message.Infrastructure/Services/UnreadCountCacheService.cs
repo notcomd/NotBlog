@@ -1,5 +1,6 @@
 namespace Message.Infrastructure.Services;
 
+/// <summary>未读消息计数缓存服务，按用户维度以 Hash 结构缓存各会话未读数（TTL 1 小时）。</summary>
 public class UnreadCountCacheService
 {
     private const string UnreadCountPrefix = "message:user:unread:";
@@ -7,6 +8,9 @@ public class UnreadCountCacheService
     private readonly IRedisCacheService _database;
     private readonly ILogger<UnreadCountCacheService> _logger;
 
+    /// <summary>初始化 <see cref="UnreadCountCacheService"/> 实例。</summary>
+    /// <param name="database">Redis 缓存服务。</param>
+    /// <param name="logger">日志记录器。</param>
     public UnreadCountCacheService(
         IRedisCacheService database,
         ILogger<UnreadCountCacheService> logger)
@@ -15,6 +19,7 @@ public class UnreadCountCacheService
         _logger = logger;
     }
 
+    /// <summary>增加指定用户在某会话的未读消息计数。</summary>
     public async Task IncrementUnreadCountAsync(Guid userId, Guid sessionId,
         CancellationToken cancellationToken = default)
     {
@@ -24,6 +29,7 @@ public class UnreadCountCacheService
         _logger.LogDebug("用户 {UserId} 会话 {SessionId} 未读数已增加", userId, sessionId);
     }
 
+    /// <summary>减少指定用户在某会话的未读消息计数（计数为正时才递减）。</summary>
     public async Task DecrementUnreadCountAsync(Guid userId, Guid sessionId,
         CancellationToken cancellationToken = default)
     {
@@ -37,6 +43,7 @@ public class UnreadCountCacheService
         }
     }
 
+    /// <summary>获取指定用户在某会话的未读消息计数，缺失时返回 0。</summary>
     public async Task<int> GetUnreadCountAsync(Guid userId, Guid sessionId,
         CancellationToken cancellationToken = default)
     {
@@ -49,6 +56,7 @@ public class UnreadCountCacheService
         return (int)long.Parse(value!);
     }
 
+    /// <summary>获取指定用户所有会话的未读计数字典。</summary>
     public async Task<Dictionary<Guid, int>> GetAllUnreadCountsAsync(Guid userId,
         CancellationToken cancellationToken = default)
     {
@@ -67,6 +75,7 @@ public class UnreadCountCacheService
         return result;
     }
 
+    /// <summary>清零指定用户在某会话的未读消息计数。</summary>
     public async Task ClearUnreadCountAsync(Guid userId, Guid sessionId, CancellationToken cancellationToken = default)
     {
         var key = $"{UnreadCountPrefix}{userId}";
@@ -74,6 +83,7 @@ public class UnreadCountCacheService
         _logger.LogDebug("用户 {UserId} 会话 {SessionId} 未读数已清零", userId, sessionId);
     }
 
+    /// <summary>统计指定用户所有会话的未读消息总数。</summary>
     public async Task<int> GetTotalUnreadCountAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         var key = $"{UnreadCountPrefix}{userId}";

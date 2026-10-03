@@ -62,8 +62,11 @@ public class CircleInvitation : Entity<Guid>, IAggregateRoot
         };
     }
 
+    /// <summary>邀请ID</summary>
     public Guid InviteGuid { get; init; }
+    /// <summary>所属圈子ID</summary>
     public Guid CircleGuid { get; private set; }
+    /// <summary>邀请人用户ID</summary>
     public Guid InviterGuid { get; private set; }
     /// <summary>直邀对象（邀请码/链接为 null）</summary>
     public Guid? InviteeGuid { get; private set; }
@@ -71,9 +74,13 @@ public class CircleInvitation : Entity<Guid>, IAggregateRoot
     public string? Code { get; private set; }
     /// <summary>邀请链接 token</summary>
     public Guid? Token { get; private set; }
+    /// <summary>邀请类型</summary>
     public CircleInvitationType Type { get; private set; }
+    /// <summary>邀请状态</summary>
     public CircleInvitationStatus Status { get; private set; }
+    /// <summary>过期时间</summary>
     public DateTimeOffset ExpireTime { get; private set; }
+    /// <summary>创建时间</summary>
     public DateTimeOffset CreateTime { get; init; }
 
     /// <summary>是否仍可被使用（Pending 且未过期）</summary>

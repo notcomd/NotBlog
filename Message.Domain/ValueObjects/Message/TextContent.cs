@@ -17,10 +17,13 @@ public class TextContent : MessageContent
         Value = value;
     }
 
+    /// <summary>文本内容（非空，长度不超过 2000 字符）</summary>
     public string Value { get; }
 
+    /// <summary>内容业务类型，恒为文本消息。</summary>
     public override MessageType MessageType => MessageType.MessageText;
 
+    /// <summary>创建文本内容值对象（校验非空与长度上限）。</summary>
     public static TextContent Create(string value) => new(value);
 
     protected override IEnumerable<object> GetAtomicValues()
@@ -28,5 +31,6 @@ public class TextContent : MessageContent
         yield return Value;
     }
 
+    /// <summary>生成会话侧栏摘要，直接返回文本内容。</summary>
     public override string ToSessionSummary() => Value;
 }

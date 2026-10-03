@@ -1,17 +1,30 @@
 
 namespace Message.Domain.Entities.Tweet;
 
+/// <summary>
+/// 评论聚合根。
+/// </summary>
 public class Comment : Entity<Guid>, IAggregateRoot
 {
+    /// <summary>评论ID</summary>
     public Guid CommentGuid { get; init; }
+    /// <summary>所属推文ID</summary>
     public Guid TweetGuid { get; private set; }
+    /// <summary>评论者用户ID</summary>
     public Guid UserGuid { get; private set; }
+    /// <summary>父评论ID（顶级评论为 null）</summary>
     public Guid? ParentGuid { get; private set; }
+    /// <summary>回复的目标评论ID</summary>
     public Guid? ReplyToGuid { get; private set; }
+    /// <summary>评论内容</summary>
     public string Content { get; private set; }
+    /// <summary>点赞数</summary>
     public int LikeCount { get; private set; }
+    /// <summary>回复数</summary>
     public int ReplyCount { get; private set; }
+    /// <summary>是否已删除</summary>
     public bool IsDeleted { get; private set; }
+    /// <summary>创建时间</summary>
     public DateTimeOffset CreateTime { get; private set; }
 
     private Comment()
@@ -20,6 +33,7 @@ public class Comment : Entity<Guid>, IAggregateRoot
         Content = string.Empty;
     }
 
+    /// <summary>创建评论</summary>
     public static Comment Create(Guid tweetGuid, Guid userGuid, string content, Guid? parentGuid = null, Guid? replyToGuid = null)
     {
         if (tweetGuid == Guid.Empty)
@@ -49,6 +63,7 @@ public class Comment : Entity<Guid>, IAggregateRoot
         return comment;
     }
 
+    /// <summary>软删除评论</summary>
     public void SoftDelete()
     {
         if (IsDeleted)
@@ -56,6 +71,7 @@ public class Comment : Entity<Guid>, IAggregateRoot
         IsDeleted = true;
     }
 
+    /// <summary>回复数 +1</summary>
     public void IncrementReplyCount()
     {
         if (IsDeleted)
@@ -63,6 +79,7 @@ public class Comment : Entity<Guid>, IAggregateRoot
         ReplyCount++;
     }
 
+    /// <summary>点赞数 +1</summary>
     public void AddLike()
     {
         if (IsDeleted)
@@ -70,6 +87,7 @@ public class Comment : Entity<Guid>, IAggregateRoot
         LikeCount++;
     }
 
+    /// <summary>点赞数 -1</summary>
     public void RemoveLike()
     {
         if (IsDeleted)

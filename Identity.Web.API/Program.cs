@@ -69,7 +69,7 @@ builder.Services.AddNotMediator(Assembly.GetExecutingAssembly());
 
 builder.Services.RemoveAbstractHandlerRegistrations(); // 移除抽象泛型基类 handler（NotMediator 自动注册未过滤抽象类，2026-08-17）
 
-builder.Services.AddScoped<IdentityServicesDi>();
+builder.Services.AddScoped<IdentityServiceDi>();
 
 // ═══ gRPC 客户端注册（调用 FileDev 文件服务） ═══
 // 优先经 Aspire 服务发现解析服务名（filedev-web-api，与 AppHost 注册名一致）；

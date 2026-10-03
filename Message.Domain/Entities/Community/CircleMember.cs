@@ -8,10 +8,11 @@ public class CircleMember : Entity<Guid>
 {
     private CircleMember()
     {
-        CircleMembleGuid = Guid.CreateVersion7();
+        CircleMemberGuid = Guid.CreateVersion7();
         JoinTime = DateTimeOffset.UtcNow;
     }
 
+    /// <summary>创建圈子成员</summary>
     public CircleMember(Guid circleGuid, Guid userGuid, string? nickname = null, CircleMemberRole role = CircleMemberRole.Member) : this()
     {
         if (circleGuid == Guid.Empty)
@@ -25,25 +26,34 @@ public class CircleMember : Entity<Guid>
         Nickname = nickname;
         Status = CircleMemberStatus.Active;
     }
-    public Guid CircleMembleGuid { get; init; }
+    /// <summary>圈子成员ID</summary>
+    public Guid CircleMemberGuid { get; init; }
 
+    /// <summary>所属圈子ID</summary>
     public Guid CircleGuid { get; private set; }
 
+    /// <summary>成员用户ID</summary>
     public Guid UserGuid { get; private set; }
 
+    /// <summary>成员角色</summary>
     public CircleMemberRole Role { get; private set; }
 
+    /// <summary>圈子内昵称</summary>
     public string? Nickname { get; private set; }
 
+    /// <summary>成员状态</summary>
     public CircleMemberStatus Status { get; private set; }
 
+    /// <summary>加入时间</summary>
     public DateTimeOffset JoinTime { get; private set; }
 
+    /// <summary>设置成员角色</summary>
     public void SetRole(CircleMemberRole role)
     {
         Role = role;
     }
 
+    /// <summary>设置圈子内昵称</summary>
     public void SetNickname(string? nickname)
     {
         Nickname = nickname;

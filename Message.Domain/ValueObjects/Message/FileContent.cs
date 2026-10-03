@@ -25,13 +25,19 @@ public class FileContent : MessageContent
         MimeType = mimeType;
     }
 
+    /// <summary>文件 URI（非空）</summary>
     public Uri FileUri { get; }
+    /// <summary>文件名（非空）</summary>
     public string FileName { get; }
+    /// <summary>文件大小（字节，大于 0）</summary>
     public long FileSize { get; }
+    /// <summary>MIME 类型（非空）</summary>
     public string MimeType { get; }
 
+    /// <summary>内容业务类型，恒为文件消息。</summary>
     public override MessageType MessageType => MessageType.MessageFile;
 
+    /// <summary>创建文件内容值对象（校验文件名、大小与 MIME 类型）。</summary>
     public static FileContent Create(Uri fileUri, string fileName, long fileSize, string mimeType)
         => new(fileUri, fileName, fileSize, mimeType);
 
@@ -43,5 +49,6 @@ public class FileContent : MessageContent
         yield return MimeType;
     }
 
+    /// <summary>生成会话侧栏摘要，形如「[文件] 文件名」。</summary>
     public override string ToSessionSummary() => $"[文件] {FileName}";
 }

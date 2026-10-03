@@ -6,6 +6,7 @@ namespace Message.Domain.Entities.Chat;
 /// </summary>
 public class ChatSession : Entity<Guid>, IAggregateRoot
 {
+    
     private readonly Dictionary<Guid, ChatSessionMemberState> _memberStates = new();
 
     /// <summary>
@@ -34,9 +35,15 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
     public Guid CreatorId { get; init; }
 
     /// <summary>
-    /// 参与者ID列表
+    /// 参与者ID列表（EF 映射属性，数据库列名保持 Participants；仅本程序集可访问）。
+    /// 增删须经 <see cref="AddParticipant"/> / <see cref="RemoveParticipant"/>。
     /// </summary>
-    public List<Guid> Participants { get; private set; }
+    internal List<Guid> ParticipantsInternal { get; private set; } = new();
+
+    /// <summary>
+    /// 参与者ID列表（对外只读视图）。
+    /// </summary>
+    public IReadOnlyList<Guid> Participants => ParticipantsInternal;
 
     /// <summary>
     /// 最后一条消息ID
@@ -50,7 +57,6 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
 
     /// <summary>
     /// 最后一条消息时间
-    /// </summary>
     /// </summary>
     public DateTime? LastMessageTime { get; private set; }
 
@@ -77,17 +83,17 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
 
 
     /// <summary>
-    ///  
+    /// 创建会话
     /// </summary>
-    /// <param name="sessionType"></param>
-    /// <param name="creatorId"></param>
-    /// <param name="participants"></param>
+    /// <param name="sessionType">会话类型（私聊 / 群聊）</param>
+    /// <param name="creatorId">创建者用户ID</param>
+    /// <param name="participants">初始参与者ID集合；为空时仅含创建者</param>
     public ChatSession(SessionType sessionType, Guid creatorId, IEnumerable<Guid>? participants = null)
     {
-        SessionId = Guid.NewGuid();
+        SessionId = Guid.CreateVersion7();
         SessionType = sessionType;
         CreatorId = creatorId;
-        Participants = participants?.ToList() ?? new List<Guid> { creatorId };
+        ParticipantsInternal = participants?.ToList() ?? new List<Guid> { creatorId };
         CreatedTime = DateTime.UtcNow;
         IsDismissed = false;
         foreach (var participantId in Participants)
@@ -97,7 +103,7 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
     private ChatSession()
     {
         SessionId = Guid.CreateVersion7();
-        Participants = new List<Guid>();
+        ParticipantsInternal = new List<Guid>();
         CreatedTime = DateTime.UtcNow;
         IsDismissed = false;
     }
@@ -166,7 +172,7 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
         if (Participants.Contains(userId))
             throw new InvalidOperationException("用户已在会话中");
 
-        Participants.Add(userId);
+        ParticipantsInternal.Add(userId);
         _memberStates[userId] = new ChatSessionMemberState(userId);
     }
 
@@ -183,7 +189,7 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
         if (Participants.Count <= 2 && SessionType == SessionType.Private)
             throw new InvalidOperationException("私聊会话至少需要两个参与者");
 
-        Participants.Remove(userId);
+        ParticipantsInternal.Remove(userId);
         _memberStates.Remove(userId);
     }
 
@@ -309,7 +315,7 @@ public class ChatSession : Entity<Guid>, IAggregateRoot
             CreatorId = creatorId,
             CreatedTime = createdTime
         };
-        session.Participants = participants;
+        session.ParticipantsInternal = participants;
         session._memberStates.Clear();
         foreach (var (userId, state) in memberStates)
             session._memberStates[userId] = state;

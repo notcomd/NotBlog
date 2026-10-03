@@ -1,5 +1,6 @@
 namespace Message.Infrastructure.EntityConfig;
 
+/// <summary>配置好友关系实体 <c>MessageFriends</c> 到 MessageFriends 表的映射。</summary>
 public class MessageFriendsConfiguration : IEntityTypeConfiguration<MessageFriends>
 {
     public void Configure(EntityTypeBuilder<MessageFriends> builder)

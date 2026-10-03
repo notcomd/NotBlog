@@ -11,6 +11,7 @@ public class LinkMetadata : ValueObject
     {
     }
 
+    /// <summary>创建链接元数据值对象（URL 不能为空）。</summary>
     public static LinkMetadata Create(string url, string? title = null, string? description = null, string? image = null)
     {
         if (string.IsNullOrWhiteSpace(url))
@@ -25,9 +26,13 @@ public class LinkMetadata : ValueObject
         };
     }
 
+    /// <summary>链接 URL</summary>
     public string Url { get; private set; } = string.Empty;
+    /// <summary>链接标题（可选）</summary>
     public string? Title { get; private set; }
+    /// <summary>链接描述（可选）</summary>
     public string? Description { get; private set; }
+    /// <summary>链接配图 URL（可选）</summary>
     public string? Image { get; private set; }
 
     protected override IEnumerable<object> GetAtomicValues()

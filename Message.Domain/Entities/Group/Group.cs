@@ -12,6 +12,9 @@ public class Group : Entity<Guid>, IAggregateRoot
     private readonly List<GroupMember> _members = new();
 
 
+    /// <summary>
+    ///   创建群聊
+    /// </summary>
     public Group(Guid ownerId, string groupName, int maxMembers = 500, bool isPublic = false) : this()
     {
         if (string.IsNullOrWhiteSpace(groupName))
@@ -37,7 +40,7 @@ public class Group : Entity<Guid>, IAggregateRoot
     /// </summary>
     private Group()
     {
-        GroupId = Guid.NewGuid();
+        GroupId = Guid.CreateVersion7();
         CreatedTime = DateTime.UtcNow;
     }
 
@@ -174,8 +177,8 @@ public class Group : Entity<Guid>, IAggregateRoot
     /// <summary>
     /// 更新群权限
     /// </summary>
-    /// <param name="allowMemberInvite"></param>
-    /// <param name="allowMemberEditInfo"></param>
+    /// <param name="allowMemberInvite">是否允许成员邀请</param>
+    /// <param name="allowMemberEditInfo">是否允许成员编辑群信息</param>
     /// <exception cref="InvalidOperationException"></exception>
     public void UpdatePermissions(bool allowMemberInvite, bool allowMemberEditInfo)
     {
