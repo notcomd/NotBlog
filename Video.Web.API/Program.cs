@@ -59,24 +59,28 @@ builder.Services.AddScoped<VideoServiceDI>();
 builder.Services.AddNotMediator(typeof(Program).Assembly);
 
 // 配置 EventBus（通过 IConfiguration 配置驱动）
-// IConnectionFactory 来源：Aspire AddRabbitMQClient("EventBus") 或手动注册
+// IConnectionFactory 来源：Aspire WithReference(rabbitmq) 注入 ConnectionStrings:EventBus → AddRabbitMQClient；
+// 单机（无该连接串）→ 从 EventBus 配置节手动构建，否则 RabbitMqConnection 激活失败。
+// 采用运行时判断（对齐 FileDev/Identity/Message）：避免 Debug 配置下经 AppHost 启动时误连本机 5672。
 var eventBusCfg = builder.Configuration.GetSection("EventBus");
-#if DEBUG
-builder.Services.AddSingleton<RabbitMQ.Client.IConnectionFactory>(_ =>
+if (builder.Configuration.GetConnectionString("EventBus") is null)
 {
-    var host = eventBusCfg["HostName"] ?? "localhost";
+    var hostName = eventBusCfg["HostName"] ?? "localhost";
     var userName = eventBusCfg["UserName"] ?? "guest";
     var password = eventBusCfg["Password"] ?? "guest";
-    return new RabbitMQ.Client.ConnectionFactory
+    var port = eventBusCfg["Port"] is { } p && int.TryParse(p, out var parsedPort) ? parsedPort : 5672;
+    builder.Services.AddSingleton<RabbitMQ.Client.IConnectionFactory>(_ => new RabbitMQ.Client.ConnectionFactory
     {
-        HostName = host,
+        HostName = hostName,
         UserName = userName,
-        Password = password
-    };
-});
-#else
-builder.AddRabbitMQClient("EventBus");
-#endif
+        Password = password,
+        Port = port
+    });
+}
+else
+{
+    builder.AddRabbitMQClient("EventBus");
+}
 builder.Services.AddEventBus(eventBusCfg, Assembly.GetExecutingAssembly());
 
 builder.Services.AddOpenApi();

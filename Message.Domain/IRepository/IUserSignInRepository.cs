@@ -13,6 +13,15 @@ public interface IUserSignInRepository
     /// <summary>指定用户指定日期是否已签到</summary>
     Task<bool> IsSignedInAsync(Guid userId, DateOnly date);
 
+    /// <summary>
+    /// 查询指定用户在 [from, to] 闭区间内的签到日期（按日期升序、去重）。
+    /// <para>供签到热力图按天渲染使用。</para>
+    /// </summary>
+    Task<IReadOnlyList<DateOnly>> GetDatesAsync(Guid userId, DateOnly from, DateOnly to);
+
+    /// <summary>指定用户累计签到天数（全部历史，非区间内）</summary>
+    Task<int> CountAsync(Guid userId);
+
     /// <summary>新增签到记录</summary>
     Task<UserSignIn> AddAsync(UserSignIn signIn);
 }

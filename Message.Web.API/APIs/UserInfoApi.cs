@@ -1,4 +1,4 @@
-﻿namespace Message.Web.API.APIs;
+namespace Message.Web.API.APIs;
 
 /// <summary>
 /// 用户资料接口（静态函数模式 + CQRS）。
@@ -37,6 +37,12 @@ public static class UserInfoApi
             .WithSummary("每日签到")
             .WithDescription("签到获得 250 经验并自动升级；每日一次，重复签到返回 400")
             .Produces<ApiResponseResult<SignInResultDto>>();
+
+        // GET /me/sign-in-dates — 我的签到日期（热力图；默认近 365 天）
+        group.MapGet("/me/sign-in-dates", GetMySignInDatesAsync)
+            .WithSummary("我的签到日期")
+            .WithDescription("查询当前用户在指定日期区间内的签到日期（默认近 365 天），并返回累计签到天数")
+            .Produces<ApiResponseResult<SignInDatesDto>>();
 
         // POST /me/coins/add — 增加硬币
         group.MapPost("/me/coins/add", AddCoinsAsync)
@@ -86,6 +92,29 @@ public static class UserInfoApi
         catch (Exception ex)
         {
             return Results.Json(ApiResponseResult<SignInResultDto>.Error($"签到失败: {ex.Message}"), statusCode: 500);
+        }
+    }
+
+    private static async Task<IResult> GetMySignInDatesAsync(
+        [FromQuery] DateOnly? from,
+        [FromQuery] DateOnly? to,
+        [FromServices] ICurrentUserService currentUser,
+        [FromServices] INotMediator mediator,
+        CancellationToken ct)
+    {
+        var end = to ?? DateOnly.FromDateTime(DateTime.UtcNow);
+        var start = from ?? end.AddDays(-364);
+        if (start > end)
+            return Results.Json(ApiResponseResult<SignInDatesDto>.BadRequest("起始日期不能晚于结束日期"), statusCode: 400);
+
+        try
+        {
+            var dto = await mediator.SendAsync(new GetSignInDatesQuery(currentUser.GetUserId(), start, end), ct);
+            return Results.Ok(ApiResponseResult<SignInDatesDto>.Ok(dto));
+        }
+        catch (Exception ex)
+        {
+            return Results.Json(ApiResponseResult<SignInDatesDto>.Error($"获取签到记录失败: {ex.Message}"), statusCode: 500);
         }
     }
 
