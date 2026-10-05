@@ -30,4 +30,20 @@ public record LogInCommand(
 /// <param name="UserName">登录用户昵称（供注册集成事件下发下游）</param>
 /// <param name="AvatarUrl">登录用户头像（供注册集成事件下发下游）</param>
 public record LogInCommandResult(TokenResult? Token, bool IsNewUser, Guid UserId,
-    string? UserEmail = null, string? UserName = null, Uri? AvatarUrl = null);
+    string? UserEmail = null, string? UserName = null, Uri? AvatarUrl = null,
+    LoginFailureReason? FailureReason = null);
+
+/// <summary>
+/// 登录失败原因（成功时为 null）。
+/// </summary>
+public enum LoginFailureReason
+{
+    /// <summary>凭据错误：邮箱不存在、密码错误、账号锁定或验证码错误——对外统一文案，避免账号枚举。</summary>
+    InvalidCredentials = 0,
+
+    /// <summary>
+    /// 需要邮箱验证码：密码校验已通过，但账号开启二次验证（<c>UserSafety.IsTwoFactorEnabled</c>，默认开启）
+    /// 且未提供有效验证码。仅此原因对外可区分，供前端引导补填验证码。
+    /// </summary>
+    EmailCodeRequired = 1
+}

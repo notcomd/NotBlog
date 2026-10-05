@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using CacheMemory.Core;
+using Commons.Result;
 using Identity.Web.API.Application.Commands;
 using Identity.Web.API.Application.IntegrationEvents.Events;
 using Microsoft.AspNetCore.HttpLogging;
@@ -87,8 +88,22 @@ public static class IdentityAuthApi
         var data = await identityService.NotMediator.SendAsync(command);
 
         if (data is null || data.Token is null)
-            return Results.Json(new { error = "邮箱、密码或验证码错误" },
+        {
+            // 二次验证引导：该原因仅在密码校验通过后才会产生（未通过密码校验者一律得到下面的统一文案），
+            // 因此可安全区分回传，不存在账号枚举风险。
+            // 显式返回统一信封（ApiResponseResult），避免被 ApiResponseWrappingMiddleware 的
+            // 默认文案（401 → "未授权访问"）覆盖，前端才能读到真实错误信息。
+            if (data?.FailureReason == LoginFailureReason.EmailCodeRequired)
+                return Results.Json(
+                    ApiResponseResult.Failure("该账号已开启二次验证，请输入有效的邮箱验证码",
+                        StatusCodes.Status401Unauthorized,
+                        new { code = "EMAIL_CODE_REQUIRED" }),
+                    statusCode: StatusCodes.Status401Unauthorized);
+
+            return Results.Json(
+                ApiResponseResult.Failure("邮箱、密码或验证码错误", StatusCodes.Status401Unauthorized),
                 statusCode: StatusCodes.Status401Unauthorized);
+        }
 
         if (data.IsNewUser)
         {

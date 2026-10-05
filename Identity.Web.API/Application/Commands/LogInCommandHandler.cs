@@ -26,8 +26,8 @@ public class LogInCommandHandler(
 {
     private const string EmailCodeKeyPrefix = "Login_";
 
-    /// <summary>身份校验通过的中间产物（User 为 null 表示认证失败）</summary>
-    private sealed record AuthenticatedUser(User? User, bool IsNewUser);
+    /// <summary>身份校验通过的中间产物（User 为 null 表示认证失败；FailureReason 仅在需前端引导时回传）</summary>
+    private sealed record AuthenticatedUser(User? User, bool IsNewUser, LoginFailureReason? FailureReason = null);
 
     public async Task<LogInCommandResult?> Handler(LogInCommand request, CancellationToken cancellationToken)
     {
@@ -35,8 +35,14 @@ public class LogInCommandHandler(
             ? await LogInByPasswordAsync(request, cancellationToken)
             : await LogInByEmailCodeAsync(request, cancellationToken);
 
+        // 失败时：仅「密码已通过、仅缺二次验证码」这一种可区分原因回传给 API 层（前端据此引导补码）；
+        // 其余失败（邮箱不存在/密码错误/账号锁定/验证码错误）统一返回 null，对外同一文案，防止账号枚举。
         if (auth.User is null)
-            return null;
+        {
+            return auth.FailureReason is null
+                ? null
+                : new LogInCommandResult(null, false, Guid.Empty, FailureReason: auth.FailureReason);
+        }
 
         var token = await BuildTokenForUserAsync(auth.User);
         return token is null
@@ -99,10 +105,16 @@ public class LogInCommandHandler(
             return new(null, false);
         }
 
-        // 二次验证（仅开启二次验证的用户需校验邮箱验证码）
+        // 二次验证（仅开启二次验证的用户需校验邮箱验证码；该开关默认开启）
         if (userData.UserSafety.IsTwoFactorEnabled &&
             !await ConsumeEmailCodeAsync(request.Email, request.Code, cancellationToken))
-            return new(null, false);
+        {
+            // 密码校验已通过、仅缺有效验证码。此前静默返回 401 难以定位，故补日志并回传可区分原因。
+            logger.LogWarning(
+                "[{DateTime}] 用户 {UserEmail} 已开启二次验证，密码登入未提供有效邮箱验证码（ProvidedCode={ProvidedCode}），拒绝登入",
+                DateTime.UtcNow, userData.UserEmail, !string.IsNullOrWhiteSpace(request.Code));
+            return new(null, false, LoginFailureReason.EmailCodeRequired);
+        }
 
         await userRepository.UnitOfWork.SaveChangesAsync(cancellationToken);
         return new(userData, false);
