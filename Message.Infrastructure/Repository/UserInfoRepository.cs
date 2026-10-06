@@ -32,6 +32,19 @@ public class UserInfoRepository(MessageDbContext context) : IUserInfoRepository
             .ToListAsync();
     }
 
+    /// <summary>按用户 ID 批量获取用户资料（用于在线名单等批量场景）。</summary>
+    public async Task<IReadOnlyList<UserInfo>> GetByUserIdsAsync(IEnumerable<Guid> userIds)
+    {
+        var ids = userIds.Distinct().ToList();
+        if (ids.Count == 0)
+            return [];
+
+        return await DbSet
+            .AsNoTracking()
+            .Where(u => ids.Contains(u.UserId))
+            .ToListAsync();
+    }
+
     /// <summary>新增用户资料并返回已跟踪的实体。</summary>
     public async Task<UserInfo> AddAsync(UserInfo userInfo)
     {

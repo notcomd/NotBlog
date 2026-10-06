@@ -76,6 +76,12 @@ public interface IUserRepository : IRepository<User, IUnitOfWork>
     /// <returns>分页用户列表</returns>
     Task<(ICollection<AdminUserBrief> Items, int Total)> GetPagedUsersAsync(string? keyword, int page, int pageSize);
 
+    /// <summary>全部用户总数（管理端统计）</summary>
+    Task<int> GetTotalCountAsync();
+
+    /// <summary>指定时间之后注册的用户数（管理端统计，用于「近 N 天新增」）</summary>
+    Task<int> GetCountCreatedSinceAsync(DateTimeOffset since);
+
     /// <summary>检查邮箱是否已被注册（管理员创建用户前的唯一性校验）</summary>
     Task<bool> ExistsByEmailAsync(string email);
 

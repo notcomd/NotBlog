@@ -47,12 +47,38 @@ public static class AdminUserApi
             .WithSummary("删除用户（管理员）")
             .WithDescription("永久封禁并停止登录（不做物理删除以避免外键连锁）");
 
+        // GET /stats — 用户统计（总注册数 / 近 30 天新增）
+        route.MapGet("/stats", GetStatsAsync)
+            .RequirePermission("api:identity:read")
+            .WithSummary("用户统计（管理员）")
+            .WithDescription("返回总注册用户数与近 30 天新增用户数，供管理端工作台展示");
+
         return route;
     }
 
     /// <summary>用户列表请求 DTO</summary>
     public sealed record AdminUserListResponse(
         ICollection<AdminUserBrief> Items, int TotalCount, int Page, int PageSize);
+
+    /// <summary>用户统计响应 DTO</summary>
+    public sealed record AdminUserStatsResponse(int TotalUsers, int NewUsersLast30Days);
+
+    private static async Task<IResult> GetStatsAsync(
+        [FromServices] IUserRepository userRepository,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            var totalUsers = await userRepository.GetTotalCountAsync();
+            var newUsers = await userRepository.GetCountCreatedSinceAsync(DateTimeOffset.UtcNow.AddDays(-30));
+
+            return Results.Ok(new AdminUserStatsResponse(totalUsers, newUsers));
+        }
+        catch (Exception ex)
+        {
+            return Results.Json(new { ok = false, error = $"获取用户统计失败: {ex.Message}" }, statusCode: 500);
+        }
+    }
 
     /// <summary>创建用户请求 DTO</summary>
     public sealed record CreateAdminUserRequest([Required, EmailAddress] string Email, [Required, MinLength(8)] string Password);

@@ -23,9 +23,6 @@ public class IdentityDbSeeder : IDbSeeder<IdentityDbContext>
     private readonly IConfiguration _configuration;
     private readonly IMailQueue _mailQueue;
 
-    /// <summary>本次 SeedPermissionsAsync 新增的叶子码（存量库增量补授权用）</summary>
-    private readonly List<string> _newlyAddedLeafCodes = new();
-
     /// <summary>权限码 → 中文名（资源段）</summary>
     private static readonly IReadOnlyDictionary<string, string> ResourceNames =
         new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -133,8 +130,6 @@ public class IdentityDbSeeder : IDbSeeder<IdentityDbContext>
                 byCode[code] = permission;
                 toAdd.Add(permission);
                 addedCount++;
-                if (isLeaf)
-                    _newlyAddedLeafCodes.Add(code);
             }
             else if (!node.IsDeleted && node.ParentId is null)
             {
@@ -178,7 +173,9 @@ public class IdentityDbSeeder : IDbSeeder<IdentityDbContext>
             ("/admin/circles", "社区管理", "circles", 50),
             ("/admin/files", "文件管理", "files", 60),
             ("/admin/announcements", "公报", "announcements", 70),
-            ("/admin/menus", "菜单管理", "menus", 80)
+            ("/admin/menus", "菜单管理", "menus", 80),
+            ("/admin/permissions", "权限管理", "permissions", 90),
+            ("/admin/security", "账号安全", "security", 100)
         };
 
         var urls = defaults.Select(d => d.Url).ToList();
@@ -290,7 +287,20 @@ public class IdentityDbSeeder : IDbSeeder<IdentityDbContext>
         }
     }
 
-    /// <summary>默认角色-权限分配（已有任何分配则跳过）：ROOT/ADMIN 全量、USER 排除审计与身份管理、GUEST/UNKNOWN 不分配</summary>
+    /// <summary>
+    /// 默认角色-权限分配（幂等自愈）：ROOT/ADMIN 恒持有全部叶子 Api 权限、
+    /// USER 持有除审计与身份管理外的叶子 Api 权限、GUEST/UNKNOWN 不分配。
+    ///
+    /// 为什么是「每次启动做差集补齐」而不是「只补本次新增的码」：
+    /// 旧实现仅在 Roles 表尚无任何授权时做全量分配，此后永远只补「本次启动新出现的码」。
+    /// 若某个权限码在更早的启动中就已入库（不属于本次新增），它将永远补不上——
+    /// 典型症状是 ADMIN 角色缺少 api:audit:*，导致管理端内容/举报/社区接口全部 403。
+    /// 故此处每次都按目标集合做差集补齐，新老库都能自愈。
+    ///
+    /// ⚠️ 只授叶子（PermissionType.Api）：目录/菜单节点不直接入库授权，
+    /// 否则 "api:audit" 目录码会前缀段匹配放行全部 api:audit:* （对 USER 即权限提升）。
+    /// 代价：管理员若手工从 ROOT/ADMIN 撤销某权限，下次启动会被补回（这是自愈的取舍）。
+    /// </summary>
     private async Task SeedRolePermissionsAsync(IdentityDbContext context)
     {
         var roles = await context.Roles
@@ -299,20 +309,17 @@ public class IdentityDbSeeder : IDbSeeder<IdentityDbContext>
         if (roles.Count == 0)
             return;
 
-        if (roles.Any(r => r.Permissions.Count > 0))
-        {
-            _logger.LogInformation("角色-权限分配已存在，跳过");
-            await SeedIncrementalNewPermissionsAsync(context, roles);
-            return;
-        }
-
-        var permissions = await context.Permissions.ToListAsync();
+        // 仅可授权的叶子码；已软删的码不参与补授
+        var permissions = await context.Permissions
+            .Where(p => p.PermissionType == PermissionType.Api && !p.IsDeleted)
+            .ToListAsync();
         if (permissions.Count == 0)
         {
-            _logger.LogWarning("Permissions 表为空，跳过角色-权限分配");
+            _logger.LogWarning("Permissions 表无可授权的叶子权限，跳过角色-权限分配");
             return;
         }
 
+        var changed = false;
         foreach (var role in roles)
         {
             switch (role.RoleCode.ToUpperInvariant())
@@ -320,19 +327,21 @@ public class IdentityDbSeeder : IDbSeeder<IdentityDbContext>
                 case "ROOT":
                 case "ADMIN":
                 case "USER":
-                    // ⚠️ 只授叶子（PermissionType.Api）：目录/菜单节点不直接入库授权——
-                    // 否则 "api:audit" 目录码不匹配 StartsWith("api:audit:") 排除规则，
-                    // 前缀段匹配会让 USER 放行全部审计权限（权限提升漏洞）。
-                    // 目录级授权留给管理端按树勾选（RolePermissions 存目录码 + 前缀匹配自动覆盖子孙）。
+                    // 差集补齐：已有授权跳过，避免重复插入 RolePermissions 关联行
+                    var granted = role.Permissions
+                        .Select(p => p.PermissionCode)
+                        .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
                     foreach (var p in permissions)
                     {
-                        if (p.PermissionType != PermissionType.Api)
-                            continue;
                         if (role.RoleCode.ToUpperInvariant() == "USER"
                             && (p.PermissionCode.StartsWith("api:audit:", StringComparison.OrdinalIgnoreCase)
                                 || p.PermissionCode.Equals("api:identity:manage", StringComparison.OrdinalIgnoreCase)))
                             continue;
+                        if (!granted.Add(p.PermissionCode))
+                            continue;
                         role.Permissions.Add(p);
+                        changed = true;
                     }
                     break;
 
@@ -341,62 +350,15 @@ public class IdentityDbSeeder : IDbSeeder<IdentityDbContext>
             }
         }
 
-        await context.SaveChangesAsync();
-        var stats = roles.Select(r => $"{r.RoleName}:{r.Permissions.Count}").ToList();
-        _logger.LogInformation("已初始化角色-权限分配: {Stats}", string.Join(", ", stats));
-    }
-
-    /// <summary>
-    /// 增量补授本次新增的叶子码（如 api:turn:read）：
-    /// 存量库已有角色分配时主授权逻辑整体跳过（幂等），新码永远不会被授予；
-    /// 此处只补「Seeder 本次新建」的 Api 叶子，不触碰任何既有授权——管理员手动撤权不受影响。
-    /// ROOT/ADMIN 全量补；USER 沿用排除规则（api:audit:*、api:identity:manage）；GUEST/UNKNOWN 不补。
-    /// </summary>
-    private async Task SeedIncrementalNewPermissionsAsync(
-        IdentityDbContext context, List<Roles> roles)
-    {
-        if (_newlyAddedLeafCodes.Count == 0)
-            return;
-
-        var newPermissions = await context.Permissions
-            .Where(p => p.PermissionType == PermissionType.Api && !p.IsDeleted
-                        && _newlyAddedLeafCodes.Contains(p.PermissionCode))
-            .ToListAsync();
-        if (newPermissions.Count == 0)
-            return;
-
-        var changed = false;
-        foreach (var role in roles)
+        if (!changed)
         {
-            var upper = role.RoleCode.ToUpperInvariant();
-            if (upper is not ("ROOT" or "ADMIN" or "USER"))
-                continue;
-
-            var granted = role.Permissions
-                .Select(p => p.PermissionCode)
-                .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-            foreach (var permission in newPermissions)
-            {
-                if (upper == "USER"
-                    && (permission.PermissionCode.StartsWith("api:audit:", StringComparison.OrdinalIgnoreCase)
-                        || permission.PermissionCode.Equals("api:identity:manage", StringComparison.OrdinalIgnoreCase)))
-                    continue;
-                if (granted.Add(permission.PermissionCode))
-                {
-                    role.Permissions.Add(permission);
-                    changed = true;
-                }
-            }
+            _logger.LogInformation("角色-权限分配已是最新，无需补齐");
+            return;
         }
 
-        if (!changed)
-            return;
-
         await context.SaveChangesAsync();
-        _logger.LogInformation(
-            "已为默认角色增量补授新增权限码 {Count} 个: {Codes}",
-            _newlyAddedLeafCodes.Count, string.Join(", ", _newlyAddedLeafCodes));
+        var stats = roles.Select(r => $"{r.RoleName}:{r.Permissions.Count}").ToList();
+        _logger.LogInformation("角色-权限分配已补齐: {Stats}", string.Join(", ", stats));
     }
 
     /// <summary>
@@ -407,7 +369,9 @@ public class IdentityDbSeeder : IDbSeeder<IdentityDbContext>
     /// 开通通知的投递地址由 InitialAdmin:NotifyEmail 指定（未配置时发到账号邮箱本身），
     /// 便于账号使用系统自有地址（普通用户注册不到）而通知投递到真实收件箱。
     /// 密码由 CSPRNG 随机生成，仅在真正新建账号时经邮件后台队列明文下发
-    /// （P6：不在数据库事务内做 SMTP 外部 IO），不写入日志；首次登录后请立即修改密码。
+    /// （P6：不在数据库事务内做 SMTP 外部 IO）；同时按运维需要**明文写入日志**
+    /// （原实现刻意不落日志，2026-10-05 改为记录，便于本地/部署环境直接取初始密码）。
+    /// ⚠️ 生产环境应移除此日志行或降级处理，改由安全渠道分发；首次登录后请立即修改密码。
     /// </summary>
     private async Task SeedManagementAccountsAsync(IdentityDbContext context)
     {
@@ -457,7 +421,13 @@ public class IdentityDbSeeder : IDbSeeder<IdentityDbContext>
                 continue;
             }
 
-            // P6：初始密码经邮件后台队列明文下发，不落日志；主题带角色便于同收件箱区分
+            // ⚠️ 初始密码明文落日志（2026-10-05 按运维需要新增）：原实现刻意不落日志、仅邮件下发。
+            //    仅在该账号本次真正新建并落库成功后输出，幂等跳过时不打印。
+            _logger.LogWarning(
+                "系统管理账号已生成，初始密码（明文，仅本次生成时输出，请登录后立即修改）：{Email} / {Password}",
+                email, password);
+
+            // P6：初始密码经邮件后台队列明文下发；主题带角色便于同收件箱区分
             var target = string.IsNullOrWhiteSpace(notifyEmail) ? email : notifyEmail;
             _mailQueue.Enqueue(target, $"[NotBlog] 系统管理账号开通通知（{role.RoleName}）",
                 $"您的系统管理账号已创建：{email}（角色 {role.RoleName}）。初始密码：{password}，请登录后立即修改密码。");

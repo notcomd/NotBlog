@@ -1,4 +1,4 @@
-﻿using Message.Web.API.Application.Commands.Audit;
+using Message.Web.API.Application.Commands.Audit;
 
 namespace Message.Web.API.APIs;
 
@@ -67,8 +67,8 @@ public static class AuditApi
         // GET /online-users — 在线用户列表
         group.MapGet("/online-users", GetOnlineUsersAsync)
             .WithSummary("在线用户列表")
-            .WithDescription("读取 Redis 在线集合，返回在线用户 ID 数组")
-            .Produces<ApiResponseResult<IEnumerable<Guid>>>();
+            .WithDescription("读取 Redis 在线集合，关联用户资料返回在线用户 ID / 昵称 / 头像")
+            .Produces<ApiResponseResult<IEnumerable<object>>>();
 
         // GET /activity-logs — 操作日志
         group.MapGet("/activity-logs", GetActivityLogsAsync)
@@ -341,10 +341,11 @@ public static class AuditApi
         }
     }
 
-    /// <summary>在线用户列表（仅管理员）：Redis 在线集合 → 用户 ID 数组</summary>
+    /// <summary>在线用户列表（仅管理员）：Redis 在线集合 → 关联用户资料，返回 ID / 昵称 / 头像</summary>
     private static async Task<IResult> GetOnlineUsersAsync(
         [FromServices] ICurrentUserService currentUser,
         [FromServices] UserStatusCacheService userStatusCache,
+        [FromServices] IUserInfoRepository userInfoRepository,
         CancellationToken ct = default)
     {
         try
@@ -355,13 +356,33 @@ public static class AuditApi
             var ids = await userStatusCache.GetOnlineUserIdsAsync(ct);
             var userGuids = ids
                 .Where(id => Guid.TryParse(id, out _))
-                .Select(Guid.Parse);
+                .Select(Guid.Parse)
+                .ToList();
 
-            return Results.Ok(ApiResponseResult<IEnumerable<Guid>>.Ok(userGuids));
+            if (userGuids.Count == 0)
+                return Results.Ok(ApiResponseResult<IEnumerable<object>>.Ok([]));
+
+            var infos = await userInfoRepository.GetByUserIdsAsync(userGuids);
+            var infoMap = infos.ToDictionary(i => i.UserId);
+
+            var items = userGuids
+                .Select(id =>
+                {
+                    infoMap.TryGetValue(id, out var info);
+                    return (object)new
+                    {
+                        UserGuid = id,
+                        NickName = info?.NickName,
+                        AvatarUrl = info?.AvatarUrl?.ToString()
+                    };
+                })
+                .ToList();
+
+            return Results.Ok(ApiResponseResult<IEnumerable<object>>.Ok(items));
         }
         catch (Exception ex)
         {
-            return Results.Json(ApiResponseResult<IEnumerable<Guid>>.Error($"获取在线用户失败: {ex.Message}"), statusCode: 500);
+            return Results.Json(ApiResponseResult<IEnumerable<object>>.Error($"获取在线用户失败: {ex.Message}"), statusCode: 500);
         }
     }
 

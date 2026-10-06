@@ -240,13 +240,15 @@ if (app.Environment.IsDevelopment())
 //登入注册端点
 app.MapGroup("api/identity/ready").MapIdentityAuthApi();
 // 权限映射端点（供网关启动时拉取）+ 权限 CRUD
-app.MapGroup("api/identity/permission").MapPermissionApi();
+// 注意：资源段（/permission、/menu、/rolegroup、/role）由各 *Api 文件内部的 MapGroup 提供，
+// 此处只给服务级前缀 "api/identity"，否则会拼成 /api/identity/permission/permission/... 导致 404。
+app.MapGroup("api/identity").MapPermissionApi();
 // 菜单管理端点（管理端侧栏菜单 CRUD + 可见菜单树）
-app.MapGroup("api/identity/menu").MapMenuApi();
+app.MapGroup("api/identity").MapMenuApi();
 // 角色组管理端点
-app.MapGroup("api/identity/rolegroup").MapRoleGroupApi();
-// 角色管理端点
-app.MapGroup("api/identity/role").MapRoleApi();
+app.MapGroup("api/identity").MapRoleGroupApi();
+// 角色管理端点（含角色-权限树形授权）
+app.MapGroup("api/identity").MapRoleApi();
 // OAuth 客户端（NotClient）管理端点（AdminOnly）
 app.MapGroup("api/identity/client").MapClientApi();
 // 注册 OAuth 端点（统一支持 google / github / microsoft / wechat / qq 登录与回调）

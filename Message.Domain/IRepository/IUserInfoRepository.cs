@@ -18,6 +18,12 @@ public interface IUserInfoRepository : IRepository<UserInfo, IUnitOfWork>
     /// </summary>
     Task<IEnumerable<UserInfo>> GetByNickNameAsync(string nickName, int limit);
 
+    /// <summary>
+    /// 按用户 ID 批量查询资料（不存在的 ID 不返回对应项）。
+    /// <para>供在线用户名单等批量场景使用，避免逐条查询。</para>
+    /// </summary>
+    Task<IReadOnlyList<UserInfo>> GetByUserIdsAsync(IEnumerable<Guid> userIds);
+
     /// <summary>指定日期是否已签到（签到防重）</summary>
     Task<bool> IsSignedInAsync(Guid userId, DateOnly date);
 

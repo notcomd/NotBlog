@@ -121,7 +121,7 @@ return route;
     }
 
     /// <summary>
-    /// GET /api/identity/permission/permission/tree — 权限树查询（管理端渲染/勾选用）
+    /// GET /api/identity/permission/tree — 权限树查询（管理端渲染/勾选用）
     /// 返回未删除节点组装成的森林（根节点列表，children 嵌套）。
     /// </summary>
     private static async Task<IResult> GetPermissionTreeAsync(

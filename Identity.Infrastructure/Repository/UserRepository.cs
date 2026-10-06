@@ -155,6 +155,18 @@ public class UserRepository(IdentityDbContext userDbContext)
         return await userDbContext.Users.AnyAsync(u => u.UserEmail == email.Trim());
     }
 
+    /// <summary>统计全部用户总数。</summary>
+    public async Task<int> GetTotalCountAsync()
+    {
+        return await userDbContext.Users.AsNoTracking().CountAsync();
+    }
+
+    /// <summary>统计指定时间之后注册的用户数。</summary>
+    public async Task<int> GetCountCreatedSinceAsync(DateTimeOffset since)
+    {
+        return await userDbContext.Users.AsNoTracking().CountAsync(u => u.CreateDatetime >= since);
+    }
+
     public async Task<List<Guid>> FindUserGuidsByRoleAsync(Guid roleGuid, CancellationToken ct = default)
     {
         if (roleGuid == Guid.Empty)
