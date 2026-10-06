@@ -32,6 +32,9 @@ public class UpdateMarkdownCommandHandler(
             throw new InvalidOperationException("已删除的文档无法修改");
         }
 
+        // 3.1 状态门禁：审核中/已发布不可编辑（仅草稿/驳回可编辑）
+        markdown.EnsureEditable();
+
         // 4. 创建历史版本快照（正文已文件化：从文件存储读取当前旧内容作为快照）
         var oldFileId = markdown.FileId;
         var oldContent = await contentStore.ReadAsync(oldFileId, cancellationToken);

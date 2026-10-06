@@ -20,6 +20,9 @@ public class RestoreMarkdownCommandHandler(
         if (markdown.MarkUserGuid != request.UserId)
             throw new UnauthorizedAccessException("仅作者可执行历史还原");
 
+        // 1.1 状态门禁：还原属写操作，审核中/已发布不可还原（仅草稿/驳回可还原）
+        markdown.EnsureEditable();
+
         // 2. 加载历史版本并校验归属
         var oldVersion = await markdownRepository.GetOldMarkDownByGuidAsync(request.OldMarkDownGuid)
             ?? throw new KeyNotFoundException($"历史版本不存在：{request.OldMarkDownGuid}");

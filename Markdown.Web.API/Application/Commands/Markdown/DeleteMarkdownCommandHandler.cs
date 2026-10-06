@@ -37,6 +37,9 @@ public class DeleteMarkdownCommandHandler(
                 throw new InvalidOperationException("文档已被删除");
             }
 
+            // 删除属写操作，同样受状态门禁约束：审核中/已发布不可删除（仅草稿/驳回可删除）
+            markdown.EnsureEditable();
+
             // 通过聚合根方法执行软删除
             markdown.SoftDelete();
             await markdownRepository.UnitOfWork.SaveChangesAsync(cancellationToken);

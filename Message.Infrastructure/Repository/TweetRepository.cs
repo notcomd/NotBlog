@@ -21,9 +21,12 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
         var following = followingIds.Distinct().ToArray();
         var isAuth = viewerId != Guid.Empty;
 
-        // 状态：Approved 全员可见；草稿仅作者本人（用户主页场景保留草稿展示）
+        // 状态：匿名/他人仅见 Approved；作者本人可见全部状态（Draft / Pending / Approved / Rejected）。
+        // 取舍：作者查询自己的内容（含用户主页作品列表 GetByAuthorAsync）将同时展示草稿、待审核与驳回稿，
+        //       便于作者看到审核进度与驳回原因；代价是主页不再只呈现"已发布"内容。
+        //       他人/匿名不受影响（仍仅 Approved），时间线/社区流等已在调用侧预过滤 Approved，无泄漏。
         query = query.Where(t => t.TweetStatus == TweetStatus.Approved
-                                 || (isAuth && t.AuthorGuid == viewerId && t.TweetStatus == TweetStatus.Draft));
+                                 || (isAuth && t.AuthorGuid == viewerId));
 
         // 可见性：Public 全员可见；Private 仅作者；Followers 仅查看者关注列表内的作者（R-03 接入关注关系）
         query = query.Where(t => t.Visibility == Visibility.Public
@@ -75,6 +78,36 @@ public class TweetRepository(MessageDbContext context) : ITweetRepository
     public async Task<int> CountByAuthorAndStatusAsync(Guid authorGuid, TweetStatus status)
     {
         return await DbSet.CountAsync(t => t.AuthorGuid == authorGuid && t.TweetStatus == status);
+    }
+
+    /// <summary>
+    /// 「我的内容」：分页获取指定作者的动态，可按状态可选过滤，按创建时间倒序。
+    /// <para>仅用于作者查询自己的内容（调用方已限定 UserId 为当前登录用户），故不做可见性过滤。</para>
+    /// </summary>
+    public async Task<IEnumerable<Tweet>> GetByAuthorWithStatusAsync(Guid authorGuid, TweetStatus? status, int page = 1, int pageSize = 20)
+    {
+        if (pageSize < 1) pageSize = 10;
+        if (pageSize > 100) pageSize = 100;
+
+        var query = DbSet.Where(t => t.AuthorGuid == authorGuid);
+        if (status.HasValue)
+            query = query.Where(t => t.TweetStatus == status.Value);
+
+        return await query
+            .OrderByDescending(t => t.CreateTime)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+    }
+
+    /// <summary>「我的内容」数量统计（与 GetByAuthorWithStatusAsync 同条件）。</summary>
+    public async Task<int> CountByAuthorWithStatusAsync(Guid authorGuid, TweetStatus? status)
+    {
+        var query = DbSet.Where(t => t.AuthorGuid == authorGuid);
+        if (status.HasValue)
+            query = query.Where(t => t.TweetStatus == status.Value);
+
+        return await query.CountAsync();
     }
 
     /// <summary>分页获取关注时间线（指定作者集合的非圈子动态，经可见性过滤），按创建时间倒序。</summary>

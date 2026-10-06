@@ -45,10 +45,22 @@ public static class TweetsApi
             .Accepts<CreateTweetRequest>("application/json")
             .Produces<ApiResponseResult<Guid>>();
 
+        // POST /{tweetGuid}/submit — 提交审核（作者本人，Draft → Pending）
+        group.MapPost("/{tweetGuid:guid}/submit", SubmitTweetForReviewAsync)
+            .WithSummary("提交审核")
+            .WithDescription("作者本人将草稿提交审核（Draft → Pending）；非作者返回 403，非草稿状态返回 400")
+            .Produces<ApiResponseResult>();
+
         // GET /drafts — 我的草稿列表（字面量路由，先于 /{tweetGuid} 注册）
         group.MapGet("/drafts", GetMyDraftsAsync)
             .WithSummary("我的草稿列表")
             .WithDescription("获取当前用户的推文草稿列表（按最近编辑倒序），支持分页")
+            .Produces<ApiResponseResult<PagedResult<TweetDto>>>();
+
+        // GET /mine — 我的内容（按状态）（字面量路由，先于 /{tweetGuid} 注册）
+        group.MapGet("/mine", GetMyContentAsync)
+            .WithSummary("我的内容（按状态）")
+            .WithDescription("获取当前登录用户自己的推文列表，可按状态（Draft/Pending/Approved/Rejected）过滤；status 省略表示全部状态，按创建时间倒序")
             .Produces<ApiResponseResult<PagedResult<TweetDto>>>();
 
         // GET /favorites/my — 我的收藏列表（字面量路由，先于 /{tweetGuid} 注册）
@@ -178,7 +190,8 @@ public static class TweetsApi
                     request.Content,
                     request.FileIds,
                     request.LinkUrl,
-                    ParseVisibility(request.Visibility)),
+                    ParseVisibility(request.Visibility),
+                    request.AsDraft ?? true),
                 ct);
 
             return Results.Ok(ApiResponseResult<Guid>.Created(tweetId, "推文创建成功"));
@@ -258,6 +271,86 @@ public static class TweetsApi
         catch (Exception ex)
         {
             return Results.Json(ApiResponseResult<Guid>.Error($"保存草稿失败: {ex.Message}"), statusCode: 500);
+        }
+    }
+
+    /// <summary>
+    /// 提交推文审核（命令侧，仅作者本人）。
+    /// </summary>
+    /// <param name="tweetGuid">推文ID（路由参数）</param>
+    /// <param name="currentUser">当前用户服务</param>
+    /// <param name="mediator">中介者（命令/查询分发）</param>
+    /// <param name="ct">取消令牌</param>
+    /// <returns>操作结果</returns>
+    private static async Task<IResult> SubmitTweetForReviewAsync(
+        Guid tweetGuid,
+        [FromServices] ICurrentUserService currentUser,
+        [FromServices] INotMediator mediator,
+        CancellationToken ct)
+    {
+        try
+        {
+            var userId = currentUser.GetUserId();
+            await mediator.SendAsync(new SubmitTweetForReviewCommand(tweetGuid, userId), ct);
+            return Results.Ok(ApiResponseResult.Ok("推文已提交审核"));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return Results.Json(ApiResponseResult.NotFound(ex.Message), statusCode: 404);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Results.Json(ApiResponseResult.Forbidden(ex.Message), statusCode: 403);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.Json(ApiResponseResult.Failure(ex.Message, 400), statusCode: 400);
+        }
+        catch (Exception ex)
+        {
+            return Results.Json(ApiResponseResult.Error($"提交审核失败: {ex.Message}"), statusCode: 500);
+        }
+    }
+
+    /// <summary>
+    /// 获取当前用户自己的内容列表（查询侧，分页，可按状态过滤）。
+    /// </summary>
+    /// <param name="status">状态过滤（Draft/Pending/Approved/Rejected；省略表示全部状态）</param>
+    /// <param name="currentUser">当前用户服务</param>
+    /// <param name="mediator">中介者（命令/查询分发）</param>
+    /// <param name="page">页码（从1开始）</param>
+    /// <param name="pageSize">每页条数</param>
+    /// <param name="ct">取消令牌</param>
+    /// <returns>分页内容列表</returns>
+    private static async Task<IResult> GetMyContentAsync(
+        [FromServices] ICurrentUserService currentUser,
+        [FromServices] INotMediator mediator,
+        [FromQuery] string? status = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            if (!TryParseTweetStatus(status, out var parsedStatus, out var error))
+                return Results.Json(ApiResponseResult<PagedResult<TweetDto>>.Failure(error, 400), statusCode: 400);
+
+            var paged = await mediator.SendAsync(
+                new GetMyContentQuery(currentUser.GetUserId(), parsedStatus, page, pageSize), ct);
+
+            var result = new PagedResult<TweetDto>
+            {
+                Items = paged.Items.Select(t => MapToDto(t)).ToList(),
+                TotalCount = paged.TotalCount,
+                Page = page,
+                PageSize = pageSize
+            };
+
+            return Results.Ok(ApiResponseResult<PagedResult<TweetDto>>.Ok(result));
+        }
+        catch (Exception ex)
+        {
+            return Results.Json(ApiResponseResult<PagedResult<TweetDto>>.Error($"获取我的内容失败: {ex.Message}"), statusCode: 500);
         }
     }
 
@@ -787,6 +880,7 @@ public static class TweetsApi
         Hashtags = tweet.Hashtags.Any() ? tweet.Hashtags.ToList() : null,
         TweetStatus = tweet.TweetStatus.ToString(),
         Visibility = tweet.Visibility.ToString(),
+        AuditReason = tweet.AuditReason,
         ViewCount = tweet.ViewCount,
         LikeCount = tweet.LikeCount,
         CommentCount = tweet.CommentCount,
@@ -809,4 +903,23 @@ public static class TweetsApi
             "private" => Visibility.Private,
             _ => Visibility.Public
         };
+
+    /// <summary>解析推文状态查询参数（省略/空表示全部状态；非法值返回错误）。</summary>
+    private static bool TryParseTweetStatus(string? status, out TweetStatus? parsed, out string error)
+    {
+        parsed = null;
+        error = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(status))
+            return true;
+
+        if (Enum.TryParse<TweetStatus>(status, ignoreCase: true, out var value))
+        {
+            parsed = value;
+            return true;
+        }
+
+        error = "无效的状态值，允许值：Draft、Pending、Approved、Rejected";
+        return false;
+    }
 }

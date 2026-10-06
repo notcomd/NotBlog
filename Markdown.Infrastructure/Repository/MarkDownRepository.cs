@@ -152,6 +152,41 @@ public class MarkDownRepository(
         }
     }
 
+    /// <summary>
+    ///     按作者（可选）与审核状态（可选）分页查询非删除文档，创建时间倒序。
+    ///     userGuid 为 null 表示不限作者（管理端待审/驳回列表使用）；status 为 null 表示不限状态
+    /// </summary>
+    public async Task<IReadOnlyList<MarkDown>> FindMarkDownsByStatusAsync(Guid? userGuid, MarkStatus? status, int skip, int take)
+    {
+        try
+        {
+            var query = markDownDbContext.Markdowns
+                .AsNoTracking()
+                .Where(x => !x.IsDelete);
+
+            if (userGuid.HasValue)
+                query = query.Where(x => x.MarkUserGuid == userGuid.Value);
+
+            if (status.HasValue)
+                query = query.Where(x => x.Status == status.Value);
+
+            var markdowns = await query
+                .OrderByDescending(x => x.CreateAt)
+                .Skip(Math.Max(0, skip))
+                .Take(Math.Clamp(take, 1, 100))
+                .ToListAsync();
+
+            logger.LogInformation("按状态查询文档，共 {Count} 条（User={UserGuid}, Status={Status}）",
+                markdowns.Count, userGuid, status);
+            return markdowns;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "按状态查询文档失败：User={UserGuid}, Status={Status}", userGuid, status);
+            throw;
+        }
+    }
+
     // ==================== 评论查询（通过聚合根导航属性访问，不暴露 MarkReview 独立仓储） ====================
 
     /// <summary>

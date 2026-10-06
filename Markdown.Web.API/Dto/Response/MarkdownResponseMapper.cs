@@ -22,6 +22,22 @@ public static class MarkdownResponseMapper
         Quote = markdown.MarkQuote is not null ? MapToMarkQuoteResponse(markdown.MarkQuote) : null
     };
 
+    /// <summary>
+    ///     MarkDown 实体 → 摘要响应映射（列表/搜索/我的内容使用，不返回正文）
+    /// </summary>
+    public static MarkdownSummaryResponse MapToMarkdownSummaryResponse(MarkDown markdown) => new()
+    {
+        MarkDownGuid = markdown.MarkDownGuid,
+        Name = markdown.MarkDownName,
+        Tags = [.. markdown.MarkDownTagboard],
+        CoverUrl = markdown.CoverUrl,
+        Auth = markdown.MarkDownAuth.ToString(),
+        Status = markdown.Status.ToString(),
+        RejectReason = markdown.MarkRejectReason,
+        CreateAt = markdown.CreateAt,
+        UpdateAt = markdown.UpdateAt
+    };
+
     public static MarkQuoteResponse MapToMarkQuoteResponse(MarkQuote quote) => new()
     {
         LoveCount = quote.LoveSome,

@@ -12,13 +12,32 @@ public class VideoRepository(ILogger<IVideoRepository> videoLogger, VideoDbConte
     /// <summary>工作单元（VideoDbContext）。</summary>
     public IUnitOfWork UnitOfWork=> videoDbContext;
     
-    public async Task<List<Videos>> FindByVideoListAsync()
+    public async Task<List<Videos>> FindByVideoListAsync(Guid? viewerGuid, bool isAdmin)
     {
-        var videoModel = await videoDbContext.Videos
+        var query = videoDbContext.Videos
             .Include(en => en.VideoQuote)
             .Include(en => en.VideoControl)
             .Include(en => en.VideoBarrageList!.Where(en => !en.IsDelete))
-            .ToListAsync();
+            .Where(en => !en.VideoControl.VideoDelete);
+
+        if (!isAdmin)
+        {
+            if (viewerGuid is { } uid && uid != Guid.Empty)
+            {
+                // 作者可见自己的全部状态；其他人仅可见「已审核通过 + 公开」的视频
+                query = query.Where(en => en.Affiliated.Contains(uid)
+                    || (en.Status == VideoStatus.Approved
+                        && en.VideoControl.AuthorVideo == AuthorVideo.VideoPublic));
+            }
+            else
+            {
+                // 匿名/未登录：仅公开且已审核通过
+                query = query.Where(en => en.Status == VideoStatus.Approved
+                    && en.VideoControl.AuthorVideo == AuthorVideo.VideoPublic);
+            }
+        }
+
+        var videoModel = await query.ToListAsync();
         return videoModel;
     }
 
@@ -111,6 +130,64 @@ public class VideoRepository(ILogger<IVideoRepository> videoLogger, VideoDbConte
             .Take(pageSize)
             .ToListAsync();
         return videoModel;
+    }
+
+    /// <inheritdoc />
+    public async Task<List<Videos>> PageByAuthorAsync(Guid authorGuid, VideoStatus? status, int page, int pageSize)
+    {
+        var query = videoDbContext.Videos
+            .Include(en => en.VideoControl)
+            .Where(en => !en.VideoControl.VideoDelete && en.Affiliated.Contains(authorGuid));
+
+        if (status is { } value)
+            query = query.Where(en => en.Status == value);
+
+        return await query
+            .OrderByDescending(en => en.TimeSpace.CreateAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+    }
+
+    /// <inheritdoc />
+    public async Task<int> CountByAuthorAsync(Guid authorGuid, VideoStatus? status)
+    {
+        var query = videoDbContext.Videos
+            .Where(en => !en.VideoControl.VideoDelete && en.Affiliated.Contains(authorGuid));
+
+        if (status is { } value)
+            query = query.Where(en => en.Status == value);
+
+        return await query.CountAsync();
+    }
+
+    /// <inheritdoc />
+    public async Task<List<Videos>> PageByStatusAsync(VideoStatus? status, int page, int pageSize)
+    {
+        var query = videoDbContext.Videos
+            .Include(en => en.VideoControl)
+            .Where(en => !en.VideoControl.VideoDelete);
+
+        if (status is { } value)
+            query = query.Where(en => en.Status == value);
+
+        return await query
+            .OrderByDescending(en => en.TimeSpace.CreateAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+    }
+
+    /// <inheritdoc />
+    public async Task<int> CountByStatusAsync(VideoStatus? status)
+    {
+        var query = videoDbContext.Videos
+            .Where(en => !en.VideoControl.VideoDelete);
+
+        if (status is { } value)
+            query = query.Where(en => en.Status == value);
+
+        return await query.CountAsync();
     }
 
     public async Task UpdateByVideoAsync(Videos videos)

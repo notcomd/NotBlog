@@ -15,10 +15,22 @@ public class VideoDbContextConfiguration : IEntityTypeConfiguration<Videos>
         builder.HasIndex(en => en.VideoName);
         builder.HasIndex(en => en.VideoNvid);
         builder.HasIndex(en => en.VideoTags);
-        
+        builder.HasIndex(en => en.Status);
+
         builder.Property(e => e.VideoTags)
             .HasColumnType("text[]")
             .HasColumnName("VideoTags");
+
+        // 内容审核状态：以字符串持久化（与 Message.TweetStatus 一致），默认草稿，避免破坏既有数据。
+        builder.Property(e => e.Status)
+            .HasConversion<string>()
+            .HasMaxLength(16)
+            .IsRequired()
+            .HasDefaultValue(VideoStatus.Draft);
+
+        // 审核驳回原因（可空，上限 500）。
+        builder.Property(e => e.RejectReason)
+            .HasMaxLength(500);
 
         builder.OwnsOne(e => e.VideoQuote, b =>
         {

@@ -42,11 +42,17 @@ public class CreateMarkdownCommandHandler(
 
         var markdownEntity = builder.Build();
 
-        // 6. 通过聚合根仓储写入（不绕过仓储直接操作 DbContext）
+        // 6. 非草稿：创建后立即提交审核（草稿/驳回 -> 待审核；不会直接置为已通过，仍需管理员审核）
+        if (!request.AsDraft)
+        {
+            markdownEntity.SubmitForReview();
+        }
+
+        // 7. 通过聚合根仓储写入（不绕过仓储直接操作 DbContext）
         await markdownRepository.AddAsync(markdownEntity);
         await markdownRepository.UnitOfWork.SaveChangesAsync(cancellationToken);
 
-        // 7. 发布集成事件（总线故障不拖垮业务，P1-6）
+        // 8. 发布集成事件（总线故障不拖垮业务，P1-6）
         await EventPublishing.PublishSafelyAsync(eventBus, new MarkdownCreatedIntegrationEvent
         {
             MarkDownGuid = markdownEntity.MarkDownGuid,

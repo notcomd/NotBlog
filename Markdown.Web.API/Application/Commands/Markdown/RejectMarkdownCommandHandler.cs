@@ -19,7 +19,7 @@ public class RejectMarkdownCommandHandler(
         if (!request.IsAdmin)
             throw new UnauthorizedAccessException("仅管理员可执行审核操作");
 
-        markdown.Reject();
+        markdown.Reject(request.Reason);
         await markdownRepository.UnitOfWork.SaveChangesAsync(cancellationToken);
 
         logger.LogInformation("Markdown 文档审核驳回：{MarkDownGuid}", request.MarkDownGuid);

@@ -98,7 +98,8 @@ public static class AddVideoEndpoints
                 CoverImageContent: coverImageContent,
                 CoverImageFileName: coverImageFileName,
                 Tags: request.Tags,
-                VideoControl: VideoControl.VideoControlBuilder());
+                VideoControl: VideoControl.VideoControlBuilder(),
+                AsDraft: request.AsDraft ?? true);
 
             var result = await videoServiceDI.NotMediator.SendAsync(command);
 

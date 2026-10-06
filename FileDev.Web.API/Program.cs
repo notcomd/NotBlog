@@ -1,6 +1,8 @@
 
 
+using Commons.Security;
 using FileDev.Web.API.Grpc;
+using Microsoft.AspNetCore.Authorization;
 using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -76,7 +78,14 @@ builder.Services.AddAutoAddInstance(ReflectionHelper.GetAllReferencedAssemblies(
 
 
 builder.Services.AddJwtAuthentication(builder.Configuration.GetSection("JwtOptions"));
-builder.Services.AddAuthorization();
+
+// ═══ 授权策略：管理端点仅允许 Root / 管理员 ═══
+// 角色判定统一走 AdminRoleExtensions（Root / Administrator / Admin，大小写不敏感、支持逗号拼接多角色 claim），
+// 与 Identity "AdminOnly" 策略、各服务 ICurrentUserService.IsAdmin() 保持同一口径。
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", policy => policy.RequireAssertion(ctx => ctx.User.HasAdminRole()));
+});
 
 builder.Services.AddScoped<INotFileService, NotFileService>();
 // 文件 API 端点的服务聚合（标签 API、我的文件等以 [FromServices] 注入）

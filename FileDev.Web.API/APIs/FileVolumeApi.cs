@@ -5,14 +5,26 @@ using Microsoft.AspNetCore.Mvc;
 namespace FileDev.Web.API.APIs;
 
 /// <summary>
-/// 数据卷管理 API（仅管理员/系统调用，挂载在 <c>/api/filestorage</c> 需 JWT 认证的分组下）。
+/// 数据卷管理 API（仅 Root / 管理员，挂载在 <c>/api/filestorage</c> 需 JWT 认证的分组下）。
 /// 提供卷清单查询、存储卷统计同步、共享/租户专属卷新增、目录统计与存储层调整。
+/// <para>
+/// 安全约定（双层校验，与 Identity 管理端点一致）：
+/// - 码层：继承父组 <c>/api/filestorage</c> 的 <c>RequireResourcePermissions("api:file")</c>；
+/// - 角色层：本组额外要求 <c>AdminOnly</c> 策略（Root / Administrator / Admin）。
+/// </para>
+/// <para>
+/// ⚠️ 为什么必须补角色层：<c>api:file:*</c> 是**普通用户默认持有**的权限码，仅靠码层会让任何已登录用户
+/// 都能枚举存储卷、新增共享/租户卷、调整存储层。本组端点无内部 HTTP 调用方
+/// （<c>VolumeSyncBackgroundService</c> 等后台任务直接调用服务层而非走 HTTP），故收紧不影响系统自身运行。
+/// </para>
 /// </summary>
 public static class FileVolumeApi
 {
     public static RouteGroupBuilder MapFileVolumeApi(this RouteGroupBuilder routeGroupBuilder)
     {
-        var router = routeGroupBuilder.MapGroup("/volume");
+        // 组级施加，覆盖本组全部端点（含后续新增），避免逐端点漏标
+        var router = routeGroupBuilder.MapGroup("/volume")
+            .RequireAuthorization("AdminOnly");
         router.MapGet("/", ListVolumesAsync);
         router.MapGet("/{volumeId}", GetVolumeAsync);
         router.MapPost("/sync", SyncVolumesAsync);

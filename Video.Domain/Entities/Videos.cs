@@ -24,6 +24,12 @@ public class Videos : Entity<Guid>, IAggregateRoot
 
     public bool IsDeleted { get; private set; }
 
+    /// <summary>内容审核状态（默认草稿）。</summary>
+    public VideoStatus Status { get; private set; }
+
+    /// <summary>审核驳回原因（仅在 <see cref="Status"/> == Rejected 时非空，长度上限 500）。</summary>
+    public string? RejectReason { get; private set; }
+
     public TimeSpace TimeSpace { get; private set; }
 
     public VideoControl VideoControl { get; private set; }
@@ -42,6 +48,7 @@ public class Videos : Entity<Guid>, IAggregateRoot
         VideoBarrageList = [];
         VideoReviews = [];
         IsDeleted = false;
+        Status = VideoStatus.Draft;
         TimeSpace = new TimeSpace(DateTime.UtcNow, DateTime.UtcNow);
     }
 
@@ -138,6 +145,79 @@ public class Videos : Entity<Guid>, IAggregateRoot
     public void VideoControlChangeByVideoController(VideoControl videoControl)
     {
         VideoControl.ChangeByVideoController(videoControl);
+        TimeSpace.ResetUpdateAt(DateTimeOffset.UtcNow);
+    }
+
+    /// <summary>提交审核：草稿或被驳回的视频可提交，进入待审核状态，并清除旧驳回原因。</summary>
+    /// <exception cref="InvalidOperationException">当前状态不是草稿或被驳回时抛出。</exception>
+    public void SubmitForReview()
+    {
+        if (Status is not (VideoStatus.Draft or VideoStatus.Rejected))
+            throw new InvalidOperationException($"当前视频状态为 {Status}，仅草稿或被驳回的视频可提交审核");
+        Status = VideoStatus.Pending;
+        RejectReason = null;
+        TimeSpace.ResetUpdateAt(DateTimeOffset.UtcNow);
+    }
+
+    /// <summary>
+    /// 审核通过：仅待审核的视频可通过，置为已通过并公开展示。
+    /// <para>维护不变量：<see cref="Status"/> == Approved ⟺ <c>VideoControl.VideoDisplay</c> == true。</para>
+    /// </summary>
+    /// <exception cref="InvalidOperationException">当前状态不是待审核时抛出。</exception>
+    public void Approve()
+    {
+        if (Status != VideoStatus.Pending)
+            throw new InvalidOperationException($"当前视频状态为 {Status}，仅待审核的视频可通过审核");
+        Status = VideoStatus.Approved;
+        VideoControl.Push();
+        TimeSpace.ResetUpdateAt(DateTimeOffset.UtcNow);
+    }
+
+    /// <summary>
+    /// 审核驳回：仅待审核的视频可驳回，置为已拒绝、记录驳回原因并取消公开展示。
+    /// <para>维护不变量：<see cref="Status"/> == Approved ⟺ <c>VideoControl.VideoDisplay</c> == true。</para>
+    /// </summary>
+    /// <param name="reason">驳回原因（不可为空，长度上限 500）。</param>
+    /// <exception cref="InvalidOperationException">当前状态不是待审核时抛出。</exception>
+    /// <exception cref="ArgumentException">驳回原因为空或超长时抛出。</exception>
+    public void Reject(string reason)
+    {
+        if (Status != VideoStatus.Pending)
+            throw new InvalidOperationException($"当前视频状态为 {Status}，仅待审核的视频可驳回");
+        if (string.IsNullOrWhiteSpace(reason))
+            throw new ArgumentException("驳回原因不能为空", nameof(reason));
+        if (reason.Length > 500)
+            throw new ArgumentException("驳回原因不能超过 500 个字符", nameof(reason));
+        Status = VideoStatus.Rejected;
+        RejectReason = reason;
+        VideoControl.Withdraw();
+        TimeSpace.ResetUpdateAt(DateTimeOffset.UtcNow);
+    }
+
+    /// <summary>编辑门禁：草稿与被驳回的视频可编辑；待审核与已通过的视频不可编辑。</summary>
+    /// <exception cref="InvalidOperationException">当前状态为待审核或已通过时抛出。</exception>
+    public void EnsureEditable()
+    {
+        if (Status is VideoStatus.Pending or VideoStatus.Approved)
+            throw new InvalidOperationException($"当前视频状态为 {Status}，不允许编辑内容");
+    }
+
+    /// <summary>更新视频内容（受 <see cref="EnsureEditable"/> 门禁约束）。</summary>
+    /// <param name="videoName">视频名称</param>
+    /// <param name="videoCover">封面 Uri</param>
+    /// <param name="videoFileUri">视频文件 Uri</param>
+    /// <param name="briefIntroduction">简介</param>
+    /// <param name="videoTags">标签</param>
+    /// <exception cref="InvalidOperationException">当前状态不允许编辑时抛出。</exception>
+    public void UpdateContent(string videoName, Uri videoCover, Uri videoFileUri, string briefIntroduction,
+        List<string> videoTags)
+    {
+        EnsureEditable();
+        VideoName = videoName ?? throw new ArgumentNullException(nameof(videoName));
+        VideoCover = videoCover ?? throw new ArgumentNullException(nameof(videoCover));
+        VideoFileUri = videoFileUri ?? throw new ArgumentNullException(nameof(videoFileUri));
+        BriefIntroduction = briefIntroduction ?? throw new ArgumentNullException(nameof(briefIntroduction));
+        VideoTags = videoTags ?? throw new ArgumentNullException(nameof(videoTags));
         TimeSpace.ResetUpdateAt(DateTimeOffset.UtcNow);
     }
 

@@ -34,4 +34,10 @@ public class CreateMarkdownRequest
     /// </summary>
     [StringLength(2048, ErrorMessage = "封面 URL 长度不能超过 2048 个字符")]
     public string? CoverUrl { get; set; }
+
+    /// <summary>
+    /// 是否仅保存为草稿（可选；null 视为 true）。
+    /// false 表示创建后立即提交审核（进入待审核，仍需管理员审核后才对外可见）
+    /// </summary>
+    public bool? AsDraft { get; set; }
 }

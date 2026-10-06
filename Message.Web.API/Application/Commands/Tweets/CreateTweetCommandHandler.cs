@@ -32,6 +32,10 @@ public class CreateTweetCommandHandler(
             var media = await ResolveMediaAsync(command.FileIds, command.UserId, cancellationToken);
             var tweet = Tweet.Create(command.UserId, safeContent, media, linkMetadata, null, parsedVisibility);
 
+            // AsDraft=false：创建后立即提交审核（Draft → Pending）。不直接置 Approved，仍须走管理端审核流程。
+            if (!command.AsDraft)
+                tweet.Publish();
+
             // 兼容既有 ISensitiveWordFilter 注入：保留日志补充（真实决策已由上方静态过滤器完成）
             try
             {

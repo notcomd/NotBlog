@@ -74,16 +74,21 @@ public static class MarkdownAuditApi
     }
 
     /// <summary>
-    ///     审核驳回（待审核 -> 驳回，仅作者/管理员）
+    ///     审核驳回（待审核 -> 驳回，仅管理员）。
+    ///     body 可空：为空或缺省时视为不填写驳回原因
     /// </summary>
     private static async Task<IResult> RejectAsync(
         Guid markDownGuid,
+        [FromBody] RejectMarkdownRequest? request,
         INotMediator notMediator,
         ICurrentUserService currentUserService)
     {
+        if (request?.Reason is { Length: > 500 })
+            return Results.BadRequest(ApiResponseResult.Error("驳回原因长度不能超过 500 个字符"));
+
         var userId = currentUserService.GetUserId();
         var result = await  notMediator.SendAsync(
-            new RejectMarkdownCommand(markDownGuid, userId, MarkdownApiHelpers.IsAdmin(currentUserService)));
+            new RejectMarkdownCommand(markDownGuid, userId, MarkdownApiHelpers.IsAdmin(currentUserService), request?.Reason));
 
         return result
             ? Results.Ok(ApiResponseResult.Ok("文章审核驳回"))

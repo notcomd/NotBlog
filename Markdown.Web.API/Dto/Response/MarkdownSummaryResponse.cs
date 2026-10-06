@@ -17,6 +17,11 @@ public class MarkdownSummaryResponse
 
     public string Status { get; set; } = null!;
 
+    /// <summary>
+    ///     审核驳回原因（仅当前处于驳回状态时有值，其余状态为 null）
+    /// </summary>
+    public string? RejectReason { get; set; }
+
     public DateTimeOffset CreateAt { get; set; }
 
     public DateTimeOffset UpdateAt { get; set; }

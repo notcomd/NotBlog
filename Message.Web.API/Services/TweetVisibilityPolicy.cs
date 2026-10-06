@@ -4,7 +4,8 @@ namespace Message.Web.API.Services;
 /// Tweet 可见性判定策略（S-17 可见性过滤；R-03 接入关注关系）。
 /// <para>
 /// 规则：
-/// - 作者本人对本人推文始终可见（含 Private / Followers / 草稿）；
+/// - 作者本人对本人推文始终可见（含 Private / Followers / 草稿 / 待审核 / 驳回）；
+/// - 非作者仅可见 <see cref="TweetStatus.Approved"/> 的推文（草稿 / 待审核 / 驳回对非作者一律不可见，含匿名）；
 /// - <see cref="Visibility.Public"/> 对所有可见；
 /// - <see cref="Visibility.Followers"/> 仅作者的关注者可见（关注关系见 <see cref="IUserFollowRepository"/>，
 ///   调用方负责一次性查询查看者的关注集合传入，避免逐条 N+1）；
@@ -24,6 +25,10 @@ public static class TweetVisibilityPolicy
     {
         if (tweet.AuthorGuid == viewerId)
             return true;
+
+        // 状态门槛：非作者仅可见已审核通过的推文；草稿/待审核/驳回视为不存在（调用方按 404 处理，避免泄漏存在性）
+        if (tweet.TweetStatus != TweetStatus.Approved)
+            return false;
 
         if (tweet.Visibility == Visibility.Public)
             return true;

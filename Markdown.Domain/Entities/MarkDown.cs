@@ -106,6 +106,11 @@ public class MarkDown : Entity<int>, IAggregateRoot
     /// </summary>
     public MarkStatus Status { get; private set; } = MarkStatus.MarkDraft;
 
+    /// <summary>
+    ///     审核驳回原因（仅当前处于驳回状态时有意义；重新提交审核时自动清空）
+    /// </summary>
+    public string? MarkRejectReason { get; private set; }
+
     public DateTimeOffset CreateAt { get; init; }
 
     public DateTimeOffset UpdateAt { get; private set; }
@@ -275,13 +280,25 @@ public class MarkDown : Entity<int>, IAggregateRoot
     }
 
     /// <summary>
-    ///     提交审核：草稿/驳回 -> 待审核
+    ///     校验文档当前是否处于可编辑状态：草稿与驳回可编辑，审核中与已发布不可编辑。
+    ///     更新 / 删除 / 历史还原等写操作需先调用；违反时抛 <see cref="InvalidOperationException"/>
+    ///     （由全局异常处理器统一映射为 400）
+    /// </summary>
+    public void EnsureEditable()
+    {
+        if (Status is MarkStatus.MarkPendingReview or MarkStatus.MarkApproved)
+            throw new InvalidOperationException("审核中或已发布的文档不可修改");
+    }
+
+    /// <summary>
+    ///     提交审核：草稿/驳回 -> 待审核（重新提交时清空旧的驳回原因）
     /// </summary>
     public void SubmitForReview()
     {
         if (Status is not (MarkStatus.MarkDraft or MarkStatus.MarkRejected))
             throw new InvalidOperationException($"当前状态 {Status} 无法提交审核，仅草稿或驳回状态可提交");
 
+        MarkRejectReason = null;
         Status = MarkStatus.MarkPendingReview;
         UpdateAt = DateTimeOffset.UtcNow;
     }
@@ -299,13 +316,15 @@ public class MarkDown : Entity<int>, IAggregateRoot
     }
 
     /// <summary>
-    ///     审核驳回：待审核 -> 驳回
+    ///     审核驳回：待审核 -> 驳回（记录驳回原因，供作者查看并修改后重新提交）
     /// </summary>
-    public void Reject()
+    /// <param name="reason">驳回原因（可空；空白串归一为 null）</param>
+    public void Reject(string? reason = null)
     {
         if (Status != MarkStatus.MarkPendingReview)
             throw new InvalidOperationException($"当前状态 {Status} 无法驳回，仅待审核状态可驳回");
 
+        MarkRejectReason = string.IsNullOrWhiteSpace(reason) ? null : reason.Trim();
         Status = MarkStatus.MarkRejected;
         UpdateAt = DateTimeOffset.UtcNow;
     }

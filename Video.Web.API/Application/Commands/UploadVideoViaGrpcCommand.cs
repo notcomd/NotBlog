@@ -16,7 +16,8 @@ public record UploadVideoViaGrpcCommand(
     byte[]? CoverImageContent,
     string? CoverImageFileName,
     HashSet<string> Tags,
-    VideoControl VideoControl) : IRequest<UploadVideoViaGrpcResult>, IIdempotentRequest;
+    VideoControl VideoControl,
+    bool AsDraft = true) : IRequest<UploadVideoViaGrpcResult>, IIdempotentRequest;
 
 /// <summary>gRPC 视频上传结果。</summary>
 public record UploadVideoViaGrpcResult(

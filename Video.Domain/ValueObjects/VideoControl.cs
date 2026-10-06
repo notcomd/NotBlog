@@ -74,6 +74,13 @@ public record VideoControl
             VideoDisplay = true;
     }
 
+    /// <summary>撤回展示（已展示时置为不展示）。用于审核驳回/回到草稿时同步取消公开展示。</summary>
+    public void Withdraw()
+    {
+        if (IsVideoDisplay())
+            VideoDisplay = false;
+    }
+
     /// <summary>设置作者可见权限。</summary>
     public void Author(AuthorVideo author)
     {

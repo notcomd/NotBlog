@@ -130,6 +130,7 @@ app.UsePermissionEnforcement();
 // --- MiniAPI Endpoint Registration ---
 app.MapAddVideoEndpoints();
 app.MapVideoEndpoints();
+app.MapVideoAuditEndpoints();
 app.MapVideoCollectionEndpoints();
 app.MapVideoReviewEndpoints();
 app.MapVideoBarrageEndpoints();

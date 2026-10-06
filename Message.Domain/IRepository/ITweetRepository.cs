@@ -35,6 +35,24 @@ public interface ITweetRepository : IRepository<Tweet, IUnitOfWork>
     Task<int> CountByAuthorAndStatusAsync(Guid authorGuid, TweetStatus status);
 
     /// <summary>
+    /// 获取指定作者的推文列表（按状态可选过滤，按创建时间倒序）；用于「我的内容（按状态）」查询，不受可见性过滤。
+    /// </summary>
+    /// <param name="authorGuid">作者ID</param>
+    /// <param name="status">推文状态（null 表示全部状态）</param>
+    /// <param name="page">页码</param>
+    /// <param name="pageSize">每页数量</param>
+    /// <returns>推文列表</returns>
+    Task<IEnumerable<Tweet>> GetByAuthorWithStatusAsync(Guid authorGuid, TweetStatus? status, int page = 1, int pageSize = 20);
+
+    /// <summary>
+    /// 获取指定作者的推文数量（与 GetByAuthorWithStatusAsync 同条件，分页计数对齐）
+    /// </summary>
+    /// <param name="authorGuid">作者ID</param>
+    /// <param name="status">推文状态（null 表示全部状态）</param>
+    /// <returns>推文数量</returns>
+    Task<int> CountByAuthorWithStatusAsync(Guid authorGuid, TweetStatus? status);
+
+    /// <summary>
     /// 获取多个作者的时间线推文列表（R-02/R-03/R-07：SQL 层完成可见性过滤）
     /// </summary>
     /// <param name="authorGuids">作者ID列表</param>

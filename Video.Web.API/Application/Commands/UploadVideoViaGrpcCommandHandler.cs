@@ -113,6 +113,10 @@ public class UploadVideoViaGrpcCommandHandler(
                 videoFileUri, command.BriefIntroduction, command.Tags.ToList());
             video.VideoControlChangeByVideoController(command.VideoControl);
 
+            // 非草稿创建：立即提交审核（进入待审核状态，不直接发布）
+            if (!command.AsDraft)
+                video.SubmitForReview();
+
             await videoRepository.AddByVideoAsync(video);
             await videoRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
 

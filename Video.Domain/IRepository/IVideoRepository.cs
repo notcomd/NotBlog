@@ -6,10 +6,16 @@ namespace Video.Domain.IRepository;
 public interface IVideoRepository:IRepository<Videos, IUnitOfWork>
 {
     /// <summary>
-    /// 查找所有视频
+    /// 查找所有视频（按查看者身份收敛可见范围）。
+    /// <para>
+    /// 匿名/他人：仅返回「已审核通过 + 公开 + 未删除」的视频；
+    /// 作者本人：可见自己的全部状态（未删除）；管理员：可见全部（未删除）。
+    /// </para>
     /// </summary>
+    /// <param name="viewerGuid">当前查看者 Guid（匿名传 null）</param>
+    /// <param name="isAdmin">当前查看者是否为管理员</param>
     /// <returns></returns>
-    public Task<List<Videos>> FindByVideoListAsync();
+    public Task<List<Videos>> FindByVideoListAsync(Guid? viewerGuid, bool isAdmin);
 
     /// <summary>
     /// 查找视频
@@ -39,6 +45,36 @@ public interface IVideoRepository:IRepository<Videos, IUnitOfWork>
     /// <param name="pageSize">每页数量</param>
     /// <returns></returns>
     public Task<List<Videos>> PageByVideoAsync(int page, int pageSize);
+
+    /// <summary>
+    /// 按作者分页查询其视频（可按状态过滤；排除软删除；按创建时间倒序）。
+    /// </summary>
+    /// <param name="authorGuid">作者 Guid</param>
+    /// <param name="status">状态过滤（null 表示全部状态）</param>
+    /// <param name="page">页码（从 1 开始）</param>
+    /// <param name="pageSize">每页数量</param>
+    /// <returns></returns>
+    public Task<List<Videos>> PageByAuthorAsync(Guid authorGuid, VideoStatus? status, int page, int pageSize);
+
+    /// <summary>统计作者的视频总数（可按状态过滤；排除软删除）。</summary>
+    /// <param name="authorGuid">作者 Guid</param>
+    /// <param name="status">状态过滤（null 表示全部状态）</param>
+    /// <returns></returns>
+    public Task<int> CountByAuthorAsync(Guid authorGuid, VideoStatus? status);
+
+    /// <summary>
+    /// 管理端按状态分页查询视频（可按状态过滤；排除软删除；按创建时间倒序）。
+    /// </summary>
+    /// <param name="status">状态过滤（null 表示全部状态）</param>
+    /// <param name="page">页码（从 1 开始）</param>
+    /// <param name="pageSize">每页数量</param>
+    /// <returns></returns>
+    public Task<List<Videos>> PageByStatusAsync(VideoStatus? status, int page, int pageSize);
+
+    /// <summary>统计视频总数（可按状态过滤；排除软删除）。</summary>
+    /// <param name="status">状态过滤（null 表示全部状态）</param>
+    /// <returns></returns>
+    public Task<int> CountByStatusAsync(VideoStatus? status);
 
     /// <summary>
     /// 查找视频

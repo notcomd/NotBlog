@@ -85,6 +85,28 @@ internal static class MarkdownApiHelpers
     }
 
     /// <summary>
+    ///     解析审核状态过滤参数（fail-closed）：
+    ///     省略/空白视为「不限」（parsed=null 且返回 true）；非法值返回 false 由调用方拒绝请求
+    /// </summary>
+    internal static bool TryParseStatus(string? status, out MarkStatus? parsed)
+    {
+        if (string.IsNullOrWhiteSpace(status))
+        {
+            parsed = null;
+            return true;
+        }
+
+        if (Enum.TryParse<MarkStatus>(status.Trim(), ignoreCase: true, out var value) && Enum.IsDefined(value))
+        {
+            parsed = value;
+            return true;
+        }
+
+        parsed = null;
+        return false;
+    }
+
+    /// <summary>
     ///     将图片 URL 字符串列表映射为 ReviewImage 域实体（对外 DTO 不直接暴露域实体），
     ///     同时完成基础校验：数量上限、URL 必须为合法的 http/https 绝对地址
     ///     （非法输入抛 InvalidOperationException，由全局异常处理器统一映射为 400）

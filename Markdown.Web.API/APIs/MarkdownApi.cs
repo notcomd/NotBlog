@@ -94,6 +94,27 @@ public static class MarkdownApi
             .Produces<ApiResponseResult<List<MarkdownSummaryResponse>>>(StatusCodes.Status200OK)
             .Produces<ApiResponseResult>(StatusCodes.Status400BadRequest);
 
+        // GET: 我的内容（仅当前登录用户自己的文档，可按审核状态过滤）
+        markdownGroup.MapGet("/mine", GetMineAsync)
+            .RequireAuthorization()
+            .Produces<ApiResponseResult<List<MarkdownSummaryResponse>>>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult>(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status401Unauthorized);
+
+        // GET: 管理端待审核列表（MarkPendingReview，仅管理员）
+        markdownGroup.MapGet("/pending", GetPendingAsync)
+            .RequireAuthorization()
+            .Produces<ApiResponseResult<List<MarkdownSummaryResponse>>>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult>(StatusCodes.Status403Forbidden)
+            .Produces(StatusCodes.Status401Unauthorized);
+
+        // GET: 管理端已驳回列表（MarkRejected，仅管理员）
+        markdownGroup.MapGet("/rejected", GetRejectedAsync)
+            .RequireAuthorization()
+            .Produces<ApiResponseResult<List<MarkdownSummaryResponse>>>(StatusCodes.Status200OK)
+            .Produces<ApiResponseResult>(StatusCodes.Status403Forbidden)
+            .Produces(StatusCodes.Status401Unauthorized);
+
         // GET: 热点榜（Redis ZSet 直读，miss 单飞重建；Redis 故障降级 DB 计算）
         markdownGroup.MapGet("/hot", GetHotBoardAsync)
             .Produces<ApiResponseResult<List<MarkdownHotResponse>>>(StatusCodes.Status200OK);
@@ -133,7 +154,8 @@ public static class MarkdownApi
             request.Content,
             Tags: request.Tags,
             MarkDownAuth: auth.Value,
-            CoverUrl: request.CoverUrl);
+            CoverUrl: request.CoverUrl,
+            AsDraft: request.AsDraft ?? true);
 
         // P1-4：命令直接返回新文章 Guid，避免全量加载用户文章再按名称匹配（低效且同名歧义）
         var markDownGuid = await notMediator.SendAsync(command);
@@ -526,5 +548,76 @@ public static class MarkdownApi
 
         var result = await notMediator.SendAsync(query);
         return Results.Ok(ApiResponseResult<List<MarkdownSummaryResponse>>.Ok(result));
+    }
+
+    /// <summary>
+    ///     我的内容：当前登录用户自己的文档（可按审核状态过滤，创建时间倒序，摘要投影）
+    /// </summary>
+    private static async Task<IResult> GetMineAsync(
+        string? status,
+        int? page,
+        int? pageSize,
+        [FromServices] IMarkdownRepository markdownRepository,
+        [FromServices] ICurrentUserService currentUserService)
+    {
+        if (!MarkdownApiHelpers.TryParseStatus(status, out var statusFilter))
+            return Results.BadRequest(ApiResponseResult.Error("非法的审核状态"));
+
+        var userId = currentUserService.GetUserId();
+        var (skip, take) = NormalizePaging(page, pageSize);
+        var markdowns = await markdownRepository.FindMarkDownsByStatusAsync(userId, statusFilter, skip, take);
+        var responses = markdowns.Select(MarkdownResponseMapper.MapToMarkdownSummaryResponse).ToList();
+
+        return Results.Ok(ApiResponseResult<List<MarkdownSummaryResponse>>.Ok(responses));
+    }
+
+    /// <summary>
+    ///     管理端待审核列表（MarkPendingReview，仅管理员）
+    /// </summary>
+    private static Task<IResult> GetPendingAsync(
+        int? page,
+        int? pageSize,
+        [FromServices] IMarkdownRepository markdownRepository,
+        [FromServices] ICurrentUserService currentUserService)
+        => GetAdminListAsync(MarkStatus.MarkPendingReview, page, pageSize, markdownRepository, currentUserService);
+
+    /// <summary>
+    ///     管理端已驳回列表（MarkRejected，仅管理员；含驳回原因）
+    /// </summary>
+    private static Task<IResult> GetRejectedAsync(
+        int? page,
+        int? pageSize,
+        [FromServices] IMarkdownRepository markdownRepository,
+        [FromServices] ICurrentUserService currentUserService)
+        => GetAdminListAsync(MarkStatus.MarkRejected, page, pageSize, markdownRepository, currentUserService);
+
+    /// <summary>
+    ///     管理端按审核状态查询文档列表（校验管理员权限；不限作者，创建时间倒序）
+    /// </summary>
+    private static async Task<IResult> GetAdminListAsync(
+        MarkStatus status,
+        int? page,
+        int? pageSize,
+        IMarkdownRepository markdownRepository,
+        ICurrentUserService currentUserService)
+    {
+        if (!MarkdownApiHelpers.IsAdmin(currentUserService))
+            throw new UnauthorizedAccessException("仅管理员可查看审核列表");
+
+        var (skip, take) = NormalizePaging(page, pageSize);
+        var markdowns = await markdownRepository.FindMarkDownsByStatusAsync(null, status, skip, take);
+        var responses = markdowns.Select(MarkdownResponseMapper.MapToMarkdownSummaryResponse).ToList();
+
+        return Results.Ok(ApiResponseResult<List<MarkdownSummaryResponse>>.Ok(responses));
+    }
+
+    /// <summary>
+    ///     归一化分页参数：page 缺省/非法为 1，pageSize 钳制在 1~100，缺省 20
+    /// </summary>
+    private static (int Skip, int Take) NormalizePaging(int? page, int? pageSize)
+    {
+        var pageNo = page is > 0 ? page.Value : 1;
+        var size = pageSize is > 0 and <= 100 ? pageSize.Value : 20;
+        return ((pageNo - 1) * size, size);
     }
 }

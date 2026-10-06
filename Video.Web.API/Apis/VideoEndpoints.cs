@@ -31,6 +31,18 @@ public static class VideoEndpoints
             .WithName("BlurredVideoSearch")
             .WithDescription("Fuzzy search videos by name");
 
+        // --- GET /mine — 我的视频（可选状态过滤；字面量路由先于参数路由注册） ---
+        group.MapGet("/mine", GetMyVideosAsync)
+            .WithName("GetMyVideos")
+            .WithDescription("Get current user's own videos, optionally filtered by status")
+            .RequireAuthorization();
+
+        // --- POST /{videoGuid}/submit — 作者本人提交审核（Draft|Rejected → Pending） ---
+        group.MapPost("/{videoGuid:guid}/submit", SubmitVideoForReviewAsync)
+            .WithName("SubmitVideoForReview")
+            .WithDescription("Submit a video for review (author only)")
+            .RequireAuthorization();
+
         // --- PUT ---
         group.MapPut("/", UpdateByVideoAsync)
             .WithName("UpdateVideo")
@@ -53,11 +65,15 @@ public static class VideoEndpoints
     }
 
     /// <summary>
-    /// 获取所有视频
+    /// 获取视频列表（按查看者身份收敛可见范围）：
+    /// 匿名/他人仅「已审核通过 + 公开 + 未删除」；作者本人可见自己的全部状态；管理员可见全部。
     /// </summary>
-    private static async Task<IResult> GetByVideoListAsync([FromServices] VideoServiceDI videoServiceDI)
+    private static async Task<IResult> GetByVideoListAsync(
+        [FromServices] VideoServiceDI videoServiceDI,
+        [FromServices] ICurrentUserService currentUser)
     {
-        var videoModel = await videoServiceDI.VideoRepository.FindByVideoListAsync();
+        var viewerGuid = currentUser.IsAuthenticated ? currentUser.GetUserId() : (Guid?)null;
+        var videoModel = await videoServiceDI.VideoRepository.FindByVideoListAsync(viewerGuid, currentUser.IsAdmin());
         return Results.Ok(videoModel);
     }
 
@@ -89,7 +105,7 @@ public static class VideoEndpoints
     }
 
     /// <summary>
-    /// 更新视频信息
+    /// 更新视频信息（作者本人；受编辑门禁约束：草稿/被驳回可编辑，待审核/已通过不可编辑）。
     /// </summary>
     private static async Task<IResult> UpdateByVideoAsync(
         [FromBody] RequestUpdateByVideo updateVideo,
@@ -104,7 +120,17 @@ public static class VideoEndpoints
                 statusCode: 400);
         }
 
-        var videoModel = await videoServiceDI.VideoRepository.FindByVideoAsync(updateVideo.VideoGuid);
+        Videos videoModel;
+        try
+        {
+            videoModel = await videoServiceDI.VideoRepository.FindByVideoAsync(updateVideo.VideoGuid);
+        }
+        catch (AggregateException)
+        {
+            return Results.Json(
+                ApiResponseResult<string>.Failure("Video not found.", 404),
+                statusCode: 404);
+        }
 
         // 作者校验：调用者必须属于视频的 Affiliated 集合（服务端解析的当前用户，不信任客户端传入的 Guid）
         var callerGuid = currentUser.GetUserId();
@@ -113,11 +139,21 @@ public static class VideoEndpoints
                 ApiResponseResult<string>.Failure("Unauthorized update attempt.", 403),
                 statusCode: 403);
 
-        // 修正参数错赋：VideoFileUri 与 VideoCover 各自独立赋值，不能把封面当视频文件 Uri
-        var model = new Videos(videoModel.Affiliated, updateVideo.VideoName, updateVideo.VideoCover,
-            updateVideo.VideoFileUri,
-            updateVideo.BriefIntroduction, updateVideo.Tags.ToList());
-        await videoServiceDI.VideoRepository.UpdateByVideoAsync(model);
+        try
+        {
+            // 编辑门禁在领域层强制：草稿/被驳回可编辑；待审核/已通过不可编辑（抛 InvalidOperationException）
+            videoModel.UpdateContent(updateVideo.VideoName, updateVideo.VideoCover, updateVideo.VideoFileUri,
+                updateVideo.BriefIntroduction, updateVideo.Tags.ToList());
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.Json(
+                ApiResponseResult<string>.Failure(ex.Message, 400),
+                statusCode: 400);
+        }
+
+        await videoServiceDI.VideoRepository.UnitOfWork.SaveEntitiesAsync();
+        await videoServiceDI.VideoCacheService.InvalidateVideoAsync(videoModel.VideoGuid);
 
         return Results.Ok("UP!");
     }
@@ -223,6 +259,116 @@ public static class VideoEndpoints
                 ApiResponseResult<string>.Failure(ex.Message, 500),
                 statusCode: 500);
         }
+    }
+
+    /// <summary>
+    /// 我的视频列表（当前登录用户自己的视频，可按状态过滤；status 省略表示全部状态）。
+    /// </summary>
+    private static async Task<IResult> GetMyVideosAsync(
+        [FromServices] VideoServiceDI videoServiceDI,
+        [FromServices] ICurrentUserService currentUser,
+        [FromQuery] string? status = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        if (!TryParseVideoStatus(status, out var parsedStatus, out var error))
+            return Results.Json(
+                ApiResponseResult<VideoPagedResult<MyVideoDto>>.Failure(error, 400),
+                statusCode: 400);
+
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 20;
+
+        var callerGuid = currentUser.GetUserId();
+        var items = await videoServiceDI.VideoRepository.PageByAuthorAsync(callerGuid, parsedStatus, page, pageSize);
+        var total = await videoServiceDI.VideoRepository.CountByAuthorAsync(callerGuid, parsedStatus);
+
+        var result = new VideoPagedResult<MyVideoDto>
+        {
+            Items = items.Select(MapToMyVideoDto).ToList(),
+            TotalCount = total,
+            Page = page,
+            PageSize = pageSize
+        };
+
+        return Results.Ok(ApiResponseResult<VideoPagedResult<MyVideoDto>>.Ok(result));
+    }
+
+    /// <summary>
+    /// 提交视频审核（作者本人；Draft|Rejected → Pending）。
+    /// 非作者 403，视频不存在 404，状态不合法 400。
+    /// </summary>
+    private static async Task<IResult> SubmitVideoForReviewAsync(
+        Guid videoGuid,
+        [FromServices] VideoServiceDI videoServiceDI,
+        [FromServices] ICurrentUserService currentUser)
+    {
+        var logger = videoServiceDI.Logger;
+
+        try
+        {
+            var callerGuid = currentUser.GetUserId();
+            if (callerGuid == Guid.Empty)
+                return Results.Json(
+                    ApiResponseResult.Failure("Unauthorized. Please login first.", 401),
+                    statusCode: 401);
+
+            await videoServiceDI.NotMediator.SendAsync(new SubmitVideoForReviewCommand(videoGuid, callerGuid));
+
+            logger.LogInformation("Video {VideoGuid} submitted for review by {UserGuid}", videoGuid, callerGuid);
+            return Results.Ok(ApiResponseResult.Ok("视频已提交审核"));
+        }
+        catch (AggregateException ex)
+        {
+            // FindByVideoWithDetailsAsync 在视频不存在时抛 AggregateException
+            logger.LogWarning(ex, "Video {VideoGuid} not found for submit", videoGuid);
+            return Results.Json(
+                ApiResponseResult.Failure("Video not found.", 404),
+                statusCode: 404);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Results.Json(ApiResponseResult.Forbidden(ex.Message), statusCode: 403);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.Json(ApiResponseResult.Failure(ex.Message, 400), statusCode: 400);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to submit video {VideoGuid} for review", videoGuid);
+            return Results.Json(ApiResponseResult.Error(ex.Message), statusCode: 500);
+        }
+    }
+
+    /// <summary>视频实体 → 我的视频/审核列表 DTO 映射。</summary>
+    private static MyVideoDto MapToMyVideoDto(Videos video) => new(
+        video.VideoGuid,
+        video.VideoName,
+        video.BriefIntroduction,
+        video.VideoCover?.ToString(),
+        video.Status.ToString(),
+        video.RejectReason,
+        video.TimeSpace.CreateAt,
+        video.VideoControl.AuthorVideo.ToString());
+
+    /// <summary>解析视频状态查询参数（省略/空表示全部状态；非法值返回错误）。</summary>
+    private static bool TryParseVideoStatus(string? status, out VideoStatus? parsed, out string error)
+    {
+        parsed = null;
+        error = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(status))
+            return true;
+
+        if (Enum.TryParse<VideoStatus>(status, ignoreCase: true, out var value))
+        {
+            parsed = value;
+            return true;
+        }
+
+        error = "无效的状态值，允许值：Draft、Pending、Approved、Rejected";
+        return false;
     }
 }
 

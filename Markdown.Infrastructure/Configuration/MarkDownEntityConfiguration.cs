@@ -21,6 +21,8 @@ public class MarkDownEntityConfiguration : IEntityTypeConfiguration<MarkDown>
         builder.Property(x => x.FileExt).HasMaxLength(32).IsRequired();
         builder.Property(x => x.MarkDownHash).HasMaxLength(64).IsRequired();
         builder.Property(x => x.CoverUrl).HasMaxLength(2048);
+        // 审核驳回原因（可空；仅驳回状态有值，重新提交时清空）
+        builder.Property(x => x.MarkRejectReason).HasMaxLength(500);
 
         // 文档交互统计 MarkQuote（值对象，6 列）
         builder.OwnsOne(x => x.MarkQuote, quoteBuilder =>

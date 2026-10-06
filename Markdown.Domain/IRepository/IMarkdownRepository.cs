@@ -21,6 +21,12 @@ public interface IMarkdownRepository : IRepository<MarkDown, IUnitOfWork>
 
     Task<IEnumerable<MarkDown>?> FindMarkDownsAsync(MarkDownAuth markDownAuth);
 
+    /// <summary>
+    ///     按作者（可选）与审核状态（可选）分页查询非删除文档，创建时间倒序。
+    ///     userGuid 为 null 表示不限作者（管理端待审/驳回列表使用）；status 为 null 表示不限状态
+    /// </summary>
+    Task<IReadOnlyList<MarkDown>> FindMarkDownsByStatusAsync(Guid? userGuid, MarkStatus? status, int skip, int take);
+
     // ===== 评论相关查询（通过聚合根 MarkDown 访问，不暴露 MarkReview 独立仓储） =====
 
     /// <summary>

@@ -9,6 +9,10 @@ public class TweetDto
     public List<string>? Hashtags { get; init; }
     public string TweetStatus { get; init; } = string.Empty;
     public string Visibility { get; init; } = string.Empty;
+
+    /// <summary>审核原因（驳回时由审核员写入；用于作者端展示驳回理由）</summary>
+    public string? AuditReason { get; init; }
+
     public long ViewCount { get; init; }
     public int LikeCount { get; init; }
     public int CommentCount { get; init; }
