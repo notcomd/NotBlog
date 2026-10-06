@@ -71,4 +71,28 @@ public class RoleGroupRepository(IdentityDbContext dbContext) : IRoleGroupReposi
     {
         return await _dbContext.RoleGroups.ToListAsync();
     }
+
+    /// <summary>
+    /// 根据角色组 ID 加载角色组并包含权限导航
+    /// </summary>
+    /// <param name="roleGroupGuid">角色组 ID</param>
+    /// <returns>角色组</returns>
+    public async ValueTask<RoleGroup?> FindByRoleGroupWithPermissionsAsync(Guid roleGroupGuid)
+    {
+        return await _dbContext.RoleGroups
+            .Include(g => g.Permissions)
+            .Where(g => g.RoleGroupGuid == roleGroupGuid)
+            .FirstOrDefaultAsync();
+    }
+
+    /// <summary>
+    /// 获取全部角色组并包含权限导航
+    /// </summary>
+    /// <returns>角色组列表</returns>
+    public async Task<ICollection<RoleGroup>> GetAllWithPermissionsAsync()
+    {
+        return await _dbContext.RoleGroups
+            .Include(g => g.Permissions)
+            .ToListAsync();
+    }
 }

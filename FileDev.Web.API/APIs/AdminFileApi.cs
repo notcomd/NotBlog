@@ -1,4 +1,5 @@
 using Commons.Result;
+using Commons.Security;
 using FileDev.Domain.Entities;
 using FileDev.Domain.IRepository;
 using Microsoft.AspNetCore.HttpLogging;
@@ -35,15 +36,11 @@ public static class AdminFileApi
         return route;
     }
 
-    /// <summary>管理员校验：Role claim 含 Root / Administrator（与 Identity "AdminOnly" 策略一致）</summary>
-    private static bool IsAdmin(HttpContext context)
-    {
-        return context.User
-            .FindAll(System.Security.Claims.ClaimTypes.Role)
-            .SelectMany(c => c.Value.Split(',',
-                StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-            .Any(r => r is "Root" or "Administrator");
-    }
+    /// <summary>
+    /// 管理员校验：Role claim 含 Root / Administrator / Admin（统一口径，详见 <see cref="AdminRoleExtensions"/>），
+    /// 与 Identity "AdminOnly" 策略、各服务 <c>ICurrentUserService.IsAdmin()</c> 保持一致。
+    /// </summary>
+    private static bool IsAdmin(HttpContext context) => context.User.HasAdminRole();
 
     private static async Task<IResult> ListFilesAsync(
         HttpContext context,

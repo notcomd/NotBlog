@@ -1,4 +1,6 @@
 
+using Commons.Security;
+
 namespace Message.Infrastructure.Services;
 
 /// <summary>当前用户服务实现，从 HTTP 上下文或显式设置中解析当前用户标识、角色与声明。</summary>
@@ -68,20 +70,17 @@ public class CurrentUserService : ICurrentUserService
             .FindFirst(claimType)?.Value;
     }
 
-    /// <summary>判断当前用户是否具有管理员的角色。</summary>
+    /// <summary>
+    /// 判断当前用户是否具有管理员角色。
+    /// 统一口径：兼容 Root / Administrator / Admin（大小写不敏感），并支持逗号拼接的多角色 claim，
+    /// 详见 <see cref="AdminRoleExtensions"/>（原实现仅认 "Admin"，导致密码登录的 Administrator 账号被误判 403）。
+    /// </summary>
     public bool IsAdmin()
     {
         if (_roles.Length > 0)
-            return _roles.Contains("Admin", StringComparer.OrdinalIgnoreCase);
+            return _roles.ContainsAdminRole();
 
-        // Identity 将多个角色以逗号拼接为单个 Role Claim，故需拆分后判断是否包含 Admin
-        var roleClaim = _httpContextAccessor.HttpContext?.User?
-            .FindAll(ClaimTypes.Role)
-            .SelectMany(c => c.Value.Split(',',
-                StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-            .Any(r => r.Equals("Admin", StringComparison.OrdinalIgnoreCase));
-
-        return roleClaim ?? false;
+        return _httpContextAccessor.HttpContext?.User.HasAdminRole() ?? false;
     }
 
     /// <summary>显式设置当前用户标识与角色。</summary>

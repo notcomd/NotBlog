@@ -38,13 +38,14 @@ public static class OAuthApi
     private static IResult GetAvailableProviders([FromServices] IOptions<OAuthOptions> oauthOptions)
     {
         var options = oauthOptions.Value;
+        // 仅返回「可用于登录/注册」的提供商：wechat 仅支持绑定后登录，不在此列出；
+        // 其余提供商以 IsProviderAvailable 统一判定（Enabled 为真且关键凭据齐备）。
         var providers = new List<OAuthProviderInfo>
         {
-            new("google", "Google", options.GoogleOptions.Enabled),
-            new("github", "GitHub", options.GitHubOptions.Enable),
-            new("microsoft", "Microsoft", options.MicrosoftOptions.Enable),
-            new("wechat", "WeChat", options.WeChatOptions.Enabled),
-            new("qq", "QQ", options.QQOptions.Enabled)
+            new("google", "Google", options.IsProviderAvailable("google")),
+            new("github", "GitHub", options.IsProviderAvailable("github")),
+            new("microsoft", "Microsoft", options.IsProviderAvailable("microsoft")),
+            new("qq", "QQ", options.IsProviderAvailable("qq"))
         };
 
         return Results.Ok(providers);

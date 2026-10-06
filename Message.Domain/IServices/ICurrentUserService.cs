@@ -17,7 +17,8 @@ public interface ICurrentUserService
     string? GetClaim(string claimType);
 
     /// <summary>
-    /// 判断当前用户是否具有 Admin 角色
+    /// 判断当前用户是否具有管理员角色（统一口径：兼容 Root / Administrator / Admin，大小写不敏感，
+    /// 支持逗号分隔的多角色 claim；判定依据为角色名 RoleName 而非 RoleCode）
     /// </summary>
     bool IsAdmin();
 

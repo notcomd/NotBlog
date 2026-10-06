@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Commons.Security;
 
 namespace Markdown.Web.API.Services;
 
@@ -33,15 +34,14 @@ public class CurrentUserService : ICurrentUserService
             .FindFirst(ClaimTypes.Role)?.Value;
     }
 
-    public bool IsAdmin()
-    {
-        var roleClaim = _httpContextAccessor.HttpContext?.User?
-            .FindAll(ClaimTypes.Role)
-            .SelectMany(c => c.Value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-            .Any(r => r.Equals("Admin", StringComparison.OrdinalIgnoreCase) || r.Equals("Root", StringComparison.OrdinalIgnoreCase));
+    /// <summary>
+    /// 判断当前用户是否为管理员。
+    /// 统一口径：兼容 Root / Administrator / Admin（大小写不敏感），并支持逗号拼接的多角色 claim，
+    /// 详见 <see cref="AdminRoleExtensions"/>（原实现认 "Admin"/"Root" 而漏 "Administrator"）。
+    /// </summary>
+    public bool IsAdmin() =>
+        _httpContextAccessor.HttpContext?.User.HasAdminRole() ?? false;
 
-        return roleClaim ?? false;
-    }
     public string? GetClaim(string claimType)
     {
         return _httpContextAccessor.HttpContext?.User?

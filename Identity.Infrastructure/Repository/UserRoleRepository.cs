@@ -25,6 +25,13 @@ public class UserRoleRepository(IdentityDbContext userRoleDbContext) : IUserRole
             .FirstOrDefaultAsync();
     }
 
+    public async Task<List<Roles>> FindAllWithPermissionsAsync()
+    {
+        return await userRoleDbContext.Roles
+            .Include(r => r.Permissions)
+            .ToListAsync();
+    }
+
     public async ValueTask<HashSet<Roles>?> FindByUserRoleAsync(HashSet<Guid>? roleGuid)
     {
         if (roleGuid is null || roleGuid.Count == 0)

@@ -103,4 +103,14 @@ public class RoleGroup : Entity<Guid>, IAggregateRoot
             throw new ArgumentException("Permission not found");
         Permissions.Remove(permission);
     }
+
+    /// <summary>
+    /// 全量替换角色组直连权限（管理端树形授权入口；目录码允许入库，判定侧前缀段匹配自动覆盖子孙）
+    /// </summary>
+    public void ReplacePermissions(IEnumerable<Permission> permissions)
+    {
+        Permissions.Clear();
+        foreach (var permission in permissions)
+            Permissions.Add(permission);
+    }
 }

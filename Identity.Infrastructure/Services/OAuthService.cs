@@ -4,6 +4,7 @@ using System.Text;
 using System.Web;
 using System.Text.RegularExpressions;
 using CacheMemory.Core;
+using Commons.Security;
 using Identity.Domain.Dto.OAuth;
 using Identity.Domain.Options;
 using Notcomd.Token.JWT.Security;
@@ -262,11 +263,18 @@ public class OAuthService(
         var isNewUser = false;
         if (existingUser is not null)
         {
+            // 已绑定：直接以该既有账号登录并签发 token
             user = existingUser;
             logger.LogInformation("Existing user logged in with {Provider}", provider);
         }
         else
         {
+            // 微信以手机号为主体、不提供邮箱，无法走邮箱注册链路：
+            // 仅在已绑定到既有账号时才允许登录，未绑定时既不建号也不签发 token。
+            if (normalizedProvider == "wechat")
+                throw new InvalidOperationException(
+                    "微信仅支持绑定后登录，请先使用账号密码登录并在账号安全中绑定微信");
+
             user = await CreateOrUpdateUserFromExternalLoginAsync(normalizedProvider, externalUserInfo);
             isNewUser = true;
             logger.LogInformation("New user created with {Provider}", provider);
@@ -878,7 +886,14 @@ public class OAuthService(
     // ═══════════════════════════════════════════════════════════
 
     /// <summary>
-    /// 按优先级从高到低确定用户最高角色：Root > Admin > User > Guest
+    /// 按优先级从高到低确定用户最高角色：Root > Administrator > User > Guest。
+    /// <para>
+    /// 返回值即 role claim 的角色名（RoleName 口径），与密码登录 <c>LogInCommandHandler.GetRoleNameAsync</c>
+    /// 及 OAuth 授权服务器（<c>OAuthServerApi</c> 用 RoleName 拼接）对齐：
+    /// ROOT → <c>Root</c>、ADMIN → <c>Administrator</c>（原实现返回短名 <c>Admin</c>，与密码登录不一致）。
+    /// 判定侧（<see cref="AdminRoleExtensions"/>）同时兼容 Root / Administrator / Admin，
+    /// 故已签发的旧 OAuth token（含 "Admin"）仍可正常通过管理端校验。
+    /// </para>
     /// </summary>
     private static string DetermineHighestRole(IReadOnlyCollection<RoleAuthority> roles)
     {
@@ -886,9 +901,9 @@ public class OAuthService(
             return "Guest";
 
         if (roles.Contains(RoleAuthority.Root))
-            return "Root";
+            return AdminRoleExtensions.RootRoleName;
         if (roles.Contains(RoleAuthority.Admin))
-            return "Admin";
+            return AdminRoleExtensions.AdministratorRoleName;
         if (roles.Contains(RoleAuthority.User))
             return "User";
         return "Guest";

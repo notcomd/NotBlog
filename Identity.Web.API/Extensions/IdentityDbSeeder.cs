@@ -175,7 +175,9 @@ public class IdentityDbSeeder : IDbSeeder<IdentityDbContext>
             ("/admin/announcements", "公报", "announcements", 70),
             ("/admin/menus", "菜单管理", "menus", 80),
             ("/admin/permissions", "权限管理", "permissions", 90),
-            ("/admin/security", "账号安全", "security", 100)
+            ("/admin/roles", "角色管理", "roles", 100),
+            ("/admin/rolegroups", "角色组管理", "rolegroups", 110),
+            ("/admin/security", "账号安全", "security", 120)
         };
 
         var urls = defaults.Select(d => d.Url).ToList();

@@ -19,6 +19,12 @@ public static class RoleApi
             .Produces<CreateRoleResult>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest);
 
+        route.MapGet(string.Empty, GetRolesAsync)
+            .RequirePermission("api:identity:read")
+            .RequireAuthorization("AdminOnly")
+            .WithDescription("获取全部未删除角色列表（含已授权限数）")
+            .Produces<List<RoleListItemDto>>(StatusCodes.Status200OK);
+
         route.MapPut("/{roleId:guid}", UpdateRoleAsync)
             .RequirePermission("api:identity:manage")
             .RequireAuthorization("AdminOnly")
@@ -111,6 +117,25 @@ public static class RoleApi
     }
 
     /// <summary>
+    /// GET /api/identity/role — 全部未删除角色列表（管理端角色列表用，含已授权限数）
+    /// </summary>
+    private static async Task<IResult> GetRolesAsync(
+        [FromServices] IUserRoleRepository userRoleRepository,
+        CancellationToken ct)
+    {
+        var roles = await userRoleRepository.FindAllWithPermissionsAsync();
+        var items = roles
+            .Where(r => !r.IsDeleted)
+            .OrderBy(r => r.RoleCode)
+            .Select(r => new RoleListItemDto(
+                r.RoleGuid, r.RoleName, r.RoleCode, r.RoleAuthority, r.RoleStatus,
+                r.Permissions.Count(p => !p.IsDeleted)))
+            .ToList();
+
+        return Results.Ok(items);
+    }
+
+    /// <summary>
     /// GET /api/identity/role/{roleId}/permissions — 角色已授权权限列表（树形勾选回显用）
     /// </summary>
     private static async Task<IResult> GetRolePermissionsAsync(
@@ -175,3 +200,14 @@ public sealed record RolePermissionItemDto(
     string PermissionCode,
     string PermissionName,
     PermissionType PermissionType);
+
+/// <summary>
+/// 角色列表条目 DTO
+/// </summary>
+public sealed record RoleListItemDto(
+    Guid RoleGuid,
+    string RoleName,
+    string RoleCode,
+    RoleAuthority RoleAuthority,
+    RoleStatus RoleStatus,
+    int PermissionCount);

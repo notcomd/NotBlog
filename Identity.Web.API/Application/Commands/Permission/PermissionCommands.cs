@@ -73,6 +73,17 @@ public record DeleteRoleGroupCommand(Guid RoleGroupGuid)
     public string IdValue => RoleGroupGuid.ToString();
 }
 
+/// <summary>
+/// 全量替换角色组的直连权限（树形授权：permissionIds 可含目录码与叶子码，
+/// 授权目录 = 自动放行其全部子孙，判定由 PermissionChecker 前缀段匹配完成）。
+/// </summary>
+public record SetRoleGroupPermissionsCommand(Guid RoleGroupGuid, IReadOnlyList<Guid> PermissionIds)
+    : IRequest<bool>, ILoggableCommand
+{
+    public string IdProperty => nameof(RoleGroupGuid);
+    public string IdValue => RoleGroupGuid.ToString();
+}
+
 // ─── Role Commands ───
 
 public record CreateRoleCommand(

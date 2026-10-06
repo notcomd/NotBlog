@@ -16,9 +16,9 @@ public interface ICurrentUserService
     string? GetUserRole();
 
     /// <summary>
-    /// 判断当前用户是否为管理员角色
-    /// 通过检查用户的角色 Claim 是否包含 "Admin" 或 "Root" 来确定用户是否具有管理员权限。
-    /// 适用于需要管理员权限的操作或资源访问
+    /// 判断当前用户是否为管理员角色。
+    /// 统一口径：兼容 Root / Administrator / Admin（大小写不敏感，支持逗号分隔的多角色 claim），
+    /// 适用于需要管理员权限的操作或资源访问。判定依据为角色名 RoleName 而非 RoleCode。
     /// </summary>
     /// <returns></returns>
     bool IsAdmin();

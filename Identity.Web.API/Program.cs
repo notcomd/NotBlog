@@ -1,4 +1,5 @@
 
+using Commons.Security;
 using Identity.Web.API.Resources;
 
 
@@ -142,13 +143,11 @@ builder.Services.AddCors(options =>
 });
 
 // ═══ 授权策略（S-03）：管理端点仅允许 Root / 管理员 ═══
+// 角色判定统一走 AdminRoleExtensions（Root / Administrator / Admin，大小写不敏感、支持逗号拼接多角色 claim），
+// 与各服务 ICurrentUserService.IsAdmin()、FileDev AdminFileApi 保持同一口径。
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("AdminOnly", policy => policy.RequireAssertion(ctx =>
-        ctx.User.FindAll(ClaimTypes.Role)
-            .SelectMany(c => c.Value.Split(',',
-                StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-            .Any(r => r is "Root" or "Administrator")));
+    options.AddPolicy("AdminOnly", policy => policy.RequireAssertion(ctx => ctx.User.HasAdminRole()));
 });
 
 // 配置 OAuth 选项

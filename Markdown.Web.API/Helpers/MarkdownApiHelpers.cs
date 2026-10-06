@@ -1,3 +1,5 @@
+using Commons.Security;
+
 namespace Markdown.Web.API.Helpers;
 
 /// <summary>
@@ -6,18 +8,12 @@ namespace Markdown.Web.API.Helpers;
 internal static class MarkdownApiHelpers
 {
     /// <summary>
-    ///     判断当前用户是否具备管理员角色（用于审核操作授权，F-10.2）
-    ///     精确匹配角色名（支持逗号分隔的多角色 claim），避免 "SuperAdmin"/"adminn" 等子串误判
+    ///     判断当前用户是否具备管理员角色（用于审核操作授权，F-10.2）。
+    ///     统一口径：兼容 Root / Administrator / Admin（大小写不敏感），详见 <see cref="AdminRoleExtensions"/>。
+    ///     直接复用 <see cref="ICurrentUserService.IsAdmin"/>，避免与身份实现出现口径分叉。
     /// </summary>
     internal static bool IsAdmin(ICurrentUserService currentUserService)
-    {
-        var role = currentUserService.GetUserRole();
-        if (string.IsNullOrWhiteSpace(role))
-            return false;
-
-        return role.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Any(r => r.Equals("Admin", StringComparison.OrdinalIgnoreCase));
-    }
+        => currentUserService.IsAdmin();
 
     /// <summary>
     ///     获取幂等 key：优先取请求头 Idempotency-Key（客户端提供稳定 key 时幂等保护生效，

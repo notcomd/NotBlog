@@ -1,3 +1,5 @@
+using Commons.Security;
+
 namespace Video.Infrastructure.Services;
 
 /// <summary>
@@ -49,20 +51,16 @@ public class CurrentUserService(IHttpContextAccessor httpContextAccessor) : ICur
         return httpContextAccessor.HttpContext?.User?.FindFirst(claimType)?.Value;
     }
 
-    /// <summary>判断当前用户是否具备 Admin 角色。</summary>
+    /// <summary>
+    /// 判断当前用户是否具备管理员角色。
+    /// 统一口径：兼容 Root / Administrator / Admin（大小写不敏感），并支持逗号拼接的多角色 claim，
+    /// 详见 <see cref="AdminRoleExtensions"/>（原实现仅认 "Admin"，导致密码登录的 Administrator 账号被误判 403）。
+    /// </summary>
     public bool IsAdmin()
     {
         if (_roles.Length > 0)
-            return _roles.Contains("Admin", StringComparer.OrdinalIgnoreCase);
-
-        // Identity 将多个角色以逗号拼接为单个 Role Claim，故需拆分后判断是否包含 Admin
-        var roleClaim = httpContextAccessor.HttpContext?.User?
-            .FindAll(System.Security.Claims.ClaimTypes.Role)
-            .SelectMany(c => c.Value.Split(',',
-                StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-            .Any(r => r.Equals("Admin", StringComparison.OrdinalIgnoreCase));
-
-        return roleClaim ?? false;
+            return _roles.ContainsAdminRole();
+        return httpContextAccessor.HttpContext?.User.HasAdminRole() ?? false;
     }
 
     /// <summary>由网关 Middleware 注入当前用户上下文（用户标识 + 角色）。</summary>

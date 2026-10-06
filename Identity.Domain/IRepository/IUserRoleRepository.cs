@@ -11,6 +11,11 @@ public interface IUserRoleRepository : IRepository<Roles, IUnitOfWork>
     /// </summary>
     ValueTask<Roles?> FindByUserRoleWithPermissionsAsync(Guid roleGuid);
 
+    /// <summary>
+    /// 获取全部角色并包含直连权限导航（角色列表 PermissionCount 统计用）
+    /// </summary>
+    Task<List<Roles>> FindAllWithPermissionsAsync();
+
     ValueTask<HashSet<Roles>?> FindByUserRoleAsync(HashSet<Guid> roleGuid);
 
     ValueTask<Roles?> FindUserIdByRoleAsync(Guid userId);
